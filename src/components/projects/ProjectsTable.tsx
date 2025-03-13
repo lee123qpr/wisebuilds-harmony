@@ -1,73 +1,93 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Edit, Trash2, Eye, MessageSquare, FileText, Search, CheckCircle2, Clock, XCircle } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { format } from 'date-fns';
 
-// This would come from your database in a real implementation
-const sampleProjects = [
-  {
-    id: '1',
-    title: 'Commercial Building Renovation',
-    createdAt: '2023-12-15',
-    role: 'Quantity Surveyor',
-    budget: '£5,000-£10,000',
-    status: 'active',
-    hiringStatus: 'urgent',
-    applications: 3,
-  },
-  {
-    id: '2',
-    title: 'Residential Property Extension Design',
-    createdAt: '2023-12-10',
-    role: 'Architect',
-    budget: '£2,500-£5,000',
-    status: 'draft',
-    hiringStatus: 'enquiring',
-    applications: 0,
-  },
-  {
-    id: '3',
-    title: 'Infrastructure Project Planning',
-    createdAt: '2023-12-05',
-    role: 'Planner',
-    budget: '£10,000+',
-    status: 'active',
-    hiringStatus: 'ready',
-    applications: 5,
-  },
-  {
-    id: '4',
-    title: 'Office Refurbishment',
-    createdAt: '2023-11-28',
-    role: 'Interior Designer',
-    budget: '£10,000+',
-    status: 'in-progress',
-    hiringStatus: 'ready',
-    applications: 2,
-  },
-  {
-    id: '5',
-    title: 'Landscaping Design for Housing Development',
-    createdAt: '2023-11-15',
-    role: 'Landscape Architect',
-    budget: '£1,000-£2,500',
-    status: 'cancelled',
-    hiringStatus: 'enquiring',
-    applications: 1,
-  },
-];
+// Define the Project type for TypeScript
+type Project = {
+  id: string;
+  title: string;
+  created_at: string;
+  role: string;
+  budget: string;
+  status: string;
+  hiring_status: string;
+  applications: number;
+};
 
 const ProjectsTable = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [hiringFilter, setHiringFilter] = useState('all');
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  // Fetch projects from Supabase
+  useEffect(() => {
+    const fetchProjects = async () => {
+      setIsLoading(true);
+      try {
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .order('created_at', { ascending: false });
+
+        if (error) {
+          throw error;
+        }
+
+        setProjects(data || []);
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load projects. Please try again.',
+        });
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+
+    // Subscribe to realtime changes
+    const channel = supabase
+      .channel('schema-db-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'projects'
+        },
+        (payload) => {
+          console.log('Realtime change:', payload);
+          // Refresh the projects list
+          fetchProjects();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, toast]);
 
   // Filter the projects based on search query and filters
-  const filteredProjects = sampleProjects.filter(project => {
+  const filteredProjects = projects.filter(project => {
     // Search filter
     const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
                           project.role.toLowerCase().includes(searchQuery.toLowerCase());
@@ -76,10 +96,19 @@ const ProjectsTable = () => {
     const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
     
     // Hiring status filter
-    const matchesHiring = hiringFilter === 'all' || project.hiringStatus === hiringFilter;
+    const matchesHiring = hiringFilter === 'all' || project.hiring_status === hiringFilter;
     
     return matchesSearch && matchesStatus && matchesHiring;
   });
+
+  // Function to format date
+  const formatDate = (dateString: string) => {
+    try {
+      return format(new Date(dateString), 'yyyy-MM-dd');
+    } catch (error) {
+      return dateString;
+    }
+  };
 
   // Function to render status badge with appropriate styling and icon
   const renderStatusBadge = (status) => {
@@ -174,11 +203,17 @@ const ProjectsTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {filteredProjects.length > 0 ? (
+          {isLoading ? (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center py-8">
+                Loading projects...
+              </TableCell>
+            </TableRow>
+          ) : filteredProjects.length > 0 ? (
             filteredProjects.map((project) => (
               <TableRow key={project.id}>
                 <TableCell className="font-medium">{project.title}</TableCell>
-                <TableCell>{project.createdAt}</TableCell>
+                <TableCell>{formatDate(project.created_at)}</TableCell>
                 <TableCell>{project.role}</TableCell>
                 <TableCell>{project.budget}</TableCell>
                 <TableCell>
@@ -187,16 +222,16 @@ const ProjectsTable = () => {
                 <TableCell>
                   <Badge 
                     variant={
-                      project.hiringStatus === 'urgent' 
+                      project.hiring_status === 'urgent' 
                         ? 'destructive' 
-                        : project.hiringStatus === 'ready' 
+                        : project.hiring_status === 'ready' 
                           ? 'default' 
                           : 'outline'
                     }
                   >
-                    {project.hiringStatus === 'urgent' 
+                    {project.hiring_status === 'urgent' 
                       ? 'Urgent' 
-                      : project.hiringStatus === 'ready' 
+                      : project.hiring_status === 'ready' 
                         ? 'Ready to hire' 
                         : 'Enquiring'}
                   </Badge>
@@ -239,4 +274,3 @@ const ProjectsTable = () => {
 };
 
 export default ProjectsTable;
-

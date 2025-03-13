@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -17,6 +16,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { supabase } from '@/integrations/supabase/client';
 
 const roleOptions = [
   { value: 'quantity_surveyor', label: 'Quantity Surveyor' },
@@ -103,15 +103,40 @@ const NewProjectDialog = () => {
   const onSubmit = async (data: ProjectFormValues) => {
     try {
       console.log('Creating new project:', data);
-      // In a real implementation, you would save this to the database
-      // For now, we'll just display a success toast
+      if (!user) {
+        throw new Error('You must be logged in to create a project');
+      }
+
+      const projectData = {
+        user_id: user.id,
+        title: data.title,
+        description: data.description,
+        role: data.role,
+        requires_insurance: data.requiresInsurance,
+        location: data.location,
+        work_type: data.workType,
+        duration: data.duration,
+        budget: data.budget,
+        start_date: data.startDate.toISOString(),
+        hiring_status: data.hiringStatus,
+        requires_site_visits: data.requiresSiteVisits,
+        requires_equipment: data.requiresEquipment,
+        status: 'active',
+      };
+
+      const { error } = await supabase
+        .from('projects')
+        .insert(projectData);
+
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: 'Project created',
         description: 'Your project was successfully posted.',
       });
       
-      // Reset form and close dialog
       form.reset();
       setOpen(false);
     } catch (error) {
