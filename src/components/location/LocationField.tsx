@@ -34,30 +34,31 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     }
   }, [isLoaded]);
   
+  // Handle manual closing on selection
+  const handlePlaceSelect = (place: { formatted_address: string }) => {
+    if (place && place.formatted_address) {
+      form.setValue(name, place.formatted_address, {
+        shouldValidate: true,
+        shouldDirty: true
+      });
+      console.log(`Setting form value for ${name} to:`, place.formatted_address);
+      
+      toast({
+        title: "Location Selected",
+        description: `Selected ${place.formatted_address}`,
+      });
+      
+      // Close the popover after selection
+      setLocationPopoverOpen(false);
+    }
+  };
+  
   // Setup autocomplete with our custom hook
   useLocationAutocomplete({
     isOpen: locationPopoverOpen,
     isGoogleMapsLoaded: isLoaded,
     inputRef: autocompleteRef,
-    onPlaceSelect: (place) => {
-      if (place && place.formatted_address) {
-        form.setValue(name, place.formatted_address, {
-          shouldValidate: true,
-          shouldDirty: true
-        });
-        console.log(`Setting form value for ${name} to:`, place.formatted_address);
-        
-        toast({
-          title: "Location Selected",
-          description: `Selected ${place.formatted_address}`,
-        });
-        
-        // Close the popover after selection
-        setLocationPopoverOpen(false);
-      } else {
-        console.warn('No address found in the selected place');
-      }
-    }
+    onPlaceSelect: handlePlaceSelect
   });
 
   return (
@@ -71,7 +72,18 @@ export const LocationField: React.FC<LocationFieldProps> = ({
             open={locationPopoverOpen} 
             onOpenChange={(open) => {
               console.log('Popover open state changing to:', open);
-              setLocationPopoverOpen(open);
+              // Only allow opening via button click, manual closing is still allowed
+              if (open) {
+                setLocationPopoverOpen(true);
+                // Wait for the popover to open before focusing on the input
+                setTimeout(() => {
+                  if (autocompleteRef.current) {
+                    autocompleteRef.current.focus();
+                  }
+                }, 200);
+              } else {
+                setLocationPopoverOpen(false);
+              }
             }}
           >
             <PopoverTrigger asChild>

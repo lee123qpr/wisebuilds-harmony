@@ -30,13 +30,15 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
 
   return (
     <PopoverContent 
-      className="w-[300px] p-4 z-[9999]" // Increased z-index for better stacking
+      className="w-[300px] p-4 z-[9999]" // High z-index for better stacking
       align="start" 
       sideOffset={5}
       onOpenAutoFocus={(e) => {
-        // Prevent default to manually handle focus
+        // We need to prevent the default behavior to manually handle our own focus
         e.preventDefault();
       }}
+      // Remove any pointer-events: none that might be applied
+      style={{ pointerEvents: 'auto' }}
     >
       <div className="space-y-2">
         <h4 className="text-sm font-medium">Search location</h4>
@@ -50,7 +52,18 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
           spellCheck="false"
           aria-autocomplete="list"
           // Explicitly set a high tab index to ensure it receives focus
-          tabIndex={1}
+          tabIndex={0}
+          // Ensure the input is actually clickable
+          style={{ pointerEvents: 'auto' }}
+          // Make sure clicking works
+          onClick={(e) => {
+            // Stop event propagation to prevent the popover from closing
+            e.stopPropagation();
+            // Ensure the input gets focus when clicked
+            if (inputRef.current) {
+              inputRef.current.focus();
+            }
+          }}
         />
         {isLoading && (
           <div className="text-xs text-amber-500">
