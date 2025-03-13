@@ -17,7 +17,7 @@ import ProjectDocuments from "./pages/project/ProjectDocuments";
 import ProjectApplications from "./pages/project/ProjectApplications";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
-import LeadSettings from "./pages/dashboard/LeadSettings";
+import LeadSettings from "./pages/dashboard/leadSettings";
 
 const queryClient = new QueryClient();
 
@@ -116,18 +116,18 @@ const App = () => (
             <Route path="/legal/terms" element={<NotFound />} />
             <Route path="/legal/cookies" element={<NotFound />} />
             
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-            
-            {/* Route for Lead Settings */}
+            {/* Route for Lead Settings - Note: Keep this before the catch-all route */}
             <Route 
               path="/dashboard/freelancer/lead-settings" 
               element={
-                <ProtectedRoute>
+                <ProtectedRoute allowedUserTypes={['freelancer']}>
                   <LeadSettings />
                 </ProtectedRoute>
               } 
             />
+            
+            {/* Catch-all route - must be last */}
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>

@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -7,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { Briefcase, MessageSquare, ClipboardList, Bell, Settings } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
 
 interface LeadSettings {
   role: string;
@@ -38,70 +36,42 @@ const FreelancerDashboard = () => {
   // Extract user information
   const fullName = user?.user_metadata?.full_name || 'Freelancer';
 
-  // Check if user has lead settings
+  // For now, let's just check if we have lead settings instead of querying Supabase
+  // due to table not being set up yet
   useEffect(() => {
-    const checkLeadSettings = async () => {
-      if (!user) return;
-      
-      try {
-        const { data, error } = await supabase
-          .from('lead_settings')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-          
-        if (error && error.code !== 'PGRST116') {
-          console.error('Error fetching lead settings:', error);
-          return;
-        }
-        
-        setHasLeadSettings(!!data);
-        setLeadSettings(data);
-        
-      } catch (error) {
-        console.error('Error checking lead settings:', error);
-      }
-    };
-    
-    checkLeadSettings();
+    // We'll simulate lead settings for now since the table doesn't exist yet
+    setHasLeadSettings(false);
+    setLeadSettings(null);
   }, [user]);
 
-  // Fetch project leads matching user's criteria
+  // Mock project leads data for demonstration
   useEffect(() => {
-    const fetchProjectLeads = async () => {
-      if (!leadSettings) return;
-      
-      try {
-        // In a real app, this would query from the backend with matching logic
-        // For now, we'll just fetch some sample projects
-        const { data, error } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('role', leadSettings.role)
-          .limit(3);
-          
-        if (error) throw error;
-        
-        // Convert to ProjectLead format
-        const leads = data.map(project => ({
-          id: project.id,
-          title: project.title,
-          description: project.description,
-          budget: project.budget,
-          role: project.role,
-          created_at: project.created_at,
-          location: project.location,
-          tags: ['New', project.work_type]
-        }));
-        
-        setProjectLeads(leads);
-      } catch (error) {
-        console.error('Error fetching project leads:', error);
-      }
-    };
-    
     if (leadSettings) {
-      fetchProjectLeads();
+      // Sample project leads
+      const leads: ProjectLead[] = [
+        {
+          id: '1',
+          title: 'Kitchen Renovation in Manchester',
+          description: 'Looking for an experienced contractor to renovate a kitchen in a Victorian home.',
+          budget: '£2,000-£3,500',
+          role: 'Contractor',
+          created_at: new Date().toISOString(),
+          location: 'Manchester',
+          tags: ['Plumbing', 'Tiling', 'Carpentry']
+        },
+        {
+          id: '2',
+          title: 'Bathroom Remodel',
+          description: 'Complete bathroom renovation needed for a modern apartment.',
+          budget: '£3,000-£5,000',
+          role: 'Plumber',
+          created_at: new Date().toISOString(),
+          location: 'Liverpool',
+          tags: ['Plumbing', 'Tiling']
+        }
+      ];
+      
+      setProjectLeads(leads);
     }
   }, [leadSettings]);
 
