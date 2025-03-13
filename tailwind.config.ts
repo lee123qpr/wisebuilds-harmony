@@ -1,3 +1,4 @@
+
 import type { Config } from "tailwindcss";
 
 export default {
@@ -61,7 +62,19 @@ export default {
 					'accent-foreground': 'hsl(var(--sidebar-accent-foreground))',
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
-				}
+				},
+				// BuildWise UK brand colors
+				'logo-light-blue': '#ADD8E6',
+				'logo-dark-blue': '#4682B4',
+				'logo-light-green': '#90EE90',
+				'logo-dark-green': '#2E8B57',
+				'bw-dark': '#333333',
+				'bw-gray-medium': '#666666',
+				'bw-gray-light': '#E5E5E5',
+				'bw-off-white': '#F9F9F9',
+				'bw-success': '#2E8B57',
+				'bw-warning': '#FFC107',
+				'bw-error': '#DC3545',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',
@@ -89,7 +102,11 @@ export default {
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out'
-			}
+			},
+			fontFamily: {
+				sans: ['Inter', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+				heading: ['Montserrat', 'Inter', 'system-ui', 'sans-serif'],
+			},
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
