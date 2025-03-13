@@ -79,7 +79,14 @@ const LeadSettingsForm = () => {
       
       const settingsData = {
         user_id: user.id,
-        ...values,
+        role: values.role, // Ensure role is included
+        location: values.location, // Ensure location is included
+        max_budget: values.max_budget,
+        work_type: values.work_type,
+        project_type: values.project_type,
+        keywords: values.keywords,
+        notifications_enabled: values.notifications_enabled,
+        email_alerts: values.email_alerts,
         updated_at: new Date().toISOString()
       };
       
@@ -93,13 +100,13 @@ const LeadSettingsForm = () => {
         if (error) throw error;
         return { ...existingSettings, ...settingsData };
       } else {
-        // Create new settings
+        // Create new settings - add the created_at field
         const { data, error } = await supabase
           .from('lead_settings')
-          .insert([{ 
+          .insert({
             ...settingsData, 
-            created_at: new Date().toISOString() 
-          }])
+            created_at: new Date().toISOString()
+          })
           .select()
           .single();
         
