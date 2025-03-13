@@ -22,15 +22,14 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   description = 'Where the work will be performed (UK and Ireland locations only)'
 }) => {
   const [locationPopoverOpen, setLocationPopoverOpen] = useState(false);
-  const [searchInput, setSearchInput] = useState('');
-  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const autocompleteRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   const selectedLocation = form.watch(name);
 
   // Load Google Maps API script
   useEffect(() => {
-    // Check if the script is already loaded
+    // Check if script is already loaded
     if (!document.getElementById('google-maps-script') && !window.google?.maps) {
       const script = document.createElement('script');
       script.id = 'google-maps-script';
@@ -39,8 +38,8 @@ export const LocationField: React.FC<LocationFieldProps> = ({
       script.defer = true;
       
       script.onload = () => {
-        setScriptLoaded(true);
-        console.log('Google Maps API script loaded');
+        setIsLoading(false);
+        console.log('Google Maps API script loaded successfully');
       };
       
       script.onerror = () => {
@@ -54,13 +53,13 @@ export const LocationField: React.FC<LocationFieldProps> = ({
       
       document.head.appendChild(script);
     } else if (window.google?.maps) {
-      setScriptLoaded(true);
+      setIsLoading(false);
     }
   }, [toast]);
 
-  // Initialize autocomplete when input is focused and script is loaded
+  // Initialize autocomplete when popover opens
   useEffect(() => {
-    if (!scriptLoaded || !autocompleteRef.current) return;
+    if (!locationPopoverOpen || !autocompleteRef.current || isLoading || !window.google?.maps?.places) return;
     
     try {
       const autocomplete = new window.google.maps.places.Autocomplete(autocompleteRef.current, {
@@ -71,12 +70,11 @@ export const LocationField: React.FC<LocationFieldProps> = ({
 
       autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
-        if (place.formatted_address) {
+        if (place && place.formatted_address) {
           form.setValue(name, place.formatted_address, { 
             shouldValidate: true, 
             shouldDirty: true 
           });
-          setSearchInput('');
           setLocationPopoverOpen(false);
         }
       });
@@ -90,7 +88,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
         description: 'Please refresh the page and try again.'
       });
     }
-  }, [scriptLoaded, form, name, toast]);
+  }, [locationPopoverOpen, isLoading, form, name, toast]);
 
   return (
     <FormField
@@ -113,12 +111,12 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                   type="button"
                 >
                   {field.value ? (
-                    <span className="flex items-center">
+                    <span className="flex items-center truncate">
                       <MapPin className="mr-2 h-4 w-4 shrink-0" />
                       {field.value}
                     </span>
                   ) : (
-                    "Select location..."
+                    <span className="text-muted-foreground">Select location...</span>
                   )}
                   <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -129,18 +127,16 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 <h4 className="text-sm font-medium">Search location</h4>
                 <Input
                   ref={autocompleteRef}
-                  placeholder="Type to search locations..."
-                  value={searchInput}
-                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Type to search UK/Ireland cities..."
                   className="w-full"
                 />
-                {!scriptLoaded && (
+                {isLoading && (
                   <div className="text-xs text-amber-500">
                     Loading location service...
                   </div>
                 )}
                 <p className="text-xs text-muted-foreground">
-                  Locations limited to UK and Ireland
+                  Search limited to cities in UK and Ireland
                 </p>
               </div>
             </PopoverContent>
