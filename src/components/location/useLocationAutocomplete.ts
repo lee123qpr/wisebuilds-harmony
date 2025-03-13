@@ -26,7 +26,7 @@ export const useLocationAutocomplete = ({
   useEffect(() => {
     // Clean up function to remove event listeners
     const cleanupListener = () => {
-      if (listenerRef.current && window.google?.maps) {
+      if (listenerRef.current && window.google?.maps?.event) {
         try {
           google.maps.event.removeListener(listenerRef.current);
           listenerRef.current = null;
@@ -75,21 +75,26 @@ export const useLocationAutocomplete = ({
           }
         );
         
+        // Store the instance for later use
+        autocompleteInstanceRef.current = autocomplete;
+        
         console.log('Created autocomplete instance');
         
-        // Add place_changed event listener
-        listenerRef.current = google.maps.event.addListener(autocomplete, 'place_changed', () => {
-          const place = autocomplete.getPlace();
-          console.log('Selected place:', place);
+        // Add place_changed event listener safely
+        if (window.google?.maps?.event) {
+          listenerRef.current = google.maps.event.addListener(autocomplete, 'place_changed', () => {
+            const place = autocomplete.getPlace();
+            console.log('Selected place:', place);
+            
+            if (place && place.formatted_address) {
+              onPlaceSelect(place);
+            } else {
+              console.warn('No place address found');
+            }
+          });
           
-          if (place && place.formatted_address) {
-            onPlaceSelect(place);
-          } else {
-            console.warn('No place address found');
-          }
-        });
-        
-        console.log('Added place_changed event listener');
+          console.log('Added place_changed event listener');
+        }
       }, 300);
       
       // Return cleanup function

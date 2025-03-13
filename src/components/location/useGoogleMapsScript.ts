@@ -21,17 +21,16 @@ export const useGoogleMapsScript = () => {
       return;
     }
     
+    // Define callback function that will be called when the script loads
+    window.initMap = function() {
+      console.log('Google Maps API loaded successfully');
+      setIsLoading(false);
+      setIsLoaded(true);
+    };
+    
     // Skip if the script tag is already in the document
     if (document.getElementById('google-maps-script')) {
       console.log('Google Maps script tag already exists, waiting for it to load');
-
-      // Setup callback to monitor for the script load
-      window.initMap = function() {
-        console.log('Google Maps API loaded successfully via existing script');
-        setIsLoading(false);
-        setIsLoaded(true);
-      };
-      
       return;
     }
 
@@ -43,13 +42,6 @@ export const useGoogleMapsScript = () => {
     script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&callback=initMap`;
     script.async = true;
     script.defer = true;
-    
-    // Define callback function
-    window.initMap = function() {
-      console.log('Google Maps API loaded successfully');
-      setIsLoading(false);
-      setIsLoaded(true);
-    };
     
     // Set up error handler
     script.onerror = (e) => {
@@ -68,8 +60,8 @@ export const useGoogleMapsScript = () => {
     
     // Cleanup function
     return () => {
-      // We'll leave the global callback in place to ensure the script loads properly if already in process
-      // Don't remove the script tag to prevent reloading issues
+      // We don't remove the script or undefine the callback
+      // This ensures the API remains available throughout the app
     };
   }, [toast]);
 

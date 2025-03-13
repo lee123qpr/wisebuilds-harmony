@@ -40,18 +40,23 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     isGoogleMapsLoaded: isLoaded,
     inputRef: autocompleteRef,
     onPlaceSelect: (place) => {
-      form.setValue(name, place.formatted_address, {
-        shouldValidate: true,
-        shouldDirty: true
-      });
-      console.log(`Setting form value for ${name} to:`, place.formatted_address);
-      
-      toast({
-        title: "Location Selected",
-        description: `Selected ${place.formatted_address}`,
-      });
-      
-      setLocationPopoverOpen(false);
+      if (place && place.formatted_address) {
+        form.setValue(name, place.formatted_address, {
+          shouldValidate: true,
+          shouldDirty: true
+        });
+        console.log(`Setting form value for ${name} to:`, place.formatted_address);
+        
+        toast({
+          title: "Location Selected",
+          description: `Selected ${place.formatted_address}`,
+        });
+        
+        // Close the popover after selection
+        setLocationPopoverOpen(false);
+      } else {
+        console.warn('No address found in the selected place');
+      }
     }
   });
 
@@ -67,7 +72,6 @@ export const LocationField: React.FC<LocationFieldProps> = ({
             onOpenChange={(open) => {
               console.log('Popover open state changing to:', open);
               setLocationPopoverOpen(open);
-              // Don't reset the input field when opening popover - let the PopoverContent handle it
             }}
           >
             <PopoverTrigger asChild>

@@ -22,14 +22,22 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
           // Clear any previous value to ensure a fresh search
           inputRef.current.value = '';
         }
-      }, 100);
+      }, 150);
       
       return () => clearTimeout(timer);
     }
   }, [inputRef]);
 
   return (
-    <PopoverContent className="w-[300px] p-4 z-50" align="start" sideOffset={5}>
+    <PopoverContent 
+      className="w-[300px] p-4 z-[100]" 
+      align="start" 
+      sideOffset={5}
+      onOpenAutoFocus={(e) => {
+        // Prevent default to manually handle focus
+        e.preventDefault();
+      }}
+    >
       <div className="space-y-2">
         <h4 className="text-sm font-medium">Search location</h4>
         <Input
@@ -41,6 +49,8 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
           autoCorrect="off"
           spellCheck="false"
           aria-autocomplete="list"
+          // Explicitly set a high tab index to ensure it receives focus
+          tabIndex={1}
         />
         {isLoading && (
           <div className="text-xs text-amber-500">
