@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { MapPin, Filter } from 'lucide-react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
@@ -30,29 +30,34 @@ export const LocationField: React.FC<LocationFieldProps> = ({
 
   const selectedLocation = form.watch(name);
 
-  useEffect(() => {
-    setFilteredLocations(
-      filterLocations(locationInputValue, {
-        country: activeFilter !== 'all' ? activeFilter as 'UK' | 'Ireland' : undefined,
-        region: activeRegion || undefined,
-        minInputLength: 0, // Show results immediately
-        limit: 100 // Show more locations
-      })
-    );
+  // Use memoization to improve performance
+  const filterLocationsWithOptions = useMemo(() => {
+    return filterLocations(locationInputValue, {
+      country: activeFilter !== 'all' ? activeFilter as 'UK' | 'Ireland' : undefined,
+      region: activeRegion || undefined,
+      minInputLength: 0, // Show results immediately
+      limit: 100 // Show more locations
+    });
   }, [locationInputValue, activeFilter, activeRegion]);
 
-  // Group locations by country and region for better organization
-  const groupedLocations = filteredLocations.reduce((groups, location) => {
-    const country = location.country;
-    if (!groups[country]) {
-      groups[country] = [];
-    }
-    groups[country].push(location);
-    return groups;
-  }, {} as Record<string, Location[]>);
+  useEffect(() => {
+    setFilteredLocations(filterLocationsWithOptions);
+  }, [filterLocationsWithOptions]);
+
+  // Group locations by country for better organization - using memoization
+  const groupedLocations = useMemo(() => {
+    return filteredLocations.reduce((groups, location) => {
+      const country = location.country;
+      if (!groups[country]) {
+        groups[country] = [];
+      }
+      groups[country].push(location);
+      return groups;
+    }, {} as Record<string, Location[]>);
+  }, [filteredLocations]);
 
   const handleSelectLocation = (location: Location) => {
-    form.setValue(name, location.name);
+    form.setValue(name, location.name, { shouldValidate: true, shouldDirty: true });
     setLocationInputValue("");
     setLocationPopoverOpen(false);
   };
@@ -80,6 +85,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                   role="combobox"
                   aria-expanded={locationPopoverOpen}
                   className="w-full justify-between"
+                  type="button" // Explicitly set type to button to prevent form submission
                 >
                   {field.value ? (
                     <span className="flex items-center">

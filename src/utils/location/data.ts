@@ -135,7 +135,7 @@ export const ukIrelandLocations: Location[] = [
   // Added smaller towns - Wales
   { name: "Newport", country: "UK", region: "Wales" },
   { name: "Wrexham", country: "UK", region: "Wales" },
-  { name: "Bangor", country: "UK", region: "Wales" },
+  { name: "Bangor, Wales", country: "UK", region: "Wales" }, // Renamed to avoid duplicate
   { name: "Aberystwyth", country: "UK", region: "Wales" },
   { name: "Llandudno", country: "UK", region: "Wales" },
   { name: "Carmarthen", country: "UK", region: "Wales" },
@@ -147,7 +147,7 @@ export const ukIrelandLocations: Location[] = [
   // Added smaller towns - Northern Ireland
   { name: "Lisburn", country: "UK", region: "Northern Ireland" },
   { name: "Newry", country: "UK", region: "Northern Ireland" },
-  { name: "Bangor", country: "UK", region: "Northern Ireland" },
+  { name: "Bangor, NI", country: "UK", region: "Northern Ireland" }, // Renamed to avoid duplicate
   { name: "Coleraine", country: "UK", region: "Northern Ireland" },
   { name: "Newtownards", country: "UK", region: "Northern Ireland" },
   { name: "Antrim", country: "UK", region: "Northern Ireland" },

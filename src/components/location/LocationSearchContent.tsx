@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Check } from 'lucide-react';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
@@ -31,10 +32,10 @@ export const LocationSearchContent: React.FC<LocationSearchContentProps> = ({
       <CommandList className="max-h-[300px] overflow-auto">
         <CommandEmpty>No location found.</CommandEmpty>
         {Object.entries(groupedLocations).map(([country, locations]) => (
-          <CommandGroup key={country} heading={country}>
+          <CommandGroup key={`group-${country}`} heading={country}>
             {locations.map((location) => (
               <CommandItem
-                key={`${location.name}-${location.country}`}
+                key={`location-${location.name}-${location.country}${location.region ? `-${location.region}` : ''}`}
                 value={location.name}
                 onSelect={() => handleSelectLocation(location)}
                 className="flex items-center justify-between"
