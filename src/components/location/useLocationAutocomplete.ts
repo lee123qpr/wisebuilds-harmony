@@ -91,7 +91,7 @@ export const useLocationAutocomplete = ({
             } else {
               console.warn('No place address found');
               toast({
-                variant: 'warning',
+                variant: 'default', // Changed from 'warning' to 'default'
                 title: 'Location not found',
                 description: 'Please select a location from the dropdown.'
               });
