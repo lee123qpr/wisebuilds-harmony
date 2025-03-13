@@ -33,14 +33,15 @@ const BusinessDashboard = () => {
           </TabsList>
           
           <TabsContent value="projects" className="space-y-6">
-            <div className="flex justify-end mb-4">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-semibold">Project Management</h2>
               <NewProjectDialog />
             </div>
             
             <Card>
-              <CardHeader>
-                <CardTitle>My Projects</CardTitle>
-                <CardDescription>Construction projects you've posted</CardDescription>
+              <CardHeader className="pb-3">
+                <CardTitle>Projects</CardTitle>
+                <CardDescription>Manage your posted construction projects</CardDescription>
               </CardHeader>
               <CardContent>
                 <ProjectsTable />
