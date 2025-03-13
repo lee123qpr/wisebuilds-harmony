@@ -34,7 +34,7 @@ export const filterLocations = (
   }
   
   // Filter by name match if there's input
-  if (lowerCaseInput) {
+  if (lowerCaseInput && lowerCaseInput.length >= filterOptions.minInputLength) {
     filteredLocations = filteredLocations.filter(location =>
       location.name.toLowerCase().includes(lowerCaseInput)
     );

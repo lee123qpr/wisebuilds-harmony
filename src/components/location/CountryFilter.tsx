@@ -19,6 +19,7 @@ export const CountryFilter: React.FC<CountryFilterProps> = memo(({
           variant={activeFilter === 'all' ? 'default' : 'outline'} 
           className="cursor-pointer"
           onClick={() => setActiveFilter('all')}
+          type="button"
         >
           All
         </Badge>
@@ -26,6 +27,7 @@ export const CountryFilter: React.FC<CountryFilterProps> = memo(({
           variant={activeFilter === 'UK' ? 'default' : 'outline'} 
           className="cursor-pointer"
           onClick={() => setActiveFilter('UK')}
+          type="button"
         >
           UK
         </Badge>
@@ -33,6 +35,7 @@ export const CountryFilter: React.FC<CountryFilterProps> = memo(({
           variant={activeFilter === 'Ireland' ? 'default' : 'outline'} 
           className="cursor-pointer"
           onClick={() => setActiveFilter('Ireland')}
+          type="button"
         >
           Ireland
         </Badge>

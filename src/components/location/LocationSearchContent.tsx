@@ -3,6 +3,7 @@ import React, { memo } from 'react';
 import { Check } from 'lucide-react';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Location } from '@/utils/location';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface LocationSearchContentProps {
   locationInputValue: string;
@@ -27,7 +28,7 @@ export const LocationSearchContent: React.FC<LocationSearchContentProps> = memo(
   };
 
   return (
-    <Command>
+    <Command className="rounded-lg border shadow-md">
       <CommandInput 
         placeholder="Search UK/Ireland location..." 
         value={locationInputValue}
@@ -35,37 +36,39 @@ export const LocationSearchContent: React.FC<LocationSearchContentProps> = memo(
         className="h-9"
         autoComplete="off"
       />
-      <CommandList className="max-h-[300px] overflow-auto">
-        <CommandEmpty>No location found.</CommandEmpty>
-        {Object.entries(groupedLocations).map(([country, locations]) => (
-          <CommandGroup key={`group-${country}`} heading={country}>
-            {locations.map((location) => (
-              <CommandItem
-                key={getLocationKey(location)}
-                value={location.name}
-                onSelect={() => handleSelectLocation(location)}
-                className="flex items-center justify-between"
-              >
-                <div className="flex flex-col">
-                  <span>{location.name}</span>
-                  <span className="text-xs text-muted-foreground">
-                    {location.region ? `${location.region}, ` : ''}
-                    {location.country}
-                  </span>
-                </div>
-                {selectedLocation === location.name && (
-                  <Check className="h-4 w-4" />
-                )}
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        ))}
-        {filteredLocations.length > 30 && (
-          <div className="py-2 px-3 text-xs text-muted-foreground">
-            Showing {filteredLocations.length} locations. Refine your search for more specific results.
-          </div>
-        )}
-      </CommandList>
+      <ScrollArea className="max-h-[300px]">
+        <CommandList>
+          <CommandEmpty>No location found.</CommandEmpty>
+          {Object.entries(groupedLocations).map(([country, locations]) => (
+            <CommandGroup key={`group-${country}`} heading={country}>
+              {locations.map((location) => (
+                <CommandItem
+                  key={getLocationKey(location)}
+                  value={location.name}
+                  onSelect={() => handleSelectLocation(location)}
+                  className="flex items-center justify-between cursor-pointer"
+                >
+                  <div className="flex flex-col">
+                    <span>{location.name}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {location.region ? `${location.region}, ` : ''}
+                      {location.country}
+                    </span>
+                  </div>
+                  {selectedLocation === location.name && (
+                    <Check className="h-4 w-4" />
+                  )}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          ))}
+          {filteredLocations.length > 30 && (
+            <div className="py-2 px-3 text-xs text-muted-foreground">
+              Showing {filteredLocations.length} locations. Refine your search for more specific results.
+            </div>
+          )}
+        </CommandList>
+      </ScrollArea>
     </Command>
   );
 });

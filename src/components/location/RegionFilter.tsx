@@ -23,6 +23,7 @@ export const RegionFilter: React.FC<RegionFilterProps> = memo(({
             variant={activeRegion === region ? 'default' : 'outline'} 
             className="cursor-pointer"
             onClick={() => setActiveRegion(activeRegion === region ? null : region)}
+            type="button"
           >
             {region}
           </Badge>

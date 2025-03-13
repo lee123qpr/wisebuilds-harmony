@@ -103,7 +103,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-full p-0" align="start">
+            <PopoverContent className="w-[300px] p-0" align="start">
               <FilterTabs 
                 activeFilter={activeFilter}
                 setActiveFilter={setActiveFilter}
