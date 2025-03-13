@@ -7,8 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
-import FreelancerSignup from "./pages/auth/signup/Freelancer";
-import BusinessSignup from "./pages/auth/signup/Business";
+import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -26,8 +25,7 @@ const App = () => (
             
             {/* Auth Routes */}
             <Route path="/auth/login" element={<Login />} />
-            <Route path="/auth/signup/freelancer" element={<FreelancerSignup />} />
-            <Route path="/auth/signup/business" element={<BusinessSignup />} />
+            <Route path="/auth/signup" element={<Signup />} />
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
             
             {/* Marketplace Routes */}

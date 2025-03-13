@@ -45,7 +45,7 @@ const AuthStatus = () => {
             Log in
           </Button>
         </Link>
-        <Link to="/auth/signup/freelancer">
+        <Link to="/auth/signup">
           <Button size="sm">Sign up</Button>
         </Link>
       </div>
