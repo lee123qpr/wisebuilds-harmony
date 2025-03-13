@@ -1,16 +1,16 @@
 
-import React from 'react';
+import React, { forwardRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
 import { LocationTriggerButtonProps } from './types';
 
-export const LocationTriggerButton: React.FC<LocationTriggerButtonProps> = ({
-  value,
-  isOpen,
-  onClick
-}) => {
+export const LocationTriggerButton = forwardRef<
+  HTMLButtonElement, 
+  LocationTriggerButtonProps
+>(({ value, isOpen, onClick }, ref) => {
   return (
     <Button
+      ref={ref}
       variant="outline"
       role="combobox"
       aria-expanded={isOpen}
@@ -29,4 +29,6 @@ export const LocationTriggerButton: React.FC<LocationTriggerButtonProps> = ({
       <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
     </Button>
   );
-};
+});
+
+LocationTriggerButton.displayName = 'LocationTriggerButton';
