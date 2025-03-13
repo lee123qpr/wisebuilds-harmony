@@ -4,7 +4,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -16,8 +15,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 
-// Base schema for fields common to both user types
-const baseUserSchema = z.object({
+// Schema for both user types (now identical since we removed business-specific fields)
+const signupSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
   phoneNumber: z.string()
@@ -28,22 +27,7 @@ const baseUserSchema = z.object({
   password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
   confirmPassword: z.string().min(8, { message: 'Please confirm your password' }),
   userType: z.enum(['freelancer', 'business']),
-});
-
-// Extended schema for business users
-const businessSchema = baseUserSchema.extend({
-  userType: z.literal('business'),
-  companyName: z.string().min(2, { message: 'Company name must be at least 2 characters' }),
-  companyAddress: z.string().min(5, { message: 'Please enter your company address' }),
-  companyDescription: z.string().min(10, { message: 'Please provide a brief company description' })
-    .max(500, { message: 'Company description cannot exceed 500 characters' }),
-});
-
-// Combined schema using discriminated union
-const signupSchema = z.discriminatedUnion('userType', [
-  baseUserSchema.extend({ userType: z.literal('freelancer') }),
-  businessSchema,
-]).refine((data) => data.password === data.confirmPassword, {
+}).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],
 });
@@ -83,13 +67,6 @@ const Signup = () => {
         phone_number: data.phoneNumber,
         user_type: data.userType,
       };
-      
-      // Add business-specific fields if applicable
-      if (data.userType === 'business') {
-        metadata.company_name = data.companyName;
-        metadata.company_address = data.companyAddress;
-        metadata.company_description = data.companyDescription;
-      }
       
       // Register with Supabase
       const { data: authData, error } = await supabase.auth.signUp({
@@ -228,60 +205,6 @@ const Signup = () => {
                     </FormItem>
                   )}
                 />
-                
-                {userType === 'business' && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="companyName"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Name</FormLabel>
-                          <FormControl>
-                            <Input placeholder="ABC Construction Ltd" {...field} disabled={isLoading} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="companyAddress"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Address</FormLabel>
-                          <FormControl>
-                            <Input placeholder="123 Business Street, London, UK" {...field} disabled={isLoading} />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    
-                    <FormField
-                      control={form.control}
-                      name="companyDescription"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Company Description</FormLabel>
-                          <FormControl>
-                            <Textarea 
-                              placeholder="Brief description of your company and the types of projects you typically handle..." 
-                              {...field} 
-                              className="min-h-[100px]"
-                              disabled={isLoading}
-                            />
-                          </FormControl>
-                          <FormDescription>
-                            This will be visible to professionals reviewing your projects.
-                          </FormDescription>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
                 
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                   <FormField
