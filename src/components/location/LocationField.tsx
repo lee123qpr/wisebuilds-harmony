@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
-import { MapPin, Filter } from 'lucide-react';
+import { MapPin } from 'lucide-react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
@@ -99,7 +99,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                   ) : (
                     "Select location..."
                   )}
-                  <Filter className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
