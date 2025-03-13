@@ -30,14 +30,24 @@ export const useProjects = () => {
     setError(null);
 
     try {
-      const { data, error } = await supabase
+      console.log('Fetching projects from Supabase...');
+      
+      // Only filter by status if it's not 'all'
+      let query = supabase
         .from('projects')
-        .select('*')
-        .order('created_at', { ascending: false });
+        .select('*');
+      
+      if (statusFilter !== 'all') {
+        query = query.eq('status', statusFilter);
+      }
+
+      const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
         throw error;
       }
+
+      console.log('Projects fetched:', data);
 
       if (data) {
         // Convert the JSON documents field to ProjectDocument[] type
@@ -49,6 +59,7 @@ export const useProjects = () => {
         })) as Project[];
 
         setProjects(projectsWithParsedDocuments);
+        console.log('Processed projects:', projectsWithParsedDocuments);
       }
     } catch (error: any) {
       console.error('Error fetching projects:', error);
@@ -78,7 +89,7 @@ export const useProjects = () => {
     return () => {
       supabase.removeChannel(projectsSubscription);
     };
-  }, []);
+  }, [statusFilter]); // Re-fetch when statusFilter changes
 
   // Return filter states along with projects data
   return { 
