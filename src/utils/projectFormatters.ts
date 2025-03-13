@@ -23,12 +23,20 @@ export const formatRole = (role: string) => {
 // Format budget string to readable format
 export const formatBudget = (budget: string) => {
   if (!budget) return 'Not specified';
-  if (budget === 'under_1000') return 'Under £1,000';
+  
+  // Improved budget formatting
+  if (budget === 'under_1000' || budget === 'less_than_1000') return 'Less than £1,000';
   if (budget === '1000_to_5000') return '£1,000 - £5,000';
   if (budget === '5000_to_10000') return '£5,000 - £10,000';
   if (budget === '10000_to_50000') return '£10,000 - £50,000';
   if (budget === '50000_to_100000') return '£50,000 - £100,000';
   if (budget === '100000_plus') return 'Over £100,000';
+  if (budget === '10000_plus') return 'Over £10,000';
+  if (budget === '0-500') return '£0 - £500';
+  if (budget === '500-1000') return '£500 - £1,000';
+  if (budget === '1000-2500') return '£1,000 - £2,500';
+  if (budget === '2500-5000') return '£2,500 - £5,000';
+  if (budget === '5000-10000') return '£5,000 - £10,000';
   
   return budget
     .split('_')
@@ -39,6 +47,22 @@ export const formatBudget = (budget: string) => {
 // Format duration string to readable format
 export const formatDuration = (duration: string) => {
   if (!duration) return 'Not specified';
+  
+  // Improved duration formatting
+  if (duration === '6_weeks_plus' || duration === '6_weeks_plus') return '6 Weeks Plus';
+  if (duration === '1_day') return '1 Day';
+  if (duration === '3_days') return '3 Days';
+  if (duration === '1_week') return '1 Week';
+  if (duration === '2_weeks') return '2 Weeks';
+  if (duration === '3_weeks') return '3 Weeks';
+  if (duration === '4_weeks') return '4 Weeks';
+  if (duration === '5_weeks') return '5 Weeks';
+  if (duration === 'less_than_1_week') return 'Less than 1 Week';
+  if (duration === '1_to_2_weeks') return '1-2 Weeks';
+  if (duration === '2_to_4_weeks') return '2-4 Weeks';
+  if (duration === '1_to_3_months') return '1-3 Months';
+  if (duration === '3_to_6_months') return '3-6 Months';
+  
   return duration
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
