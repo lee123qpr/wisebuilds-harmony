@@ -1,16 +1,28 @@
 
-// This is just a fix for the documents field type conversion
-// Since we're getting a TypeScript error about documents being JSON instead of ProjectDocument[]
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { Project, ProjectDocument } from '@/integrations/supabase/types';
+import { Tables } from '@/integrations/supabase/types';
+
+// Define Project type using Tables from supabase/types.ts
+export type ProjectDocument = {
+  id: string;
+  name: string;
+  url: string;
+  type: string;
+};
+
+export type Project = Tables<'projects'> & {
+  documents: ProjectDocument[];
+};
 
 export const useProjects = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [projects, setProjects] = useState<Project[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [hiringFilter, setHiringFilter] = useState('all');
   const { toast } = useToast();
 
   const fetchProjects = async () => {
@@ -68,5 +80,17 @@ export const useProjects = () => {
     };
   }, []);
 
-  return { projects, isLoading, error, refreshProjects: fetchProjects };
+  // Return filter states along with projects data
+  return { 
+    projects, 
+    isLoading, 
+    error, 
+    refreshProjects: fetchProjects,
+    searchQuery,
+    setSearchQuery,
+    statusFilter,
+    setStatusFilter,
+    hiringFilter,
+    setHiringFilter
+  };
 };
