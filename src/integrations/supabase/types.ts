@@ -11,42 +11,57 @@ export type Database = {
     Tables: {
       lead_settings: {
         Row: {
+          budget: string | null
           created_at: string | null
+          duration: string | null
           email_alerts: boolean
+          hiring_status: string | null
           id: string
           keywords: string[] | null
           location: string
           max_budget: string | null
           notifications_enabled: boolean
           project_type: string[] | null
+          requires_insurance: boolean | null
+          requires_site_visits: boolean | null
           role: string
           updated_at: string | null
           user_id: string
           work_type: string | null
         }
         Insert: {
+          budget?: string | null
           created_at?: string | null
+          duration?: string | null
           email_alerts?: boolean
+          hiring_status?: string | null
           id?: string
           keywords?: string[] | null
           location: string
           max_budget?: string | null
           notifications_enabled?: boolean
           project_type?: string[] | null
+          requires_insurance?: boolean | null
+          requires_site_visits?: boolean | null
           role: string
           updated_at?: string | null
           user_id: string
           work_type?: string | null
         }
         Update: {
+          budget?: string | null
           created_at?: string | null
+          duration?: string | null
           email_alerts?: boolean
+          hiring_status?: string | null
           id?: string
           keywords?: string[] | null
           location?: string
           max_budget?: string | null
           notifications_enabled?: boolean
           project_type?: string[] | null
+          requires_insurance?: boolean | null
+          requires_site_visits?: boolean | null
           role?: string
           updated_at?: string | null
           user_id?: string
