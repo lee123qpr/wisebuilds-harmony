@@ -15,6 +15,7 @@ export type Database = {
           budget: string
           created_at: string
           description: string
+          documents: Json | null
           duration: string
           hiring_status: string
           id: string
@@ -35,6 +36,7 @@ export type Database = {
           budget: string
           created_at?: string
           description: string
+          documents?: Json | null
           duration: string
           hiring_status?: string
           id?: string
@@ -55,6 +57,7 @@ export type Database = {
           budget?: string
           created_at?: string
           description?: string
+          documents?: Json | null
           duration?: string
           hiring_status?: string
           id?: string

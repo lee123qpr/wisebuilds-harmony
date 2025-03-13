@@ -11,13 +11,20 @@ const HiringStatusBadge = ({ status }: HiringStatusBadgeProps) => {
   const getDisplayProps = (status: string) => {
     switch (status) {
       case 'urgent':
-        return { text: 'Urgent', variant: 'destructive' as const };
+        return { text: 'Urgent Hiring', variant: 'destructive' as const };
       case 'ready':
-        return { text: 'Ready to hire', variant: 'default' as const };
+        return { text: 'Ready to Hire', variant: 'default' as const };
       case 'enquiring':
         return { text: 'Enquiring', variant: 'outline' as const };
+      case 'paused':
+        return { text: 'Hiring Paused', variant: 'secondary' as const };
       default:
-        return { text: status.charAt(0).toUpperCase() + status.slice(1), variant: 'outline' as const };
+        return { 
+          text: status.split('_')
+                    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+                    .join(' '), 
+          variant: 'outline' as const 
+        };
     }
   };
 

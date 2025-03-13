@@ -5,17 +5,7 @@ import ProjectStatusBadge from './ProjectStatusBadge';
 import HiringStatusBadge from './HiringStatusBadge';
 import ProjectActions from './ProjectActions';
 import { format } from 'date-fns';
-
-type Project = {
-  id: string;
-  title: string;
-  created_at: string;
-  role: string;
-  budget: string;
-  status: string;
-  hiring_status: string;
-  applications: number;
-};
+import { Project } from './useProjects';
 
 type ProjectTableBodyProps = {
   projects: Project[];
@@ -43,10 +33,13 @@ const ProjectTableBody = ({ projects, isLoading }: ProjectTableBodyProps) => {
 
   // Function to format budget
   const formatBudget = (budget: string) => {
+    if (budget === 'under_1000') return 'Under £1,000';
     if (budget === '1000_to_5000') return '£1,000 - £5,000';
     if (budget === '5000_to_10000') return '£5,000 - £10,000';
-    if (budget === '10000_plus') return '£10,000+';
-    if (budget === 'under_1000') return 'Under £1,000';
+    if (budget === '10000_to_50000') return '£10,000 - £50,000';
+    if (budget === '50000_to_100000') return '£50,000 - £100,000';
+    if (budget === '100000_plus') return 'Over £100,000';
+    
     return budget
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
@@ -93,7 +86,11 @@ const ProjectTableBody = ({ projects, isLoading }: ProjectTableBodyProps) => {
           </TableCell>
           <TableCell>{project.applications}</TableCell>
           <TableCell className="text-right">
-            <ProjectActions applications={project.applications} />
+            <ProjectActions 
+              applications={project.applications} 
+              projectId={project.id}
+              hasDocuments={project.documents && project.documents.length > 0}
+            />
           </TableCell>
         </TableRow>
       ))}

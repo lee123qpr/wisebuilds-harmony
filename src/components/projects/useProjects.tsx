@@ -4,6 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 
+export type ProjectDocument = {
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  path: string;
+};
+
 export type Project = {
   id: string;
   title: string;
@@ -13,6 +21,7 @@ export type Project = {
   status: string;
   hiring_status: string;
   applications: number;
+  documents?: ProjectDocument[];
 };
 
 export const useProjects = () => {
