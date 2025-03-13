@@ -6,7 +6,7 @@ import { DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/co
 import { Form } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { ProjectDetails } from './ProjectDetails';
-import { LocationField } from './LocationField';
+import { LocationField } from '@/components/location/LocationField';
 import { StartDateField } from './StartDateField';
 import { ProjectRequirements } from './ProjectRequirements';
 import { DocumentUpload } from './DocumentUpload';
