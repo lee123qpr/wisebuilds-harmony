@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Edit, Trash2, Eye, MessageSquare, FileText } from 'lucide-react';
+import { Eye, PenSquare, Trash2, FileText, MessageSquare } from 'lucide-react';
 
 type ProjectActionsProps = {
   applications: number;
@@ -16,7 +16,7 @@ const ProjectActions = ({ applications, projectId, hasDocuments }: ProjectAction
         <Eye className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" title="Edit">
-        <Edit className="h-4 w-4" />
+        <PenSquare className="h-4 w-4" />
       </Button>
       <Button variant="ghost" size="icon" title="Delete">
         <Trash2 className="h-4 w-4" />
