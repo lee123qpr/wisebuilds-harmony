@@ -2,11 +2,12 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { PlusCircle, MessageSquare, ClipboardList, User } from 'lucide-react';
+import NewProjectDialog from '@/components/projects/NewProjectDialog';
+import ProjectsTable from '@/components/projects/ProjectsTable';
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
@@ -33,10 +34,7 @@ const BusinessDashboard = () => {
           
           <TabsContent value="projects" className="space-y-6">
             <div className="flex justify-end mb-4">
-              <Button>
-                <PlusCircle className="mr-2 h-4 w-4" />
-                Post New Project
-              </Button>
+              <NewProjectDialog />
             </div>
             
             <Card>
@@ -45,11 +43,7 @@ const BusinessDashboard = () => {
                 <CardDescription>Construction projects you've posted</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-center py-8 text-muted-foreground">You haven't posted any projects yet.</p>
-                <Button className="w-full">
-                  <PlusCircle className="mr-2 h-4 w-4" />
-                  Post Your First Project
-                </Button>
+                <ProjectsTable />
               </CardContent>
             </Card>
           </TabsContent>
