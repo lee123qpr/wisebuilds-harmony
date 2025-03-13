@@ -105,7 +105,14 @@ const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }>
                     aria-expanded={locationPopoverOpen}
                     className="w-full justify-between"
                   >
-                    {field.value || "Select location..."}
+                    {field.value ? (
+                      <span className="flex items-center">
+                        <MapPin className="mr-2 h-4 w-4 shrink-0" />
+                        {field.value}
+                      </span>
+                    ) : (
+                      "Select location..."
+                    )}
                     <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </FormControl>
@@ -131,15 +138,18 @@ const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }>
                               setLocationInputValue("");
                               setLocationPopoverOpen(false);
                             }}
+                            className="flex items-center justify-between"
                           >
-                            <span>{location.name}</span>
-                            {location.region && (
-                              <Badge variant="outline" className="ml-2 text-xs">
-                                {location.region}
-                              </Badge>
-                            )}
+                            <div className="flex flex-col">
+                              <span>{location.name}</span>
+                              {location.region && (
+                                <span className="text-xs text-muted-foreground">
+                                  {location.region}, {location.country}
+                                </span>
+                              )}
+                            </div>
                             {field.value === location.name && (
-                              <Check className="ml-auto h-4 w-4" />
+                              <Check className="ml-2 h-4 w-4" />
                             )}
                           </CommandItem>
                         ))}
