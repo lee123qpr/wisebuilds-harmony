@@ -9,6 +9,51 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      lead_settings: {
+        Row: {
+          created_at: string | null
+          email_alerts: boolean
+          id: string
+          keywords: string[] | null
+          location: string
+          max_budget: string | null
+          notifications_enabled: boolean
+          project_type: string[] | null
+          role: string
+          updated_at: string | null
+          user_id: string
+          work_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_alerts?: boolean
+          id?: string
+          keywords?: string[] | null
+          location: string
+          max_budget?: string | null
+          notifications_enabled?: boolean
+          project_type?: string[] | null
+          role: string
+          updated_at?: string | null
+          user_id: string
+          work_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_alerts?: boolean
+          id?: string
+          keywords?: string[] | null
+          location?: string
+          max_budget?: string | null
+          notifications_enabled?: boolean
+          project_type?: string[] | null
+          role?: string
+          updated_at?: string | null
+          user_id?: string
+          work_type?: string | null
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           applications: number

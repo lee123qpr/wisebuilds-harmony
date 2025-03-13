@@ -11,11 +11,36 @@ import { leadSettingsSchema, LeadSettingsFormValues } from './schema';
 import LeadSettingsFields from './LeadSettingsFields';
 import NotificationSettings from './NotificationSettings';
 import { useAuth } from '@/context/AuthContext';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const LeadSettingsForm = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  // Fetch existing lead settings
+  const { data: existingSettings, isLoading } = useQuery({
+    queryKey: ['leadSettings', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      const { data, error } = await supabase
+        .from('lead_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching lead settings:', error);
+        throw error;
+      }
+      
+      return data;
+    },
+    enabled: !!user
+  });
   
   const form = useForm<LeadSettingsFormValues>({
     resolver: zodResolver(leadSettingsSchema),
@@ -30,28 +55,67 @@ const LeadSettingsForm = () => {
       email_alerts: true,
     },
   });
-
-  const onSubmit = async (values: LeadSettingsFormValues) => {
-    try {
-      if (!user) {
-        toast({
-          variant: 'destructive',
-          title: 'Authentication required',
-          description: 'You must be logged in to save lead settings',
-        });
-        return;
+  
+  // Update form with existing settings when data is loaded
+  React.useEffect(() => {
+    if (existingSettings) {
+      form.reset({
+        role: existingSettings.role,
+        location: existingSettings.location,
+        max_budget: existingSettings.max_budget || '',
+        work_type: existingSettings.work_type || '',
+        project_type: existingSettings.project_type || [],
+        keywords: existingSettings.keywords || [],
+        notifications_enabled: existingSettings.notifications_enabled,
+        email_alerts: existingSettings.email_alerts,
+      });
+    }
+  }, [existingSettings, form]);
+  
+  // Create or update settings mutation
+  const saveSettingsMutation = useMutation({
+    mutationFn: async (values: LeadSettingsFormValues) => {
+      if (!user) throw new Error('User not authenticated');
+      
+      const settingsData = {
+        user_id: user.id,
+        ...values,
+        updated_at: new Date().toISOString()
+      };
+      
+      if (existingSettings) {
+        // Update existing settings
+        const { error } = await supabase
+          .from('lead_settings')
+          .update(settingsData)
+          .eq('id', existingSettings.id);
+        
+        if (error) throw error;
+        return { ...existingSettings, ...settingsData };
+      } else {
+        // Create new settings
+        const { data, error } = await supabase
+          .from('lead_settings')
+          .insert([{ ...settingsData, created_at: new Date().toISOString() }])
+          .select()
+          .single();
+        
+        if (error) throw error;
+        return data;
       }
-
-      // For now, we'll just show a success message since the table isn't created yet
-      console.log('Would save lead settings:', values);
-
+    },
+    onSuccess: () => {
+      // Invalidate queries to refetch data
+      queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+      
       toast({
-        title: 'Success',
+        title: existingSettings ? 'Settings updated' : 'Settings created',
         description: 'Your lead settings have been saved',
       });
       
       navigate('/dashboard/freelancer');
-    } catch (error: any) {
+    },
+    onError: (error: any) => {
       console.error('Error saving lead settings:', error);
       toast({
         variant: 'destructive',
@@ -59,6 +123,10 @@ const LeadSettingsForm = () => {
         description: error.message || 'Failed to save lead settings',
       });
     }
+  });
+
+  const onSubmit = (values: LeadSettingsFormValues) => {
+    saveSettingsMutation.mutate(values);
   };
 
   return (
@@ -72,18 +140,37 @@ const LeadSettingsForm = () => {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
-            <LeadSettingsFields form={form} />
-            <NotificationSettings form={form} />
+            {isLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              </div>
+            ) : (
+              <>
+                <LeadSettingsFields form={form} />
+                <NotificationSettings form={form} />
+              </>
+            )}
           </CardContent>
           <CardFooter className="flex justify-between">
             <Button 
               type="button" 
               variant="outline" 
               onClick={() => navigate('/dashboard/freelancer')}
+              disabled={saveSettingsMutation.isPending || isLoading}
             >
               Cancel
             </Button>
-            <Button type="submit">Save Settings</Button>
+            <Button 
+              type="submit" 
+              disabled={saveSettingsMutation.isPending || isLoading}
+            >
+              {saveSettingsMutation.isPending ? (
+                <>
+                  <span className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-background border-r-transparent"></span>
+                  Saving...
+                </>
+              ) : 'Save Settings'}
+            </Button>
           </CardFooter>
         </form>
       </Form>
