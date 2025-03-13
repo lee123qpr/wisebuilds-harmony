@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -18,6 +17,7 @@ import ProjectDocuments from "./pages/project/ProjectDocuments";
 import ProjectApplications from "./pages/project/ProjectApplications";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
+import LeadSettings from "./pages/dashboard/LeadSettings";
 
 const queryClient = new QueryClient();
 
@@ -118,6 +118,16 @@ const App = () => (
             
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
+            
+            {/* Route for Lead Settings */}
+            <Route 
+              path="/dashboard/freelancer/lead-settings" 
+              element={
+                <ProtectedRoute>
+                  <LeadSettings />
+                </ProtectedRoute>
+              } 
+            />
           </Routes>
         </BrowserRouter>
       </TooltipProvider>
