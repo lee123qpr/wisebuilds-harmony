@@ -16,7 +16,8 @@ export const filterLocations = (
   const filterOptions = { ...defaultFilterOptions, ...options };
   const lowerCaseInput = inputValue.toLowerCase().trim();
   
-  let filteredLocations = ukIrelandLocations;
+  // Start with a shallow copy to avoid modifying the original
+  let filteredLocations = [...ukIrelandLocations];
   
   // Filter by country if specified
   if (filterOptions.country && filterOptions.country !== 'all') {

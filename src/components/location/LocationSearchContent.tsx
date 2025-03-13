@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Check } from 'lucide-react';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
 import { Location } from '@/utils/location';
@@ -13,7 +13,7 @@ interface LocationSearchContentProps {
   filteredLocations: Location[];
 }
 
-export const LocationSearchContent: React.FC<LocationSearchContentProps> = ({
+export const LocationSearchContent: React.FC<LocationSearchContentProps> = memo(({
   locationInputValue,
   setLocationInputValue,
   groupedLocations,
@@ -21,6 +21,11 @@ export const LocationSearchContent: React.FC<LocationSearchContentProps> = ({
   selectedLocation,
   filteredLocations
 }) => {
+  // Generate a stable unique key for each location
+  const getLocationKey = (location: Location) => {
+    return `location-${location.name}-${location.country}${location.region ? `-${location.region}` : ''}`;
+  };
+
   return (
     <Command>
       <CommandInput 
@@ -28,6 +33,7 @@ export const LocationSearchContent: React.FC<LocationSearchContentProps> = ({
         value={locationInputValue}
         onValueChange={setLocationInputValue}
         className="h-9"
+        autoComplete="off"
       />
       <CommandList className="max-h-[300px] overflow-auto">
         <CommandEmpty>No location found.</CommandEmpty>
@@ -35,7 +41,7 @@ export const LocationSearchContent: React.FC<LocationSearchContentProps> = ({
           <CommandGroup key={`group-${country}`} heading={country}>
             {locations.map((location) => (
               <CommandItem
-                key={`location-${location.name}-${location.country}${location.region ? `-${location.region}` : ''}`}
+                key={getLocationKey(location)}
                 value={location.name}
                 onSelect={() => handleSelectLocation(location)}
                 className="flex items-center justify-between"
@@ -62,4 +68,6 @@ export const LocationSearchContent: React.FC<LocationSearchContentProps> = ({
       </CommandList>
     </Command>
   );
-};
+});
+
+LocationSearchContent.displayName = 'LocationSearchContent';

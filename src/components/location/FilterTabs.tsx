@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { CountryFilter } from './CountryFilter';
@@ -13,7 +13,7 @@ interface FilterTabsProps {
   resetFilters: () => void;
 }
 
-export const FilterTabs: React.FC<FilterTabsProps> = ({
+export const FilterTabs: React.FC<FilterTabsProps> = memo(({
   activeFilter,
   setActiveFilter,
   activeRegion,
@@ -38,6 +38,7 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({
             size="sm" 
             onClick={resetFilters}
             className="text-xs"
+            type="button"
           >
             Reset
           </Button>
@@ -64,4 +65,6 @@ export const FilterTabs: React.FC<FilterTabsProps> = ({
       </TabsContent>
     </Tabs>
   );
-};
+});
+
+FilterTabs.displayName = 'FilterTabs';

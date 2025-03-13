@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 
 interface CountryFilterProps {
@@ -7,7 +7,7 @@ interface CountryFilterProps {
   setActiveFilter: (filter: 'all' | 'UK' | 'Ireland') => void;
 }
 
-export const CountryFilter: React.FC<CountryFilterProps> = ({ 
+export const CountryFilter: React.FC<CountryFilterProps> = memo(({ 
   activeFilter, 
   setActiveFilter 
 }) => {
@@ -39,4 +39,6 @@ export const CountryFilter: React.FC<CountryFilterProps> = ({
       </div>
     </div>
   );
-};
+});
+
+CountryFilter.displayName = 'CountryFilter';

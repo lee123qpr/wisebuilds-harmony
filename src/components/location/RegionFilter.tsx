@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { memo } from 'react';
 import { Badge } from '@/components/ui/badge';
 
 interface RegionFilterProps {
@@ -8,7 +8,7 @@ interface RegionFilterProps {
   setActiveRegion: (region: string | null) => void;
 }
 
-export const RegionFilter: React.FC<RegionFilterProps> = ({ 
+export const RegionFilter: React.FC<RegionFilterProps> = memo(({ 
   regions, 
   activeRegion, 
   setActiveRegion 
@@ -30,4 +30,6 @@ export const RegionFilter: React.FC<RegionFilterProps> = ({
       </div>
     </div>
   );
-};
+});
+
+RegionFilter.displayName = 'RegionFilter';

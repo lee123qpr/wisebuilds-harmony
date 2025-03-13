@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { MapPin, Filter } from 'lucide-react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { filterLocations, Location } from '@/utils/location';
-import { UseFormReturn } from 'react-hook-form';
 import { FilterTabs } from './FilterTabs';
 import { LocationSearchContent } from './LocationSearchContent';
 
@@ -32,6 +31,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
 
   // Use memoization to improve performance
   const filterLocationsWithOptions = useMemo(() => {
+    console.log('Filtering locations with:', locationInputValue, activeFilter, activeRegion);
     return filterLocations(locationInputValue, {
       country: activeFilter !== 'all' ? activeFilter as 'UK' | 'Ireland' : undefined,
       region: activeRegion || undefined,
@@ -40,7 +40,9 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     });
   }, [locationInputValue, activeFilter, activeRegion]);
 
+  // Update filtered locations when filter conditions change
   useEffect(() => {
+    console.log('Setting filtered locations, count:', filterLocationsWithOptions.length);
     setFilteredLocations(filterLocationsWithOptions);
   }, [filterLocationsWithOptions]);
 
@@ -56,16 +58,18 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     }, {} as Record<string, Location[]>);
   }, [filteredLocations]);
 
-  const handleSelectLocation = (location: Location) => {
+  // Use useCallback to prevent unnecessary re-renders
+  const handleSelectLocation = useCallback((location: Location) => {
+    console.log('Location selected:', location.name);
     form.setValue(name, location.name, { shouldValidate: true, shouldDirty: true });
     setLocationInputValue("");
     setLocationPopoverOpen(false);
-  };
+  }, [form, name]);
 
-  const resetFilters = () => {
+  const resetFilters = useCallback(() => {
     setActiveFilter('all');
     setActiveRegion(null);
-  };
+  }, []);
 
   return (
     <FormField
