@@ -33,41 +33,6 @@ const AvailableProjectsTab: React.FC = () => {
     refreshProjects();
   };
 
-  // Debug function to check permissions by trying to insert a test project
-  const checkPermissions = async () => {
-    if (!user) return;
-    
-    try {
-      setInsertError(null);
-      const { error } = await supabase
-        .from('projects')
-        .insert({
-          title: 'Test Project',
-          description: 'Testing permissions',
-          role: 'developer',
-          budget: 'under_1000',
-          location: 'remote',
-          work_type: 'contract',
-          duration: 'less_than_1_month',
-          user_id: user.id,
-          requires_insurance: false,
-          requires_equipment: false,
-          requires_site_visits: false
-        })
-        .select();
-      
-      if (error) {
-        console.error('Permission check failed:', error);
-        setInsertError(error.message);
-      } else {
-        refreshProjects();
-      }
-    } catch (err: any) {
-      console.error('Error during permission check:', err);
-      setInsertError(err.message);
-    }
-  };
-
   console.log('Current projects in AvailableProjectsTab:', projects);
   console.log('Is loading:', isLoading);
   console.log('Error state:', error);
@@ -128,25 +93,20 @@ const AvailableProjectsTab: React.FC = () => {
               <div>
                 <CardTitle>No Projects Found</CardTitle>
                 <CardDescription>
-                  There are currently no projects available. This could be for several reasons:
+                  There are currently no projects available. Check if:
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent>
             <ul className="list-disc pl-5 space-y-1">
-              <li>No projects have been created in the system yet</li>
+              <li>Your RLS policies are set up correctly to allow viewing projects</li>
               <li>You may not have the correct permissions to view projects</li>
-              <li>Row Level Security (RLS) policies might be restricting access</li>
               <li>Your current authentication state: {user ? `Logged in as ${user.email}` : 'Not logged in'}</li>
-              <li>The projects table might be empty</li>
             </ul>
             <div className="flex space-x-4 mt-4">
               <Button onClick={handleRefresh} className="flex items-center">
                 <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-              </Button>
-              <Button onClick={checkPermissions} variant="outline">
-                Test Create Project
               </Button>
             </div>
           </CardContent>

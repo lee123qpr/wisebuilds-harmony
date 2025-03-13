@@ -36,61 +36,23 @@ export const useProjects = () => {
       const { data: authData } = await supabase.auth.getSession();
       console.log('Authentication status:', authData?.session ? 'Authenticated' : 'Not authenticated');
       
-      if (!authData?.session) {
-        console.warn('User is not authenticated. This might affect data access.');
-        setError('Authentication required to view projects');
-        setIsLoading(false);
-        return;
-      }
-      
       // Log user information for debugging
       if (authData?.session?.user) {
         console.log('User ID:', authData.session.user.id);
         console.log('User email:', authData.session.user.email);
       }
       
-      // Try to fetch some projects without any filters
-      console.log('Attempting to fetch projects without restriction...');
-      
-      let query = supabase
+      // Simplified query - fetch all projects without complex filters
+      const { data, error: fetchError } = await supabase
         .from('projects')
         .select('*');
-      
-      console.log('Query being sent to Supabase:', query);
-      
-      const { data, error: fetchError, status, statusText } = await query;
-
-      // Log more detailed response information
-      console.log('Response status:', status, statusText);
-      console.log('Raw response data:', data);
       
       if (fetchError) {
         console.error('Supabase query error:', fetchError);
         throw fetchError;
       }
 
-      // Let's check if we have permissions issues by trying a different approach
-      if (!data || data.length === 0) {
-        console.log('No projects found. Trying public access as fallback...');
-        
-        // Try with a simpler query
-        const { data: publicData, error: publicError } = await supabase
-          .from('projects')
-          .select('*')
-          .limit(5);
-          
-        if (publicError) {
-          console.error('Fallback query error:', publicError);
-        } else {
-          console.log('Fallback query results:', publicData);
-          
-          if (publicData && publicData.length > 0) {
-            console.log('Fallback query returned data!');
-          }
-        }
-      }
-
-      console.log('Projects fetched:', data);
+      console.log('Projects fetched successfully:', data);
       console.log('Number of projects:', data?.length || 0);
 
       if (data) {
@@ -122,48 +84,10 @@ export const useProjects = () => {
     }
   };
 
-  // For debugging purposes, check database structure
-  const checkDatabaseAccess = async () => {
-    try {
-      console.log('DEBUG: Checking database access and structure...');
-      
-      // 1. Check if the projects table exists
-      const { data: tableInfo, error: tableError } = await supabase
-        .from('projects')
-        .select('count()')
-        .limit(1);
-      
-      if (tableError) {
-        console.error('DEBUG: Table access error:', tableError);
-      } else {
-        console.log('DEBUG: Table access check:', tableInfo);
-      }
-      
-      // 2. Check if we can get project by ID without checking auth - Fixed to use maybeSingle()
-      console.log('DEBUG: Trying to get a single project without auth check...');
-      const { data: anyProject, error: anyProjectError } = await supabase
-        .from('projects')
-        .select('id, title')
-        .limit(1)
-        .maybeSingle(); // Use maybeSingle() instead of single()
-      
-      if (anyProjectError) {
-        console.error('DEBUG: Error getting any project:', anyProjectError);
-      } else if (anyProject) {
-        console.log('DEBUG: Found project:', anyProject);
-      } else {
-        console.log('DEBUG: No projects exist in the database.');
-      }
-    } catch (err) {
-      console.error('DEBUG: Exception in database check:', err);
-    }
-  };
-
   useEffect(() => {
     fetchProjects();
-    checkDatabaseAccess(); // Debug function call
     
-    // Subscribe to changes
+    // Subscribe to changes in the projects table
     const projectsSubscription = supabase
       .channel('projects-channel')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'projects' }, payload => {
