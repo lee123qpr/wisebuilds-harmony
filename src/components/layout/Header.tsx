@@ -50,9 +50,16 @@ const Header: React.FC = () => {
               Log In
             </Button>
           </Link>
-          <Link to="/auth/signup">
+          <div className="hidden sm:block">
+            <Link to="/auth/signup/freelancer">
+              <Button variant="outline" className="border-logo-dark-blue text-logo-dark-blue hover:bg-logo-light-blue/20">
+                Freelancer Sign Up
+              </Button>
+            </Link>
+          </div>
+          <Link to="/auth/signup/business">
             <Button className="bg-logo-dark-blue hover:bg-logo-dark-blue/90 text-white">
-              Sign Up
+              Business Sign Up
             </Button>
           </Link>
         </div>

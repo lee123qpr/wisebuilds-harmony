@@ -6,6 +6,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/auth/Login";
+import FreelancerSignup from "./pages/auth/signup/Freelancer";
+import BusinessSignup from "./pages/auth/signup/Business";
+import ForgotPassword from "./pages/auth/ForgotPassword";
 
 const queryClient = new QueryClient();
 
@@ -19,10 +23,10 @@ const App = () => (
           <Route path="/" element={<Index />} />
           
           {/* Auth Routes */}
-          <Route path="/auth/login" element={<NotFound />} />
-          <Route path="/auth/signup/freelancer" element={<NotFound />} />
-          <Route path="/auth/signup/business" element={<NotFound />} />
-          <Route path="/auth/forgot-password" element={<NotFound />} />
+          <Route path="/auth/login" element={<Login />} />
+          <Route path="/auth/signup/freelancer" element={<FreelancerSignup />} />
+          <Route path="/auth/signup/business" element={<BusinessSignup />} />
+          <Route path="/auth/forgot-password" element={<ForgotPassword />} />
           
           {/* Marketplace Routes */}
           <Route path="/marketplace" element={<NotFound />} />
