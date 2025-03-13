@@ -5,9 +5,10 @@ import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessa
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
 import { ProjectFormValues } from './schema';
 import { LocationField } from '@/components/projects/new-project/LocationField';
+import { Badge } from '@/components/ui/badge';
+import { roleOptions, workTypeOptions } from '@/components/projects/new-project/constants';
 
 const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }> = ({ form }) => {
   return (

@@ -29,8 +29,8 @@ export const LocationField: React.FC<LocationFieldProps> = ({ form }) => {
       filterLocations(locationInputValue, {
         country: activeFilter !== 'all' ? activeFilter as 'UK' | 'Ireland' : undefined,
         region: activeRegion || undefined,
-        minInputLength: locationInputValue ? 1 : 0, // Show results immediately when filtering
-        limit: 50 // Increased from 20 to 50 to show more locations
+        minInputLength: 0, // Show results immediately
+        limit: 100 // Show more locations
       })
     );
   }, [locationInputValue, activeFilter, activeRegion]);
@@ -40,6 +40,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({ form }) => {
     Ireland: []
   };
 
+  // Group locations by country and region for better organization
   const groupedLocations = filteredLocations.reduce((groups, location) => {
     const country = location.country;
     if (!groups[country]) {
@@ -118,7 +119,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({ form }) => {
                       onValueChange={setLocationInputValue}
                       className="h-9"
                     />
-                    <CommandList className="max-h-[300px]">
+                    <CommandList className="max-h-[300px] overflow-auto">
                       <CommandEmpty>No location found.</CommandEmpty>
                       {Object.entries(groupedLocations).map(([country, locations]) => (
                         <CommandGroup key={country} heading={country}>
@@ -143,6 +144,11 @@ export const LocationField: React.FC<LocationFieldProps> = ({ form }) => {
                           ))}
                         </CommandGroup>
                       ))}
+                      {filteredLocations.length > 30 && (
+                        <div className="py-2 px-3 text-xs text-muted-foreground">
+                          Showing {filteredLocations.length} locations. Refine your search for more specific results.
+                        </div>
+                      )}
                     </CommandList>
                   </Command>
                 </TabsContent>

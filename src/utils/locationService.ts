@@ -91,7 +91,97 @@ export const ukIrelandLocations: Location[] = [
   { name: "Arklow", country: "Ireland" },
   { name: "Cobh", country: "Ireland" },
   { name: "Midleton", country: "Ireland" },
-  { name: "Mallow", country: "Ireland" }
+  { name: "Mallow", country: "Ireland" },
+  
+  // Added smaller towns and cities - England
+  { name: "Bath", country: "UK", region: "England" },
+  { name: "Blackpool", country: "UK", region: "England" },
+  { name: "Gloucester", country: "UK", region: "England" },
+  { name: "Ipswich", country: "UK", region: "England" },
+  { name: "Lincoln", country: "UK", region: "England" },
+  { name: "Northampton", country: "UK", region: "England" },
+  { name: "Peterborough", country: "UK", region: "England" },
+  { name: "Preston", country: "UK", region: "England" },
+  { name: "Sunderland", country: "UK", region: "England" },
+  { name: "Swindon", country: "UK", region: "England" },
+  { name: "Wigan", country: "UK", region: "England" },
+  { name: "Canterbury", country: "UK", region: "England" },
+  { name: "Chelmsford", country: "UK", region: "England" },
+  { name: "Colchester", country: "UK", region: "England" },
+  { name: "Eastbourne", country: "UK", region: "England" },
+  { name: "Harrogate", country: "UK", region: "England" },
+  { name: "Hastings", country: "UK", region: "England" },
+  { name: "Hereford", country: "UK", region: "England" },
+  { name: "Lancaster", country: "UK", region: "England" },
+  { name: "Lichfield", country: "UK", region: "England" },
+  { name: "Scarborough", country: "UK", region: "England" },
+  { name: "Shrewsbury", country: "UK", region: "England" },
+  { name: "St Albans", country: "UK", region: "England" },
+  { name: "Stratford-upon-Avon", country: "UK", region: "England" },
+  { name: "Torquay", country: "UK", region: "England" },
+  { name: "Winchester", country: "UK", region: "England" },
+  { name: "Worcester", country: "UK", region: "England" },
+  { name: "Yeovil", country: "UK", region: "England" },
+  { name: "Basingstoke", country: "UK", region: "England" },
+  { name: "Crawley", country: "UK", region: "England" },
+  
+  // Added smaller towns - Scotland
+  { name: "Inverness", country: "UK", region: "Scotland" },
+  { name: "Perth", country: "UK", region: "Scotland" },
+  { name: "Stirling", country: "UK", region: "Scotland" },
+  { name: "Ayr", country: "UK", region: "Scotland" },
+  { name: "Falkirk", country: "UK", region: "Scotland" },
+  { name: "Dunfermline", country: "UK", region: "Scotland" },
+  { name: "Paisley", country: "UK", region: "Scotland" },
+  { name: "East Kilbride", country: "UK", region: "Scotland" },
+  { name: "Livingston", country: "UK", region: "Scotland" },
+  { name: "Hamilton", country: "UK", region: "Scotland" },
+  
+  // Added smaller towns - Wales
+  { name: "Newport", country: "UK", region: "Wales" },
+  { name: "Wrexham", country: "UK", region: "Wales" },
+  { name: "Bangor", country: "UK", region: "Wales" },
+  { name: "Aberystwyth", country: "UK", region: "Wales" },
+  { name: "Llandudno", country: "UK", region: "Wales" },
+  { name: "Carmarthen", country: "UK", region: "Wales" },
+  { name: "Merthyr Tydfil", country: "UK", region: "Wales" },
+  { name: "Bridgend", country: "UK", region: "Wales" },
+  { name: "Colwyn Bay", country: "UK", region: "Wales" },
+  { name: "Rhyl", country: "UK", region: "Wales" },
+  
+  // Added smaller towns - Northern Ireland
+  { name: "Lisburn", country: "UK", region: "Northern Ireland" },
+  { name: "Newry", country: "UK", region: "Northern Ireland" },
+  { name: "Bangor", country: "UK", region: "Northern Ireland" },
+  { name: "Coleraine", country: "UK", region: "Northern Ireland" },
+  { name: "Newtownards", country: "UK", region: "Northern Ireland" },
+  { name: "Antrim", country: "UK", region: "Northern Ireland" },
+  { name: "Omagh", country: "UK", region: "Northern Ireland" },
+  { name: "Armagh", country: "UK", region: "Northern Ireland" },
+  { name: "Ballymena", country: "UK", region: "Northern Ireland" },
+  { name: "Enniskillen", country: "UK", region: "Northern Ireland" },
+  
+  // Added smaller towns - Ireland
+  { name: "Droichead Nua", country: "Ireland" },
+  { name: "Greystones", country: "Ireland" },
+  { name: "Clonmellon", country: "Ireland" },
+  { name: "Dungarvan", country: "Ireland" },
+  { name: "Westport", country: "Ireland" },
+  { name: "Trim", country: "Ireland" },
+  { name: "Nenagh", country: "Ireland" },
+  { name: "Shannon", country: "Ireland" },
+  { name: "Thurles", country: "Ireland" },
+  { name: "Youghal", country: "Ireland" },
+  { name: "Roscrea", country: "Ireland" },
+  { name: "Fermoy", country: "Ireland" },
+  { name: "Kells", country: "Ireland" },
+  { name: "Kildare", country: "Ireland" },
+  { name: "Gorey", country: "Ireland" },
+  { name: "Dunboyne", country: "Ireland" },
+  { name: "Donabate", country: "Ireland" },
+  { name: "Killarney", country: "Ireland" },
+  { name: "Naas", country: "Ireland" },
+  { name: "Skerries", country: "Ireland" }
 ];
 
 export interface FilterOptions {
@@ -103,8 +193,8 @@ export interface FilterOptions {
 
 const defaultFilterOptions: FilterOptions = {
   country: 'all',
-  limit: 50, // Increased from 10 to 50
-  minInputLength: 1 // Reduced from 2 to 1 to show results more quickly
+  limit: 100, // Increased from 50 to 100
+  minInputLength: 0 // Reduced to 0 to show results immediately
 };
 
 // Function to filter locations based on user input with improved options
@@ -113,14 +203,7 @@ export const filterLocations = (
   options: Partial<FilterOptions> = {}
 ): Location[] => {
   const filterOptions = { ...defaultFilterOptions, ...options };
-  const lowerCaseInput = inputValue.toLowerCase();
-  
-  // Return some results even if input is very short, to help with exploration
-  if (lowerCaseInput.length < filterOptions.minInputLength! && 
-      !options.country && 
-      !options.region) {
-    return [];
-  }
+  const lowerCaseInput = inputValue.toLowerCase().trim();
   
   let filteredLocations = ukIrelandLocations;
   
@@ -144,6 +227,9 @@ export const filterLocations = (
       location.name.toLowerCase().includes(lowerCaseInput)
     );
   }
+  
+  // Sort results alphabetically
+  filteredLocations.sort((a, b) => a.name.localeCompare(b.name));
   
   // Limit results for better UX
   return filteredLocations.slice(0, filterOptions.limit);
