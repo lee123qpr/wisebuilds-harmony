@@ -32,25 +32,61 @@ export const useProjects = () => {
     try {
       console.log('Fetching projects from Supabase...');
       
-      // First, let's check if we're authenticated
+      // First, check if we're authenticated
       const { data: authData } = await supabase.auth.getSession();
       console.log('Authentication status:', authData?.session ? 'Authenticated' : 'Not authenticated');
       
-      // Fetch all projects without any filters to see if we can access any data
+      if (!authData?.session) {
+        console.warn('User is not authenticated. This might affect data access.');
+      }
+      
+      // Log user information for debugging
+      if (authData?.session?.user) {
+        console.log('User ID:', authData.session.user.id);
+        console.log('User email:', authData.session.user.email);
+      }
+      
+      // Try to fetch some projects without any filters
+      console.log('Attempting to fetch projects without restriction...');
+      
       let query = supabase
         .from('projects')
         .select('*');
       
       console.log('Query being sent to Supabase:', query);
       
-      const { data, error, status, statusText } = await query.order('created_at', { ascending: false });
+      const { data, error, status, statusText } = await query;
 
       // Log more detailed response information
       console.log('Response status:', status, statusText);
       console.log('Raw response data:', data);
       
       if (error) {
+        console.error('Supabase query error:', error);
         throw error;
+      }
+
+      // Let's check if we have permissions issues by trying a different approach
+      if (!data || data.length === 0) {
+        console.log('No projects found. Trying public access as fallback...');
+        
+        // Try with .rpc() call if available, or other public data
+        const { data: publicData, error: publicError } = await supabase
+          .from('projects')
+          .select('*')
+          .limit(5)
+          .is('status', null)
+          .or('status.eq.active,status.eq.completed');
+          
+        if (publicError) {
+          console.error('Fallback query error:', publicError);
+        } else {
+          console.log('Fallback query results:', publicData);
+          
+          if (publicData && publicData.length > 0) {
+            console.log('Fallback query returned data!');
+          }
+        }
       }
 
       console.log('Projects fetched:', data);
@@ -67,6 +103,10 @@ export const useProjects = () => {
 
         setProjects(projectsWithParsedDocuments);
         console.log('Processed projects:', projectsWithParsedDocuments);
+      } else {
+        // Handle case when data is null
+        setProjects([]);
+        console.log('No projects data received from Supabase');
       }
     } catch (error: any) {
       console.error('Error fetching projects:', error);
@@ -81,30 +121,48 @@ export const useProjects = () => {
     }
   };
 
-  // For debugging purposes, check if a specific project exists
-  const checkSpecificProject = async () => {
+  // For debugging purposes, check database structure
+  const checkDatabaseAccess = async () => {
     try {
-      // This is just a debug function to check if a specific project exists
-      // You can remove this after debugging
-      console.log('Debug: Checking for a specific project...');
-      const { data, error } = await supabase
+      console.log('DEBUG: Checking database access and structure...');
+      
+      // 1. Check if the projects table exists
+      const { data: tableInfo, error: tableError } = await supabase
         .from('projects')
-        .select('id, title')
+        .select('count()')
         .limit(1);
       
-      if (error) {
-        console.error('Debug: Error checking for specific project:', error);
+      if (tableError) {
+        console.error('DEBUG: Table access error:', tableError);
       } else {
-        console.log('Debug: Project check result:', data);
+        console.log('DEBUG: Table access check:', tableInfo);
+      }
+      
+      // 2. Check if we can get project by ID without checking auth
+      console.log('DEBUG: Trying to get a single project without auth check...');
+      const { data: anyProject, error: anyProjectError } = await supabase
+        .from('projects')
+        .select('id, title')
+        .limit(1)
+        .single();
+      
+      if (anyProjectError) {
+        console.error('DEBUG: Error getting any project:', anyProjectError);
+        
+        if (anyProjectError.message.includes('row') && anyProjectError.message.includes('found')) {
+          console.log('DEBUG: No projects exist in the database.');
+        }
+      } else {
+        console.log('DEBUG: Found project:', anyProject);
       }
     } catch (err) {
-      console.error('Debug: Exception in project check:', err);
+      console.error('DEBUG: Exception in database check:', err);
     }
   };
 
   useEffect(() => {
     fetchProjects();
-    checkSpecificProject(); // Debug function call
+    checkDatabaseAccess(); // Debug function call
     
     // Subscribe to changes
     const projectsSubscription = supabase
@@ -118,7 +176,7 @@ export const useProjects = () => {
     return () => {
       supabase.removeChannel(projectsSubscription);
     };
-  }, []); // Keep dependency array empty for debugging
+  }, []);
 
   // Return filter states along with projects data
   return { 

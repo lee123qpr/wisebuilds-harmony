@@ -4,9 +4,11 @@ import { useProjects } from '@/components/projects/useProjects';
 import ProjectListView from './ProjectListView';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertTriangle } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Info } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const AvailableProjectsTab: React.FC = () => {
+  const { user } = useAuth();
   const { projects, isLoading, refreshProjects, error } = useProjects();
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   
@@ -31,6 +33,7 @@ const AvailableProjectsTab: React.FC = () => {
   console.log('Current projects in AvailableProjectsTab:', projects);
   console.log('Is loading:', isLoading);
   console.log('Error state:', error);
+  console.log('User authentication state:', user ? 'Logged in' : 'Not logged in');
 
   if (error) {
     return (
@@ -73,17 +76,23 @@ const AvailableProjectsTab: React.FC = () => {
       {projects.length === 0 && !isLoading ? (
         <Card>
           <CardHeader>
-            <CardTitle>No Projects Found</CardTitle>
-            <CardDescription>
-              There are currently no projects available. This could be due to:
-            </CardDescription>
+            <div className="flex items-center space-x-2">
+              <Info className="h-5 w-5 text-primary" />
+              <div>
+                <CardTitle>No Projects Found</CardTitle>
+                <CardDescription>
+                  There are currently no projects available. This could be for several reasons:
+                </CardDescription>
+              </div>
+            </div>
           </CardHeader>
           <CardContent>
             <ul className="list-disc pl-5 space-y-1">
-              <li>No projects have been created yet</li>
+              <li>No projects have been created in the system yet</li>
               <li>You may not have the correct permissions to view projects</li>
-              <li>There might be an issue with the database connection</li>
               <li>Row Level Security (RLS) policies might be restricting access</li>
+              <li>Your current authentication state: {user ? `Logged in as ${user.email}` : 'Not logged in'}</li>
+              <li>The projects table might be empty</li>
             </ul>
             <div className="flex space-x-4 mt-4">
               <Button onClick={handleRefresh} className="flex items-center">
