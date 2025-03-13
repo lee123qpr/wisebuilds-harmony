@@ -4,7 +4,7 @@ import { useProjects } from '@/components/projects/useProjects';
 import ProjectListView from './ProjectListView';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw } from 'lucide-react';
+import { RefreshCw, AlertTriangle } from 'lucide-react';
 
 const AvailableProjectsTab: React.FC = () => {
   const { projects, isLoading, refreshProjects, error } = useProjects();
@@ -34,20 +34,29 @@ const AvailableProjectsTab: React.FC = () => {
 
   if (error) {
     return (
-      <Card>
+      <Card className="border-destructive">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div>
-            <CardTitle>Error Loading Projects</CardTitle>
-            <CardDescription>
-              There was an error loading projects. Please try again.
-            </CardDescription>
+          <div className="flex items-center">
+            <AlertTriangle className="h-5 w-5 text-destructive mr-2" />
+            <div>
+              <CardTitle>Error Loading Projects</CardTitle>
+              <CardDescription>
+                There was an error loading projects. Please try again.
+              </CardDescription>
+            </div>
           </div>
           <Button onClick={handleRefresh} size="sm" variant="outline">
             <RefreshCw className="mr-2 h-4 w-4" /> Retry
           </Button>
         </CardHeader>
         <CardContent>
-          <p className="text-destructive">{error}</p>
+          <p className="text-destructive font-mono text-sm bg-destructive/10 p-2 rounded">{error}</p>
+          <p className="mt-4">This could be due to:</p>
+          <ul className="list-disc pl-5 space-y-1 mt-2">
+            <li>Database connection issues</li>
+            <li>Authentication problems</li>
+            <li>Row Level Security (RLS) policy restrictions</li>
+          </ul>
         </CardContent>
       </Card>
     );
@@ -74,10 +83,13 @@ const AvailableProjectsTab: React.FC = () => {
               <li>No projects have been created yet</li>
               <li>You may not have the correct permissions to view projects</li>
               <li>There might be an issue with the database connection</li>
+              <li>Row Level Security (RLS) policies might be restricting access</li>
             </ul>
-            <Button onClick={handleRefresh} className="mt-4">
-              <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-            </Button>
+            <div className="flex space-x-4 mt-4">
+              <Button onClick={handleRefresh} className="flex items-center">
+                <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+              </Button>
+            </div>
           </CardContent>
         </Card>
       ) : (
