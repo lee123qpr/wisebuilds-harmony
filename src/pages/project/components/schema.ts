@@ -9,6 +9,7 @@ export const projectSchema = z.object({
   work_type: z.string(),
   duration: z.string(),
   budget: z.string(),
+  hiring_status: z.string().default('enquiring'),
   requires_insurance: z.boolean().default(false),
   requires_site_visits: z.boolean().default(false),
   requires_equipment: z.boolean().default(false),

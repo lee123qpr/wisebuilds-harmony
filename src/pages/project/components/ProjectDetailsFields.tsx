@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ProjectFormValues } from './schema';
 import { LocationField } from '@/components/location/LocationField';
-import { workTypeOptions } from '@/components/projects/new-project/constants';
+import { roleOptions, workTypeOptions } from '@/components/projects/new-project/constants';
 
 const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }> = ({ form }) => {
   return (
@@ -53,12 +53,23 @@ const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }>
         name="role"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Service/Role Required</FormLabel>
-            <FormControl>
-              <Input placeholder="e.g., Architect, Surveyor, etc." {...field} />
-            </FormControl>
+            <FormLabel>Role Required</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select required role" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {roleOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormDescription>
-              Specify the type of professional or service you need
+              Specify the type of professional needed
             </FormDescription>
             <FormMessage />
           </FormItem>
@@ -85,9 +96,11 @@ const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }>
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="remote">Remote</SelectItem>
-                <SelectItem value="on_site">On-site</SelectItem>
-                <SelectItem value="hybrid">Hybrid</SelectItem>
+                {workTypeOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
             <FormDescription>
