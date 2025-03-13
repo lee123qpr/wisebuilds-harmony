@@ -96,7 +96,10 @@ const LeadSettingsForm = () => {
         // Create new settings
         const { data, error } = await supabase
           .from('lead_settings')
-          .insert([{ ...settingsData, created_at: new Date().toISOString() }])
+          .insert([{ 
+            ...settingsData, 
+            created_at: new Date().toISOString() 
+          }])
           .select()
           .single();
         

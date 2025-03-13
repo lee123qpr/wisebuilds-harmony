@@ -1,0 +1,79 @@
+
+import React from 'react';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import AvailableProjectsTab from '@/components/dashboard/freelancer/AvailableProjectsTab';
+import LeadsTab from '@/components/dashboard/freelancer/LeadsTab';
+import ApplicationsTab from '@/components/dashboard/freelancer/ApplicationsTab';
+import ActiveJobsTab from '@/components/dashboard/freelancer/ActiveJobsTab';
+import MessagesTab from '@/components/dashboard/freelancer/MessagesTab';
+
+interface LeadSettings {
+  id: string;
+  role: string;
+  location: string;
+  work_type?: string;
+  max_budget?: string;
+  notifications_enabled: boolean;
+  keywords?: string[];
+}
+
+interface ProjectLead {
+  id: string;
+  title: string;
+  description: string;
+  budget: string;
+  role: string;
+  created_at: string;
+  location: string;
+  tags?: string[];
+}
+
+interface FreelancerTabsProps {
+  isLoadingSettings: boolean;
+  leadSettings: LeadSettings | null;
+  projectLeads: ProjectLead[];
+}
+
+const FreelancerTabs: React.FC<FreelancerTabsProps> = ({ 
+  isLoadingSettings, 
+  leadSettings, 
+  projectLeads 
+}) => {
+  return (
+    <Tabs defaultValue="available" className="w-full">
+      <TabsList className="mb-6">
+        <TabsTrigger value="available">Available Projects</TabsTrigger>
+        <TabsTrigger value="leads">My Leads</TabsTrigger>
+        <TabsTrigger value="applied">My Applications</TabsTrigger>
+        <TabsTrigger value="active">Active Jobs</TabsTrigger>
+        <TabsTrigger value="messages">Messages</TabsTrigger>
+      </TabsList>
+      
+      <TabsContent value="available" className="space-y-6">
+        <AvailableProjectsTab />
+      </TabsContent>
+      
+      <TabsContent value="leads" className="space-y-6">
+        <LeadsTab 
+          isLoadingSettings={isLoadingSettings} 
+          leadSettings={leadSettings} 
+          projectLeads={projectLeads} 
+        />
+      </TabsContent>
+      
+      <TabsContent value="applied" className="space-y-4">
+        <ApplicationsTab />
+      </TabsContent>
+      
+      <TabsContent value="active" className="space-y-4">
+        <ActiveJobsTab />
+      </TabsContent>
+      
+      <TabsContent value="messages" className="space-y-4">
+        <MessagesTab />
+      </TabsContent>
+    </Tabs>
+  );
+};
+
+export default FreelancerTabs;
