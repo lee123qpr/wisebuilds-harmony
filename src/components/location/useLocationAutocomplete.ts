@@ -25,9 +25,12 @@ export const useLocationAutocomplete = ({
   // Initialize autocomplete only when popover is open and Google Maps is loaded
   useEffect(() => {
     // Clean up previous instance if it exists
-    if (listenerRef.current && window.google?.maps?.event) {
-      google.maps.event.removeListener(listenerRef.current);
-      listenerRef.current = null;
+    if (listenerRef.current && window.google?.maps) {
+      // Check if the event object exists before calling
+      if (typeof window.google.maps.event?.removeListener === 'function') {
+        window.google.maps.event.removeListener(listenerRef.current);
+        listenerRef.current = null;
+      }
     }
     
     // Exit early if any condition is not met
@@ -76,9 +79,12 @@ export const useLocationAutocomplete = ({
       
       // Return cleanup function
       return () => {
-        if (window.google?.maps?.event && listenerRef.current) {
-          google.maps.event.removeListener(listenerRef.current);
-          listenerRef.current = null;
+        if (window.google?.maps && listenerRef.current) {
+          // Check if the event object exists before calling
+          if (typeof window.google.maps.event?.removeListener === 'function') {
+            window.google.maps.event.removeListener(listenerRef.current);
+            listenerRef.current = null;
+          }
         }
       };
     } catch (error) {
