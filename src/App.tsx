@@ -9,6 +9,10 @@ import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
 import Signup from "./pages/auth/Signup";
 import ForgotPassword from "./pages/auth/ForgotPassword";
+import FreelancerDashboard from "./pages/dashboard/FreelancerDashboard";
+import BusinessDashboard from "./pages/dashboard/BusinessDashboard";
+import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 
 const queryClient = new QueryClient();
@@ -28,14 +32,35 @@ const App = () => (
             <Route path="/auth/signup" element={<Signup />} />
             <Route path="/auth/forgot-password" element={<ForgotPassword />} />
             
+            {/* Dashboard Routes - Protected */}
+            <Route 
+              path="/dashboard/freelancer" 
+              element={
+                <ProtectedRoute allowedUserTypes={['freelancer']}>
+                  <FreelancerDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/business" 
+              element={
+                <ProtectedRoute allowedUserTypes={['business']}>
+                  <BusinessDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/admin" 
+              element={
+                <ProtectedRoute allowedUserTypes={['admin']}>
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
             {/* Marketplace Routes */}
             <Route path="/marketplace" element={<NotFound />} />
             <Route path="/marketplace/:projectId" element={<NotFound />} />
-            
-            {/* Dashboard Routes */}
-            <Route path="/dashboard/freelancer" element={<NotFound />} />
-            <Route path="/dashboard/business" element={<NotFound />} />
-            <Route path="/dashboard/admin" element={<NotFound />} />
             
             {/* Messages Routes */}
             <Route path="/messages" element={<NotFound />} />

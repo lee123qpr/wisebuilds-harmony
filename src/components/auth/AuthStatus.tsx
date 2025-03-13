@@ -3,7 +3,7 @@ import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, LogOut, User } from 'lucide-react';
+import { Loader2, LogOut, User, LayoutDashboard } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 const AuthStatus = () => {
@@ -18,7 +18,7 @@ const AuthStatus = () => {
         title: 'Signed Out',
         description: 'You have been successfully signed out.',
       });
-      navigate('/');
+      navigate('/auth/login');
     } catch (error) {
       console.error('Error signing out:', error);
       toast({
@@ -58,6 +58,20 @@ const AuthStatus = () => {
                       user?.user_metadata?.company_name || 
                       user?.email || 
                       'User';
+  
+  // Get dashboard link based on user type
+  const getDashboardLink = () => {
+    switch(userType) {
+      case 'freelancer':
+        return '/dashboard/freelancer';
+      case 'business':
+        return '/dashboard/business';
+      case 'admin':
+        return '/dashboard/admin';
+      default:
+        return '/';
+    }
+  };
 
   return (
     <div className="flex items-center space-x-4">
@@ -65,6 +79,11 @@ const AuthStatus = () => {
         <p className="text-sm font-medium">{displayName}</p>
         <p className="text-xs text-muted-foreground capitalize">{userType}</p>
       </div>
+      <Link to={getDashboardLink()} title="Dashboard">
+        <Button variant="ghost" size="icon">
+          <LayoutDashboard className="h-5 w-5" />
+        </Button>
+      </Link>
       <Button variant="ghost" size="icon" onClick={handleSignOut} title="Sign out">
         <LogOut className="h-5 w-5" />
       </Button>

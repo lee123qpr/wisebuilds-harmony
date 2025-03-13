@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -24,6 +23,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 const Login = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [isLoading, setIsLoading] = useState(false);
   const [authError, setAuthError] = useState<string | null>(null);
   
@@ -49,14 +49,22 @@ const Login = () => {
         throw error;
       }
       
+      const userType = authData.user?.user_metadata?.user_type;
+      
       toast({
         title: 'Login Successful',
         description: 'Redirecting to your dashboard...',
       });
       
-      // Redirect to the appropriate dashboard based on future user role
-      // For now, redirect to home
-      navigate('/');
+      if (userType === 'freelancer') {
+        navigate('/dashboard/freelancer');
+      } else if (userType === 'business') {
+        navigate('/dashboard/business');
+      } else if (userType === 'admin') {
+        navigate('/dashboard/admin');
+      } else {
+        navigate('/');
+      }
       
     } catch (error: any) {
       console.error('Login error:', error);
@@ -139,15 +147,9 @@ const Login = () => {
           <CardFooter className="flex flex-col space-y-4">
             <div className="text-center text-sm">
               <span>Don't have an account? </span>
-              <span className="flex justify-center gap-1 mt-1">
-                <Link to="/auth/signup/freelancer" className="text-primary hover:underline">
-                  Freelancer Sign up
-                </Link>
-                <span>or</span>
-                <Link to="/auth/signup/business" className="text-primary hover:underline">
-                  Business Sign up
-                </Link>
-              </span>
+              <Link to="/auth/signup" className="text-primary hover:underline">
+                Sign up
+              </Link>
             </div>
           </CardFooter>
         </Card>
