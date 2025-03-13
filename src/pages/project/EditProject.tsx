@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
@@ -6,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { ArrowLeft, Save, Loader2, Check, CalendarIcon } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -17,8 +16,10 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { filterLocations } from '@/utils/locationService';
 
-// Form validation schema
 const projectSchema = z.object({
   title: z.string().min(5, 'Title must be at least 5 characters'),
   description: z.string().min(20, 'Description must be at least 20 characters'),
@@ -42,8 +43,15 @@ const EditProject = () => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [project, setProject] = useState<Project | null>(null);
+  
+  const [locationInputValue, setLocationInputValue] = useState('');
+  const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
+  const [locationPopoverOpen, setLocationPopoverOpen] = useState(false);
 
-  // Initialize the form
+  useEffect(() => {
+    setFilteredLocations(filterLocations(locationInputValue));
+  }, [locationInputValue]);
+
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
     defaultValues: {
@@ -61,7 +69,6 @@ const EditProject = () => {
     },
   });
 
-  // Fetch project data
   useEffect(() => {
     const fetchProject = async () => {
       try {
@@ -75,7 +82,6 @@ const EditProject = () => {
           
         if (error) throw error;
         
-        // Parse documents field if it exists
         const projectWithDocuments = {
           ...data,
           documents: Array.isArray(data.documents) 
@@ -85,7 +91,6 @@ const EditProject = () => {
         
         setProject(projectWithDocuments);
         
-        // Set form values from the fetched project
         form.reset({
           title: projectWithDocuments.title,
           description: projectWithDocuments.description,
@@ -114,7 +119,6 @@ const EditProject = () => {
     fetchProject();
   }, [projectId]);
 
-  // Handle form submission
   const onSubmit = async (values: ProjectFormValues) => {
     try {
       setSubmitting(true);
@@ -123,7 +127,6 @@ const EditProject = () => {
         throw new Error('Project ID is missing');
       }
       
-      // Prepare the data to update
       const { error } = await supabase
         .from('projects')
         .update({
@@ -149,7 +152,6 @@ const EditProject = () => {
         description: 'The project has been updated successfully.',
       });
       
-      // Navigate back to the project view page
       navigate(`/project/${projectId}`);
     } catch (error: any) {
       console.error('Error updating project:', error);
@@ -270,11 +272,55 @@ const EditProject = () => {
                         control={form.control}
                         name="location"
                         render={({ field }) => (
-                          <FormItem>
+                          <FormItem className="flex flex-col">
                             <FormLabel>Location</FormLabel>
-                            <FormControl>
-                              <Input placeholder="Project location" {...field} />
-                            </FormControl>
+                            <Popover 
+                              open={locationPopoverOpen} 
+                              onOpenChange={setLocationPopoverOpen}
+                            >
+                              <PopoverTrigger asChild>
+                                <FormControl>
+                                  <Button
+                                    variant="outline"
+                                    role="combobox"
+                                    aria-expanded={locationPopoverOpen}
+                                    className="w-full justify-between"
+                                  >
+                                    {field.value || "Select location..."}
+                                    <CalendarIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                  </Button>
+                                </FormControl>
+                              </PopoverTrigger>
+                              <PopoverContent className="w-full p-0" align="start">
+                                <Command>
+                                  <CommandInput 
+                                    placeholder="Search UK/Ireland location..." 
+                                    value={locationInputValue}
+                                    onValueChange={setLocationInputValue}
+                                    className="h-9"
+                                  />
+                                  <CommandEmpty>No location found.</CommandEmpty>
+                                  <CommandGroup className="max-h-60 overflow-auto">
+                                    {filteredLocations.map((location) => (
+                                      <CommandItem
+                                        key={location}
+                                        value={location}
+                                        onSelect={(value) => {
+                                          field.onChange(value);
+                                          setLocationInputValue("");
+                                          setLocationPopoverOpen(false);
+                                        }}
+                                      >
+                                        {location}
+                                        {field.value === location && (
+                                          <Check className="ml-auto h-4 w-4" />
+                                        )}
+                                      </CommandItem>
+                                    ))}
+                                  </CommandGroup>
+                                </Command>
+                              </PopoverContent>
+                            </Popover>
                             <FormMessage />
                           </FormItem>
                         )}

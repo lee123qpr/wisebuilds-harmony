@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -10,13 +10,15 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { useForm } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
-import { PlusCircle, CalendarIcon, Upload, X, FileText, FileImage } from 'lucide-react';
+import { PlusCircle, CalendarIcon, Upload, X, FileText, FileImage, Check } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { supabase } from '@/integrations/supabase/client';
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from '@/components/ui/command';
+import { filterLocations } from '@/utils/locationService';
 
 const roleOptions = [
   { value: 'quantity_surveyor', label: 'Quantity Surveyor' },
@@ -99,6 +101,10 @@ const NewProjectDialog = () => {
   const [open, setOpen] = React.useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  
+  const [locationInputValue, setLocationInputValue] = useState('');
+  const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
+  const [locationPopoverOpen, setLocationPopoverOpen] = useState(false);
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectSchema),
@@ -117,6 +123,10 @@ const NewProjectDialog = () => {
     },
   });
 
+  useEffect(() => {
+    setFilteredLocations(filterLocations(locationInputValue));
+  }, [locationInputValue]);
+
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
     if (!files) return;
@@ -126,14 +136,12 @@ const NewProjectDialog = () => {
     let errorMessage = '';
 
     Array.from(files).forEach(file => {
-      // Check file size
       if (file.size > MAX_FILE_SIZE) {
         hasInvalidFile = true;
         errorMessage = `File ${file.name} exceeds the 10MB limit`;
         return;
       }
 
-      // Check file type
       if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
         hasInvalidFile = true;
         errorMessage = `File ${file.name} is not a supported file type`;
@@ -198,7 +206,6 @@ const NewProjectDialog = () => {
         throw new Error('You must be logged in to create a project');
       }
 
-      // Upload files first
       let documentReferences = [];
       try {
         documentReferences = await uploadFilesToSupabase();
@@ -368,13 +375,57 @@ const NewProjectDialog = () => {
               control={form.control}
               name="location"
               render={({ field }) => (
-                <FormItem>
+                <FormItem className="flex flex-col">
                   <FormLabel>Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., London" {...field} />
-                  </FormControl>
+                  <Popover 
+                    open={locationPopoverOpen} 
+                    onOpenChange={setLocationPopoverOpen}
+                  >
+                    <PopoverTrigger asChild>
+                      <FormControl>
+                        <Button
+                          variant="outline"
+                          role="combobox"
+                          aria-expanded={locationPopoverOpen}
+                          className="w-full justify-between"
+                        >
+                          {field.value || "Select location..."}
+                          <CalendarIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                        </Button>
+                      </FormControl>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-full p-0" align="start">
+                      <Command>
+                        <CommandInput 
+                          placeholder="Search UK/Ireland location..." 
+                          value={locationInputValue}
+                          onValueChange={setLocationInputValue}
+                          className="h-9"
+                        />
+                        <CommandEmpty>No location found.</CommandEmpty>
+                        <CommandGroup className="max-h-60 overflow-auto">
+                          {filteredLocations.map((location) => (
+                            <CommandItem
+                              key={location}
+                              value={location}
+                              onSelect={(value) => {
+                                field.onChange(value);
+                                setLocationInputValue("");
+                                setLocationPopoverOpen(false);
+                              }}
+                            >
+                              {location}
+                              {field.value === location && (
+                                <Check className="ml-auto h-4 w-4" />
+                              )}
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
                   <FormDescription>
-                    Where the work will be performed
+                    Where the work will be performed (UK and Ireland locations only)
                   </FormDescription>
                   <FormMessage />
                 </FormItem>
