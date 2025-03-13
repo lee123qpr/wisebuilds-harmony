@@ -16,3 +16,21 @@ export const businessSchema = z.object({
 });
 
 export type BusinessFormValues = z.infer<typeof businessSchema>;
+
+export const signupSchema = z.object({
+  email: z.string().email({ message: 'Please enter a valid email address' }),
+  fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
+  phoneNumber: z.string()
+    .min(10, { message: 'Please enter a valid phone number' })
+    .regex(/^(\+44|0044|0)7\d{9}$|^(\+353|00353|0)8[35679]\d{7}$/, { 
+      message: 'Please enter a valid UK or Ireland phone number' 
+    }),
+  password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
+  confirmPassword: z.string().min(8, { message: 'Please confirm your password' }),
+  userType: z.enum(['freelancer', 'business']),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Passwords don't match",
+  path: ["confirmPassword"],
+});
+
+export type SignupFormValues = z.infer<typeof signupSchema>;
