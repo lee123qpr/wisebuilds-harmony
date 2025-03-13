@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Edit, Trash2, Eye, MessageSquare, FileText, Search } from 'lucide-react';
+import { Edit, Trash2, Eye, MessageSquare, FileText, Search, CheckCircle2, Clock, XCircle } from 'lucide-react';
 
 // This would come from your database in a real implementation
 const sampleProjects = [
@@ -39,6 +39,26 @@ const sampleProjects = [
     hiringStatus: 'ready',
     applications: 5,
   },
+  {
+    id: '4',
+    title: 'Office Refurbishment',
+    createdAt: '2023-11-28',
+    role: 'Interior Designer',
+    budget: '£10,000+',
+    status: 'in-progress',
+    hiringStatus: 'ready',
+    applications: 2,
+  },
+  {
+    id: '5',
+    title: 'Landscaping Design for Housing Development',
+    createdAt: '2023-11-15',
+    role: 'Landscape Architect',
+    budget: '£1,000-£2,500',
+    status: 'cancelled',
+    hiringStatus: 'enquiring',
+    applications: 1,
+  },
 ];
 
 const ProjectsTable = () => {
@@ -61,6 +81,45 @@ const ProjectsTable = () => {
     return matchesSearch && matchesStatus && matchesHiring;
   });
 
+  // Function to render status badge with appropriate styling and icon
+  const renderStatusBadge = (status) => {
+    switch (status) {
+      case 'active':
+        return (
+          <Badge variant="outline" className="bg-[#F2FCE2] text-green-700 border-green-200 flex items-center gap-1">
+            <CheckCircle2 className="h-3 w-3" />
+            Active
+          </Badge>
+        );
+      case 'in-progress':
+        return (
+          <Badge variant="outline" className="bg-[#FEF7CD] text-amber-700 border-amber-200 flex items-center gap-1">
+            <Clock className="h-3 w-3" />
+            In Progress
+          </Badge>
+        );
+      case 'cancelled':
+        return (
+          <Badge variant="outline" className="bg-[#F1F0FB] text-red-700 border-red-200 flex items-center gap-1">
+            <XCircle className="h-3 w-3" />
+            Cancelled
+          </Badge>
+        );
+      case 'draft':
+        return (
+          <Badge variant="secondary" className="flex items-center gap-1">
+            Draft
+          </Badge>
+        );
+      default:
+        return (
+          <Badge variant="outline">
+            {status}
+          </Badge>
+        );
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex flex-col sm:flex-row gap-3 justify-between">
@@ -81,6 +140,8 @@ const ProjectsTable = () => {
             <SelectContent>
               <SelectItem value="all">All Status</SelectItem>
               <SelectItem value="active">Active</SelectItem>
+              <SelectItem value="in-progress">In Progress</SelectItem>
+              <SelectItem value="cancelled">Cancelled</SelectItem>
               <SelectItem value="draft">Draft</SelectItem>
             </SelectContent>
           </Select>
@@ -121,9 +182,7 @@ const ProjectsTable = () => {
                 <TableCell>{project.role}</TableCell>
                 <TableCell>{project.budget}</TableCell>
                 <TableCell>
-                  <Badge variant={project.status === 'active' ? 'default' : 'secondary'}>
-                    {project.status === 'active' ? 'Active' : 'Draft'}
-                  </Badge>
+                  {renderStatusBadge(project.status)}
                 </TableCell>
                 <TableCell>
                   <Badge 
@@ -180,3 +239,4 @@ const ProjectsTable = () => {
 };
 
 export default ProjectsTable;
+
