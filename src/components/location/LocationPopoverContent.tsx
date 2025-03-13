@@ -16,22 +16,31 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
   useEffect(() => {
     if (inputRef.current) {
       // Short timeout to ensure the popover is fully rendered
-      setTimeout(() => {
-        inputRef.current?.focus();
+      const timer = setTimeout(() => {
+        if (inputRef.current) {
+          inputRef.current.focus();
+          // Clear any previous value to ensure a fresh search
+          inputRef.current.value = '';
+        }
       }, 100);
+      
+      return () => clearTimeout(timer);
     }
   }, [inputRef]);
 
   return (
-    <PopoverContent className="w-[300px] p-4" align="start">
+    <PopoverContent className="w-[300px] p-4" align="start" sideOffset={5}>
       <div className="space-y-2">
         <h4 className="text-sm font-medium">Search location</h4>
         <Input
           ref={inputRef}
           placeholder="Type to search UK/Ireland cities..."
           className="w-full"
-          // Add autocomplete="off" to prevent browser's native autocomplete from interfering
           autoComplete="off"
+          // Add these attributes to prevent browser's autocomplete interference
+          autoCorrect="off"
+          spellCheck="false"
+          aria-autocomplete="list"
         />
         {isLoading && (
           <div className="text-xs text-amber-500">

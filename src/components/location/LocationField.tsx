@@ -1,5 +1,5 @@
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { useGoogleMapsScript } from './useGoogleMapsScript';
@@ -7,6 +7,7 @@ import { useLocationAutocomplete } from './useLocationAutocomplete';
 import { LocationPopoverContent } from './LocationPopoverContent';
 import { LocationTriggerButton } from './LocationTriggerButton';
 import { LocationFieldProps } from './types';
+import { useToast } from '@/hooks/use-toast';
 
 export const LocationField: React.FC<LocationFieldProps> = ({ 
   form, 
@@ -16,12 +17,22 @@ export const LocationField: React.FC<LocationFieldProps> = ({
 }) => {
   const [locationPopoverOpen, setLocationPopoverOpen] = useState(false);
   const autocompleteRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   
   // Get the current value of the location field from the form
   const selectedLocation = form.watch(name);
   
   // Load Google Maps API
   const { isLoading, isLoaded } = useGoogleMapsScript();
+  
+  // Log when component mounts and when Google Maps loads
+  useEffect(() => {
+    console.log('LocationField mounted, Google Maps loaded:', isLoaded);
+    
+    if (isLoaded) {
+      console.log('Google Maps API is loaded and ready');
+    }
+  }, [isLoaded]);
   
   // Setup autocomplete with our custom hook
   useLocationAutocomplete({
@@ -34,6 +45,12 @@ export const LocationField: React.FC<LocationFieldProps> = ({
         shouldDirty: true
       });
       console.log(`Setting form value for ${name} to:`, place.formatted_address);
+      
+      toast({
+        title: "Location Selected",
+        description: `Selected ${place.formatted_address}`,
+      });
+      
       setLocationPopoverOpen(false);
     }
   });
@@ -48,11 +65,9 @@ export const LocationField: React.FC<LocationFieldProps> = ({
           <Popover 
             open={locationPopoverOpen} 
             onOpenChange={(open) => {
+              console.log('Popover open state changing to:', open);
               setLocationPopoverOpen(open);
-              // Reset the input field when opening popover
-              if (open && autocompleteRef.current) {
-                autocompleteRef.current.value = '';
-              }
+              // Don't reset the input field when opening popover - let the PopoverContent handle it
             }}
           >
             <PopoverTrigger asChild>
@@ -60,13 +75,16 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 <LocationTriggerButton 
                   value={field.value}
                   isOpen={locationPopoverOpen}
-                  onClick={() => setLocationPopoverOpen(true)}
+                  onClick={() => {
+                    console.log('Location trigger button clicked');
+                    setLocationPopoverOpen(true);
+                  }}
                 />
               </FormControl>
             </PopoverTrigger>
             <LocationPopoverContent 
               inputRef={autocompleteRef}
-              isLoading={isLoading}
+              isLoading={isLoading && !isLoaded}
             />
           </Popover>
           <FormDescription>

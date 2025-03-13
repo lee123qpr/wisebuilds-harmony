@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 /**
- * Hook to load the Google Maps script
+ * Hook to load the Google Maps script with improved loading logic
  * @returns Object containing loading state and error information
  */
 export const useGoogleMapsScript = () => {
@@ -13,13 +13,17 @@ export const useGoogleMapsScript = () => {
   const { toast } = useToast();
   
   useEffect(() => {
-    // Skip if the script is already loaded or being loaded
-    if (document.getElementById('google-maps-script') || window.google?.maps) {
-      if (window.google?.maps) {
-        console.log('Google Maps API already loaded');
-        setIsLoading(false);
-        setIsLoaded(true);
-      }
+    // If Google Maps is already available, we can skip loading the script
+    if (window.google?.maps?.places) {
+      console.log('Google Maps API already loaded');
+      setIsLoading(false);
+      setIsLoaded(true);
+      return;
+    }
+    
+    // Skip if the script tag is already in the document
+    if (document.getElementById('google-maps-script')) {
+      console.log('Google Maps script tag already exists, waiting for it to load');
       return;
     }
 
@@ -41,7 +45,7 @@ export const useGoogleMapsScript = () => {
     
     // Set up error handler
     script.onerror = (e) => {
-      console.error('Failed to load Google Maps API script');
+      console.error('Failed to load Google Maps API script', e);
       setIsLoading(false);
       setError(new Error('Failed to load Google Maps API'));
       toast({
@@ -54,9 +58,8 @@ export const useGoogleMapsScript = () => {
     // Append to document
     document.head.appendChild(script);
     
-    // Cleanup function - not removing script as it might be used elsewhere
+    // Cleanup function
     return () => {
-      // Script stays in the DOM for reuse
       if (window.initMap) {
         // @ts-ignore - Cleaning up the global callback
         window.initMap = undefined;
