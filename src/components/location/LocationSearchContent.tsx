@@ -1,8 +1,7 @@
-
 import React from 'react';
 import { Check } from 'lucide-react';
 import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
-import { Location } from '@/utils/locationService';
+import { Location } from '@/utils/location';
 
 interface LocationSearchContentProps {
   locationInputValue: string;

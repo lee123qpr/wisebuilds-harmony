@@ -4,7 +4,7 @@ import { MapPin, Filter } from 'lucide-react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { filterLocations, Location } from '@/utils/locationService';
+import { filterLocations, Location } from '@/utils/location';
 import { UseFormReturn } from 'react-hook-form';
 import { FilterTabs } from './FilterTabs';
 import { LocationSearchContent } from './LocationSearchContent';
