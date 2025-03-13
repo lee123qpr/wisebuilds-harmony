@@ -1,10 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { MapPin } from 'lucide-react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Button } from '@/components/ui/button';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
+import { useToast } from '@/hooks/use-toast';
 
 // Define props interface
 interface LocationFieldProps {
@@ -22,8 +23,9 @@ export const LocationField: React.FC<LocationFieldProps> = ({
 }) => {
   const [locationPopoverOpen, setLocationPopoverOpen] = useState(false);
   const [searchInput, setSearchInput] = useState('');
-  const [autocompleteInitialized, setAutocompleteInitialized] = useState(false);
-  const autocompleteRef = React.useRef<HTMLInputElement>(null);
+  const [scriptLoaded, setScriptLoaded] = useState(false);
+  const autocompleteRef = useRef<HTMLInputElement>(null);
+  const { toast } = useToast();
   const selectedLocation = form.watch(name);
 
   // Load Google Maps API script
@@ -32,26 +34,34 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     if (!document.getElementById('google-maps-script') && !window.google?.maps) {
       const script = document.createElement('script');
       script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBZMS5xAMkXiIl3j8vxJPPo5ROUTPRXAnE&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&libraries=places`;
       script.async = true;
       script.defer = true;
-      script.onload = () => initializeAutocomplete();
+      
+      script.onload = () => {
+        setScriptLoaded(true);
+        console.log('Google Maps API script loaded');
+      };
+      
+      script.onerror = () => {
+        console.error('Failed to load Google Maps API script');
+        toast({
+          variant: 'destructive',
+          title: 'Error loading location service',
+          description: 'Please check your internet connection and try again.'
+        });
+      };
+      
       document.head.appendChild(script);
     } else if (window.google?.maps) {
-      initializeAutocomplete();
+      setScriptLoaded(true);
     }
-  }, []);
+  }, [toast]);
 
-  // Initialize autocomplete when popover opens
+  // Initialize autocomplete when input is focused and script is loaded
   useEffect(() => {
-    if (locationPopoverOpen && window.google?.maps && !autocompleteInitialized) {
-      initializeAutocomplete();
-    }
-  }, [locationPopoverOpen]);
-
-  const initializeAutocomplete = () => {
-    if (!autocompleteRef.current || autocompleteInitialized) return;
-
+    if (!scriptLoaded || !autocompleteRef.current) return;
+    
     try {
       const autocomplete = new window.google.maps.places.Autocomplete(autocompleteRef.current, {
         componentRestrictions: { country: ['gb', 'ie'] }, // UK and Ireland
@@ -70,13 +80,17 @@ export const LocationField: React.FC<LocationFieldProps> = ({
           setLocationPopoverOpen(false);
         }
       });
-
-      setAutocompleteInitialized(true);
-      console.log('Google Maps Places Autocomplete initialized');
+      
+      console.log('Google Places Autocomplete initialized');
     } catch (error) {
-      console.error('Error initializing Google Maps Places Autocomplete:', error);
+      console.error('Error initializing Google Places Autocomplete:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error initializing location search',
+        description: 'Please refresh the page and try again.'
+      });
     }
-  };
+  }, [scriptLoaded, form, name, toast]);
 
   return (
     <FormField
@@ -120,6 +134,11 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                   onChange={(e) => setSearchInput(e.target.value)}
                   className="w-full"
                 />
+                {!scriptLoaded && (
+                  <div className="text-xs text-amber-500">
+                    Loading location service...
+                  </div>
+                )}
                 <p className="text-xs text-muted-foreground">
                   Locations limited to UK and Ireland
                 </p>
