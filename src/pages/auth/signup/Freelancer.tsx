@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,9 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDes
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import MainLayout from '@/components/layout/MainLayout';
+import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 
 const freelancerSchema = z.object({
   fullName: z.string().min(2, { message: 'Full name must be at least 2 characters' }),
@@ -41,6 +44,9 @@ const professions = [
 
 const FreelancerSignup = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   
   const form = useForm<FreelancerFormValues>({
     resolver: zodResolver(freelancerSchema),
@@ -55,22 +61,46 @@ const FreelancerSignup = () => {
   });
 
   const onSubmit = async (data: FreelancerFormValues) => {
+    setIsLoading(true);
+    setAuthError(null);
+    
     try {
-      // Here we would normally register with Supabase
-      console.log('Registration data:', data);
+      // Register with Supabase
+      const { data: authData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            full_name: data.fullName,
+            profession: data.profession,
+            location: data.location,
+            user_type: 'freelancer'
+          }
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: 'Registration Successful',
         description: 'Please check your email to verify your account.',
       });
       
-      // For now we're just showing a success toast
-    } catch (error) {
+      // For now, redirect to login page after successful signup
+      navigate('/auth/login');
+      
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      setAuthError(error.message || 'Failed to create your account. Please try again.');
       toast({
         variant: 'destructive',
         title: 'Registration Failed',
         description: 'There was an error creating your account. Please try again.',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -85,6 +115,12 @@ const FreelancerSignup = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <FormField
@@ -94,7 +130,7 @@ const FreelancerSignup = () => {
                     <FormItem>
                       <FormLabel>Full Name</FormLabel>
                       <FormControl>
-                        <Input placeholder="John Smith" {...field} />
+                        <Input placeholder="John Smith" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -108,7 +144,7 @@ const FreelancerSignup = () => {
                     <FormItem>
                       <FormLabel>Email</FormLabel>
                       <FormControl>
-                        <Input placeholder="name@example.com" {...field} />
+                        <Input placeholder="name@example.com" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -125,6 +161,7 @@ const FreelancerSignup = () => {
                         <Select 
                           onValueChange={field.onChange} 
                           defaultValue={field.value}
+                          disabled={isLoading}
                         >
                           <FormControl>
                             <SelectTrigger>
@@ -151,7 +188,7 @@ const FreelancerSignup = () => {
                       <FormItem>
                         <FormLabel>Location</FormLabel>
                         <FormControl>
-                          <Input placeholder="London, UK" {...field} />
+                          <Input placeholder="London, UK" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormDescription>
                           City, Country
@@ -169,7 +206,7 @@ const FreelancerSignup = () => {
                     <FormItem>
                       <FormLabel>Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -183,7 +220,7 @@ const FreelancerSignup = () => {
                     <FormItem>
                       <FormLabel>Confirm Password</FormLabel>
                       <FormControl>
-                        <Input type="password" placeholder="••••••••" {...field} />
+                        <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -201,7 +238,16 @@ const FreelancerSignup = () => {
                   </Link>
                 </div>
                 
-                <Button type="submit" className="w-full">Create Freelancer Account</Button>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Create Freelancer Account'
+                  )}
+                </Button>
               </form>
             </Form>
           </CardContent>

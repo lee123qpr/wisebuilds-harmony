@@ -1,6 +1,6 @@
 
-import React from 'react';
-import { Link } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,9 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import MainLayout from '@/components/layout/MainLayout';
+import { supabase } from '@/integrations/supabase/client';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loader2 } from 'lucide-react';
 
 const businessSchema = z.object({
   companyName: z.string().min(2, { message: 'Company name must be at least 2 characters' }),
@@ -30,6 +33,9 @@ type BusinessFormValues = z.infer<typeof businessSchema>;
 
 const BusinessSignup = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(false);
+  const [authError, setAuthError] = useState<string | null>(null);
   
   const form = useForm<BusinessFormValues>({
     resolver: zodResolver(businessSchema),
@@ -46,22 +52,48 @@ const BusinessSignup = () => {
   });
 
   const onSubmit = async (data: BusinessFormValues) => {
+    setIsLoading(true);
+    setAuthError(null);
+    
     try {
-      // Here we would normally register with Supabase
-      console.log('Business registration data:', data);
+      // Register with Supabase
+      const { data: authData, error } = await supabase.auth.signUp({
+        email: data.email,
+        password: data.password,
+        options: {
+          data: {
+            company_name: data.companyName,
+            contact_name: data.contactName,
+            phone: data.phone,
+            company_address: data.companyAddress,
+            company_description: data.companyDescription,
+            user_type: 'business'
+          }
+        }
+      });
+      
+      if (error) {
+        throw error;
+      }
       
       toast({
         title: 'Registration Successful',
         description: 'Please check your email to verify your account.',
       });
       
-      // For now we're just showing a success toast
-    } catch (error) {
+      // For now, redirect to login page after successful signup
+      navigate('/auth/login');
+      
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      setAuthError(error.message || 'Failed to create your account. Please try again.');
       toast({
         variant: 'destructive',
         title: 'Registration Failed',
         description: 'There was an error creating your account. Please try again.',
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -76,6 +108,12 @@ const BusinessSignup = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {authError && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertDescription>{authError}</AlertDescription>
+              </Alert>
+            )}
+            
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                 <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -86,7 +124,7 @@ const BusinessSignup = () => {
                       <FormItem>
                         <FormLabel>Company Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="ABC Construction Ltd" {...field} />
+                          <Input placeholder="ABC Construction Ltd" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -100,7 +138,7 @@ const BusinessSignup = () => {
                       <FormItem>
                         <FormLabel>Contact Name</FormLabel>
                         <FormControl>
-                          <Input placeholder="John Smith" {...field} />
+                          <Input placeholder="John Smith" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -116,7 +154,7 @@ const BusinessSignup = () => {
                       <FormItem>
                         <FormLabel>Business Email</FormLabel>
                         <FormControl>
-                          <Input placeholder="info@abcconstruction.co.uk" {...field} />
+                          <Input placeholder="info@abcconstruction.co.uk" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -130,7 +168,7 @@ const BusinessSignup = () => {
                       <FormItem>
                         <FormLabel>Business Phone</FormLabel>
                         <FormControl>
-                          <Input placeholder="+44 20 1234 5678" {...field} />
+                          <Input placeholder="+44 20 1234 5678" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -145,7 +183,7 @@ const BusinessSignup = () => {
                     <FormItem>
                       <FormLabel>Company Address</FormLabel>
                       <FormControl>
-                        <Input placeholder="123 Business Street, London, UK" {...field} />
+                        <Input placeholder="123 Business Street, London, UK" {...field} disabled={isLoading} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -163,6 +201,7 @@ const BusinessSignup = () => {
                           placeholder="Brief description of your company and the types of projects you typically handle..." 
                           {...field} 
                           className="min-h-[100px]"
+                          disabled={isLoading}
                         />
                       </FormControl>
                       <FormDescription>
@@ -181,7 +220,7 @@ const BusinessSignup = () => {
                       <FormItem>
                         <FormLabel>Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
+                          <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -195,7 +234,7 @@ const BusinessSignup = () => {
                       <FormItem>
                         <FormLabel>Confirm Password</FormLabel>
                         <FormControl>
-                          <Input type="password" placeholder="••••••••" {...field} />
+                          <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -214,7 +253,16 @@ const BusinessSignup = () => {
                   </Link>
                 </div>
                 
-                <Button type="submit" className="w-full">Create Business Account</Button>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Creating Account...
+                    </>
+                  ) : (
+                    'Create Business Account'
+                  )}
+                </Button>
               </form>
             </Form>
           </CardContent>
