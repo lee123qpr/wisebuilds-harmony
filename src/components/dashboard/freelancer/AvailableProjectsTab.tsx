@@ -1,29 +1,32 @@
 
-import React from 'react';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
+import { useProjects } from '@/components/projects/useProjects';
+import ProjectListView from './ProjectListView';
 
 const AvailableProjectsTab: React.FC = () => {
+  const { projects, isLoading } = useProjects();
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  
+  // Find the selected project
+  const selectedProject = selectedProjectId 
+    ? projects.find(project => project.id === selectedProjectId)
+    : projects.length > 0 ? projects[0] : null;
+  
+  // Set the first project as selected by default when projects load
+  React.useEffect(() => {
+    if (projects.length > 0 && !selectedProjectId) {
+      setSelectedProjectId(projects[0].id);
+    }
+  }, [projects, selectedProjectId]);
+
   return (
-    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {[1, 2, 3].map((item) => (
-        <Card key={item}>
-          <CardHeader>
-            <CardTitle>Kitchen Renovation in Manchester</CardTitle>
-            <CardDescription>Posted 2 days ago · £2,000-£3,500</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">Looking for an experienced contractor to renovate a kitchen in a Victorian home.</p>
-            <div className="flex flex-wrap gap-2 mb-4">
-              <span className="bg-muted text-xs px-2 py-1 rounded-full">Plumbing</span>
-              <span className="bg-muted text-xs px-2 py-1 rounded-full">Tiling</span>
-              <span className="bg-muted text-xs px-2 py-1 rounded-full">Carpentry</span>
-            </div>
-            <Button className="w-full">Apply Now</Button>
-          </CardContent>
-        </Card>
-      ))}
-    </div>
+    <ProjectListView 
+      projects={projects}
+      isLoading={isLoading}
+      selectedProjectId={selectedProjectId}
+      setSelectedProjectId={setSelectedProjectId}
+      selectedProject={selectedProject}
+    />
   );
 };
 
