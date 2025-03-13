@@ -2,11 +2,11 @@
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Checkbox } from '@/components/ui/checkbox';
 import { LeadSettingsFormValues } from './schema';
 import { LocationField } from '@/components/location/LocationField';
-import { roleOptions, workTypeOptions } from '@/components/projects/new-project/constants';
+import { roleOptions, workTypeOptions, durationOptions, budgetOptions, hiringStatusOptions } from '@/components/projects/new-project/constants';
 import { Badge } from '@/components/ui/badge';
 import { X } from 'lucide-react';
 
@@ -98,22 +98,138 @@ const LeadSettingsFields: React.FC<{ form: UseFormReturn<LeadSettingsFormValues>
         )}
       />
       
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <FormField
+          control={form.control}
+          name="budget"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Budget</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select budget range" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {budgetOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                The budget range you're looking for
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="duration"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Duration</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select duration" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {durationOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Your preferred project duration
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+      
       <FormField
         control={form.control}
-        name="max_budget"
+        name="hiring_status"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>Maximum Budget</FormLabel>
-            <FormControl>
-              <Input placeholder="e.g. £5,000" {...field} />
-            </FormControl>
+            <FormLabel>Hiring Status</FormLabel>
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <FormControl>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select hiring status" />
+                </SelectTrigger>
+              </FormControl>
+              <SelectContent>
+                {hiringStatusOptions.map((option) => (
+                  <SelectItem key={option.value} value={option.value}>
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
             <FormDescription>
-              The maximum budget you're looking for (optional)
+              Filter projects by hiring status
             </FormDescription>
             <FormMessage />
           </FormItem>
         )}
       />
+
+      <div className="space-y-3">
+        <FormLabel>Specific Requirements</FormLabel>
+        <div className="space-y-2">
+          <FormField
+            control={form.control}
+            name="requires_insurance"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Include Projects Requiring Insurance</FormLabel>
+                  <FormDescription>
+                    Check if you're willing to work on projects that require professional indemnity insurance
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="requires_site_visits"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Include Projects Requiring Site Visits</FormLabel>
+                  <FormDescription>
+                    Check if you're available for projects that require site visits
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+        </div>
+      </div>
       
       <FormField
         control={form.control}
@@ -122,7 +238,8 @@ const LeadSettingsFields: React.FC<{ form: UseFormReturn<LeadSettingsFormValues>
           <FormItem>
             <FormLabel>Keywords</FormLabel>
             <FormControl>
-              <Input 
+              <input 
+                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
                 placeholder="Type keyword and press Enter" 
                 onKeyDown={addKeyword}
               />

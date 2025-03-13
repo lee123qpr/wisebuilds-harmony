@@ -47,10 +47,14 @@ const LeadSettingsForm = () => {
     defaultValues: {
       role: '',
       location: '',
-      max_budget: '',
+      budget: '',
+      duration: '',
       work_type: '',
       project_type: [],
       keywords: [],
+      hiring_status: '',
+      requires_insurance: false,
+      requires_site_visits: false,
       notifications_enabled: true,
       email_alerts: true,
     },
@@ -60,12 +64,16 @@ const LeadSettingsForm = () => {
   React.useEffect(() => {
     if (existingSettings) {
       form.reset({
-        role: existingSettings.role,
-        location: existingSettings.location,
-        max_budget: existingSettings.max_budget || '',
+        role: existingSettings.role || '',
+        location: existingSettings.location || '',
+        budget: existingSettings.budget || '',
+        duration: existingSettings.duration || '',
         work_type: existingSettings.work_type || '',
         project_type: existingSettings.project_type || [],
         keywords: existingSettings.keywords || [],
+        hiring_status: existingSettings.hiring_status || '',
+        requires_insurance: existingSettings.requires_insurance || false,
+        requires_site_visits: existingSettings.requires_site_visits || false,
         notifications_enabled: existingSettings.notifications_enabled,
         email_alerts: existingSettings.email_alerts,
       });
@@ -79,12 +87,16 @@ const LeadSettingsForm = () => {
       
       const settingsData = {
         user_id: user.id,
-        role: values.role, // Ensure role is included
-        location: values.location, // Ensure location is included
-        max_budget: values.max_budget,
+        role: values.role,
+        location: values.location,
+        budget: values.budget,
+        duration: values.duration,
         work_type: values.work_type,
         project_type: values.project_type,
         keywords: values.keywords,
+        hiring_status: values.hiring_status,
+        requires_insurance: values.requires_insurance,
+        requires_site_visits: values.requires_site_visits,
         notifications_enabled: values.notifications_enabled,
         email_alerts: values.email_alerts,
         updated_at: new Date().toISOString()
