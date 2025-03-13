@@ -9,6 +9,7 @@ const ProjectsTable = () => {
   const {
     projects,
     isLoading,
+    refreshProjects,
     searchQuery,
     setSearchQuery,
     statusFilter,
@@ -42,7 +43,11 @@ const ProjectsTable = () => {
             <TableHead className="text-right">Actions</TableHead>
           </TableRow>
         </TableHeader>
-        <ProjectTableBody projects={projects} isLoading={isLoading} />
+        <ProjectTableBody 
+          projects={projects} 
+          isLoading={isLoading} 
+          refreshProjects={refreshProjects}
+        />
       </Table>
     </div>
   );

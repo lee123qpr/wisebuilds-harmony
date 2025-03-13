@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TableRow, TableCell, TableBody } from '@/components/ui/table';
 import ProjectStatusBadge from './ProjectStatusBadge';
@@ -10,9 +9,10 @@ import { Project } from './useProjects';
 type ProjectTableBodyProps = {
   projects: Project[];
   isLoading: boolean;
+  refreshProjects: () => Promise<void>;
 };
 
-const ProjectTableBody = ({ projects, isLoading }: ProjectTableBodyProps) => {
+const ProjectTableBody = ({ projects, isLoading, refreshProjects }: ProjectTableBodyProps) => {
   // Function to format date
   const formatDate = (dateString: string) => {
     try {
@@ -90,6 +90,7 @@ const ProjectTableBody = ({ projects, isLoading }: ProjectTableBodyProps) => {
               applications={project.applications} 
               projectId={project.id}
               hasDocuments={project.documents && project.documents.length > 0}
+              refreshProjects={refreshProjects}
             />
           </TableCell>
         </TableRow>
