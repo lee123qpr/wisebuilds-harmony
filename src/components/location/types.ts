@@ -21,15 +21,21 @@ export interface GoogleMapsWindow extends Window {
   };
 }
 
-// Define google.maps.places.Autocomplete for TypeScript
-export declare namespace google.maps.places {
-  export class Autocomplete {
-    addListener(event: string, callback: () => void): any;
-    getPlace(): {
-      formatted_address?: string;
-      geometry?: any;
-      name?: string;
-    };
+// Declare global Google Maps namespace
+declare global {
+  interface Window {
+    google?: any;
+  }
+  
+  namespace google.maps.places {
+    class Autocomplete {
+      addListener(event: string, callback: () => void): any;
+      getPlace(): {
+        formatted_address?: string;
+        geometry?: any;
+        name?: string;
+      };
+    }
   }
 }
 
@@ -39,4 +45,10 @@ export interface LocationFieldProps {
   name?: string; // Optional field name, defaults to 'location'
   label?: string; // Optional label, defaults to 'Location'
   description?: string; // Optional description text
+}
+
+// Define props for the LocationTriggerButton component
+export interface LocationTriggerButtonProps {
+  value: string | undefined;
+  isOpen: boolean;
 }

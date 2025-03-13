@@ -1,12 +1,11 @@
 
 import React, { useState, useRef } from 'react';
-import { MapPin } from 'lucide-react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
-import { Button } from '@/components/ui/button';
 import { Popover, PopoverTrigger } from '@/components/ui/popover';
 import { useGoogleMapsScript } from './useGoogleMapsScript';
 import { useLocationAutocomplete } from './useLocationAutocomplete';
 import { LocationPopoverContent } from './LocationPopoverContent';
+import { LocationTriggerButton } from './LocationTriggerButton';
 import { LocationFieldProps } from './types';
 
 export const LocationField: React.FC<LocationFieldProps> = ({ 
@@ -58,23 +57,10 @@ export const LocationField: React.FC<LocationFieldProps> = ({
           >
             <PopoverTrigger asChild>
               <FormControl>
-                <Button
-                  variant="outline"
-                  role="combobox"
-                  aria-expanded={locationPopoverOpen}
-                  className="w-full justify-between"
-                  type="button"
-                >
-                  {field.value ? (
-                    <span className="flex items-center truncate">
-                      <MapPin className="mr-2 h-4 w-4 shrink-0" />
-                      {field.value}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">Select location...</span>
-                  )}
-                  <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                </Button>
+                <LocationTriggerButton 
+                  value={field.value}
+                  isOpen={locationPopoverOpen}
+                />
               </FormControl>
             </PopoverTrigger>
             <LocationPopoverContent 
@@ -91,10 +77,3 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     />
   );
 };
-
-// Add this for window type extension
-declare global {
-  interface Window {
-    google?: any;
-  }
-}
