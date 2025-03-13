@@ -38,6 +38,9 @@ export const useProjects = () => {
       
       if (!authData?.session) {
         console.warn('User is not authenticated. This might affect data access.');
+        setError('Authentication required to view projects');
+        setIsLoading(false);
+        return;
       }
       
       // Log user information for debugging
@@ -55,28 +58,26 @@ export const useProjects = () => {
       
       console.log('Query being sent to Supabase:', query);
       
-      const { data, error, status, statusText } = await query;
+      const { data, error: fetchError, status, statusText } = await query;
 
       // Log more detailed response information
       console.log('Response status:', status, statusText);
       console.log('Raw response data:', data);
       
-      if (error) {
-        console.error('Supabase query error:', error);
-        throw error;
+      if (fetchError) {
+        console.error('Supabase query error:', fetchError);
+        throw fetchError;
       }
 
       // Let's check if we have permissions issues by trying a different approach
       if (!data || data.length === 0) {
         console.log('No projects found. Trying public access as fallback...');
         
-        // Try with .rpc() call if available, or other public data
+        // Try with a simpler query
         const { data: publicData, error: publicError } = await supabase
           .from('projects')
           .select('*')
-          .limit(5)
-          .is('status', null)
-          .or('status.eq.active,status.eq.completed');
+          .limit(5);
           
         if (publicError) {
           console.error('Fallback query error:', publicError);
@@ -138,22 +139,20 @@ export const useProjects = () => {
         console.log('DEBUG: Table access check:', tableInfo);
       }
       
-      // 2. Check if we can get project by ID without checking auth
+      // 2. Check if we can get project by ID without checking auth - Fixed to use maybeSingle()
       console.log('DEBUG: Trying to get a single project without auth check...');
       const { data: anyProject, error: anyProjectError } = await supabase
         .from('projects')
         .select('id, title')
         .limit(1)
-        .single();
+        .maybeSingle(); // Use maybeSingle() instead of single()
       
       if (anyProjectError) {
         console.error('DEBUG: Error getting any project:', anyProjectError);
-        
-        if (anyProjectError.message.includes('row') && anyProjectError.message.includes('found')) {
-          console.log('DEBUG: No projects exist in the database.');
-        }
-      } else {
+      } else if (anyProject) {
         console.log('DEBUG: Found project:', anyProject);
+      } else {
+        console.log('DEBUG: No projects exist in the database.');
       }
     } catch (err) {
       console.error('DEBUG: Exception in database check:', err);
