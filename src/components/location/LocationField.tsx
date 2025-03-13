@@ -34,7 +34,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     if (!document.getElementById('google-maps-script') && !window.google?.maps) {
       const script = document.createElement('script');
       script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY_HERE&libraries=places`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDJUlU7aa-kjhph-XZrx4CUiZdsOrTM4NE&libraries=places`;
       script.async = true;
       script.defer = true;
       
