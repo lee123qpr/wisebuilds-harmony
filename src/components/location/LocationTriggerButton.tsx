@@ -6,7 +6,8 @@ import { LocationTriggerButtonProps } from './types';
 
 export const LocationTriggerButton: React.FC<LocationTriggerButtonProps> = ({
   value,
-  isOpen
+  isOpen,
+  onClick
 }) => {
   return (
     <Button
@@ -15,6 +16,7 @@ export const LocationTriggerButton: React.FC<LocationTriggerButtonProps> = ({
       aria-expanded={isOpen}
       className="w-full justify-between"
       type="button"
+      onClick={onClick}
     >
       {value ? (
         <span className="flex items-center truncate">

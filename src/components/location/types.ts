@@ -51,4 +51,5 @@ export interface LocationFieldProps {
 export interface LocationTriggerButtonProps {
   value: string | undefined;
   isOpen: boolean;
+  onClick?: () => void;
 }

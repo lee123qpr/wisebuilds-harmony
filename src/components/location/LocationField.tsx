@@ -60,6 +60,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 <LocationTriggerButton 
                   value={field.value}
                   isOpen={locationPopoverOpen}
+                  onClick={() => setLocationPopoverOpen(true)}
                 />
               </FormControl>
             </PopoverTrigger>
