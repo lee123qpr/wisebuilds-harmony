@@ -12,6 +12,10 @@ import ForgotPassword from "./pages/auth/ForgotPassword";
 import FreelancerDashboard from "./pages/dashboard/FreelancerDashboard";
 import BusinessDashboard from "./pages/dashboard/BusinessDashboard";
 import AdminDashboard from "./pages/dashboard/AdminDashboard";
+import ViewProject from "./pages/project/ViewProject";
+import EditProject from "./pages/project/EditProject";
+import ProjectDocuments from "./pages/project/ProjectDocuments";
+import ProjectApplications from "./pages/project/ProjectApplications";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -54,6 +58,40 @@ const App = () => (
               element={
                 <ProtectedRoute allowedUserTypes={['admin']}>
                   <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Project Routes */}
+            <Route 
+              path="/project/:projectId" 
+              element={
+                <ProtectedRoute allowedUserTypes={['business']}>
+                  <ViewProject />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/project/:projectId/edit" 
+              element={
+                <ProtectedRoute allowedUserTypes={['business']}>
+                  <EditProject />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/project/:projectId/documents" 
+              element={
+                <ProtectedRoute allowedUserTypes={['business']}>
+                  <ProjectDocuments />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/project/:projectId/applications" 
+              element={
+                <ProtectedRoute allowedUserTypes={['business']}>
+                  <ProjectApplications />
                 </ProtectedRoute>
               } 
             />

@@ -21,7 +21,7 @@ type ProjectActionsProps = {
   applications: number;
   projectId: string;
   hasDocuments?: boolean;
-  refreshProjects?: () => void;
+  refreshProjects?: () => Promise<void>;
 };
 
 const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects }: ProjectActionsProps) => {
