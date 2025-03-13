@@ -15,30 +15,42 @@ export const CountryFilter: React.FC<CountryFilterProps> = memo(({
     <div className="space-y-2">
       <h4 className="text-sm font-medium">Country</h4>
       <div className="flex flex-wrap gap-2">
-        <Badge 
-          variant={activeFilter === 'all' ? 'default' : 'outline'} 
-          className="cursor-pointer"
+        <button 
+          type="button"
           onClick={() => setActiveFilter('all')}
-          type="button"
+          className="p-0 border-0 bg-transparent"
         >
-          All
-        </Badge>
-        <Badge 
-          variant={activeFilter === 'UK' ? 'default' : 'outline'} 
-          className="cursor-pointer"
+          <Badge 
+            variant={activeFilter === 'all' ? 'default' : 'outline'} 
+            className="cursor-pointer"
+          >
+            All
+          </Badge>
+        </button>
+        <button 
+          type="button"
           onClick={() => setActiveFilter('UK')}
-          type="button"
+          className="p-0 border-0 bg-transparent"
         >
-          UK
-        </Badge>
-        <Badge 
-          variant={activeFilter === 'Ireland' ? 'default' : 'outline'} 
-          className="cursor-pointer"
+          <Badge 
+            variant={activeFilter === 'UK' ? 'default' : 'outline'} 
+            className="cursor-pointer"
+          >
+            UK
+          </Badge>
+        </button>
+        <button 
+          type="button"
           onClick={() => setActiveFilter('Ireland')}
-          type="button"
+          className="p-0 border-0 bg-transparent"
         >
-          Ireland
-        </Badge>
+          <Badge 
+            variant={activeFilter === 'Ireland' ? 'default' : 'outline'} 
+            className="cursor-pointer"
+          >
+            Ireland
+          </Badge>
+        </button>
       </div>
     </div>
   );

@@ -18,15 +18,19 @@ export const RegionFilter: React.FC<RegionFilterProps> = memo(({
       <h4 className="text-sm font-medium">Region</h4>
       <div className="flex flex-wrap gap-2">
         {regions.map(region => (
-          <Badge 
+          <button 
             key={region}
-            variant={activeRegion === region ? 'default' : 'outline'} 
-            className="cursor-pointer"
-            onClick={() => setActiveRegion(activeRegion === region ? null : region)}
             type="button"
+            onClick={() => setActiveRegion(activeRegion === region ? null : region)}
+            className="p-0 border-0 bg-transparent"
           >
-            {region}
-          </Badge>
+            <Badge 
+              variant={activeRegion === region ? 'default' : 'outline'} 
+              className="cursor-pointer"
+            >
+              {region}
+            </Badge>
+          </button>
         ))}
       </div>
     </div>
