@@ -32,6 +32,27 @@ const ProjectTableBody = ({ projects, isLoading }: ProjectTableBodyProps) => {
     }
   };
 
+  // Function to format role
+  const formatRole = (role: string) => {
+    // Replace underscores with spaces and capitalize each word
+    return role
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Function to format budget
+  const formatBudget = (budget: string) => {
+    if (budget === '1000_to_5000') return '£1,000 - £5,000';
+    if (budget === '5000_to_10000') return '£5,000 - £10,000';
+    if (budget === '10000_plus') return '£10,000+';
+    if (budget === 'under_1000') return 'Under £1,000';
+    return budget
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   if (isLoading) {
     return (
       <TableBody>
@@ -62,8 +83,8 @@ const ProjectTableBody = ({ projects, isLoading }: ProjectTableBodyProps) => {
         <TableRow key={project.id}>
           <TableCell className="font-medium">{project.title}</TableCell>
           <TableCell>{formatDate(project.created_at)}</TableCell>
-          <TableCell>{project.role}</TableCell>
-          <TableCell>{project.budget}</TableCell>
+          <TableCell>{formatRole(project.role)}</TableCell>
+          <TableCell>{formatBudget(project.budget)}</TableCell>
           <TableCell>
             <ProjectStatusBadge status={project.status} />
           </TableCell>
