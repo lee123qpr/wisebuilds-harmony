@@ -100,8 +100,8 @@ const AvailableProjectsTab: React.FC = () => {
           </CardHeader>
           <CardContent>
             <ul className="list-disc pl-5 space-y-1">
-              <li>Your RLS policies are set up correctly to allow viewing projects</li>
-              <li>You may not have the correct permissions to view projects</li>
+              <li>Row Level Security (RLS) policies are set up correctly to allow viewing projects</li>
+              <li>There are projects in the database</li>
               <li>Your current authentication state: {user ? `Logged in as ${user.email}` : 'Not logged in'}</li>
             </ul>
             <div className="flex space-x-4 mt-4">

@@ -32,17 +32,17 @@ export const useProjects = () => {
     try {
       console.log('Fetching projects from Supabase...');
       
-      // First, check if we're authenticated
+      // Check if we're authenticated
       const { data: authData } = await supabase.auth.getSession();
       console.log('Authentication status:', authData?.session ? 'Authenticated' : 'Not authenticated');
       
-      // Log user information for debugging
       if (authData?.session?.user) {
         console.log('User ID:', authData.session.user.id);
         console.log('User email:', authData.session.user.email);
       }
       
-      // Simplified query - fetch all projects without complex filters
+      // Fetch all projects - with the RLS policies, this will return 
+      // only projects the user has permission to see
       const { data, error: fetchError } = await supabase
         .from('projects')
         .select('*');
@@ -67,9 +67,7 @@ export const useProjects = () => {
         setProjects(projectsWithParsedDocuments);
         console.log('Processed projects:', projectsWithParsedDocuments);
       } else {
-        // Handle case when data is null
         setProjects([]);
-        console.log('No projects data received from Supabase');
       }
     } catch (error: any) {
       console.error('Error fetching projects:', error);
