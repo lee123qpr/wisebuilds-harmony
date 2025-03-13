@@ -24,8 +24,13 @@ const AvailableProjectsTab: React.FC = () => {
 
   // Handle refresh
   const handleRefresh = () => {
+    console.log('Manually refreshing projects...');
     refreshProjects();
   };
+
+  console.log('Current projects in AvailableProjectsTab:', projects);
+  console.log('Is loading:', isLoading);
+  console.log('Error state:', error);
 
   if (error) {
     return (
@@ -56,13 +61,34 @@ const AvailableProjectsTab: React.FC = () => {
           <RefreshCw className="mr-2 h-4 w-4" /> Refresh
         </Button>
       </div>
-      <ProjectListView 
-        projects={projects}
-        isLoading={isLoading}
-        selectedProjectId={selectedProjectId}
-        setSelectedProjectId={setSelectedProjectId}
-        selectedProject={selectedProject}
-      />
+      {projects.length === 0 && !isLoading ? (
+        <Card>
+          <CardHeader>
+            <CardTitle>No Projects Found</CardTitle>
+            <CardDescription>
+              There are currently no projects available. This could be due to:
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <ul className="list-disc pl-5 space-y-1">
+              <li>No projects have been created yet</li>
+              <li>You may not have the correct permissions to view projects</li>
+              <li>There might be an issue with the database connection</li>
+            </ul>
+            <Button onClick={handleRefresh} className="mt-4">
+              <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+            </Button>
+          </CardContent>
+        </Card>
+      ) : (
+        <ProjectListView 
+          projects={projects}
+          isLoading={isLoading}
+          selectedProjectId={selectedProjectId}
+          setSelectedProjectId={setSelectedProjectId}
+          selectedProject={selectedProject}
+        />
+      )}
     </div>
   );
 };

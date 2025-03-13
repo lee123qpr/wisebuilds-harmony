@@ -32,15 +32,14 @@ export const useProjects = () => {
     try {
       console.log('Fetching projects from Supabase...');
       
-      // Only filter by status if it's not 'all'
+      // Build the query without any filters initially - we want to see ALL projects
       let query = supabase
         .from('projects')
         .select('*');
       
-      if (statusFilter !== 'all') {
-        query = query.eq('status', statusFilter);
-      }
-
+      // We'll log the SQL query to see what's being sent to Supabase
+      console.log('Query being sent to Supabase:', query);
+      
       const { data, error } = await query.order('created_at', { ascending: false });
 
       if (error) {
@@ -89,7 +88,7 @@ export const useProjects = () => {
     return () => {
       supabase.removeChannel(projectsSubscription);
     };
-  }, [statusFilter]); // Re-fetch when statusFilter changes
+  }, []); // Remove the dependency on statusFilter for now to avoid unnecessary refetches
 
   // Return filter states along with projects data
   return { 
