@@ -28,12 +28,12 @@ export const useGoogleMapsScript = () => {
     // Create script element
     const script = document.createElement('script');
     script.id = 'google-maps-script';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&loading=async`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&callback=initMap`;
     script.async = true;
     script.defer = true;
     
-    // Set up success handler
-    script.onload = () => {
+    // Define callback function
+    window.initMap = function() {
       console.log('Google Maps API loaded successfully');
       setIsLoading(false);
       setIsLoaded(true);
@@ -57,6 +57,10 @@ export const useGoogleMapsScript = () => {
     // Cleanup function - not removing script as it might be used elsewhere
     return () => {
       // Script stays in the DOM for reuse
+      if (window.initMap) {
+        // @ts-ignore - Cleaning up the global callback
+        window.initMap = undefined;
+      }
     };
   }, [toast]);
 

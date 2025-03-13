@@ -19,22 +19,28 @@ export interface GoogleMapsWindow extends Window {
       };
     };
   };
+  initMap?: () => void; // Global callback for Google Maps
 }
 
 // Declare global Google Maps namespace
 declare global {
   interface Window {
     google?: any;
+    initMap?: () => void; // Add global callback definition
   }
   
-  namespace google.maps.places {
-    class Autocomplete {
-      addListener(event: string, callback: () => void): any;
-      getPlace(): {
-        formatted_address?: string;
-        geometry?: any;
-        name?: string;
-      };
+  namespace google.maps {
+    class MapsEventListener {}
+    
+    namespace places {
+      class Autocomplete {
+        addListener(event: string, callback: () => void): MapsEventListener;
+        getPlace(): {
+          formatted_address?: string;
+          geometry?: any;
+          name?: string;
+        };
+      }
     }
   }
 }

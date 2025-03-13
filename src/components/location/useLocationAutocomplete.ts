@@ -19,10 +19,17 @@ export const useLocationAutocomplete = ({
   onPlaceSelect,
 }: UseLocationAutocompleteProps) => {
   const autocompleteInstanceRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const listenerRef = useRef<google.maps.MapsEventListener | null>(null);
   const { toast } = useToast();
 
   // Initialize autocomplete only when popover is open and Google Maps is loaded
   useEffect(() => {
+    // Clean up previous instance if it exists
+    if (listenerRef.current && window.google?.maps?.event) {
+      google.maps.event.removeListener(listenerRef.current);
+      listenerRef.current = null;
+    }
+    
     // Exit early if any condition is not met
     if (!isOpen || !inputRef.current || !isGoogleMapsLoaded) {
       return;
@@ -56,7 +63,7 @@ export const useLocationAutocomplete = ({
       autocompleteInstanceRef.current = autocomplete;
       
       // Add place_changed event listener
-      const listener = autocomplete.addListener('place_changed', () => {
+      listenerRef.current = autocomplete.addListener('place_changed', () => {
         const place = autocomplete.getPlace();
         console.log('Selected place:', place);
         
@@ -69,9 +76,9 @@ export const useLocationAutocomplete = ({
       
       // Return cleanup function
       return () => {
-        if (window.google?.maps) {
-          // @ts-ignore - google.maps.event might not be properly typed
-          google.maps.event.removeListener(listener);
+        if (window.google?.maps?.event && listenerRef.current) {
+          google.maps.event.removeListener(listenerRef.current);
+          listenerRef.current = null;
         }
       };
     } catch (error) {

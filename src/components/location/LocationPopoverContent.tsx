@@ -1,5 +1,5 @@
 
-import React, { RefObject } from 'react';
+import React, { RefObject, useEffect } from 'react';
 import { PopoverContent } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
 
@@ -12,6 +12,16 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
   inputRef,
   isLoading
 }) => {
+  // Focus the input when popover opens
+  useEffect(() => {
+    if (inputRef.current) {
+      // Short timeout to ensure the popover is fully rendered
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 100);
+    }
+  }, [inputRef]);
+
   return (
     <PopoverContent className="w-[300px] p-4" align="start">
       <div className="space-y-2">
@@ -20,8 +30,8 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
           ref={inputRef}
           placeholder="Type to search UK/Ireland cities..."
           className="w-full"
-          // Focus the input when popover opens
-          onFocus={() => console.log('Input focused')}
+          // Add autocomplete="off" to prevent browser's native autocomplete from interfering
+          autoComplete="off"
         />
         {isLoading && (
           <div className="text-xs text-amber-500">
