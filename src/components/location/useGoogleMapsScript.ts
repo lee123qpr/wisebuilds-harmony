@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
 /**
- * Hook to load the Google Maps script with improved loading logic
+ * Hook to load the Google Maps script with async loading for better performance
  * @returns Object containing loading state and error information
  */
 export const useGoogleMapsScript = () => {
@@ -36,12 +36,15 @@ export const useGoogleMapsScript = () => {
 
     console.log('Loading Google Maps API');
     
-    // Create script element
+    // Create script element with async attribute
     const script = document.createElement('script');
     script.id = 'google-maps-script';
     script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&callback=initMap`;
-    script.async = true;
+    script.async = true; // This is already set to true
     script.defer = true;
+    
+    // Add loading attribute for better performance as recommended by Google
+    script.setAttribute('loading', 'async');
     
     // Set up error handler
     script.onerror = (e) => {

@@ -30,7 +30,7 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
 
   return (
     <PopoverContent 
-      className="w-[300px] p-4 z-[100]" 
+      className="w-[300px] p-4 z-[9999]" // Increased z-index for better stacking
       align="start" 
       sideOffset={5}
       onOpenAutoFocus={(e) => {

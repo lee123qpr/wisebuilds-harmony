@@ -57,7 +57,7 @@ export const useLocationAutocomplete = ({
     
     try {
       // Short delay to ensure input is ready
-      setTimeout(() => {
+      const timeoutId = setTimeout(() => {
         if (!inputRef.current || !window.google?.maps?.places) {
           return;
         }
@@ -90,6 +90,11 @@ export const useLocationAutocomplete = ({
               onPlaceSelect(place);
             } else {
               console.warn('No place address found');
+              toast({
+                variant: 'warning',
+                title: 'Location not found',
+                description: 'Please select a location from the dropdown.'
+              });
             }
           });
           
@@ -97,8 +102,11 @@ export const useLocationAutocomplete = ({
         }
       }, 300);
       
-      // Return cleanup function
-      return cleanupListener;
+      // Return cleanup function that clears the timeout and listener
+      return () => {
+        clearTimeout(timeoutId);
+        cleanupListener();
+      };
     } catch (error) {
       console.error('Error initializing Places Autocomplete:', error);
       toast({
