@@ -1,67 +1,19 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
 import { LeadSettingsFormValues } from './schema';
 import { LocationField } from '@/components/location/LocationField';
-import { roleOptions, workTypeOptions, durationOptions, budgetOptions, hiringStatusOptions } from '@/components/projects/new-project/constants';
-import { Badge } from '@/components/ui/badge';
-import { X } from 'lucide-react';
+import { RoleField } from './components/RoleField';
+import { WorkTypeField } from './components/WorkTypeField';
+import { BudgetDurationFields } from './components/BudgetDurationFields';
+import { HiringStatusField } from './components/HiringStatusField';
+import { RequirementsCheckboxes } from './components/RequirementsCheckboxes';
+import { KeywordsField } from './components/KeywordsField';
 
 const LeadSettingsFields: React.FC<{ form: UseFormReturn<LeadSettingsFormValues> }> = ({ form }) => {
-  const addKeyword = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    const input = event.currentTarget;
-    if (event.key === 'Enter' && input.value) {
-      event.preventDefault();
-      const currentKeywords = form.getValues('keywords') || [];
-      const newKeyword = input.value.trim();
-      
-      if (newKeyword && !currentKeywords.includes(newKeyword)) {
-        form.setValue('keywords', [...currentKeywords, newKeyword]);
-        input.value = '';
-      }
-    }
-  };
-
-  const removeKeyword = (keyword: string) => {
-    const currentKeywords = form.getValues('keywords') || [];
-    form.setValue(
-      'keywords',
-      currentKeywords.filter(k => k !== keyword)
-    );
-  };
-
   return (
     <div className="space-y-6">
-      <FormField
-        control={form.control}
-        name="role"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Role Required</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select required role" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {roleOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormDescription>
-              Select the role you're interested in
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <RoleField form={form} />
       
       <LocationField 
         form={form} 
@@ -70,198 +22,15 @@ const LeadSettingsFields: React.FC<{ form: UseFormReturn<LeadSettingsFormValues>
         description="Where you want to work (UK and Ireland locations only)"
       />
       
-      <FormField
-        control={form.control}
-        name="work_type"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Work Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select work type" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {workTypeOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormDescription>
-              Specify if you prefer remote, on-site, or hybrid work
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <WorkTypeField form={form} />
       
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <FormField
-          control={form.control}
-          name="budget"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Budget</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select budget range" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {budgetOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                The budget range you're looking for
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        
-        <FormField
-          control={form.control}
-          name="duration"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Duration</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select duration" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {durationOptions.map((option) => (
-                    <SelectItem key={option.value} value={option.value}>
-                      {option.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                Your preferred project duration
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      </div>
+      <BudgetDurationFields form={form} />
       
-      <FormField
-        control={form.control}
-        name="hiring_status"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Hiring Status</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select hiring status" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                {hiringStatusOptions.map((option) => (
-                  <SelectItem key={option.value} value={option.value}>
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormDescription>
-              Filter projects by hiring status
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <HiringStatusField form={form} />
 
-      <div className="space-y-3">
-        <FormLabel>Specific Requirements</FormLabel>
-        <div className="space-y-2">
-          <FormField
-            control={form.control}
-            name="requires_insurance"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Include Projects Requiring Insurance</FormLabel>
-                  <FormDescription>
-                    Check if you're willing to work on projects that require professional indemnity insurance
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
-          />
-          
-          <FormField
-            control={form.control}
-            name="requires_site_visits"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel>Include Projects Requiring Site Visits</FormLabel>
-                  <FormDescription>
-                    Check if you're available for projects that require site visits
-                  </FormDescription>
-                </div>
-              </FormItem>
-            )}
-          />
-        </div>
-      </div>
+      <RequirementsCheckboxes form={form} />
       
-      <FormField
-        control={form.control}
-        name="keywords"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Keywords</FormLabel>
-            <FormControl>
-              <input 
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" 
-                placeholder="Type keyword and press Enter" 
-                onKeyDown={addKeyword}
-              />
-            </FormControl>
-            <FormDescription>
-              Add keywords related to projects you're interested in
-            </FormDescription>
-            <div className="flex flex-wrap gap-2 mt-2">
-              {(field.value || []).map((keyword, index) => (
-                <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                  {keyword}
-                  <X 
-                    className="h-3 w-3 cursor-pointer" 
-                    onClick={() => removeKeyword(keyword)}
-                  />
-                </Badge>
-              ))}
-            </div>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <KeywordsField form={form} />
     </div>
   );
 };
