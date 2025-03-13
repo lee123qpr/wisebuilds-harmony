@@ -3,6 +3,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
+import AuthStatus from '@/components/auth/AuthStatus';
 
 const Header: React.FC = () => {
   return (
@@ -44,25 +45,7 @@ const Header: React.FC = () => {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <div className="flex items-center space-x-4">
-          <Link to="/auth/login">
-            <Button variant="outline" className="border-logo-dark-blue text-logo-dark-blue hover:bg-logo-light-blue/20">
-              Log In
-            </Button>
-          </Link>
-          <div className="hidden sm:block">
-            <Link to="/auth/signup/freelancer">
-              <Button variant="outline" className="border-logo-dark-blue text-logo-dark-blue hover:bg-logo-light-blue/20">
-                Freelancer Sign Up
-              </Button>
-            </Link>
-          </div>
-          <Link to="/auth/signup/business">
-            <Button className="bg-logo-dark-blue hover:bg-logo-dark-blue/90 text-white">
-              Business Sign Up
-            </Button>
-          </Link>
-        </div>
+        <AuthStatus />
       </div>
     </header>
   );
