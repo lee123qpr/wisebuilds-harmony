@@ -30,7 +30,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({ form }) => {
         country: activeFilter !== 'all' ? activeFilter as 'UK' | 'Ireland' : undefined,
         region: activeRegion || undefined,
         minInputLength: locationInputValue ? 1 : 0, // Show results immediately when filtering
-        limit: 20 // Show more results
+        limit: 50 // Increased from 20 to 50 to show more locations
       })
     );
   }, [locationInputValue, activeFilter, activeRegion]);

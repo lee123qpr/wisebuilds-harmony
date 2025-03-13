@@ -6,32 +6,10 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { filterLocations, getLocationDisplayString, Location } from '@/utils/locationService';
 import { ProjectFormValues } from './schema';
-import { useState, useEffect } from 'react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { Button } from '@/components/ui/button';
-import { Command, CommandInput, CommandEmpty, CommandGroup, CommandItem, CommandList } from '@/components/ui/command';
-import { Check, MapPin } from 'lucide-react';
+import { LocationField } from '@/components/projects/new-project/LocationField';
 
 const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }> = ({ form }) => {
-  const [locationInputValue, setLocationInputValue] = useState('');
-  const [filteredLocations, setFilteredLocations] = useState<Location[]>([]);
-  const [locationPopoverOpen, setLocationPopoverOpen] = useState(false);
-
-  useEffect(() => {
-    setFilteredLocations(filterLocations(locationInputValue));
-  }, [locationInputValue]);
-
-  const groupedLocations = filteredLocations.reduce((groups, location) => {
-    const country = location.country;
-    if (!groups[country]) {
-      groups[country] = [];
-    }
-    groups[country].push(location);
-    return groups;
-  }, {} as Record<string, Location[]>);
-
   return (
     <div className="space-y-6">
       <FormField
@@ -87,85 +65,7 @@ const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }>
         )}
       />
       
-      <FormField
-        control={form.control}
-        name="location"
-        render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel>Location</FormLabel>
-            <Popover 
-              open={locationPopoverOpen} 
-              onOpenChange={setLocationPopoverOpen}
-            >
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <Button
-                    variant="outline"
-                    role="combobox"
-                    aria-expanded={locationPopoverOpen}
-                    className="w-full justify-between"
-                  >
-                    {field.value ? (
-                      <span className="flex items-center">
-                        <MapPin className="mr-2 h-4 w-4 shrink-0" />
-                        {field.value}
-                      </span>
-                    ) : (
-                      "Select location..."
-                    )}
-                    <MapPin className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                  </Button>
-                </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-full p-0" align="start">
-                <Command>
-                  <CommandInput 
-                    placeholder="Search UK/Ireland location..." 
-                    value={locationInputValue}
-                    onValueChange={setLocationInputValue}
-                    className="h-9"
-                  />
-                  <CommandList>
-                    <CommandEmpty>No location found.</CommandEmpty>
-                    {Object.entries(groupedLocations).map(([country, locations]) => (
-                      <CommandGroup key={country} heading={country}>
-                        {locations.map((location) => (
-                          <CommandItem
-                            key={`${location.name}-${location.country}`}
-                            value={location.name}
-                            onSelect={(value) => {
-                              field.onChange(value);
-                              setLocationInputValue("");
-                              setLocationPopoverOpen(false);
-                            }}
-                            className="flex items-center justify-between"
-                          >
-                            <div className="flex flex-col">
-                              <span>{location.name}</span>
-                              {location.region && (
-                                <span className="text-xs text-muted-foreground">
-                                  {location.region}, {location.country}
-                                </span>
-                              )}
-                            </div>
-                            {field.value === location.name && (
-                              <Check className="ml-2 h-4 w-4" />
-                            )}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    ))}
-                  </CommandList>
-                </Command>
-              </PopoverContent>
-            </Popover>
-            <FormDescription>
-              Where the work will be performed (UK and Ireland locations only)
-            </FormDescription>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      <LocationField form={form} />
       
       <FormField
         control={form.control}

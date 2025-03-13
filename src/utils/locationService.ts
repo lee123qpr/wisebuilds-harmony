@@ -103,8 +103,8 @@ export interface FilterOptions {
 
 const defaultFilterOptions: FilterOptions = {
   country: 'all',
-  limit: 10,
-  minInputLength: 2
+  limit: 50, // Increased from 10 to 50
+  minInputLength: 1 // Reduced from 2 to 1 to show results more quickly
 };
 
 // Function to filter locations based on user input with improved options
@@ -115,8 +115,12 @@ export const filterLocations = (
   const filterOptions = { ...defaultFilterOptions, ...options };
   const lowerCaseInput = inputValue.toLowerCase();
   
-  // Return empty array if input is too short to avoid overwhelming dropdown
-  if (lowerCaseInput.length < filterOptions.minInputLength!) return [];
+  // Return some results even if input is very short, to help with exploration
+  if (lowerCaseInput.length < filterOptions.minInputLength! && 
+      !options.country && 
+      !options.region) {
+    return [];
+  }
   
   let filteredLocations = ukIrelandLocations;
   
@@ -134,10 +138,12 @@ export const filterLocations = (
     );
   }
   
-  // Filter by name match
-  filteredLocations = filteredLocations.filter(location =>
-    location.name.toLowerCase().includes(lowerCaseInput)
-  );
+  // Filter by name match if there's input
+  if (lowerCaseInput) {
+    filteredLocations = filteredLocations.filter(location =>
+      location.name.toLowerCase().includes(lowerCaseInput)
+    );
+  }
   
   // Limit results for better UX
   return filteredLocations.slice(0, filterOptions.limit);
