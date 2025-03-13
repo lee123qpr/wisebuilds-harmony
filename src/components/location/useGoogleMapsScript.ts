@@ -24,6 +24,14 @@ export const useGoogleMapsScript = () => {
     // Skip if the script tag is already in the document
     if (document.getElementById('google-maps-script')) {
       console.log('Google Maps script tag already exists, waiting for it to load');
+
+      // Setup callback to monitor for the script load
+      window.initMap = function() {
+        console.log('Google Maps API loaded successfully via existing script');
+        setIsLoading(false);
+        setIsLoaded(true);
+      };
+      
       return;
     }
 
@@ -60,10 +68,8 @@ export const useGoogleMapsScript = () => {
     
     // Cleanup function
     return () => {
-      if (window.initMap) {
-        // @ts-ignore - Cleaning up the global callback
-        window.initMap = undefined;
-      }
+      // We'll leave the global callback in place to ensure the script loads properly if already in process
+      // Don't remove the script tag to prevent reloading issues
     };
   }, [toast]);
 

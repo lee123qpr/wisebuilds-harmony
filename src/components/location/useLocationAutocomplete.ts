@@ -28,11 +28,9 @@ export const useLocationAutocomplete = ({
     const cleanupListener = () => {
       if (listenerRef.current && window.google?.maps) {
         try {
-          if (typeof window.google.maps.event?.removeListener === 'function') {
-            window.google.maps.event.removeListener(listenerRef.current);
-            listenerRef.current = null;
-            console.log('Removed event listener');
-          }
+          google.maps.event.removeListener(listenerRef.current);
+          listenerRef.current = null;
+          console.log('Removed event listener');
         } catch (error) {
           console.error('Error removing event listener:', error);
         }
@@ -79,26 +77,19 @@ export const useLocationAutocomplete = ({
         
         console.log('Created autocomplete instance');
         
-        // Store the instance in a ref for cleanup
-        autocompleteInstanceRef.current = autocomplete;
-        
         // Add place_changed event listener
-        if (autocomplete && typeof autocomplete.addListener === 'function') {
-          listenerRef.current = autocomplete.addListener('place_changed', () => {
-            const place = autocomplete.getPlace();
-            console.log('Selected place:', place);
-            
-            if (place && place.formatted_address) {
-              onPlaceSelect(place);
-            } else {
-              console.warn('No place address found');
-            }
-          });
+        listenerRef.current = google.maps.event.addListener(autocomplete, 'place_changed', () => {
+          const place = autocomplete.getPlace();
+          console.log('Selected place:', place);
           
-          console.log('Added place_changed event listener');
-        } else {
-          console.error('Failed to add listener to autocomplete instance');
-        }
+          if (place && place.formatted_address) {
+            onPlaceSelect(place);
+          } else {
+            console.warn('No place address found');
+          }
+        });
+        
+        console.log('Added place_changed event listener');
       }, 300);
       
       // Return cleanup function

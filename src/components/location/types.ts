@@ -12,10 +12,10 @@ export interface GoogleMapsWindow extends Window {
             types?: string[];
           }
         ) => google.maps.places.Autocomplete;
-        // Add other necessary types
       };
       event: {
         removeListener: (listener: google.maps.MapsEventListener) => void;
+        addListener: (instance: any, eventName: string, handler: Function) => google.maps.MapsEventListener;
       };
     };
   };
@@ -46,6 +46,7 @@ declare global {
     // Define the event namespace
     namespace event {
       function removeListener(listener: MapsEventListener): void;
+      function addListener(instance: any, eventName: string, handler: Function): MapsEventListener;
     }
   }
 }

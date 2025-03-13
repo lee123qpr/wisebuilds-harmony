@@ -29,7 +29,7 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
   }, [inputRef]);
 
   return (
-    <PopoverContent className="w-[300px] p-4" align="start" sideOffset={5}>
+    <PopoverContent className="w-[300px] p-4 z-50" align="start" sideOffset={5}>
       <div className="space-y-2">
         <h4 className="text-sm font-medium">Search location</h4>
         <Input
