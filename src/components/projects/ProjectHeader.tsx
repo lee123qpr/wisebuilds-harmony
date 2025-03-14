@@ -7,11 +7,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 
 interface ProjectHeaderProps {
   projectId: string;
-  title: string;
   onDelete: () => Promise<void>;
 }
 
-const ProjectHeader = ({ projectId, title, onDelete }: ProjectHeaderProps) => {
+const ProjectHeader = ({ projectId, onDelete }: ProjectHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -19,7 +18,6 @@ const ProjectHeader = ({ projectId, title, onDelete }: ProjectHeaderProps) => {
       <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/business')}>
         <ArrowLeft className="h-4 w-4" />
       </Button>
-      <h1 className="text-2xl font-bold truncate max-w-md">{title}</h1>
       <div className="ml-auto flex gap-2">
         <Button 
           variant="outline" 

@@ -50,7 +50,6 @@ const ViewProject = () => {
               {(handleDelete) => (
                 <ProjectHeader 
                   projectId={project!.id} 
-                  title={project!.title} 
                   onDelete={handleDelete} 
                 />
               )}
