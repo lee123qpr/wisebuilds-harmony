@@ -61,7 +61,8 @@ export const useGoogleMapsScript = () => {
       script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBJsbbC2Pv91pusMWPaF979yK-XpyHzLtM&libraries=places&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
-      script.loading = 'async'; // Use the proper attribute loading
+      // Fix: Use setAttribute instead of direct property assignment for loading
+      script.setAttribute('loading', 'async'); // Add the loading=async attribute for best-practice loading
       
       // Handle script loading error
       script.onerror = (event) => {
