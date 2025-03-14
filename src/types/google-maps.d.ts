@@ -8,7 +8,6 @@ declare namespace google {
           options?: AutocompleteOptions
         );
         getPlace(): PlaceResult;
-        addListener(eventName: string, handler: Function): MapsEventListener;
       }
       
       interface AutocompleteOptions {
