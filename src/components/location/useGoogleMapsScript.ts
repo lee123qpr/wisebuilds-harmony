@@ -22,7 +22,8 @@ export const useGoogleMapsScript = () => {
     }
     
     // Define callback function that will be called when the script loads
-    window.initMap = function() {
+    const callbackName = 'initGoogleMapsAPI_' + Math.random().toString(36).substring(2, 9);
+    window[callbackName as keyof typeof window] = function() {
       console.log('Google Maps API loaded successfully');
       setIsLoading(false);
       setIsLoaded(true);
@@ -40,7 +41,7 @@ export const useGoogleMapsScript = () => {
     // Create script element
     const script = document.createElement('script');
     script.id = 'google-maps-script';
-    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&callback=initMap`;
+    script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&callback=${callbackName}`;
     script.async = true;
     script.defer = true;
     
@@ -62,6 +63,10 @@ export const useGoogleMapsScript = () => {
     // Cleanup function
     return () => {
       // We don't remove the script since it should remain available throughout the app
+      // But we can clean up our global callback
+      if (window[callbackName as keyof typeof window]) {
+        delete window[callbackName as keyof typeof window];
+      }
     };
   }, [toast]);
 
