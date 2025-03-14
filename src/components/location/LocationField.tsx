@@ -138,23 +138,20 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                   // Set our local ref
                   inputRef.current = el;
                   
-                  // Handle react-hook-form's ref properly
+                  // Handle react-hook-form's ref properly by using type assertion
                   if (typeof field.ref === 'function') {
                     // If field.ref is a function, call it with the element
                     field.ref(el);
                   } else if (field.ref) {
-                    // Safely assign to field.ref.current if it exists
-                    // Using type assertion to avoid TypeScript error
+                    // Type assertion to tell TypeScript this is an object with a current property
                     const refObject = field.ref as { current: HTMLInputElement | null };
                     refObject.current = el;
                   }
                 }}
-                onFocus={(e) => {
-                  // Clear any previous selection on focus to encourage re-selecting from dropdown
-                  if (field.value && !field.value.trim()) {
-                    e.target.select();
-                  }
-                }}
+                // Important: Don't override Google's autocomplete features
+                autoComplete="off"
+                // Make sure form field's onBlur callback is called
+                onBlur={field.onBlur}
               />
             </div>
           </FormControl>
