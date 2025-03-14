@@ -7,7 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 export const useLocationAutocomplete = (form: any, fieldName: string) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-  const { isLoaded, error } = useLoadScript({
+  const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
     libraries: ['places'],
   });
@@ -30,7 +30,7 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
       );
 
       // When a place is selected, extract and update the form field
-      autocompleteRef.current.addListener('place_changed', () => {
+      google.maps.event.addListener(autocompleteRef.current, 'place_changed', () => {
         const place = autocompleteRef.current?.getPlace();
         if (place && place.formatted_address) {
           // Update form field with the formatted address
@@ -54,15 +54,15 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
 
   // Handle errors from the Google Maps API
   useEffect(() => {
-    if (error) {
-      console.error('Error loading Google Maps script:', error);
+    if (loadError) {
+      console.error('Error loading Google Maps script:', loadError);
       toast({
         variant: 'destructive',
         title: 'Google Maps Error',
         description: 'Failed to load location search. Please try again later.'
       });
     }
-  }, [error, toast]);
+  }, [loadError, toast]);
 
   return { 
     inputRef, 

@@ -23,8 +23,9 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     style.innerHTML = `
       .pac-container {
         z-index: 9999 !important;
-        position: absolute !important;
+        position: fixed !important;
         pointer-events: auto !important;
+        transform: translateZ(0) !important;
       }
       .pac-item {
         pointer-events: auto !important;
@@ -38,11 +39,11 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     };
   }, []);
 
-  // Create a minimum 500ms delay for blur events to allow selecting autocomplete options
+  // Create a minimum 1000ms delay for blur events to allow selecting autocomplete options
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
     setTimeout(() => {
       field.onBlur();
-    }, 500);
+    }, 1000);
   };
 
   return (
