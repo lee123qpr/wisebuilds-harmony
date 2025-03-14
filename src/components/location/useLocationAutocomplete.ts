@@ -6,7 +6,7 @@ interface UseLocationAutocompleteProps {
   isOpen: boolean;
   isGoogleMapsLoaded: boolean;
   inputRef: RefObject<HTMLInputElement>;
-  onPlaceSelect: (place: { formatted_address: string }) => void;
+  onPlaceSelect: (place: { formatted_address?: string }) => void; // Changed to make formatted_address optional
   searchText: string;
 }
 
@@ -30,7 +30,7 @@ export const useLocationAutocomplete = ({
     const cleanupListener = () => {
       if (listenerRef.current && window.google?.maps?.event) {
         try {
-          google.maps.event.removeListener(listenerRef.current);
+          window.google.maps.event.removeListener(listenerRef.current);
           listenerRef.current = null;
           console.log('Removed event listener');
         } catch (error) {
@@ -78,14 +78,15 @@ export const useLocationAutocomplete = ({
       
       // Add place_changed event listener safely
       if (window.google?.maps?.event) {
-        listenerRef.current = google.maps.event.addListener(autocomplete, 'place_changed', () => {
+        listenerRef.current = window.google.maps.event.addListener(autocomplete, 'place_changed', () => {
           const place = autocomplete.getPlace();
           console.log('Selected place:', place);
           
-          if (place && place.formatted_address) {
+          if (place) {
+            // Pass the place with potentially undefined formatted_address
             onPlaceSelect(place);
           } else {
-            console.warn('No place address found');
+            console.warn('No place found');
             toast({
               variant: 'default',
               title: 'Location not found',

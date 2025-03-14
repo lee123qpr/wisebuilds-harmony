@@ -47,6 +47,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
             shouldTouch: true
           });
         } else {
+          console.warn('No address found in selected place');
           toast({
             variant: 'default',
             title: 'Location not found',
