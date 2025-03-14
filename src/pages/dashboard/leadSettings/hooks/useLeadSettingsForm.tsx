@@ -74,19 +74,19 @@ export const useLeadSettingsForm = () => {
       
       // Ensure boolean fields are properly handled
       const requires_insurance = existingSettings.requires_insurance !== undefined 
-        ? existingSettings.requires_insurance 
+        ? Boolean(existingSettings.requires_insurance) 
         : false;
         
       const requires_site_visits = existingSettings.requires_site_visits !== undefined 
-        ? existingSettings.requires_site_visits 
+        ? Boolean(existingSettings.requires_site_visits) 
         : false;
         
       const notifications_enabled = existingSettings.notifications_enabled !== undefined 
-        ? existingSettings.notifications_enabled 
+        ? Boolean(existingSettings.notifications_enabled) 
         : true;
         
       const email_alerts = existingSettings.email_alerts !== undefined 
-        ? existingSettings.email_alerts 
+        ? Boolean(existingSettings.email_alerts) 
         : true;
       
       // Map the budget field correctly - use budget if available, fall back to max_budget
