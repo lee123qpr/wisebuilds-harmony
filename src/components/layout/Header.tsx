@@ -1,21 +1,30 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import AuthStatus from '@/components/auth/AuthStatus';
 
 const Header: React.FC = () => {
+  const [logoError, setLogoError] = useState(false);
+  
   return (
     <header className="w-full bg-white border-b border-bw-gray-light">
       <div className="container flex items-center justify-between h-16 px-4 mx-auto md:px-6">
         <div className="flex items-center">
           <Link to="/" className="flex items-center">
-            <img 
-              src="/buildwise-logo.png" 
-              alt="BuildWise UK Logo" 
-              className="h-10 w-auto"
-            />
+            {!logoError ? (
+              <img 
+                src={logoError ? "/lovable-uploads/da050545-55f3-423d-93ca-17d756c5f770.png" : "/buildwise-logo.png"}
+                alt="BuildWise UK Logo" 
+                className="h-10 w-auto"
+                onError={() => {
+                  console.log("Primary logo failed to load, trying fallback");
+                  setLogoError(true);
+                }}
+              />
+            ) : (
+              <span className="text-xl font-bold text-primary">BuildWise</span>
+            )}
           </Link>
         </div>
 
