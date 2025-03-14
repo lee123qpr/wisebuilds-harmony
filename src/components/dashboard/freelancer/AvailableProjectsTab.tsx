@@ -4,7 +4,7 @@ import { useProjects } from '@/components/projects/useProjects';
 import ProjectListView from './ProjectListView';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertTriangle, Info } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Info, Briefcase, Filter } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
@@ -40,41 +40,49 @@ const AvailableProjectsTab: React.FC = () => {
 
   if (error) {
     return (
-      <Card className="border-destructive">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <div className="flex items-center">
-            <AlertTriangle className="h-5 w-5 text-destructive mr-2" />
-            <div>
-              <CardTitle>Error Loading Projects</CardTitle>
-              <CardDescription>
-                There was an error loading projects. Please try again.
-              </CardDescription>
-            </div>
+      <Alert variant="destructive" className="mb-6">
+        <div className="flex items-start">
+          <AlertTriangle className="h-5 w-5 text-destructive mr-2 mt-0.5" />
+          <div>
+            <AlertTitle className="text-lg font-semibold">Error Loading Projects</AlertTitle>
+            <AlertDescription className="mt-1">
+              <p>{error}</p>
+              <div className="mt-4 flex">
+                <Button onClick={handleRefresh} size="sm" variant="outline" className="flex items-center">
+                  <RefreshCw className="mr-2 h-4 w-4" /> Try Again
+                </Button>
+              </div>
+            </AlertDescription>
           </div>
-          <Button onClick={handleRefresh} size="sm" variant="outline">
-            <RefreshCw className="mr-2 h-4 w-4" /> Retry
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <p className="text-destructive font-mono text-sm bg-destructive/10 p-2 rounded">{error}</p>
-          <p className="mt-4">This could be due to:</p>
-          <ul className="list-disc pl-5 space-y-1 mt-2">
-            <li>Database connection issues</li>
-            <li>Authentication problems</li>
-            <li>Row Level Security (RLS) policy restrictions</li>
-          </ul>
-        </CardContent>
-      </Card>
+        </div>
+      </Alert>
     );
   }
 
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h2 className="text-2xl font-bold tracking-tight">Available Projects</h2>
-        <Button onClick={handleRefresh} size="sm" variant="outline">
-          <RefreshCw className="mr-2 h-4 w-4" /> Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Briefcase className="h-5 w-5 text-primary" />
+          <h2 className="text-2xl font-bold tracking-tight">Available Projects</h2>
+        </div>
+        
+        <div className="flex gap-3">
+          <Button variant="outline" size="sm" className="hidden md:flex">
+            <Filter className="mr-2 h-4 w-4" />
+            Filter
+          </Button>
+          <Button 
+            onClick={handleRefresh} 
+            size="sm" 
+            variant="outline" 
+            className="flex items-center"
+            disabled={isLoading}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+        </div>
       </div>
       
       {insertError && (
@@ -88,27 +96,22 @@ const AvailableProjectsTab: React.FC = () => {
       {projects.length === 0 && !isLoading ? (
         <Card>
           <CardHeader>
-            <div className="flex items-center space-x-2">
-              <Info className="h-5 w-5 text-primary" />
+            <div className="flex items-center space-x-3">
+              <div className="rounded-full bg-primary/10 p-2">
+                <Info className="h-5 w-5 text-primary" />
+              </div>
               <div>
                 <CardTitle>No Projects Found</CardTitle>
                 <CardDescription>
-                  There are currently no projects available. Check if:
+                  There are currently no projects available.
                 </CardDescription>
               </div>
             </div>
           </CardHeader>
-          <CardContent>
-            <ul className="list-disc pl-5 space-y-1">
-              <li>Row Level Security (RLS) policies are set up correctly to allow viewing projects</li>
-              <li>There are projects in the database</li>
-              <li>Your current authentication state: {user ? `Logged in as ${user.email}` : 'Not logged in'}</li>
-            </ul>
-            <div className="flex space-x-4 mt-4">
-              <Button onClick={handleRefresh} className="flex items-center">
-                <RefreshCw className="mr-2 h-4 w-4" /> Try Again
-              </Button>
-            </div>
+          <CardContent className="pt-0">
+            <Button onClick={handleRefresh} className="mt-4 flex items-center">
+              <RefreshCw className="mr-2 h-4 w-4" /> Check for New Projects
+            </Button>
           </CardContent>
         </Card>
       ) : (
