@@ -9,6 +9,7 @@ import { useAuth } from '@/context/AuthContext';
 
 export const useLeadSettingsForm = () => {
   const { user } = useAuth();
+  const [isFormInitialized, setIsFormInitialized] = React.useState(false);
   
   // Create form with zod validation
   const form = useForm<LeadSettingsFormValues>({
@@ -56,51 +57,24 @@ export const useLeadSettingsForm = () => {
   
   // Update form with existing settings when data is loaded
   React.useEffect(() => {
-    if (!existingSettings) return;
+    if (!existingSettings || isFormInitialized) return;
     
     console.log('Setting form values from existing settings:', existingSettings);
     
-    // Ensure array fields are properly handled - convert to arrays if they're not already
-    let project_type = [];
-    try {
-      if (existingSettings.project_type) {
-        if (Array.isArray(existingSettings.project_type)) {
-          project_type = existingSettings.project_type;
-        } else if (typeof existingSettings.project_type === 'string') {
-          // Try to parse if it's a JSON string
-          project_type = JSON.parse(existingSettings.project_type);
-        } else {
-          project_type = [existingSettings.project_type];
-        }
-      }
-    } catch (e) {
-      console.error('Error parsing project_type:', e);
-      project_type = existingSettings.project_type ? [existingSettings.project_type] : [];
-    }
+    // Process arrays properly
+    let project_type = Array.isArray(existingSettings.project_type) 
+      ? existingSettings.project_type 
+      : (existingSettings.project_type ? [existingSettings.project_type] : []);
     
-    let keywords = [];
-    try {
-      if (existingSettings.keywords) {
-        if (Array.isArray(existingSettings.keywords)) {
-          keywords = existingSettings.keywords;
-        } else if (typeof existingSettings.keywords === 'string') {
-          // Try to parse if it's a JSON string
-          keywords = JSON.parse(existingSettings.keywords);
-        } else {
-          keywords = [existingSettings.keywords];
-        }
-      }
-    } catch (e) {
-      console.error('Error parsing keywords:', e);
-      keywords = existingSettings.keywords ? [existingSettings.keywords] : [];
-    }
+    let keywords = Array.isArray(existingSettings.keywords) 
+      ? existingSettings.keywords 
+      : (existingSettings.keywords ? [existingSettings.keywords] : []);
     
-    // Force the values to be the correct type
+    // Create a values object with correct types
     const values = {
       role: existingSettings.role || '',
       location: existingSettings.location || '',
-      budget: existingSettings.budget || 
-            (existingSettings.max_budget ? existingSettings.max_budget : ''),
+      budget: existingSettings.budget || existingSettings.max_budget || '',
       duration: existingSettings.duration || '',
       work_type: existingSettings.work_type || '',
       project_type,
@@ -114,13 +88,14 @@ export const useLeadSettingsForm = () => {
     
     console.log('Form values being set:', values);
     
-    // Reset form with values from database - using setTimeout to ensure it runs after React rendering
-    setTimeout(() => {
-      form.reset(values);
-      console.log('Form state after reset:', form.getValues());
-    }, 0);
+    // Reset form with values from database
+    form.reset(values);
     
-  }, [existingSettings, form]);
+    // Mark the form as initialized
+    setIsFormInitialized(true);
+    
+    console.log('Form state after reset:', form.getValues());
+  }, [existingSettings, form, isFormInitialized]);
 
   return {
     form,
