@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Star } from 'lucide-react';
 
@@ -21,15 +20,15 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   }
 
   const starSizes = {
-    sm: 'h-3 w-3',
-    md: 'h-4 w-4',
-    lg: 'h-5 w-5'
+    sm: 'h-4 w-4',
+    md: 'h-5 w-5',
+    lg: 'h-6 w-6'
   };
 
   const textSizes = {
-    sm: 'text-xs',
-    md: 'text-sm',
-    lg: 'text-base'
+    sm: 'text-sm',
+    md: 'text-base',
+    lg: 'text-lg'
   };
 
   const renderStars = () => {
@@ -37,7 +36,6 @@ const RatingStars: React.FC<RatingStarsProps> = ({
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
 
-    // Add filled stars
     for (let i = 0; i < fullStars; i++) {
       stars.push(
         <Star 
@@ -47,7 +45,6 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       );
     }
 
-    // Add half star if needed
     if (hasHalfStar) {
       stars.push(
         <div key="half" className="relative">
@@ -59,7 +56,6 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       );
     }
 
-    // Add empty stars
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
