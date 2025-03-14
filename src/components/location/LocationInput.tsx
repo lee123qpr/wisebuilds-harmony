@@ -23,7 +23,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     style.innerHTML = `
       .pac-container {
         z-index: 9999 !important;
-        position: fixed !important;
+        position: absolute !important;
         pointer-events: auto !important;
         transform: translateZ(0) !important;
         max-height: 240px !important;

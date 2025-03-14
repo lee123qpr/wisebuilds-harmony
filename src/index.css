@@ -138,17 +138,18 @@
   background-color: hsl(var(--background)) !important;
   color: hsl(var(--foreground)) !important;
   z-index: 9999 !important; /* Ensure the dropdown appears above other elements */
-  transform: translateZ(0) !important;
-  will-change: top, left !important; /* Performance optimization for position changes */
-  pointer-events: auto !important; /* Ensure clicks are registered */
-  position: fixed !important; /* Force fixed positioning */
+  max-height: 240px !important;
+  overflow-y: auto !important;
+  position: absolute !important; /* Changed from fixed to absolute for better positioning */
+  will-change: top, left !important;
+  pointer-events: auto !important;
 }
 
 .pac-item {
   padding: 0.5rem 1rem !important;
   cursor: pointer !important;
   font-family: inherit !important;
-  pointer-events: auto !important; /* Make sure each item is clickable */
+  pointer-events: auto !important;
 }
 
 .pac-item:hover {
@@ -174,7 +175,3 @@
   font-weight: 600 !important;
   color: hsl(var(--foreground)) !important;
 }
-
-
-
-
