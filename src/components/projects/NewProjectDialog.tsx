@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -37,7 +38,7 @@ const NewProjectDialog = () => {
         className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto"
         onInteractOutside={(e) => {
           if (e.target instanceof Node) {
-            const isPacContainer = e.target.closest('.pac-container');
+            const isPacContainer = e.target instanceof Element && e.target.closest('.pac-container');
             if (isPacContainer) {
               e.preventDefault();
             }
@@ -45,7 +46,7 @@ const NewProjectDialog = () => {
         }}
         onPointerDownOutside={(e) => {
           if (e.target instanceof Node) {
-            const isPacContainer = e.target.closest('.pac-container');
+            const isPacContainer = e.target instanceof Element && e.target.closest('.pac-container');
             if (isPacContainer) {
               e.preventDefault();
             }
