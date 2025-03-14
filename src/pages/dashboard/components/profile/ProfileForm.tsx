@@ -9,9 +9,10 @@ import * as z from 'zod';
 
 type ProfileFormProps = {
   form: UseFormReturn<z.infer<typeof clientProfileSchema>>;
+  disabled?: boolean;
 };
 
-const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
+const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => {
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -22,7 +23,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
             <FormItem>
               <FormLabel>Company Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter company name" {...field} />
+                <Input placeholder="Enter company name" {...field} disabled={disabled} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -36,7 +37,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
             <FormItem>
               <FormLabel>Contact Person</FormLabel>
               <FormControl>
-                <Input placeholder="Enter contact name" {...field} />
+                <Input placeholder="Enter contact name" {...field} disabled={disabled} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -51,7 +52,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
           <FormItem>
             <FormLabel>Company Address</FormLabel>
             <FormControl>
-              <Input placeholder="Enter company address" {...field} />
+              <Input placeholder="Enter company address" {...field} disabled={disabled} />
             </FormControl>
             <FormMessage />
           </FormItem>
@@ -66,7 +67,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
-                <Input placeholder="Enter phone number" {...field} />
+                <Input placeholder="Enter phone number" {...field} disabled={disabled} />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -80,7 +81,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
             <FormItem>
               <FormLabel>Website</FormLabel>
               <FormControl>
-                <Input placeholder="example.com" {...field} />
+                <Input placeholder="example.com" {...field} disabled={disabled} />
               </FormControl>
               <FormDescription>Enter domain without http:// (it will be added automatically)</FormDescription>
               <FormMessage />
@@ -99,7 +100,8 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
               <Textarea 
                 placeholder="Briefly describe your company..."
                 className="min-h-[120px]"
-                {...field} 
+                {...field}
+                disabled={disabled}
               />
             </FormControl>
             <FormDescription>

@@ -27,6 +27,7 @@ export const useClientProfile = (user: User | null) => {
       phoneNumber: '',
       website: '',
     },
+    mode: 'onChange',
   });
 
   // Fetch client profile data
