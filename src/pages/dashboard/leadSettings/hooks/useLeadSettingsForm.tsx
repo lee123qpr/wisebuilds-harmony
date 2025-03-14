@@ -28,7 +28,7 @@ export const useLeadSettingsForm = () => {
       notifications_enabled: true,
       email_alerts: true,
     },
-    mode: 'onChange', // Add validation mode for better user experience
+    mode: 'onChange',
   });
   
   // Fetch existing lead settings
@@ -39,21 +39,26 @@ export const useLeadSettingsForm = () => {
       
       console.log('Fetching lead settings for user:', user.id);
       
-      const { data, error } = await supabase
-        .from('lead_settings')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      
-      if (error) {
-        console.error('Error fetching lead settings:', error);
-        throw error;
+      try {
+        const { data, error } = await supabase
+          .from('lead_settings')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching lead settings:', error);
+          throw error;
+        }
+        
+        console.log('Retrieved lead settings:', data);
+        return data;
+      } catch (err) {
+        console.error('Exception in query function:', err);
+        throw err;
       }
-      
-      console.log('Retrieved lead settings:', data);
-      return data;
     },
-    enabled: !!user
+    enabled: !!user,
   });
   
   // Update form with existing settings when data is loaded
@@ -83,13 +88,12 @@ export const useLeadSettingsForm = () => {
       hiring_status: existingSettings.hiring_status || '',
       requires_insurance: !!existingSettings.requires_insurance,
       requires_site_visits: !!existingSettings.requires_site_visits,
-      notifications_enabled: existingSettings.notifications_enabled !== false, // Default to true
-      email_alerts: existingSettings.email_alerts !== false, // Default to true
+      notifications_enabled: existingSettings.notifications_enabled !== false,
+      email_alerts: existingSettings.email_alerts !== false,
     };
     
     console.log('Form values being set:', values);
     
-    // Reset form with values from database
     form.reset(values);
     setIsFormInitialized(true);
     

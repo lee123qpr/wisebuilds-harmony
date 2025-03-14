@@ -8,15 +8,47 @@ import { useLeadSettingsForm } from './hooks/useLeadSettingsForm';
 import { useLeadSettingsMutation } from './hooks/useLeadSettingsMutation';
 import { FormActions } from './components/FormActions';
 import { LeadSettingsFormValues } from './schema';
+import { useToast } from '@/hooks/use-toast';
 
 const LeadSettingsForm = () => {
   const { form, existingSettings, isLoading } = useLeadSettingsForm();
   const saveSettingsMutation = useLeadSettingsMutation(existingSettings);
+  const { toast } = useToast();
 
   const onSubmit = (values: LeadSettingsFormValues) => {
     console.log('Form submitted with values:', values);
-    saveSettingsMutation.mutate(values);
+    
+    try {
+      saveSettingsMutation.mutate(values, {
+        onError: (error: any) => {
+          console.error('Mutation error:', error);
+          toast({
+            variant: 'destructive',
+            title: 'Error saving settings',
+            description: error.message || 'Failed to save lead settings',
+          });
+        }
+      });
+    } catch (error) {
+      console.error('Error in submit handler:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'An unexpected error occurred',
+      });
+    }
   };
+
+  // Debug output
+  React.useEffect(() => {
+    console.log('Form state in LeadSettingsForm:', {
+      isLoading,
+      existingSettings,
+      formValues: form.getValues(),
+      isDirty: form.formState.isDirty,
+      isSubmitting: form.formState.isSubmitting,
+    });
+  }, [form, isLoading, existingSettings]);
 
   return (
     <Card className="w-full max-w-4xl mx-auto">

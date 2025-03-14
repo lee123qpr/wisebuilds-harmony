@@ -16,7 +16,6 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
     mutationFn: async (values: LeadSettingsFormValues) => {
       if (!user) throw new Error('User not authenticated');
       
-      // Log all values received from the form to debug
       console.log('Form values received for saving:', values);
       
       // Ensure arrays are properly handled
@@ -26,15 +25,15 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       // Ensure booleans are proper boolean values
       const requires_insurance = !!values.requires_insurance;
       const requires_site_visits = !!values.requires_site_visits;
-      const notifications_enabled = values.notifications_enabled !== false; // Default to true
-      const email_alerts = values.email_alerts !== false; // Default to true
+      const notifications_enabled = !!values.notifications_enabled; 
+      const email_alerts = !!values.email_alerts;
       
       const settingsData = {
         user_id: user.id,
         role: values.role || '',
         location: values.location || '',
         budget: values.budget || '',
-        max_budget: values.budget || '', // Copy budget to max_budget for compatibility
+        max_budget: values.budget || '',
         duration: values.duration || '',
         work_type: values.work_type || '',
         project_type,
@@ -49,55 +48,56 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       
       console.log('Data being saved to Supabase:', settingsData);
       
-      if (existingSettings?.id) {
-        // Update existing settings
-        const { data, error } = await supabase
-          .from('lead_settings')
-          .update(settingsData)
-          .eq('id', existingSettings.id)
-          .select();
-        
-        if (error) {
-          console.error('Supabase update error:', error);
-          throw error;
+      try {
+        if (existingSettings?.id) {
+          // Update existing settings
+          const { data, error } = await supabase
+            .from('lead_settings')
+            .update(settingsData)
+            .eq('id', existingSettings.id)
+            .select();
+          
+          if (error) {
+            console.error('Supabase update error:', error);
+            throw error;
+          }
+          
+          console.log('Settings updated successfully:', data);
+          return data?.[0] || { ...existingSettings, ...settingsData };
+        } else {
+          // Create new settings
+          const { data, error } = await supabase
+            .from('lead_settings')
+            .insert({
+              ...settingsData, 
+              created_at: new Date().toISOString()
+            })
+            .select();
+          
+          if (error) {
+            console.error('Supabase insert error:', error);
+            throw error;
+          }
+          
+          console.log('Settings created successfully:', data);
+          return data?.[0];
         }
-        
-        console.log('Settings updated successfully:', data);
-        return data?.[0] || { ...existingSettings, ...settingsData };
-      } else {
-        // Create new settings
-        const { data, error } = await supabase
-          .from('lead_settings')
-          .insert({
-            ...settingsData, 
-            created_at: new Date().toISOString()
-          })
-          .select();
-        
-        if (error) {
-          console.error('Supabase insert error:', error);
-          throw error;
-        }
-        
-        console.log('Settings created successfully:', data);
-        return data?.[0];
+      } catch (err) {
+        console.error('Exception in mutation function:', err);
+        throw err;
       }
     },
     onSuccess: (data) => {
-      // Log the data returned from the mutation
       console.log('onSuccess data:', data);
       
-      // Invalidate queries to refetch data
       queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
       
-      // Show success toast
       toast({
         title: existingSettings ? 'Settings updated' : 'Settings created',
         description: 'Your lead settings have been saved successfully',
         variant: 'default',
       });
       
-      // Navigate to freelancer dashboard
       navigate('/dashboard/freelancer');
     },
     onError: (error: any) => {
