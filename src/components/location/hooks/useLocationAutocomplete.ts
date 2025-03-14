@@ -38,18 +38,25 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
         const place = autocompleteRef.current?.getPlace();
         if (place && place.formatted_address) {
           // Update form field with the formatted address
-          form.setValue(fieldName, place.formatted_address, { 
+          const formattedAddress = place.formatted_address;
+          
+          // Set the value in the form
+          form.setValue(fieldName, formattedAddress, { 
             shouldValidate: true,
             shouldDirty: true,
-            shouldTouch: true // Mark as touched to trigger validation
+            shouldTouch: true 
           });
           
-          // Force React to update by triggering a change event
+          // If the input ref still exists, update its value directly
+          if (inputRef.current) {
+            inputRef.current.value = formattedAddress;
+          }
+          
+          // Force a change event to ensure React form state is updated
           const event = new Event('input', { bubbles: true });
           inputRef.current?.dispatchEvent(event);
           
-          // Log for debugging
-          console.log('Place selected:', place.formatted_address);
+          console.log('Place selected and saved:', formattedAddress);
         }
       });
 

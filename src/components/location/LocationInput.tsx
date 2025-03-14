@@ -41,11 +41,18 @@ export const LocationInput: React.FC<LocationInputProps> = ({
 
   // Delay blur handling to allow selecting from dropdown
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Increased delay to give more time for selection
+    // Delayed blur to give time for autocomplete selection
     setTimeout(() => {
       if (field.onBlur) field.onBlur();
-    }, 200);
+    }, 300); // Slightly longer delay
   };
+
+  // Make sure inputRef and field.value stay in sync
+  useEffect(() => {
+    if (inputRef.current && field.value && inputRef.current.value !== field.value) {
+      inputRef.current.value = field.value;
+    }
+  }, [field.value, inputRef]);
 
   return (
     <div className="relative">
@@ -61,7 +68,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         )}
         // Ensure the value is always controlled by React
         value={field.value || ''}
-        // Add onChange handler to ensure React state is updated
+        // Handle change events
         onChange={(e) => {
           field.onChange(e);
           console.log('Input changed:', e.target.value);
