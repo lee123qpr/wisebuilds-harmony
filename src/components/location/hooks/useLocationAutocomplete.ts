@@ -75,6 +75,22 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
             // Directly update input value
             if (inputRef.current) {
               inputRef.current.value = formattedAddress;
+              
+              // Ensure the input retains focus to prevent dialog closing
+              // This is crucial for dialog-based forms
+              setTimeout(() => {
+                if (inputRef.current) {
+                  // Set focus to another element briefly then back to prevent
+                  // the dialog from closing due to focus changes
+                  document.body.focus();
+                  // Then return focus to the input (but don't trigger autocomplete)
+                  setTimeout(() => {
+                    if (inputRef.current && document.contains(inputRef.current)) {
+                      inputRef.current.focus();
+                    }
+                  }, 50);
+                }
+              }, 10);
             }
             
             // Force a React change event to update state
@@ -122,14 +138,14 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
       
       // Handle blur events to hide the autocomplete when input loses focus
       const blurHandler = () => {
-        // Add a small delay to allow for selecting from dropdown
+        // Add a delay to allow for autocomplete selection
         setTimeout(() => {
           // Find any pac-container elements and hide them when not needed
           const pacContainers = document.querySelectorAll('.pac-container');
           pacContainers.forEach(container => {
             container.setAttribute('style', 'display: none !important;');
           });
-        }, 300);
+        }, 500); // Longer delay to ensure selection completes
       };
       
       if (inputRef.current) {

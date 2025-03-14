@@ -1,5 +1,4 @@
-
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { DialogHeader, DialogFooter, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -39,8 +38,34 @@ export const NewProjectDialogContent: React.FC<NewProjectDialogContentProps> = (
 
   const { onSubmit, isUploading } = useProjectSubmit(form, selectedFiles, setSelectedFiles, setOpen);
 
+  const handleDialogClick = useCallback((e: React.MouseEvent) => {
+    if (
+      e.target instanceof HTMLElement && 
+      (
+        e.target.className.includes('pac-item') || 
+        e.target.closest('.pac-container')
+      )
+    ) {
+      e.stopPropagation();
+    }
+  }, []);
+
+  const handleFormSubmit = useCallback((e: React.FormEvent) => {
+    if (e.target instanceof HTMLFormElement) {
+      const activeElement = document.activeElement;
+      if (activeElement && 
+          activeElement instanceof HTMLInputElement && 
+          activeElement.name === 'location') {
+        e.preventDefault();
+        return;
+      }
+      
+      form.handleSubmit(onSubmit)(e);
+    }
+  }, [form, onSubmit]);
+
   return (
-    <>
+    <div onClick={handleDialogClick}>
       <DialogHeader>
         <DialogTitle>Post a New Project</DialogTitle>
         <DialogDescription>
@@ -49,7 +74,7 @@ export const NewProjectDialogContent: React.FC<NewProjectDialogContentProps> = (
       </DialogHeader>
       
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <form onSubmit={handleFormSubmit} className="space-y-4">
           <ProjectDetails form={form} />
           <LocationField form={form} />
           <StartDateField form={form} />
@@ -61,7 +86,20 @@ export const NewProjectDialogContent: React.FC<NewProjectDialogContentProps> = (
           />
           
           <DialogFooter className="pt-4">
-            <Button type="submit" disabled={isUploading || form.formState.isSubmitting}>
+            <Button 
+              type="submit" 
+              disabled={isUploading || form.formState.isSubmitting}
+              onClick={(e) => {
+                const activeElement = document.activeElement;
+                if (activeElement && 
+                    activeElement instanceof HTMLInputElement && 
+                    activeElement.name === 'location') {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  return false;
+                }
+              }}
+            >
               {isUploading || form.formState.isSubmitting ? 
                 "Creating..." : 
                 "Create Project"}
@@ -69,6 +107,6 @@ export const NewProjectDialogContent: React.FC<NewProjectDialogContentProps> = (
           </DialogFooter>
         </form>
       </Form>
-    </>
+    </div>
   );
 };

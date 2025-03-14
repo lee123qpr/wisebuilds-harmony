@@ -55,12 +55,13 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     };
   }, []);
 
-  // Delay blur handling to allow selecting from dropdown
+  // Significantly longer delay for blur handling to prevent premature dialog closing
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Delayed blur to give time for autocomplete selection
+    // Use a much longer delay to ensure the selection can complete
+    // and the dialog doesn't close prematurely
     setTimeout(() => {
       if (field.onBlur) field.onBlur();
-    }, 300); // Slightly longer delay
+    }, 500); // Increased delay time
   };
 
   // Make sure inputRef and field.value stay in sync - crucial for showing the selected location
@@ -71,8 +72,14 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     }
   }, [field.value, inputRef]);
 
+  // Prevent event propagation to avoid dialog closing
+  const handleMouseDown = (e: React.MouseEvent) => {
+    // Prevent the event from bubbling up to the dialog
+    e.stopPropagation();
+  };
+
   return (
-    <div className="relative">
+    <div className="relative" onMouseDown={handleMouseDown}>
       <Input
         {...field}
         ref={inputRef}
@@ -90,6 +97,12 @@ export const LocationInput: React.FC<LocationInputProps> = ({
           const newValue = e.target.value;
           field.onChange(newValue);
           console.log('Input changed:', newValue);
+        }}
+        // Prevent dialog closing on key events
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault(); // Prevent form submission on Enter
+          }
         }}
       />
       {isLoading && (
