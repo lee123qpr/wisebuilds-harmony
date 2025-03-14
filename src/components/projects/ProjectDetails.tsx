@@ -15,14 +15,13 @@ const ProjectDetails = ({ project }: ProjectDetailsProps) => {
   return (
     <Card>
       <CardHeader>
+        <div className="mb-4">
+          <h2 className="text-2xl font-bold">Project Details</h2>
+          <p className="text-muted-foreground">All information about this project</p>
+        </div>
         <CardTitle>{project.title}</CardTitle>
-        <CardDescription>All information about this project</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div>
-          <h3 className="text-lg font-medium">Project Details</h3>
-        </div>
-        
         <ProjectDescription description={project.description} />
         
         <Separator />
