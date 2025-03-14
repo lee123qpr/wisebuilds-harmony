@@ -1,7 +1,8 @@
 
-import React, { RefObject, useEffect } from 'react';
+import React, { RefObject, useEffect, useState } from 'react';
 import { PopoverContent } from '@/components/ui/popover';
 import { Input } from '@/components/ui/input';
+import { Loader2 } from 'lucide-react';
 
 interface LocationPopoverContentProps {
   inputRef: RefObject<HTMLInputElement>;
@@ -12,6 +13,8 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
   inputRef,
   isLoading
 }) => {
+  const [searchText, setSearchText] = useState('');
+
   // Focus the input when popover opens
   useEffect(() => {
     if (inputRef.current) {
@@ -19,8 +22,6 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
       const timer = setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
-          // Clear any previous value to ensure a fresh search
-          inputRef.current.value = '';
         }
       }, 150);
       
@@ -37,34 +38,28 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
         // We need to prevent the default behavior to manually handle our own focus
         e.preventDefault();
       }}
-      // Remove any pointer-events: none that might be applied
-      style={{ pointerEvents: 'auto' }}
     >
       <div className="space-y-2">
         <h4 className="text-sm font-medium">Search location</h4>
-        <Input
-          ref={inputRef}
-          placeholder="Type to search UK/Ireland cities..."
-          className="w-full"
-          autoComplete="off"
-          // Add these attributes to prevent browser's autocomplete interference
-          autoCorrect="off"
-          spellCheck="false"
-          aria-autocomplete="list"
-          // Explicitly set a high tab index to ensure it receives focus
-          tabIndex={0}
-          // Ensure the input is actually clickable
-          style={{ pointerEvents: 'auto' }}
-          // Make sure clicking works
-          onClick={(e) => {
-            // Stop event propagation to prevent the popover from closing
-            e.stopPropagation();
-            // Ensure the input gets focus when clicked
-            if (inputRef.current) {
-              inputRef.current.focus();
-            }
-          }}
-        />
+        <div className="relative">
+          <Input
+            ref={inputRef}
+            placeholder="Type to search UK/Ireland cities..."
+            className="w-full pr-8"
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck="false"
+            aria-autocomplete="list"
+          />
+          {isLoading && (
+            <div className="absolute right-2 top-1/2 -translate-y-1/2">
+              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+            </div>
+          )}
+        </div>
+        
         {isLoading && (
           <div className="text-xs text-amber-500">
             Loading location service...

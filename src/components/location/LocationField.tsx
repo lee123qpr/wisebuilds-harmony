@@ -23,7 +23,18 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   const selectedLocation = form.watch(name);
   
   // Load Google Maps API
-  const { isLoading, isLoaded } = useGoogleMapsScript();
+  const { isLoading, isLoaded, error } = useGoogleMapsScript();
+  
+  // Show error if Google Maps failed to load
+  useEffect(() => {
+    if (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Google Maps API failed to load',
+        description: 'Please refresh and try again. Check your internet connection.'
+      });
+    }
+  }, [error, toast]);
   
   // Log when component mounts and when Google Maps loads
   useEffect(() => {
@@ -72,18 +83,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
             open={locationPopoverOpen} 
             onOpenChange={(open) => {
               console.log('Popover open state changing to:', open);
-              // Only allow opening via button click, manual closing is still allowed
-              if (open) {
-                setLocationPopoverOpen(true);
-                // Wait for the popover to open before focusing on the input
-                setTimeout(() => {
-                  if (autocompleteRef.current) {
-                    autocompleteRef.current.focus();
-                  }
-                }, 200);
-              } else {
-                setLocationPopoverOpen(false);
-              }
+              setLocationPopoverOpen(open);
             }}
           >
             <PopoverTrigger asChild>

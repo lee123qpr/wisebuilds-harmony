@@ -29,22 +29,20 @@ export const useGoogleMapsScript = () => {
     };
     
     // Skip if the script tag is already in the document
-    if (document.getElementById('google-maps-script')) {
+    const existingScript = document.getElementById('google-maps-script');
+    if (existingScript) {
       console.log('Google Maps script tag already exists, waiting for it to load');
       return;
     }
 
     console.log('Loading Google Maps API');
     
-    // Create script element with async attribute
+    // Create script element
     const script = document.createElement('script');
     script.id = 'google-maps-script';
     script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&callback=initMap`;
-    script.async = true; // This is already set to true
+    script.async = true;
     script.defer = true;
-    
-    // Add loading attribute for better performance as recommended by Google
-    script.setAttribute('loading', 'async');
     
     // Set up error handler
     script.onerror = (e) => {
@@ -63,8 +61,7 @@ export const useGoogleMapsScript = () => {
     
     // Cleanup function
     return () => {
-      // We don't remove the script or undefine the callback
-      // This ensures the API remains available throughout the app
+      // We don't remove the script since it should remain available throughout the app
     };
   }, [toast]);
 
