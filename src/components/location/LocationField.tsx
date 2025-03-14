@@ -133,25 +133,29 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 placeholder={isLoaded ? "Enter any location" : "Loading location service..."}
                 className="pl-9"
                 disabled={isLoading && !isLoaded}
+                autoComplete="off"
                 {...field}
                 ref={(el) => {
-                  // Set our local ref
                   inputRef.current = el;
                   
-                  // Handle react-hook-form's ref properly by using type assertion
+                  // Handle react-hook-form's ref
                   if (typeof field.ref === 'function') {
-                    // If field.ref is a function, call it with the element
                     field.ref(el);
                   } else if (field.ref) {
-                    // Type assertion to tell TypeScript this is an object with a current property
-                    const refObject = field.ref as { current: HTMLInputElement | null };
-                    refObject.current = el;
+                    field.ref.current = el;
                   }
                 }}
-                // Important: Don't override Google's autocomplete features
-                autoComplete="off"
+                // Prevent default browser autocomplete behavior
+                onFocus={(e) => {
+                  // Ensure the dropdown shows on focus
+                  e.currentTarget.setAttribute('autocomplete', 'off');
+                  e.stopPropagation();
+                }}
                 // Make sure form field's onBlur callback is called
-                onBlur={field.onBlur}
+                onBlur={(e) => {
+                  e.stopPropagation();
+                  field.onBlur();
+                }}
                 // Prevent click events from propagating upward
                 onClick={(e) => {
                   e.stopPropagation();
