@@ -19,49 +19,39 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       // Log all values received from the form to debug
       console.log('Form values received:', values);
       
-      // Handle arrays - ensure they're always arrays even if null/undefined or single values
-      let project_type = values.project_type;
-      if (!project_type) {
-        project_type = [];
-      } else if (!Array.isArray(project_type)) {
-        project_type = [project_type];
-      }
+      // Safely handle arrays - ensure they're always arrays even if null/undefined
+      const project_type = values.project_type ? 
+        (Array.isArray(values.project_type) ? values.project_type : [values.project_type]) : 
+        [];
       
-      let keywords = values.keywords;
-      if (!keywords) {
-        keywords = [];
-      } else if (!Array.isArray(keywords)) {
-        keywords = [keywords];
-      }
+      const keywords = values.keywords ? 
+        (Array.isArray(values.keywords) ? values.keywords : [values.keywords]) : 
+        [];
       
-      // Handle booleans - ensure they're always boolean values
-      const requires_insurance = values.requires_insurance === undefined 
-        ? false 
-        : Boolean(values.requires_insurance);
-        
-      const requires_site_visits = values.requires_site_visits === undefined 
-        ? false 
-        : Boolean(values.requires_site_visits);
-        
-      const notifications_enabled = values.notifications_enabled === undefined 
-        ? true 
-        : Boolean(values.notifications_enabled);
-        
-      const email_alerts = values.email_alerts === undefined 
-        ? true 
-        : Boolean(values.email_alerts);
+      // Safely handle booleans - ensure they're always boolean values
+      const requires_insurance = values.requires_insurance === undefined ? 
+        false : Boolean(values.requires_insurance);
+      
+      const requires_site_visits = values.requires_site_visits === undefined ? 
+        false : Boolean(values.requires_site_visits);
+      
+      const notifications_enabled = values.notifications_enabled === undefined ? 
+        true : Boolean(values.notifications_enabled);
+      
+      const email_alerts = values.email_alerts === undefined ? 
+        true : Boolean(values.email_alerts);
       
       const settingsData = {
         user_id: user.id,
-        role: values.role,
-        location: values.location,
-        budget: values.budget,
-        max_budget: values.budget, // Save the budget value to both fields for backwards compatibility
-        duration: values.duration,
-        work_type: values.work_type,
+        role: values.role || '',
+        location: values.location || '',
+        budget: values.budget || '',
+        max_budget: values.budget || '', // Save the budget value to both fields for backwards compatibility
+        duration: values.duration || '',
+        work_type: values.work_type || '',
         project_type,
         keywords,
-        hiring_status: values.hiring_status,
+        hiring_status: values.hiring_status || '',
         requires_insurance,
         requires_site_visits,
         notifications_enabled,

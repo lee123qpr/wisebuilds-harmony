@@ -56,61 +56,83 @@ export const useLeadSettingsForm = () => {
   
   // Update form with existing settings when data is loaded
   React.useEffect(() => {
-    if (existingSettings) {
-      console.log('Setting form values from existing settings:', existingSettings);
-      
-      // Ensure array fields are properly handled
-      const project_type = Array.isArray(existingSettings.project_type) 
-        ? existingSettings.project_type 
-        : existingSettings.project_type 
-          ? [existingSettings.project_type] 
-          : [];
-          
-      const keywords = Array.isArray(existingSettings.keywords) 
-        ? existingSettings.keywords 
-        : existingSettings.keywords 
-          ? [existingSettings.keywords] 
-          : [];
-      
-      // Ensure boolean fields are properly handled
-      const requires_insurance = existingSettings.requires_insurance !== undefined 
-        ? Boolean(existingSettings.requires_insurance) 
-        : false;
-        
-      const requires_site_visits = existingSettings.requires_site_visits !== undefined 
-        ? Boolean(existingSettings.requires_site_visits) 
-        : false;
-        
-      const notifications_enabled = existingSettings.notifications_enabled !== undefined 
-        ? Boolean(existingSettings.notifications_enabled) 
-        : true;
-        
-      const email_alerts = existingSettings.email_alerts !== undefined 
-        ? Boolean(existingSettings.email_alerts) 
-        : true;
-      
-      // Map the budget field correctly - use budget if available, fall back to max_budget
-      const budget = existingSettings.budget || 
-                     (existingSettings.max_budget ? existingSettings.max_budget : '');
-      
-      form.reset({
-        role: existingSettings.role || '',
-        location: existingSettings.location || '',
-        budget,
-        duration: existingSettings.duration || '',
-        work_type: existingSettings.work_type || '',
-        project_type,
-        keywords,
-        hiring_status: existingSettings.hiring_status || '',
-        requires_insurance,
-        requires_site_visits,
-        notifications_enabled,
-        email_alerts,
-      });
-      
-      // Log the form state after reset
-      console.log('Form state after reset:', form.getValues());
+    if (!existingSettings) return;
+    
+    console.log('Setting form values from existing settings:', existingSettings);
+    
+    // Ensure array fields are properly handled - convert to arrays if they're not already
+    let project_type = [];
+    try {
+      if (existingSettings.project_type) {
+        if (Array.isArray(existingSettings.project_type)) {
+          project_type = existingSettings.project_type;
+        } else if (typeof existingSettings.project_type === 'string') {
+          // Try to parse if it's a JSON string
+          project_type = JSON.parse(existingSettings.project_type);
+        } else {
+          project_type = [existingSettings.project_type];
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing project_type:', e);
+      project_type = existingSettings.project_type ? [existingSettings.project_type] : [];
     }
+    
+    let keywords = [];
+    try {
+      if (existingSettings.keywords) {
+        if (Array.isArray(existingSettings.keywords)) {
+          keywords = existingSettings.keywords;
+        } else if (typeof existingSettings.keywords === 'string') {
+          // Try to parse if it's a JSON string
+          keywords = JSON.parse(existingSettings.keywords);
+        } else {
+          keywords = [existingSettings.keywords];
+        }
+      }
+    } catch (e) {
+      console.error('Error parsing keywords:', e);
+      keywords = existingSettings.keywords ? [existingSettings.keywords] : [];
+    }
+    
+    // Ensure boolean fields are properly handled
+    const requires_insurance = existingSettings.requires_insurance !== undefined 
+      ? Boolean(existingSettings.requires_insurance) 
+      : false;
+      
+    const requires_site_visits = existingSettings.requires_site_visits !== undefined 
+      ? Boolean(existingSettings.requires_site_visits) 
+      : false;
+      
+    const notifications_enabled = existingSettings.notifications_enabled !== undefined 
+      ? Boolean(existingSettings.notifications_enabled) 
+      : true;
+      
+    const email_alerts = existingSettings.email_alerts !== undefined 
+      ? Boolean(existingSettings.email_alerts) 
+      : true;
+    
+    // Map the budget field correctly - use budget if available, fall back to max_budget
+    const budget = existingSettings.budget || 
+                  (existingSettings.max_budget ? existingSettings.max_budget : '');
+    
+    form.reset({
+      role: existingSettings.role || '',
+      location: existingSettings.location || '',
+      budget,
+      duration: existingSettings.duration || '',
+      work_type: existingSettings.work_type || '',
+      project_type,
+      keywords,
+      hiring_status: existingSettings.hiring_status || '',
+      requires_insurance,
+      requires_site_visits,
+      notifications_enabled,
+      email_alerts,
+    });
+    
+    // Log the form state after reset
+    console.log('Form state after reset:', form.getValues());
   }, [existingSettings, form]);
 
   return {
