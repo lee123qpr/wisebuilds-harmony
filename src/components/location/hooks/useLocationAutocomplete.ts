@@ -32,6 +32,12 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
     
     // Reset initialization flag
     setIsInitialized(false);
+    
+    // Remove any existing pac-container elements that might be orphaned
+    const pacContainers = document.querySelectorAll('.pac-container');
+    pacContainers.forEach(container => {
+      container.remove();
+    });
   };
 
   // Set up the autocomplete once the script is loaded and the input is available
@@ -113,11 +119,41 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
       if (inputRef.current) {
         inputRef.current.addEventListener('input', inputHandler);
       }
+      
+      // Handle blur events to hide the autocomplete when input loses focus
+      const blurHandler = () => {
+        // Add a small delay to allow for selecting from dropdown
+        setTimeout(() => {
+          // Find any pac-container elements and hide them when not needed
+          const pacContainers = document.querySelectorAll('.pac-container');
+          pacContainers.forEach(container => {
+            container.setAttribute('style', 'display: none !important;');
+          });
+        }, 300);
+      };
+      
+      if (inputRef.current) {
+        inputRef.current.addEventListener('blur', blurHandler);
+      }
+      
+      // Handle focus events to show the autocomplete when input gains focus
+      const focusHandler = () => {
+        const pacContainers = document.querySelectorAll('.pac-container');
+        pacContainers.forEach(container => {
+          container.removeAttribute('style');
+        });
+      };
+      
+      if (inputRef.current) {
+        inputRef.current.addEventListener('focus', focusHandler);
+      }
 
-      // Store cleanup function to remove event listener
+      // Store cleanup function to remove event listeners
       const inputCleanup = () => {
         if (inputRef.current) {
           inputRef.current.removeEventListener('input', inputHandler);
+          inputRef.current.removeEventListener('blur', blurHandler);
+          inputRef.current.removeEventListener('focus', focusHandler);
         }
       };
 

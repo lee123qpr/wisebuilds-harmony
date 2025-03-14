@@ -26,16 +26,32 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         position: fixed !important;
         pointer-events: auto !important;
         transform: translateZ(0) !important;
+        max-height: 240px !important;
+        overflow-y: auto !important;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+        border-radius: 0.375rem !important;
       }
       .pac-item {
         pointer-events: auto !important;
         cursor: pointer !important;
+        padding: 0.5rem 1rem !important;
+      }
+      .pac-item:hover {
+        background-color: rgba(243, 244, 246, 1) !important;
+      }
+      .pac-container:empty {
+        display: none !important;
       }
     `;
     document.head.appendChild(style);
 
     return () => {
       document.head.removeChild(style);
+      // Find and remove any pac-container elements when component unmounts
+      const pacContainers = document.querySelectorAll('.pac-container');
+      pacContainers.forEach(container => {
+        container.remove();
+      });
     };
   }, []);
 
