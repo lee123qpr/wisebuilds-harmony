@@ -27,6 +27,11 @@ export const useLocationAutocomplete = (formField: any, fieldName: string = 'loc
         types: ['geocode', 'establishment'] // Allow geocoded locations and establishments
       });
       
+      // Force the bias towards the viewport
+      autocomplete.setOptions({
+        strictBounds: false,
+      });
+      
       setAutocompleteInstance(autocomplete);
       
       // Add the place_changed event listener

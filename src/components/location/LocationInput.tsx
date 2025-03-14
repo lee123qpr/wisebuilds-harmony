@@ -80,7 +80,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
       <Input
         placeholder={isLoaded ? "Enter any location" : "Loading location service..."}
         className="pl-9 h-12" // Increased height for better visibility
-        disabled={isLoading && !isLoaded}
+        disabled={!isLoaded || isLoading}
         autoComplete="off"
         {...field}
         ref={(el) => {
