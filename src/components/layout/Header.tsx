@@ -14,7 +14,7 @@ const Header: React.FC = () => {
           <Link to="/" className="flex items-center">
             {!logoError ? (
               <img 
-                src="/buildwise-logo.png" 
+                src="buildwise-logo.png" 
                 alt="BuildWise Logo" 
                 className="h-10 w-auto"
                 onError={() => {
