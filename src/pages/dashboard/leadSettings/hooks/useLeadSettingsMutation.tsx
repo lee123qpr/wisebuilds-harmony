@@ -17,36 +17,24 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       if (!user) throw new Error('User not authenticated');
       
       // Log all values received from the form to debug
-      console.log('Form values received:', values);
+      console.log('Form values received for saving:', values);
       
-      // Safely handle arrays - ensure they're always arrays even if null/undefined
-      const project_type = values.project_type ? 
-        (Array.isArray(values.project_type) ? values.project_type : [values.project_type]) : 
-        [];
+      // Ensure arrays are properly handled
+      const project_type = Array.isArray(values.project_type) ? values.project_type : [];
+      const keywords = Array.isArray(values.keywords) ? values.keywords : [];
       
-      const keywords = values.keywords ? 
-        (Array.isArray(values.keywords) ? values.keywords : [values.keywords]) : 
-        [];
-      
-      // Safely handle booleans - ensure they're always boolean values
-      const requires_insurance = values.requires_insurance === undefined ? 
-        false : Boolean(values.requires_insurance);
-      
-      const requires_site_visits = values.requires_site_visits === undefined ? 
-        false : Boolean(values.requires_site_visits);
-      
-      const notifications_enabled = values.notifications_enabled === undefined ? 
-        true : Boolean(values.notifications_enabled);
-      
-      const email_alerts = values.email_alerts === undefined ? 
-        true : Boolean(values.email_alerts);
+      // Ensure booleans are proper boolean values
+      const requires_insurance = !!values.requires_insurance;
+      const requires_site_visits = !!values.requires_site_visits;
+      const notifications_enabled = values.notifications_enabled !== false; // Default to true
+      const email_alerts = values.email_alerts !== false; // Default to true
       
       const settingsData = {
         user_id: user.id,
         role: values.role || '',
         location: values.location || '',
         budget: values.budget || '',
-        max_budget: values.budget || '', // Save the budget value to both fields for backwards compatibility
+        max_budget: values.budget || '', // Copy budget to max_budget for compatibility
         duration: values.duration || '',
         work_type: values.work_type || '',
         project_type,
@@ -61,13 +49,13 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       
       console.log('Data being saved to Supabase:', settingsData);
       
-      if (existingSettings) {
+      if (existingSettings?.id) {
         // Update existing settings
         const { data, error } = await supabase
           .from('lead_settings')
           .update(settingsData)
           .eq('id', existingSettings.id)
-          .select(); // Add select() to get the updated data back
+          .select();
         
         if (error) {
           console.error('Supabase update error:', error);
@@ -77,15 +65,14 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         console.log('Settings updated successfully:', data);
         return data?.[0] || { ...existingSettings, ...settingsData };
       } else {
-        // Create new settings - add the created_at field
+        // Create new settings
         const { data, error } = await supabase
           .from('lead_settings')
           .insert({
             ...settingsData, 
             created_at: new Date().toISOString()
           })
-          .select()
-          .single();
+          .select();
         
         if (error) {
           console.error('Supabase insert error:', error);
@@ -93,7 +80,7 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         }
         
         console.log('Settings created successfully:', data);
-        return data;
+        return data?.[0];
       }
     },
     onSuccess: (data) => {
@@ -110,10 +97,8 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         variant: 'default',
       });
       
-      // Delay navigation to give user time to see the toast
-      setTimeout(() => {
-        navigate('/dashboard/freelancer');
-      }, 1500);
+      // Navigate to freelancer dashboard
+      navigate('/dashboard/freelancer');
     },
     onError: (error: any) => {
       console.error('Error saving lead settings:', error);

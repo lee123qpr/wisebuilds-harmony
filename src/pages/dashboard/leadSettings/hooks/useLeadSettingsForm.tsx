@@ -28,6 +28,7 @@ export const useLeadSettingsForm = () => {
       notifications_enabled: true,
       email_alerts: true,
     },
+    mode: 'onChange', // Add validation mode for better user experience
   });
   
   // Fetch existing lead settings
@@ -61,17 +62,17 @@ export const useLeadSettingsForm = () => {
     
     console.log('Setting form values from existing settings:', existingSettings);
     
-    // Process arrays properly
-    let project_type = Array.isArray(existingSettings.project_type) 
+    // Handle arrays safely - ensure they're always arrays
+    const project_type = Array.isArray(existingSettings.project_type) 
       ? existingSettings.project_type 
       : (existingSettings.project_type ? [existingSettings.project_type] : []);
     
-    let keywords = Array.isArray(existingSettings.keywords) 
+    const keywords = Array.isArray(existingSettings.keywords) 
       ? existingSettings.keywords 
       : (existingSettings.keywords ? [existingSettings.keywords] : []);
     
-    // Create a values object with correct types
-    const values = {
+    // Create values object with correct types
+    const values: LeadSettingsFormValues = {
       role: existingSettings.role || '',
       location: existingSettings.location || '',
       budget: existingSettings.budget || existingSettings.max_budget || '',
@@ -80,18 +81,16 @@ export const useLeadSettingsForm = () => {
       project_type,
       keywords,
       hiring_status: existingSettings.hiring_status || '',
-      requires_insurance: Boolean(existingSettings.requires_insurance),
-      requires_site_visits: Boolean(existingSettings.requires_site_visits),
-      notifications_enabled: Boolean(existingSettings.notifications_enabled),
-      email_alerts: Boolean(existingSettings.email_alerts),
+      requires_insurance: !!existingSettings.requires_insurance,
+      requires_site_visits: !!existingSettings.requires_site_visits,
+      notifications_enabled: existingSettings.notifications_enabled !== false, // Default to true
+      email_alerts: existingSettings.email_alerts !== false, // Default to true
     };
     
     console.log('Form values being set:', values);
     
     // Reset form with values from database
     form.reset(values);
-    
-    // Mark the form as initialized
     setIsFormInitialized(true);
     
     console.log('Form state after reset:', form.getValues());

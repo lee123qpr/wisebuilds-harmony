@@ -27,7 +27,7 @@ const LeadSettingsForm = () => {
         </CardDescription>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <CardContent className="space-y-6">
             {isLoading ? (
               <div className="flex items-center justify-center py-8">
