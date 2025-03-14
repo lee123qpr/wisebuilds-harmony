@@ -16,8 +16,8 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
   jobsCompleted
 }) => {
   return (
-    <>
-      <div className="flex items-center justify-center gap-2 mb-2">
+    <div className="w-full">
+      <div className="flex flex-wrap items-center gap-2 mb-3">
         {emailVerified ? (
           <Badge variant="outline" className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200">
             <CheckCircle2 className="h-3 w-3" />
@@ -30,18 +30,18 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
         )}
       </div>
 
-      <div className="w-full space-y-2 mt-4">
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Calendar className="h-4 w-4" />
+      <div className="flex flex-wrap gap-4">
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Calendar className="h-3.5 w-3.5" />
           <span>Member since {formattedMemberSince}</span>
         </div>
         
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Briefcase className="h-4 w-4" />
+        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+          <Briefcase className="h-3.5 w-3.5" />
           <span>{jobsCompleted} {jobsCompleted === 1 ? 'job' : 'jobs'} completed</span>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

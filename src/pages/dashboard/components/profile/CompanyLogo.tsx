@@ -82,8 +82,8 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
 
   return (
     <Card>
-      <CardContent className="pt-6">
-        <div className="flex flex-col items-center">
+      <CardContent className="p-4">
+        <div className="flex flex-row items-center gap-4">
           <CompanyAvatar
             logoUrl={cachedLogoUrl}
             uploadingLogo={uploadingLogo}
@@ -92,15 +92,19 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
             handleLogoUpload={handleLogoUpload}
           />
 
-          <h2 className="text-xl font-semibold mt-2">{companyName || 'Your Company'}</h2>
-          <p className="text-sm text-muted-foreground mb-4">{contactName || 'Contact Person'}</p>
+          <div className="flex-1 min-w-0">
+            <div className="mb-1">
+              <h2 className="text-xl font-semibold truncate">{companyName || 'Your Company'}</h2>
+              <p className="text-sm text-muted-foreground">{contactName || 'Contact Person'}</p>
+            </div>
 
-          <ProfileInfoBadges
-            emailVerified={emailVerified}
-            memberSince={memberSince || ''}
-            formattedMemberSince={formattedMemberSince}
-            jobsCompleted={jobsCompleted}
-          />
+            <ProfileInfoBadges
+              emailVerified={emailVerified}
+              memberSince={memberSince || ''}
+              formattedMemberSince={formattedMemberSince}
+              jobsCompleted={jobsCompleted}
+            />
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -19,12 +19,12 @@ const CompanyAvatar: React.FC<CompanyAvatarProps> = ({
   handleLogoUpload
 }) => {
   return (
-    <div className="relative mb-4 group">
-      <Avatar className="h-32 w-32 border-2 border-primary/10">
+    <div className="relative group">
+      <Avatar className="h-24 w-24 border-2 border-primary/10">
         {logoUrl ? (
           <AvatarImage key={imageKey} src={logoUrl} alt="Company logo" />
         ) : null}
-        <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
+        <AvatarFallback className="text-2xl bg-primary text-primary-foreground">
           {initials}
         </AvatarFallback>
       </Avatar>
@@ -38,9 +38,9 @@ const CompanyAvatar: React.FC<CompanyAvatarProps> = ({
             disabled={uploadingLogo}
           />
           {uploadingLogo ? (
-            <Loader2 className="h-6 w-6 animate-spin text-white" />
+            <Loader2 className="h-5 w-5 animate-spin text-white" />
           ) : (
-            <Upload className="h-6 w-6 text-white" />
+            <Upload className="h-5 w-5 text-white" />
           )}
         </label>
       </div>
