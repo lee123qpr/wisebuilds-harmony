@@ -18,6 +18,7 @@ import ProjectApplications from "./pages/project/ProjectApplications";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import { AuthProvider } from "./context/AuthContext";
 import LeadSettings from "./pages/dashboard/leadSettings";
+import ClientProfile from "./pages/dashboard/ClientProfile";
 
 const queryClient = new QueryClient();
 
@@ -122,6 +123,16 @@ const App = () => (
               element={
                 <ProtectedRoute allowedUserTypes={['freelancer']}>
                   <LeadSettings />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Add the new client profile route */}
+            <Route 
+              path="/dashboard/business/profile" 
+              element={
+                <ProtectedRoute allowedUserTypes={['business']}>
+                  <ClientProfile />
                 </ProtectedRoute>
               } 
             />

@@ -9,6 +9,80 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
+      client_profiles: {
+        Row: {
+          company_address: string | null
+          company_description: string | null
+          company_name: string | null
+          contact_name: string | null
+          created_at: string
+          id: string
+          logo_url: string | null
+          phone_number: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          company_address?: string | null
+          company_description?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          created_at?: string
+          id: string
+          logo_url?: string | null
+          phone_number?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          company_address?: string | null
+          company_description?: string | null
+          company_name?: string | null
+          contact_name?: string | null
+          created_at?: string
+          id?: string
+          logo_url?: string | null
+          phone_number?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
+      client_reviews: {
+        Row: {
+          client_id: string
+          created_at: string
+          id: string
+          rating: number
+          review_text: string | null
+          reviewer_id: string | null
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          id?: string
+          rating: number
+          review_text?: string | null
+          reviewer_id?: string | null
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          id?: string
+          rating?: number
+          review_text?: string | null
+          reviewer_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_reviews_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       lead_settings: {
         Row: {
           budget: string | null
