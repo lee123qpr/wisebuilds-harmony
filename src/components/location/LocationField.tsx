@@ -7,40 +7,6 @@ import { LocationFieldProps } from './types';
 import { useGoogleMapsScript } from './useGoogleMapsScript';
 import { useToast } from '@/hooks/use-toast';
 
-// Add CSS to ensure autocomplete dropdown is always visible
-const autocompleteCss = `
-.pac-container {
-  z-index: 9999 !important;
-  background-color: white;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  border-radius: 0.5rem;
-  border: 1px solid #e2e8f0;
-  margin-top: 4px;
-  padding: 0.5rem 0;
-  width: auto !important;
-  min-width: 250px;
-}
-
-.pac-item {
-  padding: 0.5rem 1rem;
-  cursor: pointer;
-  font-family: inherit;
-}
-
-.pac-item:hover {
-  background-color: #f3f4f6;
-}
-
-.pac-item-query {
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.pac-matched {
-  font-weight: 600;
-}
-`;
-
 export const LocationField: React.FC<LocationFieldProps> = ({ 
   form, 
   name = 'location',
@@ -53,17 +19,6 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   const { toast } = useToast();
   const [autocompleteInstance, setAutocompleteInstance] = useState<google.maps.places.Autocomplete | null>(null);
   const [placesListener, setPlacesListener] = useState<google.maps.MapsEventListener | null>(null);
-  
-  // Add the CSS to the document
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.innerHTML = autocompleteCss;
-    document.head.appendChild(style);
-    
-    return () => {
-      document.head.removeChild(style);
-    };
-  }, []);
   
   // Set up the autocomplete when Google Maps is loaded
   useEffect(() => {
@@ -171,7 +126,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
         <FormItem className="flex flex-col">
           <FormLabel>{label}</FormLabel>
           <FormControl>
-            <div className="relative">
+            <div className="relative" style={{ zIndex: 50 }}>
               {isLoading ? (
                 <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
               ) : (
@@ -179,7 +134,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
               )}
               <Input
                 placeholder={isLoaded ? "Enter any location" : "Loading location service..."}
-                className="pl-9"
+                className="pl-9 h-12" // Increased height for better visibility
                 disabled={isLoading && !isLoaded}
                 autoComplete="off"
                 {...field}

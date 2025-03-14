@@ -40,6 +40,17 @@ export const useGoogleMapsScript = () => {
         console.log('Google Maps API loaded successfully');
         setIsLoaded(true);
         setIsLoading(false);
+        
+        // Check if the pac-container exists and needs debugging
+        setTimeout(() => {
+          const pacContainer = document.querySelector('.pac-container');
+          if (pacContainer) {
+            console.log('PAC container found:', pacContainer);
+          } else {
+            console.warn('PAC container not found. Autocomplete might not be initialized.');
+          }
+        }, 5000); // Check after 5 seconds
+        
         // Delete the callback function to prevent memory leaks
         delete window[callbackName];
       };
