@@ -5,9 +5,10 @@ import { Button } from '@/components/ui/button';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
-import { formatDate, formatBudget } from '@/utils/projectFormatters';
+import { formatDate, formatBudget, formatDuration, formatRole, formatWorkType } from '@/utils/projectFormatters';
 import { Skeleton } from '@/components/ui/skeleton';
-import { MapPin, Calendar, Briefcase, Clock, Tag } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { MapPin, Calendar, Briefcase, Clock, Tag, Building, Users, Calendar as CalendarIcon } from 'lucide-react';
 
 interface ProjectListViewProps {
   projects: Project[];
@@ -84,8 +85,10 @@ interface ProjectCardProps {
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({ project, isSelected, onClick }) => {
-  // Extract the date part from the created_at timestamp
-  const postedDate = formatDate(project.created_at).split(' ')[0];
+  // Format dates
+  const postedDate = formatDate(project.created_at);
+  const startDate = formatDate(project.start_date);
+  const hiringStatus = project.hiring_status || 'active';
   
   return (
     <div 
@@ -98,32 +101,67 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, isSelected, onClick 
     >
       <h3 className="font-semibold text-lg truncate">{project.title}</h3>
       
-      <div className="flex flex-wrap items-center gap-4 mt-2">
-        <div className="flex items-center text-muted-foreground">
-          <Tag className="h-4 w-4 mr-1" />
-          <span className="text-sm">{formatBudget(project.budget)}</span>
+      <div className="space-y-3 mt-3">
+        {/* Location */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-blue-100">
+            <MapPin className="h-4 w-4 text-blue-600" />
+          </span>
+          <span className="text-sm text-blue-600 font-medium">{project.location}</span>
         </div>
         
-        <div className="flex items-center text-muted-foreground">
-          <MapPin className="h-4 w-4 mr-1" />
-          <span className="text-sm">{project.location}</span>
+        {/* Budget */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-green-100">
+            <Tag className="h-4 w-4 text-green-600" />
+          </span>
+          <span className="text-sm text-green-600 font-medium">{formatBudget(project.budget)}</span>
         </div>
-      </div>
-      
-      <p className="mt-3 text-sm line-clamp-2 text-muted-foreground">{project.description}</p>
-      
-      <div className="mt-4 flex gap-2 flex-wrap">
-        <span className="bg-primary/10 text-primary text-xs px-2 py-1 rounded-full">
-          {project.role.replace(/_/g, ' ')}
-        </span>
-        <span className="bg-muted text-xs px-2 py-1 rounded-full">
-          {project.work_type.replace(/_/g, ' ')}
-        </span>
-      </div>
-      
-      <div className="mt-3 flex items-center text-xs text-muted-foreground">
-        <Calendar className="h-3.5 w-3.5 mr-1" />
-        <span>Posted {postedDate}</span>
+        
+        {/* Duration */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-purple-100">
+            <Clock className="h-4 w-4 text-purple-600" />
+          </span>
+          <span className="text-sm text-purple-600 font-medium">{formatDuration(project.duration)}</span>
+        </div>
+        
+        {/* Role */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-orange-100">
+            <Users className="h-4 w-4 text-orange-600" />
+          </span>
+          <span className="text-sm text-orange-600 font-medium">{formatRole(project.role)}</span>
+        </div>
+        
+        {/* Work Type */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-100">
+            <Briefcase className="h-4 w-4 text-teal-600" />
+          </span>
+          <span className="text-sm text-teal-600 font-medium">{formatWorkType(project.work_type)}</span>
+        </div>
+        
+        {/* Posted Date */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-100">
+            <CalendarIcon className="h-4 w-4 text-indigo-600" />
+          </span>
+          <span className="text-sm text-indigo-600 font-medium">Posted {postedDate}</span>
+        </div>
+        
+        {/* Hiring Status */}
+        <div className="flex items-center gap-2 mt-2">
+          <Badge className={`
+            ${hiringStatus === 'active' ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 
+              hiringStatus === 'pending' ? 'bg-amber-100 text-amber-700 hover:bg-amber-200' : 
+              hiringStatus === 'closed' ? 'bg-red-100 text-red-700 hover:bg-red-200' : 
+              'bg-blue-100 text-blue-700 hover:bg-blue-200'}
+            border-none rounded-full px-3 py-1
+          `}>
+            {hiringStatus.charAt(0).toUpperCase() + hiringStatus.slice(1)}
+          </Badge>
+        </div>
       </div>
     </div>
   );
