@@ -12,7 +12,7 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
+    googleMapsApiKey: "AIzaSyBJsbbC2Pv91pusMWPaF979yK-XpyHzLtM" || '',
     libraries,
   });
   const [isInitialized, setIsInitialized] = useState(false);

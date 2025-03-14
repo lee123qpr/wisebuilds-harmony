@@ -46,19 +46,14 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     }, 1000);
   };
 
-  // Add a visual feedback when API key is missing
-  const placeholder = !import.meta.env.VITE_GOOGLE_MAPS_API_KEY 
-    ? "Google Maps API key missing" 
-    : "Enter city or town";
-
   return (
     <div className="relative">
       <Input
         {...field}
         ref={inputRef}
-        placeholder={placeholder}
+        placeholder="Enter city or town"
         onBlur={handleBlur}
-        disabled={isLoading || !import.meta.env.VITE_GOOGLE_MAPS_API_KEY}
+        disabled={isLoading}
         className={cn(
           "pr-10",
           !isLoaded && "cursor-not-allowed opacity-50"
