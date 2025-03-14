@@ -16,6 +16,9 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
     mutationFn: async (values: LeadSettingsFormValues) => {
       if (!user) throw new Error('User not authenticated');
       
+      // Log all values received from the form to debug
+      console.log('Form values received:', values);
+      
       const settingsData = {
         user_id: user.id,
         role: values.role,
@@ -33,17 +36,23 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         updated_at: new Date().toISOString()
       };
       
+      console.log('Data being saved to Supabase:', settingsData);
+      
       if (existingSettings) {
         // Update existing settings
-        const { error } = await supabase
+        const { data, error } = await supabase
           .from('lead_settings')
           .update(settingsData)
-          .eq('id', existingSettings.id);
+          .eq('id', existingSettings.id)
+          .select(); // Add select() to get the updated data back
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase update error:', error);
+          throw error;
+        }
         
-        console.log('Settings updated successfully:', settingsData);
-        return { ...existingSettings, ...settingsData };
+        console.log('Settings updated successfully:', data);
+        return data?.[0] || { ...existingSettings, ...settingsData };
       } else {
         // Create new settings - add the created_at field
         const { data, error } = await supabase
@@ -55,13 +64,19 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Supabase insert error:', error);
+          throw error;
+        }
         
         console.log('Settings created successfully:', data);
         return data;
       }
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      // Log the data returned from the mutation
+      console.log('onSuccess data:', data);
+      
       // Invalidate queries to refetch data
       queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
       

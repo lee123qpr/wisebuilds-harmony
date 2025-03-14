@@ -35,6 +35,8 @@ export const useLeadSettingsForm = () => {
     queryFn: async () => {
       if (!user) return null;
       
+      console.log('Fetching lead settings for user:', user.id);
+      
       const { data, error } = await supabase
         .from('lead_settings')
         .select('*')
@@ -46,6 +48,7 @@ export const useLeadSettingsForm = () => {
         throw error;
       }
       
+      console.log('Retrieved lead settings:', data);
       return data;
     },
     enabled: !!user
@@ -54,20 +57,25 @@ export const useLeadSettingsForm = () => {
   // Update form with existing settings when data is loaded
   React.useEffect(() => {
     if (existingSettings) {
+      console.log('Setting form values from existing settings:', existingSettings);
+      
       form.reset({
         role: existingSettings.role || '',
         location: existingSettings.location || '',
         budget: existingSettings.budget || '',
         duration: existingSettings.duration || '',
         work_type: existingSettings.work_type || '',
-        project_type: existingSettings.project_type || [],
-        keywords: existingSettings.keywords || [],
+        project_type: Array.isArray(existingSettings.project_type) ? existingSettings.project_type : [],
+        keywords: Array.isArray(existingSettings.keywords) ? existingSettings.keywords : [],
         hiring_status: existingSettings.hiring_status || '',
         requires_insurance: existingSettings.requires_insurance || false,
         requires_site_visits: existingSettings.requires_site_visits || false,
-        notifications_enabled: existingSettings.notifications_enabled,
-        email_alerts: existingSettings.email_alerts,
+        notifications_enabled: existingSettings.notifications_enabled !== undefined ? existingSettings.notifications_enabled : true,
+        email_alerts: existingSettings.email_alerts !== undefined ? existingSettings.email_alerts : true,
       });
+      
+      // Log the form state after reset
+      console.log('Form state after reset:', form.getValues());
     }
   }, [existingSettings, form]);
 

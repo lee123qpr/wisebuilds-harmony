@@ -14,6 +14,7 @@ const LeadSettingsForm = () => {
   const saveSettingsMutation = useLeadSettingsMutation(existingSettings);
 
   const onSubmit = (values: LeadSettingsFormValues) => {
+    console.log('Form submitted with values:', values);
     saveSettingsMutation.mutate(values);
   };
 
