@@ -22,6 +22,11 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
         (values.website.match(/^https?:\/\//) ? values.website : `https://${values.website}`) : 
         values.website;
       
+      // Add cache busting to logo URL if it exists
+      const cachedLogoUrl = logoUrl ? 
+        (logoUrl.includes('?') ? logoUrl : `${logoUrl}?t=${Date.now()}`) : 
+        logoUrl;
+      
       // First, check if the profile already exists
       const { data: existingProfile } = await supabase
         .from('client_profiles')
@@ -42,7 +47,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
             company_description: values.companyDescription,
             phone_number: values.phoneNumber,
             website: websiteUrl,
-            logo_url: logoUrl,
+            logo_url: cachedLogoUrl,
             company_type: values.companyType,
             company_turnover: values.companyTurnover,
             employee_size: values.employeeSize,
@@ -63,7 +68,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
             company_description: values.companyDescription,
             phone_number: values.phoneNumber,
             website: websiteUrl,
-            logo_url: logoUrl,
+            logo_url: cachedLogoUrl,
             company_type: values.companyType,
             company_turnover: values.companyTurnover,
             employee_size: values.employeeSize,

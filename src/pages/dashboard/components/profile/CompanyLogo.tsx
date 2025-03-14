@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -34,6 +34,7 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
   jobsCompleted
 }) => {
   const { toast } = useToast();
+  const [imageKey, setImageKey] = useState(Date.now());
 
   const handleLogoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     if (!userId || !event.target.files || event.target.files.length === 0) return;
@@ -63,9 +64,12 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
         .from('company_logos')
         .getPublicUrl(fileName);
       
-      const publicUrl = data.publicUrl;
-      console.log('Public URL:', publicUrl);
+      // Add a timestamp query parameter to bust cache
+      const publicUrl = `${data.publicUrl}?t=${Date.now()}`;
+      console.log('Public URL with cache busting:', publicUrl);
+      
       setLogoUrl(publicUrl);
+      setImageKey(Date.now()); // Update the key to force re-render
       
       // Check if profile exists
       const { data: existingProfile, error: profileError } = await supabase
@@ -139,14 +143,17 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
     ? format(new Date(memberSince), 'MMMM yyyy')
     : 'Recently joined';
 
+  // Add a cache-busting parameter to the logo URL
+  const cachedLogoUrl = logoUrl ? `${logoUrl.split('?')[0]}?t=${imageKey}` : null;
+
   return (
     <Card>
       <CardContent className="pt-6">
         <div className="flex flex-col items-center">
           <div className="relative mb-4 group">
             <Avatar className="h-32 w-32 border-2 border-primary/10">
-              {logoUrl ? (
-                <AvatarImage src={logoUrl} alt="Company logo" />
+              {cachedLogoUrl ? (
+                <AvatarImage key={imageKey} src={cachedLogoUrl} alt="Company logo" />
               ) : null}
               <AvatarFallback className="text-3xl bg-primary text-primary-foreground">
                 {getInitials()}
