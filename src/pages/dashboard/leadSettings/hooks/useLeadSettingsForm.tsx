@@ -89,10 +89,14 @@ export const useLeadSettingsForm = () => {
         ? existingSettings.email_alerts 
         : true;
       
+      // Map the budget field correctly - use budget if available, fall back to max_budget
+      const budget = existingSettings.budget || 
+                     (existingSettings.max_budget ? existingSettings.max_budget : '');
+      
       form.reset({
         role: existingSettings.role || '',
         location: existingSettings.location || '',
-        budget: existingSettings.budget || '',
+        budget,
         duration: existingSettings.duration || '',
         work_type: existingSettings.work_type || '',
         project_type,

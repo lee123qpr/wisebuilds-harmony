@@ -56,6 +56,7 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         role: values.role,
         location: values.location,
         budget: values.budget,
+        max_budget: values.budget, // Save the budget value to both fields for backwards compatibility
         duration: values.duration,
         work_type: values.work_type,
         project_type,
