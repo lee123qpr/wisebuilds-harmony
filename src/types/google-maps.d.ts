@@ -25,6 +25,13 @@ declare namespace google {
           location: LatLng;
         };
         name?: string;
+        place_id?: string;
+        types?: string[];
+        address_components?: Array<{
+          long_name: string;
+          short_name: string;
+          types: string[];
+        }>;
       }
     }
     

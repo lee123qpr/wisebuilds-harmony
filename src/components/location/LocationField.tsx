@@ -1,5 +1,5 @@
 
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { MapPin } from 'lucide-react';
@@ -14,8 +14,9 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   description = 'Where the work will be performed'
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const { isLoaded } = useGoogleMapsScript();
+  const { isLoaded, isLoading } = useGoogleMapsScript();
   const { toast } = useToast();
+  const [autocompleteInstance, setAutocompleteInstance] = useState<google.maps.places.Autocomplete | null>(null);
   
   // Set up the autocomplete when Google Maps is loaded
   useEffect(() => {
@@ -31,15 +32,18 @@ export const LocationField: React.FC<LocationFieldProps> = ({
         types: ['geocode'] // Allow any geocoded location
       });
       
+      setAutocompleteInstance(autocomplete);
+      
       // Add the place_changed event listener
       const listener = window.google.maps.event.addListener(
         autocomplete, 
         'place_changed', 
         () => {
           const place = autocomplete.getPlace();
+          console.log('Selected place:', place);
           
           if (place && place.formatted_address) {
-            console.log('Selected place:', place.formatted_address);
+            console.log('Selected address:', place.formatted_address);
             form.setValue(name, place.formatted_address, { 
               shouldValidate: true,
               shouldDirty: true,
@@ -70,6 +74,15 @@ export const LocationField: React.FC<LocationFieldProps> = ({
       });
     }
   }, [isLoaded, form, name, toast]);
+
+  // Clean up autocomplete instance on unmount
+  useEffect(() => {
+    return () => {
+      if (autocompleteInstance) {
+        // Clean up if needed
+      }
+    };
+  }, [autocompleteInstance]);
 
   return (
     <FormField

@@ -42,7 +42,7 @@ export const useGoogleMapsScript = () => {
       // Create and append the script
       const script = document.createElement('script');
       script.id = 'google-maps-script';
-      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&callback=${callbackName}`;
+      script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBJsbbC2Pv91pusMWPaF979yK-XpyHzLtM&libraries=places&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
       
