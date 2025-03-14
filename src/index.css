@@ -133,7 +133,7 @@
 .pac-container {
   z-index: 9999 !important;
   display: block !important;
-  position: fixed !important; /* Changed from absolute to fixed */
+  position: fixed !important; /* Fixed positioning for better scrolling behavior */
   background-color: white !important;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2) !important;
   border-radius: 0.5rem !important;
@@ -142,6 +142,9 @@
   padding: 0.5rem 0 !important;
   width: auto !important;
   min-width: 250px !important;
+  /* Ensure the dropdown appears above other elements */
+  transform: translateZ(0) !important;
+  will-change: top, left !important; /* Performance optimization for position changes */
 }
 
 .pac-item {

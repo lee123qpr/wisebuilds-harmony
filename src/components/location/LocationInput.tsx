@@ -32,19 +32,41 @@ export const LocationInput: React.FC<LocationInputProps> = ({
       const rect = input.getBoundingClientRect();
       
       // Update pac-container position to match input
+      // For fixed positioning, we need viewport-relative coordinates
       pacContainer.style.top = `${rect.bottom}px`;
       pacContainer.style.left = `${rect.left}px`;
       pacContainer.style.width = `${rect.width}px`;
     };
     
-    // Add scroll and resize event listeners
+    // Run once immediately to set initial position
+    setTimeout(updateDropdownPosition, 100);
+    
+    // Add event listeners for various scenarios that might affect positioning
     window.addEventListener('scroll', updateDropdownPosition, true);
     window.addEventListener('resize', updateDropdownPosition);
+    document.addEventListener('click', updateDropdownPosition);
+    
+    // Also update when Google populates the dropdown
+    const observer = new MutationObserver((mutations) => {
+      mutations.forEach(() => {
+        const pacContainer = document.querySelector('.pac-container');
+        if (pacContainer && pacContainer.children.length > 0) {
+          updateDropdownPosition();
+        }
+      });
+    });
+    
+    const pacContainer = document.querySelector('.pac-container');
+    if (pacContainer) {
+      observer.observe(pacContainer, { childList: true, subtree: true });
+    }
     
     // Clean up event listeners
     return () => {
       window.removeEventListener('scroll', updateDropdownPosition, true);
       window.removeEventListener('resize', updateDropdownPosition);
+      document.removeEventListener('click', updateDropdownPosition);
+      observer.disconnect();
     };
   }, [isLoaded, inputRef]);
   
@@ -85,6 +107,11 @@ export const LocationInput: React.FC<LocationInputProps> = ({
           // Ensure the dropdown shows on focus
           e.currentTarget.setAttribute('autocomplete', 'off');
           e.stopPropagation();
+          // Update dropdown position on focus
+          setTimeout(() => {
+            const event = new Event('scroll');
+            window.dispatchEvent(event);
+          }, 100);
         }}
         // Make sure form field's onBlur callback is called
         onBlur={(e) => {
