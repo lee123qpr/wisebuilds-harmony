@@ -37,7 +37,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
       autocompleteRef.current = autocomplete;
       
       // Add place_changed event listener
-      const listener = google.maps.event.addListener(autocomplete, 'place_changed', () => {
+      const listener = window.google.maps.event.addListener(autocomplete, 'place_changed', () => {
         const place = autocomplete.getPlace();
         
         if (place && place.formatted_address) {
@@ -57,7 +57,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
       
       // Return cleanup function
       return () => {
-        if (listener) google.maps.event.removeListener(listener);
+        if (listener) window.google.maps.event.removeListener(listener);
       };
     } catch (error) {
       console.error('Error initializing Places Autocomplete:', error);
