@@ -5,11 +5,18 @@ import LeadSettingsForm from './LeadSettingsForm';
 import LeadSettingsHeader from './LeadSettingsHeader';
 import { Toaster } from '@/components/ui/toaster';
 import { useAuth } from '@/context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const LeadSettings = () => {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  // Debug: Log current location and authentication state
+  React.useEffect(() => {
+    console.log('Current route:', location.pathname);
+    console.log('Auth state in LeadSettings:', { user, authLoading });
+  }, [user, authLoading, location]);
 
   // Redirect if not authenticated
   React.useEffect(() => {
@@ -17,11 +24,6 @@ const LeadSettings = () => {
       navigate('/auth/login');
     }
   }, [user, authLoading, navigate]);
-
-  // Debug output for auth state
-  React.useEffect(() => {
-    console.log('Auth state in LeadSettings:', { user, authLoading });
-  }, [user, authLoading]);
 
   if (authLoading) {
     return (

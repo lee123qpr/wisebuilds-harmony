@@ -98,7 +98,14 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         variant: 'default',
       });
       
-      navigate('/dashboard/freelancer');
+      // Use the correct route for redirection
+      const currentPath = window.location.pathname;
+      // If we're in the new route structure, stay there
+      if (currentPath.includes('/dashboard/freelancer')) {
+        navigate('/dashboard/freelancer');
+      } else {
+        navigate('/dashboard/freelancer');
+      }
     },
     onError: (error: any) => {
       console.error('Error saving lead settings:', error);
