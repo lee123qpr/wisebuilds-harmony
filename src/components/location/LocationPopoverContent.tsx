@@ -7,23 +7,25 @@ import { Loader2 } from 'lucide-react';
 interface LocationPopoverContentProps {
   inputRef: RefObject<HTMLInputElement>;
   isLoading: boolean;
+  searchText: string;
+  setSearchText: (text: string) => void;
 }
 
 export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
   inputRef,
-  isLoading
+  isLoading,
+  searchText,
+  setSearchText
 }) => {
-  const [searchText, setSearchText] = useState('');
-
   // Focus the input when popover opens
   useEffect(() => {
     if (inputRef.current) {
-      // Short timeout to ensure the popover is fully rendered
+      // Longer timeout to ensure the popover is fully rendered
       const timer = setTimeout(() => {
         if (inputRef.current) {
           inputRef.current.focus();
         }
-      }, 150);
+      }, 300);
       
       return () => clearTimeout(timer);
     }
@@ -37,6 +39,12 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
       onOpenAutoFocus={(e) => {
         // We need to prevent the default behavior to manually handle our own focus
         e.preventDefault();
+      }}
+      onInteractOutside={(e) => {
+        // Prevent immediate closing when clicking inside
+        if (inputRef.current?.contains(e.target as Node)) {
+          e.preventDefault();
+        }
       }}
     >
       <div className="space-y-2">
@@ -52,6 +60,10 @@ export const LocationPopoverContent: React.FC<LocationPopoverContentProps> = ({
             autoCorrect="off"
             spellCheck="false"
             aria-autocomplete="list"
+            onClick={(e) => {
+              // Prevent event bubbling to parent elements
+              e.stopPropagation();
+            }}
           />
           {isLoading && (
             <div className="absolute right-2 top-1/2 -translate-y-1/2">

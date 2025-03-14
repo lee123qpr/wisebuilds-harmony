@@ -16,6 +16,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   description = 'Where the work will be performed (UK and Ireland locations only)'
 }) => {
   const [locationPopoverOpen, setLocationPopoverOpen] = useState(false);
+  const [searchText, setSearchText] = useState('');
   const autocompleteRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
   
@@ -44,6 +45,13 @@ export const LocationField: React.FC<LocationFieldProps> = ({
       console.log('Google Maps API is loaded and ready');
     }
   }, [isLoaded]);
+
+  // Set searchText to selectedLocation when popover opens
+  useEffect(() => {
+    if (locationPopoverOpen && selectedLocation) {
+      setSearchText(selectedLocation);
+    }
+  }, [locationPopoverOpen, selectedLocation]);
   
   // Handle manual closing on selection
   const handlePlaceSelect = (place: { formatted_address: string }) => {
@@ -69,7 +77,8 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     isOpen: locationPopoverOpen,
     isGoogleMapsLoaded: isLoaded,
     inputRef: autocompleteRef,
-    onPlaceSelect: handlePlaceSelect
+    onPlaceSelect: handlePlaceSelect,
+    searchText
   });
 
   return (
@@ -91,7 +100,8 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 <LocationTriggerButton 
                   value={field.value}
                   isOpen={locationPopoverOpen}
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     console.log('Location trigger button clicked');
                     setLocationPopoverOpen(true);
                   }}
@@ -101,6 +111,8 @@ export const LocationField: React.FC<LocationFieldProps> = ({
             <LocationPopoverContent 
               inputRef={autocompleteRef}
               isLoading={isLoading && !isLoaded}
+              searchText={searchText}
+              setSearchText={setSearchText}
             />
           </Popover>
           <FormDescription>

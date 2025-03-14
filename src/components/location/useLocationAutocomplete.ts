@@ -7,6 +7,7 @@ interface UseLocationAutocompleteProps {
   isGoogleMapsLoaded: boolean;
   inputRef: RefObject<HTMLInputElement>;
   onPlaceSelect: (place: { formatted_address: string }) => void;
+  searchText: string;
 }
 
 /**
@@ -17,6 +18,7 @@ export const useLocationAutocomplete = ({
   isGoogleMapsLoaded,
   inputRef,
   onPlaceSelect,
+  searchText
 }: UseLocationAutocompleteProps) => {
   const autocompleteInstanceRef = useRef<google.maps.places.Autocomplete | null>(null);
   const listenerRef = useRef<google.maps.MapsEventListener | null>(null);
@@ -107,6 +109,13 @@ export const useLocationAutocomplete = ({
       return cleanupListener;
     }
   }, [isOpen, isGoogleMapsLoaded, inputRef, onPlaceSelect, toast]);
+
+  // Update input value if searchText changes
+  useEffect(() => {
+    if (isOpen && inputRef.current && searchText !== undefined) {
+      inputRef.current.value = searchText;
+    }
+  }, [isOpen, searchText, inputRef]);
 
   return { autocompleteInstanceRef };
 };

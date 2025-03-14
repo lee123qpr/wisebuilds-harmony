@@ -2,7 +2,12 @@
 import React, { forwardRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { MapPin } from 'lucide-react';
-import { LocationTriggerButtonProps } from './types';
+
+export interface LocationTriggerButtonProps {
+  value: string;
+  isOpen: boolean;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
+}
 
 export const LocationTriggerButton = forwardRef<
   HTMLButtonElement, 
