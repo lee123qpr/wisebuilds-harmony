@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -12,6 +12,7 @@ import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { ProjectFormValues, projectSchema } from './components/schema';
 import ProjectForm from './components/ProjectForm';
 import ProjectLoadingSkeleton from './components/ProjectLoadingSkeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 const EditProject = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -39,21 +40,24 @@ const EditProject = () => {
   });
 
   // Update form values when project data is loaded
-  React.useEffect(() => {
+  useEffect(() => {
     if (project) {
+      console.log('Resetting form with project data:', project);
+      
+      // Ensure all fields are properly set with values from the project
       form.reset({
-        title: project.title,
-        description: project.description,
-        role: project.role,
-        location: project.location,
-        work_type: project.work_type,
-        duration: project.duration,
-        budget: project.budget,
+        title: project.title || '',
+        description: project.description || '',
+        role: project.role || '',
+        location: project.location || '',
+        work_type: project.work_type || 'remote',
+        duration: project.duration || 'less_than_1_week',
+        budget: project.budget || 'less_than_1000',
         hiring_status: project.hiring_status || 'enquiring',
-        requires_insurance: project.requires_insurance,
-        requires_site_visits: project.requires_site_visits,
-        requires_equipment: project.requires_equipment,
-        start_date: project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : undefined,
+        requires_insurance: project.requires_insurance || false,
+        requires_site_visits: project.requires_site_visits || false,
+        requires_equipment: project.requires_equipment || false,
+        start_date: project.start_date ? new Date(project.start_date).toISOString().split('T')[0] : '',
       });
     }
   }, [project, form]);
@@ -135,8 +139,5 @@ const EditProject = () => {
     </MainLayout>
   );
 };
-
-// This import is below to avoid circular imports
-import { supabase } from '@/integrations/supabase/client';
 
 export default EditProject;

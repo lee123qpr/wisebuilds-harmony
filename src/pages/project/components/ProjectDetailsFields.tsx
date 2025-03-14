@@ -54,7 +54,11 @@ const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }>
         render={({ field }) => (
           <FormItem>
             <FormLabel>Role Required</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select 
+              onValueChange={field.onChange} 
+              value={field.value || ''} 
+              defaultValue={field.value || ''}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select required role" />
@@ -89,7 +93,11 @@ const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }>
         render={({ field }) => (
           <FormItem>
             <FormLabel>Work Type</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select 
+              onValueChange={field.onChange} 
+              value={field.value || ''} 
+              defaultValue={field.value || ''}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select work type" />

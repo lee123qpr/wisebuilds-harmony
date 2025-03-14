@@ -22,7 +22,11 @@ const ProjectRequirementsFields: React.FC<ProjectRequirementsFieldsProps> = ({ f
         render={({ field }) => (
           <FormItem>
             <FormLabel>Hiring Status</FormLabel>
-            <Select onValueChange={field.onChange} defaultValue={field.value}>
+            <Select 
+              onValueChange={field.onChange} 
+              value={field.value || ''} 
+              defaultValue={field.value || ''}
+            >
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select hiring status" />
@@ -51,7 +55,11 @@ const ProjectRequirementsFields: React.FC<ProjectRequirementsFieldsProps> = ({ f
           render={({ field }) => (
             <FormItem>
               <FormLabel>Duration</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value || ''} 
+                defaultValue={field.value || ''}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select duration" />
@@ -76,7 +84,11 @@ const ProjectRequirementsFields: React.FC<ProjectRequirementsFieldsProps> = ({ f
           render={({ field }) => (
             <FormItem>
               <FormLabel>Budget</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value || ''} 
+                defaultValue={field.value || ''}
+              >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue placeholder="Select budget range" />
