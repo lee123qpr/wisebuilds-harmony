@@ -19,15 +19,37 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       // Log all values received from the form to debug
       console.log('Form values received:', values);
       
-      // Ensure arrays are properly handled (empty arrays instead of null/undefined)
-      const project_type = Array.isArray(values.project_type) ? values.project_type : [];
-      const keywords = Array.isArray(values.keywords) ? values.keywords : [];
+      // Handle arrays - ensure they're always arrays even if null/undefined or single values
+      let project_type = values.project_type;
+      if (!project_type) {
+        project_type = [];
+      } else if (!Array.isArray(project_type)) {
+        project_type = [project_type];
+      }
       
-      // Ensure boolean values are properly handled
-      const requires_insurance = values.requires_insurance === undefined ? false : values.requires_insurance;
-      const requires_site_visits = values.requires_site_visits === undefined ? false : values.requires_site_visits;
-      const notifications_enabled = values.notifications_enabled === undefined ? true : values.notifications_enabled;
-      const email_alerts = values.email_alerts === undefined ? true : values.email_alerts;
+      let keywords = values.keywords;
+      if (!keywords) {
+        keywords = [];
+      } else if (!Array.isArray(keywords)) {
+        keywords = [keywords];
+      }
+      
+      // Handle booleans - ensure they're always boolean values
+      const requires_insurance = values.requires_insurance === undefined 
+        ? false 
+        : Boolean(values.requires_insurance);
+        
+      const requires_site_visits = values.requires_site_visits === undefined 
+        ? false 
+        : Boolean(values.requires_site_visits);
+        
+      const notifications_enabled = values.notifications_enabled === undefined 
+        ? true 
+        : Boolean(values.notifications_enabled);
+        
+      const email_alerts = values.email_alerts === undefined 
+        ? true 
+        : Boolean(values.email_alerts);
       
       const settingsData = {
         user_id: user.id,

@@ -59,19 +59,49 @@ export const useLeadSettingsForm = () => {
     if (existingSettings) {
       console.log('Setting form values from existing settings:', existingSettings);
       
+      // Ensure array fields are properly handled
+      const project_type = Array.isArray(existingSettings.project_type) 
+        ? existingSettings.project_type 
+        : existingSettings.project_type 
+          ? [existingSettings.project_type] 
+          : [];
+          
+      const keywords = Array.isArray(existingSettings.keywords) 
+        ? existingSettings.keywords 
+        : existingSettings.keywords 
+          ? [existingSettings.keywords] 
+          : [];
+      
+      // Ensure boolean fields are properly handled
+      const requires_insurance = existingSettings.requires_insurance !== undefined 
+        ? existingSettings.requires_insurance 
+        : false;
+        
+      const requires_site_visits = existingSettings.requires_site_visits !== undefined 
+        ? existingSettings.requires_site_visits 
+        : false;
+        
+      const notifications_enabled = existingSettings.notifications_enabled !== undefined 
+        ? existingSettings.notifications_enabled 
+        : true;
+        
+      const email_alerts = existingSettings.email_alerts !== undefined 
+        ? existingSettings.email_alerts 
+        : true;
+      
       form.reset({
         role: existingSettings.role || '',
         location: existingSettings.location || '',
         budget: existingSettings.budget || '',
         duration: existingSettings.duration || '',
         work_type: existingSettings.work_type || '',
-        project_type: Array.isArray(existingSettings.project_type) ? existingSettings.project_type : [],
-        keywords: Array.isArray(existingSettings.keywords) ? existingSettings.keywords : [],
+        project_type,
+        keywords,
         hiring_status: existingSettings.hiring_status || '',
-        requires_insurance: existingSettings.requires_insurance !== undefined ? existingSettings.requires_insurance : false,
-        requires_site_visits: existingSettings.requires_site_visits !== undefined ? existingSettings.requires_site_visits : false,
-        notifications_enabled: existingSettings.notifications_enabled !== undefined ? existingSettings.notifications_enabled : true,
-        email_alerts: existingSettings.email_alerts !== undefined ? existingSettings.email_alerts : true,
+        requires_insurance,
+        requires_site_visits,
+        notifications_enabled,
+        email_alerts,
       });
       
       // Log the form state after reset
