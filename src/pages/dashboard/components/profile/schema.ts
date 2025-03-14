@@ -33,6 +33,26 @@ export const clientProfileSchema = z.object({
     })
     .optional()
     .or(z.literal('')),
+  companyType: z
+    .string()
+    .max(100, { message: 'Company type cannot exceed 100 characters' })
+    .optional()
+    .or(z.literal('')),
+  companyTurnover: z
+    .string()
+    .max(50, { message: 'Company turnover cannot exceed 50 characters' })
+    .optional()
+    .or(z.literal('')),
+  employeeSize: z
+    .string()
+    .max(50, { message: 'Employee size cannot exceed 50 characters' })
+    .optional()
+    .or(z.literal('')),
+  companySpecialism: z
+    .string()
+    .max(100, { message: 'Company specialism cannot exceed 100 characters' })
+    .optional()
+    .or(z.literal('')),
 });
 
 export const reviewSchema = z.object({

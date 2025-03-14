@@ -16,6 +16,9 @@ export const useClientProfile = (user: User | null) => {
   const [isSaving, setIsSaving] = useState(false);
   const [uploadingLogo, setUploadingLogo] = useState(false);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [memberSince, setMemberSince] = useState<string | null>(null);
+  const [emailVerified, setEmailVerified] = useState<boolean>(false);
+  const [jobsCompleted, setJobsCompleted] = useState<number>(0);
   
   const form = useForm<ClientProfileFormValues>({
     resolver: zodResolver(clientProfileSchema),
@@ -26,6 +29,10 @@ export const useClientProfile = (user: User | null) => {
       companyDescription: '',
       phoneNumber: '',
       website: '',
+      companyType: '',
+      companyTurnover: '',
+      employeeSize: '',
+      companySpecialism: '',
     },
     mode: 'onChange',
   });
@@ -54,9 +61,16 @@ export const useClientProfile = (user: User | null) => {
             companyDescription: data.company_description || '',
             phoneNumber: data.phone_number || '',
             website: data.website || '',
+            companyType: data.company_type || '',
+            companyTurnover: data.company_turnover || '',
+            employeeSize: data.employee_size || '',
+            companySpecialism: data.company_specialism || '',
           });
           
           setLogoUrl(data.logo_url);
+          setMemberSince(data.member_since);
+          setEmailVerified(data.email_verified || false);
+          setJobsCompleted(data.jobs_completed || 0);
         } else {
           // Create initial profile with data from auth.user metadata
           const companyName = user.user_metadata?.company_name || '';
@@ -72,6 +86,10 @@ export const useClientProfile = (user: User | null) => {
             companyDescription,
             phoneNumber,
             website: '',
+            companyType: '',
+            companyTurnover: '',
+            employeeSize: '',
+            companySpecialism: '',
           });
         }
       } catch (error) {
@@ -120,6 +138,10 @@ export const useClientProfile = (user: User | null) => {
             phone_number: values.phoneNumber,
             website: websiteUrl,
             logo_url: logoUrl,
+            company_type: values.companyType,
+            company_turnover: values.companyTurnover,
+            employee_size: values.employeeSize,
+            company_specialism: values.companySpecialism,
           })
           .eq('id', user.id);
         
@@ -137,6 +159,10 @@ export const useClientProfile = (user: User | null) => {
             phone_number: values.phoneNumber,
             website: websiteUrl,
             logo_url: logoUrl,
+            company_type: values.companyType,
+            company_turnover: values.companyTurnover,
+            employee_size: values.employeeSize,
+            company_specialism: values.companySpecialism,
           });
         
         error = insertError;
@@ -168,6 +194,9 @@ export const useClientProfile = (user: User | null) => {
     uploadingLogo,
     setUploadingLogo,
     setLogoUrl,
-    saveProfile
+    saveProfile,
+    memberSince,
+    emailVerified,
+    jobsCompleted
   };
 };

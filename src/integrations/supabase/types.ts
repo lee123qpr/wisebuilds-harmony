@@ -14,10 +14,17 @@ export type Database = {
           company_address: string | null
           company_description: string | null
           company_name: string | null
+          company_specialism: string | null
+          company_turnover: string | null
+          company_type: string | null
           contact_name: string | null
           created_at: string
+          email_verified: boolean | null
+          employee_size: string | null
           id: string
+          jobs_completed: number | null
           logo_url: string | null
+          member_since: string | null
           phone_number: string | null
           updated_at: string
           website: string | null
@@ -26,10 +33,17 @@ export type Database = {
           company_address?: string | null
           company_description?: string | null
           company_name?: string | null
+          company_specialism?: string | null
+          company_turnover?: string | null
+          company_type?: string | null
           contact_name?: string | null
           created_at?: string
+          email_verified?: boolean | null
+          employee_size?: string | null
           id: string
+          jobs_completed?: number | null
           logo_url?: string | null
+          member_since?: string | null
           phone_number?: string | null
           updated_at?: string
           website?: string | null
@@ -38,10 +52,17 @@ export type Database = {
           company_address?: string | null
           company_description?: string | null
           company_name?: string | null
+          company_specialism?: string | null
+          company_turnover?: string | null
+          company_type?: string | null
           contact_name?: string | null
           created_at?: string
+          email_verified?: boolean | null
+          employee_size?: string | null
           id?: string
+          jobs_completed?: number | null
           logo_url?: string | null
+          member_since?: string | null
           phone_number?: string | null
           updated_at?: string
           website?: string | null

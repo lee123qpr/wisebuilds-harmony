@@ -1,11 +1,12 @@
 
 import React from 'react';
-import { User } from '@supabase/supabase-js';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2, Upload, CheckCircle2, Calendar, Briefcase } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
+import { format } from 'date-fns';
+import { Badge } from '@/components/ui/badge';
 
 interface CompanyLogoProps {
   logoUrl: string | null;
@@ -15,6 +16,9 @@ interface CompanyLogoProps {
   companyName: string;
   contactName: string;
   userId: string;
+  memberSince: string | null;
+  emailVerified: boolean;
+  jobsCompleted: number;
 }
 
 const CompanyLogo: React.FC<CompanyLogoProps> = ({
@@ -24,7 +28,10 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
   setLogoUrl,
   companyName,
   contactName,
-  userId
+  userId,
+  memberSince,
+  emailVerified,
+  jobsCompleted
 }) => {
   const { toast } = useToast();
 
@@ -103,6 +110,11 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
       .substring(0, 2);
   };
 
+  // Format the member since date
+  const formattedMemberSince = memberSince 
+    ? format(new Date(memberSince), 'MMMM yyyy')
+    : 'Recently joined';
+
   return (
     <Card>
       <CardContent className="pt-6">
@@ -134,7 +146,32 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
             </div>
           </div>
           <h2 className="text-xl font-semibold mt-2">{companyName || 'Your Company'}</h2>
-          <p className="text-sm text-muted-foreground">{contactName || 'Contact Person'}</p>
+          <p className="text-sm text-muted-foreground mb-4">{contactName || 'Contact Person'}</p>
+
+          <div className="flex items-center justify-center gap-2 mb-2">
+            {emailVerified ? (
+              <Badge variant="outline" className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200">
+                <CheckCircle2 className="h-3 w-3" />
+                Verified
+              </Badge>
+            ) : (
+              <Badge variant="outline" className="flex items-center gap-1 bg-amber-50 text-amber-700 border-amber-200">
+                Verification Pending
+              </Badge>
+            )}
+          </div>
+
+          <div className="w-full space-y-2 mt-4">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Calendar className="h-4 w-4" />
+              <span>Member since {formattedMemberSince}</span>
+            </div>
+            
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Briefcase className="h-4 w-4" />
+              <span>{jobsCompleted} {jobsCompleted === 1 ? 'job' : 'jobs'} completed</span>
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>

@@ -19,7 +19,10 @@ const ClientProfile = () => {
     uploadingLogo,
     setUploadingLogo,
     setLogoUrl,
-    saveProfile
+    saveProfile,
+    memberSince,
+    emailVerified,
+    jobsCompleted
   } = useClientProfile(user);
 
   if (isLoading) {
@@ -52,6 +55,9 @@ const ClientProfile = () => {
               companyName={form.watch('companyName')}
               contactName={form.watch('contactName')}
               userId={user?.id || ''}
+              memberSince={memberSince}
+              emailVerified={emailVerified}
+              jobsCompleted={jobsCompleted}
             />
           </div>
 
