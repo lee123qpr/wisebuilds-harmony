@@ -14,58 +14,60 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   description = 'Where the work will be performed (UK and Ireland locations only)'
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
-  const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const { isLoaded } = useGoogleMapsScript();
   const { toast } = useToast();
-
-  // Initialize Google Places Autocomplete
+  
+  // Set up the autocomplete when Google Maps is loaded
   useEffect(() => {
+    // Exit early if Google Maps is not loaded or input doesn't exist
     if (!isLoaded || !inputRef.current) return;
-
+    
     try {
+      console.log('Setting up Places Autocomplete');
+      
       // Create the autocomplete instance
-      const autocomplete = new window.google.maps.places.Autocomplete(
-        inputRef.current,
-        {
-          componentRestrictions: { country: ['gb', 'ie'] }, // UK and Ireland only
-          fields: ['formatted_address', 'geometry', 'name'],
-          types: ['(cities)'] // Restrict to cities
+      const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
+        componentRestrictions: { country: ['gb', 'ie'] }, // UK and Ireland only
+        fields: ['formatted_address', 'geometry', 'name'],
+        types: ['(cities)'] // Restrict to cities
+      });
+      
+      // Add the place_changed event listener
+      const listener = window.google.maps.event.addListener(
+        autocomplete, 
+        'place_changed', 
+        () => {
+          const place = autocomplete.getPlace();
+          
+          if (place && place.formatted_address) {
+            console.log('Selected place:', place.formatted_address);
+            form.setValue(name, place.formatted_address, { 
+              shouldValidate: true,
+              shouldDirty: true,
+              shouldTouch: true
+            });
+          } else {
+            console.warn('No address found in selected place');
+            toast({
+              title: 'Location not found',
+              description: 'Please select a location from the dropdown.'
+            });
+          }
         }
       );
       
-      // Store the instance for later cleanup
-      autocompleteRef.current = autocomplete;
-      
-      // Add place_changed event listener
-      const listener = window.google.maps.event.addListener(autocomplete, 'place_changed', () => {
-        const place = autocomplete.getPlace();
-        
-        if (place && place.formatted_address) {
-          form.setValue(name, place.formatted_address, { 
-            shouldValidate: true,
-            shouldDirty: true,
-            shouldTouch: true
-          });
-        } else {
-          console.warn('No address found in selected place');
-          toast({
-            variant: 'default',
-            title: 'Location not found',
-            description: 'Please select a location from the dropdown.'
-          });
-        }
-      });
-      
       // Return cleanup function
       return () => {
-        if (listener) window.google.maps.event.removeListener(listener);
+        if (listener) {
+          window.google.maps.event.removeListener(listener);
+        }
       };
     } catch (error) {
       console.error('Error initializing Places Autocomplete:', error);
       toast({
         variant: 'destructive',
         title: 'Error initializing location search',
-        description: 'Please try again later.'
+        description: 'Please try again or enter location manually.'
       });
     }
   }, [isLoaded, form, name, toast]);
@@ -83,14 +85,18 @@ export const LocationField: React.FC<LocationFieldProps> = ({
               <Input
                 placeholder="Enter location (UK/Ireland)"
                 className="pl-9"
-                ref={inputRef}
+                ref={(el) => {
+                  // Set both refs (ours and react-hook-form's)
+                  inputRef.current = el;
+                  if (typeof field.ref === 'function') {
+                    field.ref(el);
+                  }
+                }}
                 {...field}
               />
             </div>
           </FormControl>
-          <FormDescription>
-            {description}
-          </FormDescription>
+          <FormDescription>{description}</FormDescription>
           <FormMessage />
         </FormItem>
       )}

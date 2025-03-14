@@ -48,8 +48,7 @@ declare namespace google {
   }
 }
 
-// Extend the window interface to include Google Maps
 interface Window {
-  google?: typeof google;
+  google: typeof google;
   [key: string]: any;
 }
