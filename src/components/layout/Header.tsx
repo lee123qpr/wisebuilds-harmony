@@ -38,13 +38,6 @@ const Header: React.FC = () => {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link to="/dashboard/business/profile">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Profile
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
               <Link to="/how-it-works">
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   How It Works
