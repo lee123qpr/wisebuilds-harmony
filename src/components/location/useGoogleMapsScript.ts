@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 export const useGoogleMapsScript = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [loadError, setLoadError] = useState<Error | null>(null);
   const { toast } = useToast();
   
   useEffect(() => {
@@ -19,11 +20,14 @@ export const useGoogleMapsScript = () => {
     if (isLoading) return;
     
     // Don't reload if script tag exists
-    if (document.getElementById('google-maps-script')) {
+    const existingScript = document.getElementById('google-maps-script');
+    if (existingScript) {
+      console.log('Google Maps script tag already exists');
       return;
     }
     
     setIsLoading(true);
+    setLoadError(null);
     
     try {
       console.log('Loading Google Maps API script');
@@ -47,9 +51,10 @@ export const useGoogleMapsScript = () => {
       script.defer = true;
       
       // Handle script loading error
-      script.onerror = () => {
-        console.error('Failed to load Google Maps API script');
+      script.onerror = (event) => {
+        console.error('Failed to load Google Maps API script', event);
         setIsLoading(false);
+        setLoadError(new Error('Failed to load Google Maps API'));
         toast({
           variant: 'destructive',
           title: 'Error loading location service',
@@ -61,6 +66,7 @@ export const useGoogleMapsScript = () => {
     } catch (error) {
       console.error('Error setting up Google Maps script:', error);
       setIsLoading(false);
+      setLoadError(error instanceof Error ? error : new Error('Unknown error loading Google Maps'));
       toast({
         variant: 'destructive',
         title: 'Error loading location service',
@@ -69,9 +75,16 @@ export const useGoogleMapsScript = () => {
     }
     
     return () => {
-      // No cleanup needed for the script
+      // Cleanup function
+      if (window[callbackName]) {
+        delete window[callbackName];
+      }
     };
   }, [toast, isLoading]);
 
-  return { isLoaded, isLoading };
+  return { 
+    isLoaded, 
+    isLoading,
+    error: loadError 
+  };
 };
