@@ -9,7 +9,7 @@ declare namespace google {
           options?: AutocompleteOptions
         );
         getPlace(): PlaceResult;
-        addListener(eventName: string, handler: () => void): MapsEventListener;
+        setOptions(options: AutocompleteOptions): void;
         bindTo(bindKey: string, target: any, targetKey?: string): void;
       }
       
