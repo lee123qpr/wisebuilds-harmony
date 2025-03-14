@@ -41,45 +41,69 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
     const file = event.target.files[0];
     const fileExt = file.name.split('.').pop();
     const fileName = `${userId}/logo.${fileExt}`;
-    const filePath = `${fileName}`;
     
     setUploadingLogo(true);
     try {
-      // Upload the file
-      const { error: uploadError } = await supabase.storage
-        .from('company_logos')
-        .upload(filePath, file, { upsert: true });
+      console.log('Uploading logo to path:', fileName);
       
-      if (uploadError) throw uploadError;
+      // Upload the file
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from('company_logos')
+        .upload(fileName, file, { upsert: true });
+      
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+      
+      console.log('Upload successful:', uploadData);
       
       // Get the public URL
       const { data } = supabase.storage
         .from('company_logos')
-        .getPublicUrl(filePath);
+        .getPublicUrl(fileName);
       
       const publicUrl = data.publicUrl;
+      console.log('Public URL:', publicUrl);
       setLogoUrl(publicUrl);
       
       // Check if profile exists
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile, error: profileError } = await supabase
         .from('client_profiles')
         .select('id')
         .eq('id', userId)
         .maybeSingle();
+      
+      if (profileError) {
+        console.error('Profile check error:', profileError);
+        throw profileError;
+      }
         
       // Update the profile with the logo URL
       if (existingProfile) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('client_profiles')
           .update({ logo_url: publicUrl })
           .eq('id', userId);
+          
+        if (updateError) {
+          console.error('Profile update error:', updateError);
+          throw updateError;
+        }
       } else {
-        await supabase
+        const { error: insertError } = await supabase
           .from('client_profiles')
           .insert({ 
             id: userId,
-            logo_url: publicUrl 
+            logo_url: publicUrl,
+            company_name: companyName || null,
+            contact_name: contactName || null
           });
+          
+        if (insertError) {
+          console.error('Profile insert error:', insertError);
+          throw insertError;
+        }
       }
       
       toast({
