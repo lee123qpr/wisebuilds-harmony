@@ -19,7 +19,7 @@ const LeadSettingsFields: React.FC<{ form: UseFormReturn<LeadSettingsFormValues>
         form={form} 
         name="location"
         label="Location"
-        description="Where you want to work (UK and Ireland locations only)"
+        description="Where you want to work"
       />
       
       <WorkTypeField form={form} />

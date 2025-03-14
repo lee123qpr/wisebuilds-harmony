@@ -80,7 +80,7 @@ const ProjectDetailsFields: React.FC<{ form: UseFormReturn<ProjectFormValues> }>
         form={form} 
         name="location"
         label="Location"
-        description="Where the work will be performed (UK and Ireland locations only)"
+        description="Where the work will be performed"
       />
       
       <FormField

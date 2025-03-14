@@ -11,7 +11,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   form, 
   name = 'location',
   label = 'Location',
-  description = 'Where the work will be performed (UK and Ireland locations only)'
+  description = 'Where the work will be performed'
 }) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const { isLoaded } = useGoogleMapsScript();
@@ -25,11 +25,10 @@ export const LocationField: React.FC<LocationFieldProps> = ({
     try {
       console.log('Setting up Places Autocomplete');
       
-      // Create the autocomplete instance
+      // Create the autocomplete instance without country restrictions
       const autocomplete = new window.google.maps.places.Autocomplete(inputRef.current, {
-        componentRestrictions: { country: ['gb', 'ie'] }, // UK and Ireland only
         fields: ['formatted_address', 'geometry', 'name'],
-        types: ['(cities)'] // Restrict to cities
+        types: ['geocode'] // Allow any geocoded location
       });
       
       // Add the place_changed event listener
@@ -83,7 +82,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
             <div className="relative">
               <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Enter location (UK/Ireland)"
+                placeholder="Enter any location"
                 className="pl-9"
                 ref={(el) => {
                   // Set both refs (ours and react-hook-form's)
