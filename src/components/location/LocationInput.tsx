@@ -1,133 +1,140 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Input } from '@/components/ui/input';
-import { MapPin, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface LocationInputProps {
   isLoaded: boolean;
   isLoading: boolean;
   inputRef: React.RefObject<HTMLInputElement>;
-  field: any;
+  field: {
+    value: string;
+    onChange: (value: string) => void;
+    onBlur: () => void;
+  };
+  className?: string;
+  placeholder?: string;
+  disabled?: boolean;
 }
 
-export const LocationInput: React.FC<LocationInputProps> = ({ 
-  isLoaded, 
-  isLoading, 
-  inputRef, 
-  field 
+export const LocationInput: React.FC<LocationInputProps> = ({
+  isLoaded,
+  isLoading,
+  inputRef,
+  field,
+  className,
+  placeholder = 'Enter location',
+  disabled = false,
 }) => {
-  // Update dropdown position when the input position changes (e.g., on scroll)
+  const [isFocused, setIsFocused] = useState(false);
+  const blurTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // Function to position the pac-container correctly
   useEffect(() => {
-    if (!isLoaded) return;
+    if (!isLoaded || !inputRef.current) return;
     
-    const updateDropdownPosition = () => {
-      const input = inputRef.current;
-      if (!input) return;
-      
-      // Find the pac-container element
+    const updatePosition = () => {
+      // Wait for the pac-container to be appended to the DOM
       const pacContainer = document.querySelector('.pac-container') as HTMLElement;
-      if (!pacContainer) return;
+      if (!pacContainer || !inputRef.current) return;
       
-      // Get input position
-      const rect = input.getBoundingClientRect();
+      const rect = inputRef.current.getBoundingClientRect();
       
-      // Update pac-container position to match input
-      // For fixed positioning, we need viewport-relative coordinates
+      // Apply styles to position the dropdown
       pacContainer.style.top = `${rect.bottom}px`;
       pacContainer.style.left = `${rect.left}px`;
       pacContainer.style.width = `${rect.width}px`;
-      
-      // Ensure the pac-container is visible and clickable
+      pacContainer.style.position = 'fixed';
+      pacContainer.style.zIndex = '9999';
       pacContainer.style.pointerEvents = 'auto';
     };
     
     // Run once immediately to set initial position
-    setTimeout(updateDropdownPosition, 100);
+    updatePosition();
     
-    // Add event listeners for various scenarios that might affect positioning
-    window.addEventListener('scroll', updateDropdownPosition, true);
-    window.addEventListener('resize', updateDropdownPosition);
-    document.addEventListener('click', updateDropdownPosition);
+    // Update position when window is resized
+    window.addEventListener('resize', updatePosition);
     
-    // Also update when Google populates the dropdown
-    const observer = new MutationObserver((mutations) => {
-      mutations.forEach(() => {
-        const pacContainer = document.querySelector('.pac-container');
-        if (pacContainer && pacContainer.children.length > 0) {
-          updateDropdownPosition();
-        }
-      });
-    });
-    
-    const pacContainer = document.querySelector('.pac-container');
-    if (pacContainer) {
-      observer.observe(pacContainer, { childList: true, subtree: true });
-    }
+    // When input is focused, ensure the dropdown is positioned correctly
+    inputRef.current.addEventListener('focus', updatePosition);
     
     // Clean up event listeners
     return () => {
-      window.removeEventListener('scroll', updateDropdownPosition, true);
-      window.removeEventListener('resize', updateDropdownPosition);
-      document.removeEventListener('click', updateDropdownPosition);
-      observer.disconnect();
+      window.removeEventListener('resize', updatePosition);
+      if (inputRef.current) {
+        inputRef.current.removeEventListener('focus', updatePosition);
+      }
     };
   }, [isLoaded, inputRef]);
   
+  // Add global click handler to manage focus properly
+  useEffect(() => {
+    if (!isLoaded) return;
+    
+    const handleGlobalClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      
+      // Check if the click is on a pac-item
+      if (target.classList.contains('pac-item') || target.closest('.pac-item')) {
+        // If clicking on autocomplete item, clear any queued blur
+        if (blurTimeoutRef.current) {
+          clearTimeout(blurTimeoutRef.current);
+          blurTimeoutRef.current = null;
+        }
+        e.stopPropagation();
+      }
+    };
+    
+    document.addEventListener('click', handleGlobalClick, true);
+    
+    return () => {
+      document.removeEventListener('click', handleGlobalClick, true);
+    };
+  }, [isLoaded]);
+  
   return (
-    <div className="relative" style={{ zIndex: 50 }}>
-      {isLoading ? (
-        <Loader2 className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
-      ) : (
-        <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-      )}
+    <div className="relative">
       <Input
-        placeholder={isLoaded ? "Enter any location" : "Loading location service..."}
-        className="pl-9 h-12" // Increased height for better visibility
-        disabled={!isLoaded || isLoading}
-        autoComplete="off"
-        {...field}
-        ref={(el) => {
-          // Instead of directly assigning to inputRef.current, we use a callback approach
-          if (el) {
-            // This is safe because we're not directly assigning to .current
-            // We're using the ref callback pattern which React handles appropriately
-            if (inputRef) {
-              // @ts-ignore - We need this because TypeScript doesn't allow assigning to read-only ref.current
-              inputRef.current = el;
-            }
-            
-            // Handle react-hook-form's ref properly
-            if (typeof field.ref === 'function') {
-              field.ref(el);
-            } else if (field.ref) {
-              // Use type assertion to fix the TypeScript error
-              (field.ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
-            }
+        ref={inputRef}
+        type="text"
+        value={field.value}
+        placeholder={placeholder}
+        disabled={disabled || !isLoaded}
+        className={cn(
+          "pr-8",
+          className
+        )}
+        onChange={(e) => {
+          field.onChange(e.target.value);
+        }}
+        onFocus={() => {
+          setIsFocused(true);
+          
+          // If there was a pending blur, cancel it
+          if (blurTimeoutRef.current) {
+            clearTimeout(blurTimeoutRef.current);
+            blurTimeoutRef.current = null;
           }
         }}
-        // Prevent default browser autocomplete behavior
-        onFocus={(e) => {
-          // Ensure the dropdown shows on focus
-          e.currentTarget.setAttribute('autocomplete', 'off');
-          e.stopPropagation();
-          // Update dropdown position on focus
-          setTimeout(() => {
-            const event = new Event('scroll');
-            window.dispatchEvent(event);
-          }, 100);
-        }}
-        // Make sure form field's onBlur callback is called
         onBlur={(e) => {
-          // Add a delay to allow click events to register on autocomplete items
-          setTimeout(() => {
+          // Add a longer delay to allow click events to register on autocomplete items
+          blurTimeoutRef.current = setTimeout(() => {
+            setIsFocused(false);
             field.onBlur();
-          }, 200);
+          }, 300);
         }}
-        // Prevent click events from propagating upward
         onClick={(e) => {
+          // Prevent click events from propagating upward
           e.stopPropagation();
         }}
       />
+      
+      {isLoading && (
+        <div className="absolute right-2 top-1/2 -translate-y-1/2">
+          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+        </div>
+      )}
     </div>
   );
 };
