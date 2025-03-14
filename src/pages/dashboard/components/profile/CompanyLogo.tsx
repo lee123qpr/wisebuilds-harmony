@@ -6,7 +6,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Loader2, Upload } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { useForm } from 'react-hook-form';
 
 interface CompanyLogoProps {
   logoUrl: string | null;
@@ -34,21 +33,11 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
     
     const file = event.target.files[0];
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}-logo.${fileExt}`;
-    const filePath = `company_logos/${fileName}`;
+    const fileName = `${userId}/logo.${fileExt}`;
+    const filePath = `${fileName}`;
     
     setUploadingLogo(true);
     try {
-      // Check if storage bucket exists, if not create it
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(bucket => bucket.name === 'company_logos');
-      
-      if (!bucketExists) {
-        await supabase.storage.createBucket('company_logos', {
-          public: true,
-        });
-      }
-      
       // Upload the file
       const { error: uploadError } = await supabase.storage
         .from('company_logos')
@@ -61,13 +50,30 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
         .from('company_logos')
         .getPublicUrl(filePath);
       
-      setLogoUrl(data.publicUrl);
+      const publicUrl = data.publicUrl;
+      setLogoUrl(publicUrl);
       
-      // Update the profile with the logo URL
-      await supabase
+      // Check if profile exists
+      const { data: existingProfile } = await supabase
         .from('client_profiles')
-        .update({ logo_url: data.publicUrl })
-        .eq('id', userId);
+        .select('id')
+        .eq('id', userId)
+        .maybeSingle();
+        
+      // Update the profile with the logo URL
+      if (existingProfile) {
+        await supabase
+          .from('client_profiles')
+          .update({ logo_url: publicUrl })
+          .eq('id', userId);
+      } else {
+        await supabase
+          .from('client_profiles')
+          .insert({ 
+            id: userId,
+            logo_url: publicUrl 
+          });
+      }
       
       toast({
         title: 'Logo Uploaded',
