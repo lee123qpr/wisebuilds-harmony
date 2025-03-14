@@ -2,19 +2,25 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Briefcase, CheckCircle2 } from 'lucide-react';
+import { useClientReviews } from '../../hooks/useClientReviews';
+import RatingStars from './RatingStars';
 
 interface ProfileInfoBadgesProps {
   emailVerified: boolean;
   memberSince: string;
   formattedMemberSince: string;
   jobsCompleted: number;
+  userId: string;
 }
 
 const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
   emailVerified,
   formattedMemberSince,
-  jobsCompleted
+  jobsCompleted,
+  userId
 }) => {
+  const { averageRating, reviewCount } = useClientReviews(userId);
+
   return (
     <div className="w-full">
       <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -27,6 +33,12 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
           <Badge variant="outline" className="flex items-center gap-1 bg-amber-50 text-amber-700 border-amber-200">
             Verification Pending
           </Badge>
+        )}
+        
+        {averageRating !== null && (
+          <div className="ml-auto">
+            <RatingStars rating={averageRating} reviewCount={reviewCount} size="sm" />
+          </div>
         )}
       </div>
 

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
@@ -103,6 +102,7 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
               memberSince={memberSince || ''}
               formattedMemberSince={formattedMemberSince}
               jobsCompleted={jobsCompleted}
+              userId={userId}
             />
           </div>
         </div>
