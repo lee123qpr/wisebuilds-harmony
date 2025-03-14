@@ -44,12 +44,13 @@ export const useGoogleMapsScript = () => {
         delete window[callbackName];
       };
       
-      // Create and append the script
+      // Create and append the script with loading=async for better performance
       const script = document.createElement('script');
       script.id = 'google-maps-script';
       script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyBJsbbC2Pv91pusMWPaF979yK-XpyHzLtM&libraries=places&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
+      script.setAttribute('loading', 'async'); // Add the loading=async attribute for best-practice loading
       
       // Handle script loading error
       script.onerror = (event) => {
