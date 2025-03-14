@@ -4,7 +4,8 @@ import { useLoadScript } from '@react-google-maps/api';
 import { useToast } from '@/hooks/use-toast';
 
 // Define libraries as a constant to prevent recreation on each render
-const libraries = ['places'];
+// The type needs to match what @react-google-maps/api expects
+const libraries: ["places"] = ["places"];
 
 // Custom hook for Google Maps Places Autocomplete on location inputs
 export const useLocationAutocomplete = (form: any, fieldName: string) => {

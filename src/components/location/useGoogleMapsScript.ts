@@ -3,14 +3,14 @@ import { useState, useEffect } from 'react';
 
 interface UseGoogleMapsScriptOptions {
   googleMapsApiKey: string;
-  libraries?: string[];
+  libraries?: ["places"];
   version?: string;
   language?: string;
   region?: string;
 }
 
 // Define constants to avoid recreating arrays and objects
-const DEFAULT_LIBRARIES = ['places'];
+const DEFAULT_LIBRARIES: ["places"] = ["places"];
 const DEFAULT_OPTIONS = {
   version: 'weekly',
   language: 'en',
