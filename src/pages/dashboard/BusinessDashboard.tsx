@@ -1,18 +1,14 @@
-
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
-import { PlusCircle, MessageSquare, ClipboardList, User } from 'lucide-react';
+import { PlusCircle, MessageSquare, ClipboardList } from 'lucide-react';
 import NewProjectDialog from '@/components/projects/NewProjectDialog';
 import ProjectsTable from '@/components/projects/ProjectsTable';
-import { Button } from '@/components/ui/button';
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
-  const navigate = useNavigate();
   
   // Extract user information
   const fullName = user?.user_metadata?.full_name || 'Business Client';
@@ -20,18 +16,9 @@ const BusinessDashboard = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        <div className="mb-8 flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Welcome, {fullName}</h1>
-            <p className="text-muted-foreground">Your business dashboard</p>
-          </div>
-          <Button
-            variant="outline"
-            onClick={() => navigate('/dashboard/business/profile')}
-          >
-            <User className="mr-2 h-4 w-4" />
-            Company Profile
-          </Button>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Welcome, {fullName}</h1>
+          <p className="text-muted-foreground">Your business dashboard</p>
         </div>
 
         <Tabs defaultValue="projects" className="w-full">
