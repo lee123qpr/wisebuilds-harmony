@@ -116,6 +116,7 @@ export const useLeadSettingsForm = () => {
     const budget = existingSettings.budget || 
                   (existingSettings.max_budget ? existingSettings.max_budget : '');
     
+    // Reset form with values from database
     form.reset({
       role: existingSettings.role || '',
       location: existingSettings.location || '',
