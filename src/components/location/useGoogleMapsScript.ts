@@ -40,6 +40,7 @@ export const useGoogleMapsScript = () => {
         console.log('Google Maps API loaded successfully');
         setIsLoaded(true);
         setIsLoading(false);
+        // Delete the callback function to prevent memory leaks
         delete window[callbackName];
       };
       
@@ -74,10 +75,12 @@ export const useGoogleMapsScript = () => {
       });
     }
     
+    // Define the cleanup function
     return () => {
-      // Cleanup function
-      if (window[callbackName]) {
-        delete window[callbackName];
+      // TypeScript fix: Explicitly declare the callback name type
+      const globalCallbackName = `initGoogleMaps${Date.now()}` as keyof typeof window;
+      if (window[globalCallbackName]) {
+        delete window[globalCallbackName];
       }
     };
   }, [toast, isLoading]);

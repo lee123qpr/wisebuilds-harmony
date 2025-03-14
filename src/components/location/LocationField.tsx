@@ -13,6 +13,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   label = 'Location',
   description = 'Where the work will be performed'
 }) => {
+  // Explicitly type the ref as HTMLInputElement
   const inputRef = useRef<HTMLInputElement | null>(null);
   const { isLoaded, isLoading, error } = useGoogleMapsScript();
   const { toast } = useToast();
@@ -132,16 +133,16 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 placeholder={isLoaded ? "Enter any location" : "Loading location service..."}
                 className="pl-9"
                 disabled={isLoading && !isLoaded}
+                {...field}
                 ref={(el) => {
                   // Set both refs (our ref and react-hook-form's ref)
                   inputRef.current = el;
                   if (typeof field.ref === 'function') {
                     field.ref(el);
-                  } else if (field.ref) {
+                  } else if (field.ref && 'current' in field.ref) {
                     field.ref.current = el;
                   }
                 }}
-                {...field}
                 onFocus={(e) => {
                   // Clear any previous selection on focus to encourage re-selecting from dropdown
                   if (field.value && !field.value.trim()) {
