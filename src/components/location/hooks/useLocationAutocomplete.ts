@@ -3,13 +3,16 @@ import { useRef, useState, useEffect } from 'react';
 import { useLoadScript } from '@react-google-maps/api';
 import { useToast } from '@/hooks/use-toast';
 
+// Define libraries as a constant to prevent recreation on each render
+const libraries = ['places'];
+
 // Custom hook for Google Maps Places Autocomplete on location inputs
 export const useLocationAutocomplete = (form: any, fieldName: string) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || '',
-    libraries: ['places'],
+    libraries,
   });
   const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();

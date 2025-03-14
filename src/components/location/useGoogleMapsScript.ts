@@ -9,8 +9,9 @@ interface UseGoogleMapsScriptOptions {
   region?: string;
 }
 
-const defaultOptions = {
-  libraries: ['places'],
+// Define constants to avoid recreating arrays and objects
+const DEFAULT_LIBRARIES = ['places'];
+const DEFAULT_OPTIONS = {
   version: 'weekly',
   language: 'en',
   region: 'GB'
@@ -45,10 +46,10 @@ export const useGoogleMapsScript = (options: UseGoogleMapsScriptOptions) => {
     // Use the configuration options with defaults
     const {
       googleMapsApiKey,
-      libraries = defaultOptions.libraries,
-      version = defaultOptions.version,
-      language = defaultOptions.language,
-      region = defaultOptions.region
+      libraries = DEFAULT_LIBRARIES,
+      version = DEFAULT_OPTIONS.version,
+      language = DEFAULT_OPTIONS.language,
+      region = DEFAULT_OPTIONS.region
     } = options;
 
     // Create and configure the script element
@@ -81,7 +82,7 @@ export const useGoogleMapsScript = (options: UseGoogleMapsScriptOptions) => {
       script.removeEventListener('error', onScriptError);
       // We don't remove the script here to prevent issues with other components using it
     };
-  }, [options]); // Only re-run if the options change
+  }, [options.googleMapsApiKey]); // Only re-run if the API key changes
 
   return { isLoaded, error };
 };
