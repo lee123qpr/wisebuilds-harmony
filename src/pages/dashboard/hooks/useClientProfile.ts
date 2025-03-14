@@ -73,18 +73,6 @@ export const useClientProfile = (user: User | null) => {
             phoneNumber,
             website: '',
           });
-          
-          // Insert initial profile
-          if (companyName || contactName) {
-            await supabase.from('client_profiles').insert({
-              id: user.id,
-              company_name: companyName,
-              contact_name: contactName,
-              phone_number: phoneNumber,
-              company_address: companyAddress,
-              company_description: companyDescription,
-            });
-          }
         }
       } catch (error) {
         console.error('Error fetching profile:', error);
@@ -111,18 +99,48 @@ export const useClientProfile = (user: User | null) => {
         (values.website.match(/^https?:\/\//) ? values.website : `https://${values.website}`) : 
         values.website;
       
-      const { error } = await supabase
+      // First, check if the profile already exists
+      const { data: existingProfile } = await supabase
         .from('client_profiles')
-        .upsert({
-          id: user.id,
-          company_name: values.companyName,
-          contact_name: values.contactName,
-          company_address: values.companyAddress,
-          company_description: values.companyDescription,
-          phone_number: values.phoneNumber,
-          website: websiteUrl,
-          logo_url: logoUrl,
-        });
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      // Determine whether to insert or update
+      let error;
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('client_profiles')
+          .update({
+            company_name: values.companyName,
+            contact_name: values.contactName,
+            company_address: values.companyAddress,
+            company_description: values.companyDescription,
+            phone_number: values.phoneNumber,
+            website: websiteUrl,
+            logo_url: logoUrl,
+          })
+          .eq('id', user.id);
+        
+        error = updateError;
+      } else {
+        // Insert new profile
+        const { error: insertError } = await supabase
+          .from('client_profiles')
+          .insert({
+            id: user.id,
+            company_name: values.companyName,
+            contact_name: values.contactName,
+            company_address: values.companyAddress,
+            company_description: values.companyDescription,
+            phone_number: values.phoneNumber,
+            website: websiteUrl,
+            logo_url: logoUrl,
+          });
+        
+        error = insertError;
+      }
       
       if (error) throw error;
       
@@ -135,7 +153,7 @@ export const useClientProfile = (user: User | null) => {
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to save profile information.',
+        description: 'Failed to save profile information. Please try again.',
       });
     } finally {
       setIsSaving(false);
