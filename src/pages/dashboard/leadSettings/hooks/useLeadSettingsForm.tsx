@@ -68,8 +68,8 @@ export const useLeadSettingsForm = () => {
         project_type: Array.isArray(existingSettings.project_type) ? existingSettings.project_type : [],
         keywords: Array.isArray(existingSettings.keywords) ? existingSettings.keywords : [],
         hiring_status: existingSettings.hiring_status || '',
-        requires_insurance: existingSettings.requires_insurance || false,
-        requires_site_visits: existingSettings.requires_site_visits || false,
+        requires_insurance: existingSettings.requires_insurance !== undefined ? existingSettings.requires_insurance : false,
+        requires_site_visits: existingSettings.requires_site_visits !== undefined ? existingSettings.requires_site_visits : false,
         notifications_enabled: existingSettings.notifications_enabled !== undefined ? existingSettings.notifications_enabled : true,
         email_alerts: existingSettings.email_alerts !== undefined ? existingSettings.email_alerts : true,
       });

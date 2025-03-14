@@ -19,6 +19,16 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       // Log all values received from the form to debug
       console.log('Form values received:', values);
       
+      // Ensure arrays are properly handled (empty arrays instead of null/undefined)
+      const project_type = Array.isArray(values.project_type) ? values.project_type : [];
+      const keywords = Array.isArray(values.keywords) ? values.keywords : [];
+      
+      // Ensure boolean values are properly handled
+      const requires_insurance = values.requires_insurance === undefined ? false : values.requires_insurance;
+      const requires_site_visits = values.requires_site_visits === undefined ? false : values.requires_site_visits;
+      const notifications_enabled = values.notifications_enabled === undefined ? true : values.notifications_enabled;
+      const email_alerts = values.email_alerts === undefined ? true : values.email_alerts;
+      
       const settingsData = {
         user_id: user.id,
         role: values.role,
@@ -26,13 +36,13 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         budget: values.budget,
         duration: values.duration,
         work_type: values.work_type,
-        project_type: values.project_type,
-        keywords: values.keywords,
+        project_type,
+        keywords,
         hiring_status: values.hiring_status,
-        requires_insurance: values.requires_insurance,
-        requires_site_visits: values.requires_site_visits,
-        notifications_enabled: values.notifications_enabled,
-        email_alerts: values.email_alerts,
+        requires_insurance,
+        requires_site_visits,
+        notifications_enabled,
+        email_alerts,
         updated_at: new Date().toISOString()
       };
       
