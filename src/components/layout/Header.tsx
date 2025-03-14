@@ -38,9 +38,9 @@ const Header: React.FC = () => {
               </Link>
             </NavigationMenuItem>
             <NavigationMenuItem>
-              <Link to="/dashboard/business/account">
+              <Link to="/dashboard/business/profile">
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Account
+                  Profile
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>

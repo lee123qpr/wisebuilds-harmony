@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./context/AuthContext";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
@@ -20,7 +20,6 @@ import ProjectApplications from "./pages/project/ProjectApplications";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import LeadSettings from "./pages/dashboard/leadSettings";
 import ClientProfile from "./pages/dashboard/ClientProfile";
-import ClientAccount from "./pages/dashboard/ClientAccount";
 
 const queryClient = new QueryClient();
 
@@ -129,7 +128,7 @@ const App = () => (
               } 
             />
             
-            {/* Add the client profile and account routes */}
+            {/* Client profile route */}
             <Route 
               path="/dashboard/business/profile" 
               element={
@@ -139,11 +138,12 @@ const App = () => (
               } 
             />
             
+            {/* Redirect from account page to profile page */}
             <Route 
               path="/dashboard/business/account" 
               element={
                 <ProtectedRoute allowedUserTypes={['business']}>
-                  <ClientAccount />
+                  <Navigate to="/dashboard/business/profile" replace />
                 </ProtectedRoute>
               } 
             />

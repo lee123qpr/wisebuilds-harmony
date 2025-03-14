@@ -8,6 +8,7 @@ import { useClientProfile } from './hooks/useClientProfile';
 import CompanyLogo from './components/profile/CompanyLogo';
 import ProfileInfoTab from './components/profile/ProfileInfoTab';
 import ReviewsTab from './components/profile/ReviewsTab';
+import AccountSettingsTab from './components/account/AccountSettingsTab';
 
 const ClientProfile = () => {
   const { user } = useAuth();
@@ -51,7 +52,7 @@ const ClientProfile = () => {
         <div className="mb-8 flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2">Company Profile</h1>
-            <p className="text-muted-foreground">Manage your business information and reviews</p>
+            <p className="text-muted-foreground">Manage your business information, reviews, and account settings</p>
           </div>
         </div>
 
@@ -76,6 +77,7 @@ const ClientProfile = () => {
               <TabsList className="mb-6">
                 <TabsTrigger value="profile">Profile Information</TabsTrigger>
                 <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                <TabsTrigger value="account">Account Settings</TabsTrigger>
               </TabsList>
               
               <TabsContent value="profile">
@@ -88,6 +90,10 @@ const ClientProfile = () => {
               
               <TabsContent value="reviews">
                 <ReviewsTab userId={user?.id || ''} />
+              </TabsContent>
+              
+              <TabsContent value="account">
+                <AccountSettingsTab />
               </TabsContent>
             </Tabs>
           </div>
