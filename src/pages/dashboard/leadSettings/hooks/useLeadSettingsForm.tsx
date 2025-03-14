@@ -95,45 +95,31 @@ export const useLeadSettingsForm = () => {
       keywords = existingSettings.keywords ? [existingSettings.keywords] : [];
     }
     
-    // Ensure boolean fields are properly handled
-    const requires_insurance = existingSettings.requires_insurance !== undefined 
-      ? Boolean(existingSettings.requires_insurance) 
-      : false;
-      
-    const requires_site_visits = existingSettings.requires_site_visits !== undefined 
-      ? Boolean(existingSettings.requires_site_visits) 
-      : false;
-      
-    const notifications_enabled = existingSettings.notifications_enabled !== undefined 
-      ? Boolean(existingSettings.notifications_enabled) 
-      : true;
-      
-    const email_alerts = existingSettings.email_alerts !== undefined 
-      ? Boolean(existingSettings.email_alerts) 
-      : true;
-    
-    // Map the budget field correctly - use budget if available, fall back to max_budget
-    const budget = existingSettings.budget || 
-                  (existingSettings.max_budget ? existingSettings.max_budget : '');
-    
-    // Reset form with values from database
-    form.reset({
+    // Force the values to be the correct type
+    const values = {
       role: existingSettings.role || '',
       location: existingSettings.location || '',
-      budget,
+      budget: existingSettings.budget || 
+            (existingSettings.max_budget ? existingSettings.max_budget : ''),
       duration: existingSettings.duration || '',
       work_type: existingSettings.work_type || '',
       project_type,
       keywords,
       hiring_status: existingSettings.hiring_status || '',
-      requires_insurance,
-      requires_site_visits,
-      notifications_enabled,
-      email_alerts,
-    });
+      requires_insurance: Boolean(existingSettings.requires_insurance),
+      requires_site_visits: Boolean(existingSettings.requires_site_visits),
+      notifications_enabled: Boolean(existingSettings.notifications_enabled),
+      email_alerts: Boolean(existingSettings.email_alerts),
+    };
     
-    // Log the form state after reset
-    console.log('Form state after reset:', form.getValues());
+    console.log('Form values being set:', values);
+    
+    // Reset form with values from database - using setTimeout to ensure it runs after React rendering
+    setTimeout(() => {
+      form.reset(values);
+      console.log('Form state after reset:', form.getValues());
+    }, 0);
+    
   }, [existingSettings, form]);
 
   return {
