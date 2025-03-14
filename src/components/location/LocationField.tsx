@@ -13,6 +13,31 @@ const autocompleteCss = `
   z-index: 9999 !important;
   background-color: white;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 0.5rem;
+  border: 1px solid #e2e8f0;
+  margin-top: 4px;
+  padding: 0.5rem 0;
+  width: auto !important;
+  min-width: 250px;
+}
+
+.pac-item {
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.pac-item:hover {
+  background-color: #f3f4f6;
+}
+
+.pac-item-query {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.pac-matched {
+  font-weight: 600;
 }
 `;
 
