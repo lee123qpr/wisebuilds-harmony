@@ -39,11 +39,12 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     };
   }, []);
 
-  // Create a minimum 1000ms delay for blur events to allow selecting autocomplete options
+  // Delay blur handling to allow selecting from dropdown
   const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    // Increased delay to give more time for selection
     setTimeout(() => {
-      field.onBlur();
-    }, 1000);
+      if (field.onBlur) field.onBlur();
+    }, 200);
   };
 
   return (
@@ -58,6 +59,13 @@ export const LocationInput: React.FC<LocationInputProps> = ({
           "pr-10",
           !isLoaded && "cursor-not-allowed opacity-50"
         )}
+        // Ensure the value is always controlled by React
+        value={field.value || ''}
+        // Add onChange handler to ensure React state is updated
+        onChange={(e) => {
+          field.onChange(e);
+          console.log('Input changed:', e.target.value);
+        }}
       />
       {isLoading && (
         <div className="absolute inset-y-0 right-3 flex items-center">

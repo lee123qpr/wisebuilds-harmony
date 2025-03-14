@@ -40,8 +40,16 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
           // Update form field with the formatted address
           form.setValue(fieldName, place.formatted_address, { 
             shouldValidate: true,
-            shouldDirty: true 
+            shouldDirty: true,
+            shouldTouch: true // Mark as touched to trigger validation
           });
+          
+          // Force React to update by triggering a change event
+          const event = new Event('input', { bubbles: true });
+          inputRef.current?.dispatchEvent(event);
+          
+          // Log for debugging
+          console.log('Place selected:', place.formatted_address);
         }
       });
 
