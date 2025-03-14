@@ -7,6 +7,15 @@ import { LocationFieldProps } from './types';
 import { useGoogleMapsScript } from './useGoogleMapsScript';
 import { useToast } from '@/hooks/use-toast';
 
+// Add CSS to ensure autocomplete dropdown is always visible
+const autocompleteCss = `
+.pac-container {
+  z-index: 9999 !important;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+`;
+
 export const LocationField: React.FC<LocationFieldProps> = ({ 
   form, 
   name = 'location',
@@ -20,10 +29,24 @@ export const LocationField: React.FC<LocationFieldProps> = ({
   const [autocompleteInstance, setAutocompleteInstance] = useState<google.maps.places.Autocomplete | null>(null);
   const [placesListener, setPlacesListener] = useState<google.maps.MapsEventListener | null>(null);
   
+  // Add the CSS to the document
+  useEffect(() => {
+    const style = document.createElement('style');
+    style.innerHTML = autocompleteCss;
+    document.head.appendChild(style);
+    
+    return () => {
+      document.head.removeChild(style);
+    };
+  }, []);
+  
   // Set up the autocomplete when Google Maps is loaded
   useEffect(() => {
     // Exit early if Google Maps is not loaded or input doesn't exist
     if (!isLoaded || !inputRef.current) return;
+    
+    // Don't reinitialize if already set up
+    if (autocompleteInstance) return;
     
     try {
       console.log('Setting up Places Autocomplete');
@@ -87,7 +110,7 @@ export const LocationField: React.FC<LocationFieldProps> = ({
         description: 'Please try again or enter location manually.'
       });
     }
-  }, [isLoaded, form, name, toast]);
+  }, [isLoaded, form, name, toast, autocompleteInstance]);
 
   // Clean up the autocomplete instance and listener on unmount
   useEffect(() => {

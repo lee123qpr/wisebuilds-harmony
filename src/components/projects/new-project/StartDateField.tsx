@@ -47,7 +47,7 @@ export const StartDateField: React.FC<StartDateFieldProps> = ({ form }) => {
               </FormControl>
             </PopoverTrigger>
             <PopoverContent 
-              className="w-auto p-0 z-[100]" // Increased z-index to ensure it's above other elements
+              className="w-auto p-0 z-[9999]" // Increased z-index to ensure it's above other elements
               align="start"
               onClick={(e) => e.stopPropagation()} // Stop click events inside popover from propagating
             >
@@ -56,8 +56,10 @@ export const StartDateField: React.FC<StartDateFieldProps> = ({ form }) => {
                 selected={field.value}
                 onSelect={(date) => {
                   field.onChange(date);
-                  // Prevent event bubbling
-                  if (event) event.stopPropagation();
+                  // Prevent event bubbling - event should be safely scoped to the current handler
+                  if (typeof window !== 'undefined' && window.event) {
+                    (window.event as Event).stopPropagation();
+                  }
                 }}
                 disabled={(date) => date < new Date()}
                 initialFocus
