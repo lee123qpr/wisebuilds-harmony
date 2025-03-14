@@ -16,25 +16,38 @@ interface ReviewsListProps {
 }
 
 const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
-  const { data: reviews, isLoading } = useQuery({
+  console.log('ReviewsList - Props:', { userId });
+  
+  const { data: reviews, isLoading, error } = useQuery({
     queryKey: ['client-reviews', userId],
     queryFn: async () => {
+      console.log('Fetching reviews for user ID:', userId);
       const { data, error } = await supabase
         .from('client_reviews')
         .select('*')
         .eq('client_id', userId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching reviews:', error);
+        throw error;
+      }
+      
+      console.log('Fetched reviews:', data);
       return data as Review[];
     },
   });
+
+  if (error) {
+    console.error('ReviewsList - Query error:', error);
+  }
 
   if (isLoading) {
     return <div className="text-center py-8">Loading reviews...</div>;
   }
 
   if (!reviews?.length) {
+    console.log('ReviewsList - No reviews found');
     return (
       <div className="text-center py-8 text-muted-foreground">
         No reviews yet. Reviews will appear here when freelancers rate their experience working with you.
@@ -42,6 +55,7 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
     );
   }
 
+  console.log('ReviewsList - Rendering reviews:', reviews);
   return (
     <div className="space-y-4">
       {reviews.map((review) => (

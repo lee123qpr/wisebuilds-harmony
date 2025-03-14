@@ -22,7 +22,11 @@ export const useClientReviews = (userId: string) => {
         .eq('client_id', userId)
         .order('created_at', { ascending: false });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching reviews:', error);
+        throw error;
+      }
+      
       return data as Review[];
     },
   });

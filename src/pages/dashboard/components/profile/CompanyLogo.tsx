@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
@@ -30,6 +31,8 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
   emailVerified,
   jobsCompleted
 }) => {
+  console.log('CompanyLogo - Props:', { userId, emailVerified, memberSince, jobsCompleted });
+  
   // Use our custom hook for logo upload
   const {
     cachedLogoUrl,

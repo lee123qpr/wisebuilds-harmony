@@ -20,6 +20,8 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
   userId
 }) => {
   const { averageRating, reviewCount } = useClientReviews(userId);
+  
+  console.log('ProfileInfoBadges - Rating Data:', { averageRating, reviewCount, userId });
 
   return (
     <div className="w-full">

@@ -11,6 +11,8 @@ import ReviewsTab from './components/profile/ReviewsTab';
 
 const ClientProfile = () => {
   const { user } = useAuth();
+  console.log('ClientProfile - Auth user:', user);
+  
   const {
     form,
     isLoading,
@@ -34,6 +36,14 @@ const ClientProfile = () => {
       </MainLayout>
     );
   }
+
+  console.log('ClientProfile - Profile data:', { 
+    logoUrl, 
+    memberSince, 
+    emailVerified, 
+    jobsCompleted,
+    userId: user?.id
+  });
 
   return (
     <MainLayout>

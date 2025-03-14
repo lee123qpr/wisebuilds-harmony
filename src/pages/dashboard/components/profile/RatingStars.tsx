@@ -13,7 +13,12 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   reviewCount,
   size = 'md'
 }) => {
-  if (rating === null) return null;
+  console.log('RatingStars - Props:', { rating, reviewCount, size });
+  
+  if (rating === null) {
+    console.log('RatingStars - Rating is null, not rendering');
+    return null;
+  }
 
   const starSizes = {
     sm: 'h-3 w-3',
