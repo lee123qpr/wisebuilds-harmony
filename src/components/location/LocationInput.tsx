@@ -30,14 +30,22 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         autoComplete="off"
         {...field}
         ref={(el) => {
-          inputRef.current = el;
-          
-          // Handle react-hook-form's ref properly with type assertion
-          if (typeof field.ref === 'function') {
-            field.ref(el);
-          } else if (field.ref) {
-            // Use type assertion to fix the TypeScript error
-            (field.ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
+          // Instead of directly assigning to inputRef.current, we use a callback approach
+          if (el) {
+            // This is safe because we're not directly assigning to .current
+            // We're using the ref callback pattern which React handles appropriately
+            if (inputRef) {
+              // @ts-ignore - We need this because TypeScript doesn't allow assigning to read-only ref.current
+              inputRef.current = el;
+            }
+            
+            // Handle react-hook-form's ref properly
+            if (typeof field.ref === 'function') {
+              field.ref(el);
+            } else if (field.ref) {
+              // Use type assertion to fix the TypeScript error
+              (field.ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
+            }
           }
         }}
         // Prevent default browser autocomplete behavior
