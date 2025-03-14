@@ -14,8 +14,8 @@ const Header: React.FC = () => {
           <Link to="/" className="flex items-center">
             {!logoError ? (
               <img 
-                src={logoError ? "/lovable-uploads/da050545-55f3-423d-93ca-17d756c5f770.png" : "/buildwise-logo.png"}
-                alt="BuildWise UK Logo" 
+                src="/buildwise-logo.png"
+                alt="BuildWise Logo" 
                 className="h-10 w-auto"
                 onError={() => {
                   console.log("Primary logo failed to load, trying fallback");
