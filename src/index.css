@@ -145,12 +145,14 @@
   /* Ensure the dropdown appears above other elements */
   transform: translateZ(0) !important;
   will-change: top, left !important; /* Performance optimization for position changes */
+  pointer-events: auto !important; /* Ensure clicks are registered */
 }
 
 .pac-item {
   padding: 0.5rem 1rem !important;
   cursor: pointer !important;
   font-family: inherit !important;
+  pointer-events: auto !important; /* Make sure each item is clickable */
 }
 
 .pac-item:hover {

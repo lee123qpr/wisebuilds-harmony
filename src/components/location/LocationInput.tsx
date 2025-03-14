@@ -36,6 +36,9 @@ export const LocationInput: React.FC<LocationInputProps> = ({
       pacContainer.style.top = `${rect.bottom}px`;
       pacContainer.style.left = `${rect.left}px`;
       pacContainer.style.width = `${rect.width}px`;
+      
+      // Ensure the pac-container is visible and clickable
+      pacContainer.style.pointerEvents = 'auto';
     };
     
     // Run once immediately to set initial position
@@ -115,8 +118,10 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         }}
         // Make sure form field's onBlur callback is called
         onBlur={(e) => {
-          e.stopPropagation();
-          field.onBlur();
+          // Add a delay to allow click events to register on autocomplete items
+          setTimeout(() => {
+            field.onBlur();
+          }, 200);
         }}
         // Prevent click events from propagating upward
         onClick={(e) => {
