@@ -135,11 +135,15 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 disabled={isLoading && !isLoaded}
                 {...field}
                 ref={(el) => {
-                  // Set both refs (our ref and react-hook-form's ref)
+                  // Set our local ref
                   inputRef.current = el;
+                  
+                  // Handle react-hook-form's ref properly with type checking
                   if (typeof field.ref === 'function') {
+                    // If field.ref is a function, call it with the element
                     field.ref(el);
-                  } else if (field.ref && 'current' in field.ref) {
+                  } else if (field.ref && typeof field.ref === 'object' && 'current' in field.ref) {
+                    // If field.ref is an object with a current property (RefObject), set its current
                     field.ref.current = el;
                   }
                 }}
