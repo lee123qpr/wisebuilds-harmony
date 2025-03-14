@@ -73,6 +73,21 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
         }
       });
 
+      // Add input listener to handle when user clears the input field
+      if (inputRef.current) {
+        inputRef.current.addEventListener('input', (e: Event) => {
+          const target = e.target as HTMLInputElement;
+          if (target.value === '') {
+            // Update the form when input is cleared
+            form.setValue(fieldName, '', {
+              shouldValidate: true,
+              shouldDirty: true,
+              shouldTouch: true
+            });
+          }
+        });
+      }
+
       setIsInitialized(true);
     } catch (error) {
       console.error('Error initializing Google Places Autocomplete:', error);

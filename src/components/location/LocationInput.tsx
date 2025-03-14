@@ -49,7 +49,7 @@ export const LocationInput: React.FC<LocationInputProps> = ({
 
   // Make sure inputRef and field.value stay in sync - crucial for showing the selected location
   useEffect(() => {
-    if (inputRef.current && field.value && inputRef.current.value !== field.value) {
+    if (inputRef.current && field.value !== undefined && inputRef.current.value !== field.value) {
       inputRef.current.value = field.value;
       console.log('Syncing input with form value:', field.value);
     }
@@ -71,8 +71,9 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         value={field.value || ''}
         // Handle change events
         onChange={(e) => {
-          field.onChange(e);
-          console.log('Input changed:', e.target.value);
+          const newValue = e.target.value;
+          field.onChange(newValue);
+          console.log('Input changed:', newValue);
         }}
       />
       {isLoading && (
