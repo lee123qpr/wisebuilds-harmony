@@ -31,6 +31,11 @@ export const StartDateField: React.FC<StartDateFieldProps> = ({ form }) => {
                     "w-full pl-3 text-left font-normal",
                     !field.value && "text-muted-foreground"
                   )}
+                  type="button" // Explicitly set type to button to prevent form submission
+                  onClick={(e) => {
+                    // Stop propagation to prevent other components from reacting
+                    e.stopPropagation();
+                  }}
                 >
                   {field.value ? (
                     format(field.value, "PPP")
@@ -41,7 +46,11 @@ export const StartDateField: React.FC<StartDateFieldProps> = ({ form }) => {
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
+            <PopoverContent 
+              className="w-auto p-0 z-50" 
+              align="start"
+              onClick={(e) => e.stopPropagation()} // Stop click events inside popover from propagating
+            >
               <Calendar
                 mode="single"
                 selected={field.value}

@@ -152,6 +152,10 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 autoComplete="off"
                 // Make sure form field's onBlur callback is called
                 onBlur={field.onBlur}
+                // Prevent click events from propagating upward
+                onClick={(e) => {
+                  e.stopPropagation();
+                }}
               />
             </div>
           </FormControl>
