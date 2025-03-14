@@ -22,10 +22,8 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
         (values.website.match(/^https?:\/\//) ? values.website : `https://${values.website}`) : 
         values.website;
       
-      // Add cache busting to logo URL if it exists
-      const cachedLogoUrl = logoUrl ? 
-        (logoUrl.includes('?') ? logoUrl : `${logoUrl}?t=${Date.now()}`) : 
-        logoUrl;
+      // Use the logo URL as is - the useLogoUpload hook already handles cache busting
+      // This simplifies our code and ensures consistency across the codebase
       
       // First, check if the profile already exists
       const { data: existingProfile } = await supabase
@@ -47,7 +45,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
             company_description: values.companyDescription,
             phone_number: values.phoneNumber,
             website: websiteUrl,
-            logo_url: cachedLogoUrl,
+            logo_url: logoUrl,
             company_type: values.companyType,
             company_turnover: values.companyTurnover,
             employee_size: values.employeeSize,
@@ -68,7 +66,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
             company_description: values.companyDescription,
             phone_number: values.phoneNumber,
             website: websiteUrl,
-            logo_url: cachedLogoUrl,
+            logo_url: logoUrl,
             company_type: values.companyType,
             company_turnover: values.companyTurnover,
             employee_size: values.employeeSize,
