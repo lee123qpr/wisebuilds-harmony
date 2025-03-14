@@ -138,11 +138,12 @@ export const LocationField: React.FC<LocationFieldProps> = ({
                 ref={(el) => {
                   inputRef.current = el;
                   
-                  // Handle react-hook-form's ref
+                  // Handle react-hook-form's ref properly with type assertion
                   if (typeof field.ref === 'function') {
                     field.ref(el);
                   } else if (field.ref) {
-                    field.ref.current = el;
+                    // Use type assertion to fix the TypeScript error
+                    (field.ref as React.MutableRefObject<HTMLInputElement | null>).current = el;
                   }
                 }}
                 // Prevent default browser autocomplete behavior
