@@ -80,9 +80,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form }) => {
             <FormItem>
               <FormLabel>Website</FormLabel>
               <FormControl>
-                <Input placeholder="https://example.com" {...field} />
+                <Input placeholder="example.com" {...field} />
               </FormControl>
-              <FormDescription>Optional company website</FormDescription>
+              <FormDescription>Enter domain without http:// (it will be added automatically)</FormDescription>
               <FormMessage />
             </FormItem>
           )}

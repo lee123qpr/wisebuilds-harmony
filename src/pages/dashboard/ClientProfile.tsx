@@ -115,6 +115,11 @@ const ClientProfile = () => {
     
     setIsSaving(true);
     try {
+      // Prepare website URL (ensure it has https:// if not empty)
+      const websiteUrl = values.website ? 
+        (values.website.match(/^https?:\/\//) ? values.website : `https://${values.website}`) : 
+        values.website;
+      
       const { error } = await supabase
         .from('client_profiles')
         .upsert({
@@ -124,7 +129,7 @@ const ClientProfile = () => {
           company_address: values.companyAddress,
           company_description: values.companyDescription,
           phone_number: values.phoneNumber,
-          website: values.website,
+          website: websiteUrl,
           logo_url: logoUrl,
         });
       
