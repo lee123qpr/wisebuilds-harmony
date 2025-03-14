@@ -36,12 +36,19 @@ export const useProjects = () => {
       const { data: authData } = await supabase.auth.getSession();
       console.log('Authentication status:', authData?.session ? 'Authenticated' : 'Not authenticated');
       
-      if (authData?.session?.user) {
-        console.log('User ID:', authData.session.user.id);
-        console.log('User email:', authData.session.user.email);
-      } else {
-        console.warn('No active session detected. RLS will likely block data access.');
+      if (!authData?.session) {
+        console.warn('No active session detected. Please log in to view projects.');
+        toast({
+          variant: 'destructive',
+          title: 'Authentication required',
+          description: 'Please log in to view available projects.',
+        });
+        setIsLoading(false);
+        return;
       }
+      
+      console.log('User ID:', authData.session.user.id);
+      console.log('User email:', authData.session.user.email);
       
       // Fetch all projects - with the RLS policies, this will return 
       // only projects the user has permission to see
@@ -69,26 +76,48 @@ export const useProjects = () => {
         setProjects(projectsWithParsedDocuments);
         console.log('Processed projects:', projectsWithParsedDocuments);
       } else {
-        console.log('No projects found. This could be due to:');
-        console.log('- No projects exist in the database');
-        console.log('- RLS policies are preventing access');
-        console.log('- User does not have permission to view any projects');
+        console.log('No projects found in the database.');
         setProjects([]);
         
-        // Let's try to get the RLS policies to debug
-        if (authData?.session?.user) {
-          // Only show this debug message in console
-          console.log('Checking if any projects exist in the database...');
-          const { count, error: countError } = await supabase
-            .from('projects')
-            .select('*', { count: 'exact', head: true });
-          
-          if (countError) {
-            console.error('Error checking project count:', countError);
+        // Let's check if any projects exist at all for debugging
+        const { count, error: countError } = await supabase
+          .from('projects')
+          .select('*', { count: 'exact', head: true });
+        
+        if (countError) {
+          console.error('Error checking project count:', countError);
+        } else {
+          console.log(`Total projects in database: ${count || 0}`);
+          if (count && count > 0) {
+            console.log('Projects exist but none match the current filters or permissions');
           } else {
-            console.log(`Total projects in database: ${count || 0}`);
-            if (count && count > 0) {
-              console.log('Projects exist but current user cannot access them due to RLS');
+            console.log('No projects exist in the database yet');
+            // Try inserting a test project for debugging
+            const testProject = {
+              title: 'Test Project',
+              description: 'This is a test project created automatically.',
+              budget: '1000_to_5000',
+              role: 'general_contractor',
+              location: 'London',
+              duration: 'less_than_week',
+              work_type: 'remote',
+              requires_insurance: false,
+              requires_site_visits: true,
+              requires_equipment: false,
+              user_id: authData.session.user.id
+            };
+            
+            const { data: insertData, error: insertError } = await supabase
+              .from('projects')
+              .insert(testProject)
+              .select();
+              
+            if (insertError) {
+              console.error('Error inserting test project:', insertError);
+            } else {
+              console.log('Test project inserted:', insertData);
+              // Refetch projects to see if the test project appears
+              fetchProjects();
             }
           }
         }
