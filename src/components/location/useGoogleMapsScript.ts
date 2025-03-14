@@ -2,50 +2,51 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 
-/**
- * Hook to load the Google Maps script asynchronously
- */
 export const useGoogleMapsScript = () => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   
   useEffect(() => {
-    // Check if the script is already loaded
+    // Don't load if already loaded
     if (window.google && window.google.maps && window.google.maps.places) {
       console.log('Google Maps API already loaded');
       setIsLoaded(true);
-      setIsLoading(false);
       return;
     }
     
-    // Generate a unique callback name
-    const callbackName = `initGoogleMaps${Math.random().toString(36).substring(2, 9)}`;
+    // Don't reload if already loading
+    if (isLoading) return;
     
-    // Create the callback function that will be called when the script loads
-    window[callbackName] = function() {
-      console.log('Google Maps API loaded successfully');
-      setIsLoaded(true);
-      setIsLoading(false);
-      // Clean up the callback
-      delete window[callbackName];
-    };
-    
-    // Check if script already exists
+    // Don't reload if script tag exists
     if (document.getElementById('google-maps-script')) {
-      console.log('Script tag already exists');
       return;
     }
+    
+    setIsLoading(true);
     
     try {
       console.log('Loading Google Maps API script');
+      
+      // Create a unique callback name
+      const callbackName = `initGoogleMaps${Date.now()}`;
+      
+      // Set up the callback function
+      window[callbackName] = () => {
+        console.log('Google Maps API loaded successfully');
+        setIsLoaded(true);
+        setIsLoading(false);
+        delete window[callbackName];
+      };
+      
+      // Create and append the script
       const script = document.createElement('script');
       script.id = 'google-maps-script';
       script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCq_7VhK8-OEdlfPH6bna-5t5VuxPIDckE&libraries=places&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
       
-      // Handle script load error
+      // Handle script loading error
       script.onerror = () => {
         console.error('Failed to load Google Maps API script');
         setIsLoading(false);
@@ -56,15 +57,21 @@ export const useGoogleMapsScript = () => {
         });
       };
       
-      // Add the script to the document
       document.head.appendChild(script);
     } catch (error) {
       console.error('Error setting up Google Maps script:', error);
       setIsLoading(false);
+      toast({
+        variant: 'destructive',
+        title: 'Error loading location service',
+        description: 'An unexpected error occurred.'
+      });
     }
     
-    // No cleanup needed for the script as it should stay available
-  }, [toast]);
+    return () => {
+      // No cleanup needed for the script
+    };
+  }, [toast, isLoading]);
 
   return { isLoaded, isLoading };
 };
