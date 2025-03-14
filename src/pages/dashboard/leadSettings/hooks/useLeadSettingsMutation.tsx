@@ -41,6 +41,8 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
           .eq('id', existingSettings.id);
         
         if (error) throw error;
+        
+        console.log('Settings updated successfully:', settingsData);
         return { ...existingSettings, ...settingsData };
       } else {
         // Create new settings - add the created_at field
@@ -54,6 +56,8 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
           .single();
         
         if (error) throw error;
+        
+        console.log('Settings created successfully:', data);
         return data;
       }
     },
@@ -61,12 +65,17 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       // Invalidate queries to refetch data
       queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
       
+      // Show success toast
       toast({
         title: existingSettings ? 'Settings updated' : 'Settings created',
-        description: 'Your lead settings have been saved',
+        description: 'Your lead settings have been saved successfully',
+        variant: 'default',
       });
       
-      navigate('/dashboard/freelancer');
+      // Delay navigation to give user time to see the toast
+      setTimeout(() => {
+        navigate('/dashboard/freelancer');
+      }, 1500);
     },
     onError: (error: any) => {
       console.error('Error saving lead settings:', error);
