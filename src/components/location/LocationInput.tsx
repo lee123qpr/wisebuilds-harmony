@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Input } from '@/components/ui/input';
 import { MapPin, Loader2 } from 'lucide-react';
 
@@ -16,6 +16,38 @@ export const LocationInput: React.FC<LocationInputProps> = ({
   inputRef, 
   field 
 }) => {
+  // Update dropdown position when the input position changes (e.g., on scroll)
+  useEffect(() => {
+    if (!isLoaded) return;
+    
+    const updateDropdownPosition = () => {
+      const input = inputRef.current;
+      if (!input) return;
+      
+      // Find the pac-container element
+      const pacContainer = document.querySelector('.pac-container') as HTMLElement;
+      if (!pacContainer) return;
+      
+      // Get input position
+      const rect = input.getBoundingClientRect();
+      
+      // Update pac-container position to match input
+      pacContainer.style.top = `${rect.bottom}px`;
+      pacContainer.style.left = `${rect.left}px`;
+      pacContainer.style.width = `${rect.width}px`;
+    };
+    
+    // Add scroll and resize event listeners
+    window.addEventListener('scroll', updateDropdownPosition, true);
+    window.addEventListener('resize', updateDropdownPosition);
+    
+    // Clean up event listeners
+    return () => {
+      window.removeEventListener('scroll', updateDropdownPosition, true);
+      window.removeEventListener('resize', updateDropdownPosition);
+    };
+  }, [isLoaded, inputRef]);
+  
   return (
     <div className="relative" style={{ zIndex: 50 }}>
       {isLoading ? (
