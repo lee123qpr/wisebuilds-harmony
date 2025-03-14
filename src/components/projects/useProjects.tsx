@@ -39,6 +39,8 @@ export const useProjects = () => {
       if (authData?.session?.user) {
         console.log('User ID:', authData.session.user.id);
         console.log('User email:', authData.session.user.email);
+      } else {
+        console.warn('No active session detected. RLS will likely block data access.');
       }
       
       // Fetch all projects - with the RLS policies, this will return 
@@ -55,7 +57,7 @@ export const useProjects = () => {
       console.log('Projects fetched successfully:', data);
       console.log('Number of projects:', data?.length || 0);
 
-      if (data) {
+      if (data && data.length > 0) {
         // Convert the JSON documents field to ProjectDocument[] type
         const projectsWithParsedDocuments = data.map(project => ({
           ...project,
@@ -67,7 +69,29 @@ export const useProjects = () => {
         setProjects(projectsWithParsedDocuments);
         console.log('Processed projects:', projectsWithParsedDocuments);
       } else {
+        console.log('No projects found. This could be due to:');
+        console.log('- No projects exist in the database');
+        console.log('- RLS policies are preventing access');
+        console.log('- User does not have permission to view any projects');
         setProjects([]);
+        
+        // Let's try to get the RLS policies to debug
+        if (authData?.session?.user) {
+          // Only show this debug message in console
+          console.log('Checking if any projects exist in the database...');
+          const { count, error: countError } = await supabase
+            .from('projects')
+            .select('*', { count: 'exact', head: true });
+          
+          if (countError) {
+            console.error('Error checking project count:', countError);
+          } else {
+            console.log(`Total projects in database: ${count || 0}`);
+            if (count && count > 0) {
+              console.log('Projects exist but current user cannot access them due to RLS');
+            }
+          }
+        }
       }
     } catch (error: any) {
       console.error('Error fetching projects:', error);
