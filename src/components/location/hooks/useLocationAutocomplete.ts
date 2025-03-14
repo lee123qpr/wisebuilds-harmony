@@ -37,24 +37,37 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
       google.maps.event.addListener(autocompleteRef.current, 'place_changed', () => {
         const place = autocompleteRef.current?.getPlace();
         if (place && place.formatted_address) {
-          // Update form field with the formatted address
           const formattedAddress = place.formatted_address;
           
-          // Set the value in the form
+          // Update the form field
           form.setValue(fieldName, formattedAddress, { 
             shouldValidate: true,
             shouldDirty: true,
-            shouldTouch: true 
+            shouldTouch: true
           });
           
-          // If the input ref still exists, update its value directly
+          // Directly update input value
           if (inputRef.current) {
             inputRef.current.value = formattedAddress;
           }
           
-          // Force a change event to ensure React form state is updated
-          const event = new Event('input', { bubbles: true });
-          inputRef.current?.dispatchEvent(event);
+          // Force a React change event to update state
+          const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+            window.HTMLInputElement.prototype, 
+            "value"
+          )?.set;
+          
+          if (inputRef.current && nativeInputValueSetter) {
+            nativeInputValueSetter.call(inputRef.current, formattedAddress);
+            
+            // Create and dispatch events for React to detect
+            const event = new Event('input', { bubbles: true });
+            inputRef.current.dispatchEvent(event);
+            
+            // Also dispatch a change event
+            const changeEvent = new Event('change', { bubbles: true });
+            inputRef.current.dispatchEvent(changeEvent);
+          }
           
           console.log('Place selected and saved:', formattedAddress);
         }

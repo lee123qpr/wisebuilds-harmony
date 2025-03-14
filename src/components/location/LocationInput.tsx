@@ -47,10 +47,11 @@ export const LocationInput: React.FC<LocationInputProps> = ({
     }, 300); // Slightly longer delay
   };
 
-  // Make sure inputRef and field.value stay in sync
+  // Make sure inputRef and field.value stay in sync - crucial for showing the selected location
   useEffect(() => {
     if (inputRef.current && field.value && inputRef.current.value !== field.value) {
       inputRef.current.value = field.value;
+      console.log('Syncing input with form value:', field.value);
     }
   }, [field.value, inputRef]);
 
