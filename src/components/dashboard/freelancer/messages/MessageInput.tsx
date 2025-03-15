@@ -44,7 +44,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
     if (file.type.startsWith('image/')) return <Image className="h-4 w-4 text-blue-500" />;
     if (file.type.includes('pdf')) return <FileText className="h-4 w-4 text-red-500" />;
     if (file.type.includes('word') || file.type.includes('document')) return <FileText className="h-4 w-4 text-blue-700" />;
-    if (file.type.includes('spreadsheet') || file.type.includes('excel')) return <FileText className="h-4 w-4 text-green-600" />;
+    if (file.type.includes('excel') || file.type.includes('spreadsheet') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) 
+      return <FileText className="h-4 w-4 text-green-600" />;
     return <FileIcon className="h-4 w-4 text-gray-500" />;
   };
 
@@ -58,25 +59,27 @@ const MessageInput: React.FC<MessageInputProps> = ({
     <div className="p-3 border-t">
       {/* File size tip */}
       {showFileTip && (
-        <Alert variant="default" className="mb-3 bg-blue-50">
-          <AlertCircle className="h-4 w-4 text-blue-500" />
-          <AlertDescription className="text-sm">
-            Max file size is 30MB. For larger files, consider using <a href="https://wetransfer.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">WeTransfer</a> or similar services and paste the link in your message.
-          </AlertDescription>
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            className="h-5 w-5 ml-auto" 
-            onClick={() => setShowFileTip(false)}
-          >
-            <X className="h-3 w-3" />
-          </Button>
+        <Alert variant="default" className="mb-3 bg-blue-50 py-2 px-3">
+          <div className="flex items-center w-full">
+            <AlertCircle className="h-4 w-4 text-blue-500 mr-2 flex-shrink-0" />
+            <AlertDescription className="text-xs flex-grow">
+              Max file size is 30MB. For larger files, consider using <a href="https://wetransfer.com/" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">WeTransfer</a> or similar services.
+            </AlertDescription>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-5 w-5 p-0 ml-1" 
+              onClick={() => setShowFileTip(false)}
+            >
+              <X className="h-3 w-3" />
+            </Button>
+          </div>
         </Alert>
       )}
 
       {/* Attachments preview */}
       {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3 max-h-[120px] overflow-y-auto p-2 bg-muted/30 rounded-md">
+        <div className="flex flex-wrap gap-2 mb-3 max-h-[100px] overflow-y-auto p-2 bg-muted/30 rounded-md">
           {attachments.map((file, index) => {
             const progress = uploadProgress[index];
             const isUploading = progress !== undefined && progress >= 0 && progress < 100;
@@ -85,8 +88,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
             return (
               <div 
                 key={index}
-                className={`flex items-center gap-1 p-2 rounded text-xs ${
-                  hasError ? 'bg-red-100 border-red-200' : 'bg-muted/50 border'
+                className={`flex items-center gap-1 py-1 px-2 rounded text-xs ${
+                  hasError ? 'bg-red-100 border-red-200' : 'bg-white border'
                 }`}
               >
                 <span className="mr-1">{getFileIcon(file)}</span>
@@ -97,7 +100,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
                       type="button" 
                       variant="ghost" 
                       size="icon" 
-                      className="h-5 w-5 ml-1" 
+                      className="h-5 w-5 ml-1 p-0" 
                       onClick={() => onRemoveAttachment?.(index)}
                       disabled={isSending || isUploading}
                     >
