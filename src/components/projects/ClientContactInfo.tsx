@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Phone, Building, User, ExternalLink, AlertCircle, MapPin } from 'lucide-react';
+import { Mail, Phone, Building, User, ExternalLink, AlertCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useContactInfo } from '@/hooks/leads/useContactInfo';
@@ -11,10 +11,6 @@ interface ClientContactInfoProps {
 
 const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
   const { clientInfo, isLoading, error } = useContactInfo(projectId);
-
-  console.log('Is loading:', isLoading);
-  console.log('Error state:', error);
-  console.log('Client info in component:', clientInfo);
 
   if (isLoading) {
     return (
@@ -79,11 +75,18 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         Client Contact Information
       </h3>
       
-      <div className="grid grid-cols-1 gap-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {clientInfo.contact_name && (
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Contact Name:</span> {clientInfo.contact_name}
+            <span className="font-medium">Contact:</span> {clientInfo.contact_name}
+          </div>
+        )}
+        
+        {clientInfo.company_name && (
+          <div className="flex items-center gap-2">
+            <Building className="h-4 w-4 text-green-600" />
+            <span className="font-medium">Company:</span> {clientInfo.company_name}
           </div>
         )}
         
@@ -104,20 +107,6 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
             <a href={`mailto:${clientInfo.email}`} className="text-blue-600 hover:underline">
               {clientInfo.email}
             </a>
-          </div>
-        )}
-        
-        {clientInfo.company_name && (
-          <div className="flex items-center gap-2">
-            <Building className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Company:</span> {clientInfo.company_name}
-          </div>
-        )}
-        
-        {clientInfo.company_address && (
-          <div className="flex items-center gap-2">
-            <MapPin className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Address:</span> {clientInfo.company_address}
           </div>
         )}
       </div>

@@ -8,8 +8,6 @@ interface ClientInfo {
   phone_number: string | null;
   email: string | null;
   website: string | null;
-  company_address: string | null; // Added company_address field
-  company_description: string | null; // Added company_description field
   is_profile_complete: boolean; // Flag to indicate if profile is complete
 }
 
@@ -34,16 +32,16 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Project user_id:', project.user_id);
       
-      // Then get the client profile using the user_id with all relevant fields
+      // Then get the client profile using the user_id
       const { data: clientProfile, error: clientError } = await supabase
         .from('client_profiles')
-        .select('*') // Select all fields to make sure we get everything
+        .select('contact_name, company_name, phone_number, website')
         .eq('id', project.user_id)
         .maybeSingle();
       
       if (clientError) throw clientError;
       
-      console.log('Complete client profile data:', clientProfile);
+      console.log('Client profile data:', clientProfile);
       
       // Get the user email via RPC function
       const { data: userData, error: userError } = await supabase
@@ -61,28 +59,20 @@ export const useContactInfo = (projectId: string) => {
         clientProfile?.contact_name || 
         clientProfile?.company_name || 
         clientProfile?.phone_number || 
-        clientProfile?.website ||
-        clientProfile?.company_address ||
-        clientProfile?.company_description
+        clientProfile?.website
       );
       
       console.log('Has profile data:', hasProfileData);
       
       // Create a proper object with all the fields we need
-      const combinedInfo = {
+      setClientInfo({
         contact_name: clientProfile?.contact_name || null,
         company_name: clientProfile?.company_name || null,
         phone_number: clientProfile?.phone_number || null,
         website: clientProfile?.website || null,
-        company_address: clientProfile?.company_address || null,
-        company_description: clientProfile?.company_description || null,
         email: email,
         is_profile_complete: hasProfileData // Set flag based on profile data existence
-      };
-      
-      console.log('Combined client info:', combinedInfo);
-      
-      setClientInfo(combinedInfo);
+      });
     } catch (error) {
       console.error('Error fetching client info:', error);
       setError(error as Error);
