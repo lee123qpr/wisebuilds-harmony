@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
@@ -8,7 +7,7 @@ import DashboardSummary from '@/components/dashboard/freelancer/DashboardSummary
 import VerificationDialog from '@/components/dashboard/freelancer/VerificationDialog';
 import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
 import { useCredits } from '@/hooks/useCredits';
-import { useVerification } from '@/hooks/useVerification';
+import { useVerification } from '@/hooks/verification';
 
 const FreelancerDashboard = () => {
   const { user } = useAuth();

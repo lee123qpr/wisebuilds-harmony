@@ -4,7 +4,7 @@ import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePurchaseLead, useCheckPurchaseStatus } from '@/hooks/usePurchaseLead';
 import { useAuth } from '@/context/AuthContext';
 import { useCredits } from '@/hooks/useCredits';
-import { useVerification } from '@/hooks/useVerification';
+import { useVerification } from '@/hooks/verification';
 import { useToast } from '@/hooks/use-toast';
 import { calculateLeadCredits } from '@/hooks/leads/utils/calculateLeadCredits';
 import { LeadPurchaseButtonProps } from './types';

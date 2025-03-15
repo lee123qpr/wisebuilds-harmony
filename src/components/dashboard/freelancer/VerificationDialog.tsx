@@ -11,7 +11,7 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { useVerification } from '@/hooks/useVerification';
+import { useVerification } from '@/hooks/verification';
 import { useToast } from '@/hooks/use-toast';
 
 const VerificationDialog: React.FC = () => {

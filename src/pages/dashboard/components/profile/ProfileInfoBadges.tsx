@@ -3,7 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Briefcase, CheckCircle2 } from 'lucide-react';
 import { useClientReviews } from '../../hooks/useClientReviews';
-import { useVerification } from '@/hooks/useVerification';
+import { useVerification } from '@/hooks/verification';
 import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
 import RatingStars from './RatingStars';
 
