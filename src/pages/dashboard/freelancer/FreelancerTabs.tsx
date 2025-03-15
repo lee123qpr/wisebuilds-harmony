@@ -17,6 +17,7 @@ interface LeadSettings {
   keywords?: string[];
 }
 
+// Updated to fully match Project interface required fields
 interface ProjectLead {
   id: string;
   title: string;
@@ -25,11 +26,10 @@ interface ProjectLead {
   role: string;
   created_at: string;
   location: string;
-  work_type?: string;
+  work_type: string;
   tags?: string[];
-  // Add missing properties required by Project interface
   duration: string;
-  hiring_status?: string;
+  hiring_status: string;
   requires_equipment: boolean;
   requires_security_check: boolean;
   requires_insurance: boolean;
@@ -39,8 +39,13 @@ interface ProjectLead {
   client_name?: string;
   client_company?: string;
   start_date?: string;
-  applications?: number;
-  documents?: any;
+  applications: number;
+  documents: any;
+  // Adding missing properties required by Project interface
+  requires_site_visits: boolean;
+  status: string;
+  updated_at: string;
+  user_id: string;
 }
 
 interface FreelancerTabsProps {

@@ -5,7 +5,7 @@ import { Clock } from 'lucide-react';
 import AnyOptionBadge from './AnyOptionBadge';
 
 interface DurationBadgeProps {
-  duration: string;
+  duration?: string;
 }
 
 const DurationBadge = ({ duration }: DurationBadgeProps) => {

@@ -1,6 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
@@ -18,7 +18,7 @@ interface LeadSettings {
   keywords?: string[];
 }
 
-// Updated to match Project interface required fields
+// Updated to fully match Project interface
 interface ProjectLead {
   id: string;
   title: string;
@@ -27,11 +27,10 @@ interface ProjectLead {
   role: string;
   created_at: string;
   location: string;
-  work_type?: string;
+  work_type: string;
   tags?: string[];
-  // Add missing properties required by Project interface
   duration: string;
-  hiring_status?: string;
+  hiring_status: string;
   requires_equipment: boolean;
   requires_security_check: boolean;
   requires_insurance: boolean;
@@ -41,8 +40,13 @@ interface ProjectLead {
   client_name?: string;
   client_company?: string;
   start_date?: string;
-  applications?: number;
-  documents?: any;
+  applications: number;
+  documents: any;
+  // Adding missing properties required by Project interface
+  requires_site_visits: boolean;
+  status: string;
+  updated_at: string;
+  user_id: string;
 }
 
 interface LeadsTabProps {
