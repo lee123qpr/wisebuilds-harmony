@@ -9,6 +9,13 @@ interface DurationBadgeProps {
 }
 
 const DurationBadge = ({ duration }: DurationBadgeProps) => {
+  if (!duration) {
+    return <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-gray-100 text-gray-600">
+      <Clock className="h-3.5 w-3.5" />
+      Unknown
+    </Badge>;
+  }
+  
   if (duration === 'any') {
     return <AnyOptionBadge label="Duration" />;
   }
@@ -34,9 +41,9 @@ const DurationBadge = ({ duration }: DurationBadgeProps) => {
 
   // Format duration for display
   const formattedDuration = duration
-    .replace('_', ' ')
+    .replace(/_/g, ' ')
     .replace('plus', '+')
-    .split('_')
+    .split(' ')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 

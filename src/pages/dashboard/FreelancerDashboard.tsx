@@ -29,6 +29,20 @@ interface ProjectLead {
   location: string;
   work_type?: string;
   tags?: string[];
+  // Add missing properties required by Project interface
+  duration: string;
+  hiring_status?: string;
+  requires_equipment: boolean;
+  requires_security_check: boolean;
+  requires_insurance: boolean;
+  requires_qualifications: boolean;
+  published: boolean;
+  client_id: string;
+  client_name?: string;
+  client_company?: string;
+  start_date?: string;
+  applications?: number;
+  documents?: any;
 }
 
 const FreelancerDashboard = () => {
@@ -66,7 +80,7 @@ const FreelancerDashboard = () => {
     if (leadSettings) {
       console.log('Generating leads based on settings:', leadSettings);
       
-      // Create sample project leads
+      // Create sample project leads with all required fields
       const allLeads: ProjectLead[] = [
         // Matching leads based on settings
         {
@@ -77,8 +91,21 @@ const FreelancerDashboard = () => {
           role: leadSettings.role,
           created_at: new Date().toISOString(),
           location: leadSettings.location,
-          work_type: leadSettings.work_type,
-          tags: leadSettings.keywords || ['Professional', 'Experienced']
+          work_type: leadSettings.work_type || 'on_site',
+          tags: leadSettings.keywords || ['Professional', 'Experienced'],
+          duration: '2_weeks', // Added required field
+          hiring_status: 'active',
+          requires_equipment: false,
+          requires_security_check: false,
+          requires_insurance: true,
+          requires_qualifications: true,
+          published: true,
+          client_id: 'client123',
+          client_name: 'John Smith',
+          client_company: 'Smith Enterprises',
+          start_date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          applications: 0,
+          documents: []
         },
         {
           id: '2',
@@ -88,8 +115,21 @@ const FreelancerDashboard = () => {
           role: leadSettings.role,
           created_at: new Date().toISOString(),
           location: leadSettings.location,
-          work_type: leadSettings.work_type,
-          tags: ['Urgent', 'High-Priority']
+          work_type: leadSettings.work_type || 'on_site',
+          tags: ['Urgent', 'High-Priority'],
+          duration: '1_week', // Added required field
+          hiring_status: 'urgent',
+          requires_equipment: true,
+          requires_security_check: true,
+          requires_insurance: true,
+          requires_qualifications: false,
+          published: true,
+          client_id: 'client456',
+          client_name: 'Alice Johnson',
+          client_company: 'Johnson & Co',
+          start_date: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000).toISOString(),
+          applications: 2,
+          documents: []
         },
         // Non-matching leads by role
         {
@@ -100,7 +140,21 @@ const FreelancerDashboard = () => {
           role: 'web_developer',
           created_at: new Date().toISOString(),
           location: leadSettings.location,
-          tags: ['Web', 'E-commerce']
+          tags: ['Web', 'E-commerce'],
+          duration: '4_weeks', // Added required field
+          work_type: 'remote',
+          hiring_status: 'active',
+          requires_equipment: false,
+          requires_security_check: false,
+          requires_insurance: false,
+          requires_qualifications: true,
+          published: true,
+          client_id: 'client789',
+          client_name: 'Robert Brown',
+          client_company: 'Brown Digital',
+          start_date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString(),
+          applications: 5,
+          documents: []
         },
         // Non-matching leads by location
         {
@@ -111,7 +165,21 @@ const FreelancerDashboard = () => {
           role: leadSettings.role,
           created_at: new Date().toISOString(),
           location: 'Birmingham',
-          tags: ['Renovation', 'Large-Scale']
+          tags: ['Renovation', 'Large-Scale'],
+          duration: '6_weeks_plus', // Added required field
+          work_type: 'on_site',
+          hiring_status: 'active',
+          requires_equipment: true,
+          requires_security_check: true,
+          requires_insurance: true,
+          requires_qualifications: true,
+          published: true,
+          client_id: 'client101',
+          client_name: 'Emma Wilson',
+          client_company: 'Wilson Projects',
+          start_date: new Date(Date.now() + 21 * 24 * 60 * 60 * 1000).toISOString(),
+          applications: 3,
+          documents: []
         },
         // Non-matching work type
         {
@@ -123,7 +191,20 @@ const FreelancerDashboard = () => {
           created_at: new Date().toISOString(),
           location: leadSettings.location,
           work_type: leadSettings.work_type === 'remote' ? 'on_site' : 'remote',
-          tags: ['Remote', 'Virtual']
+          tags: ['Remote', 'Virtual'],
+          duration: '3_weeks', // Added required field
+          hiring_status: 'active',
+          requires_equipment: false,
+          requires_security_check: false,
+          requires_insurance: false,
+          requires_qualifications: false,
+          published: true,
+          client_id: 'client202',
+          client_name: 'David Green',
+          client_company: 'Green Solutions',
+          start_date: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString(),
+          applications: 1,
+          documents: []
         }
       ];
       

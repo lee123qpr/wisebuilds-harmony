@@ -25,7 +25,22 @@ interface ProjectLead {
   role: string;
   created_at: string;
   location: string;
+  work_type?: string;
   tags?: string[];
+  // Add missing properties required by Project interface
+  duration: string;
+  hiring_status?: string;
+  requires_equipment: boolean;
+  requires_security_check: boolean;
+  requires_insurance: boolean;
+  requires_qualifications: boolean;
+  published: boolean;
+  client_id: string;
+  client_name?: string;
+  client_company?: string;
+  start_date?: string;
+  applications?: number;
+  documents?: any;
 }
 
 interface FreelancerTabsProps {

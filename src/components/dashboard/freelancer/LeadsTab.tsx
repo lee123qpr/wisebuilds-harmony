@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { RefreshCw, AlertTriangle, Info, Briefcase, Filter } from 'lucide-react';
 import ProjectListView from './ProjectListView';
+import { Project } from '@/components/projects/useProjects';
 
 interface LeadSettings {
   id: string;
@@ -17,6 +18,7 @@ interface LeadSettings {
   keywords?: string[];
 }
 
+// Updated to match Project interface required fields
 interface ProjectLead {
   id: string;
   title: string;
@@ -27,6 +29,20 @@ interface ProjectLead {
   location: string;
   work_type?: string;
   tags?: string[];
+  // Add missing properties required by Project interface
+  duration: string;
+  hiring_status?: string;
+  requires_equipment: boolean;
+  requires_security_check: boolean;
+  requires_insurance: boolean;
+  requires_qualifications: boolean;
+  published: boolean;
+  client_id: string;
+  client_name?: string;
+  client_company?: string;
+  start_date?: string;
+  applications?: number;
+  documents?: any;
 }
 
 interface LeadsTabProps {
@@ -177,11 +193,11 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, pr
         </Card>
       ) : (
         <ProjectListView 
-          projects={filteredLeads}
+          projects={filteredLeads as Project[]}
           isLoading={isLoadingSettings}
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
-          selectedProject={selectedProject}
+          selectedProject={selectedProject as Project}
           showContactInfo={true}
         />
       )}
