@@ -73,6 +73,21 @@ export const useVerification = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/id-document-${Date.now()}.${fileExt}`;
       
+      // Check if the storage bucket exists
+      const { data: bucketData } = await supabase.storage.getBucket('id-documents');
+      
+      // If the bucket doesn't exist, create it
+      if (!bucketData) {
+        const { error: createBucketError } = await supabase.storage.createBucket('id-documents', {
+          public: false
+        });
+        
+        if (createBucketError) {
+          console.error('Error creating bucket:', createBucketError);
+          throw createBucketError;
+        }
+      }
+      
       // Upload the file
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('id-documents')
@@ -96,7 +111,8 @@ export const useVerification = () => {
           .insert({
             user_id: user.id,
             id_document_path: filePath,
-            verification_status: 'pending'
+            verification_status: 'pending',
+            submitted_at: new Date().toISOString()
           })
           .select()
           .single();

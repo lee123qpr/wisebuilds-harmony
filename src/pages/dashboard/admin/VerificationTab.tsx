@@ -40,7 +40,7 @@ const VerificationTab = () => {
   const [adminNotes, setAdminNotes] = useState('');
   const { toast } = useToast();
 
-  // Fetch all pending verifications
+  // Fetch all verifications
   const fetchVerifications = async () => {
     setIsLoading(true);
     try {
@@ -52,19 +52,30 @@ const VerificationTab = () => {
       
       if (error) throw error;
       
-      // Get user emails for each verification
+      // Get user emails for each verification using the RPC function
       const enhancedData = await Promise.all(data.map(async (verification) => {
-        // Get user email
-        const { data: emailData } = await supabase
+        // Use the RPC function to get user email
+        const { data: emailData, error: emailError } = await supabase
           .rpc('get_user_email', { user_id: verification.user_id });
+
+        if (emailError) console.error('Error fetching user email:', emailError);
         
-        // Get user metadata
-        const { data: userData } = await supabase.auth.admin.getUserById(verification.user_id);
+        // Get user metadata from session if possible
+        // This is a fallback approach that won't query the auth.users table directly
+        let fullName = 'Unknown';
+        try {
+          const { data: userSession } = await supabase.auth.getUser(verification.user_id);
+          if (userSession?.user?.user_metadata?.full_name) {
+            fullName = userSession.user.user_metadata.full_name;
+          }
+        } catch (metaError) {
+          console.error('Error getting user metadata:', metaError);
+        }
         
         return {
           ...verification,
           user_email: emailData?.[0]?.email || 'Unknown',
-          user_full_name: userData?.user?.user_metadata?.full_name || 'Unknown'
+          user_full_name: fullName
         };
       }));
       
