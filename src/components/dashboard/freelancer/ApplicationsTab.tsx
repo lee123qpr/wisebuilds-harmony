@@ -84,7 +84,7 @@ const ApplicationsTab: React.FC = () => {
   if (!isLoading && (!applications || applications.length === 0)) {
     return (
       <EmptyStateCard
-        title="My Applications"
+        title="My Responses"
         description="Once you purchase a lead, the project details and client contact information will appear here."
         buttonText="Browse Available Projects"
         buttonAction={() => navigate('/marketplace')}
@@ -94,7 +94,7 @@ const ApplicationsTab: React.FC = () => {
   
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">My Applications</h2>
+      <h2 className="text-2xl font-bold">My Responses</h2>
       <p className="text-muted-foreground mb-4">
         Projects you've purchased contact information for
       </p>

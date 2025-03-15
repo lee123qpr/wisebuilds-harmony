@@ -44,7 +44,7 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       <TabsList className="mb-6">
         <TabsTrigger value="available">Available Projects</TabsTrigger>
         <TabsTrigger value="leads">My Leads</TabsTrigger>
-        <TabsTrigger value="applied">My Applications</TabsTrigger>
+        <TabsTrigger value="applied">My Responses</TabsTrigger>
         <TabsTrigger value="active">Active Jobs</TabsTrigger>
         <TabsTrigger value="messages">Messages</TabsTrigger>
       </TabsList>
