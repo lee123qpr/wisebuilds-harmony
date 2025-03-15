@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Phone, Building, User, ExternalLink, MapPin } from 'lucide-react';
+import { Mail, Phone, Building, User, ExternalLink, MapPin, Globe } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useContactInfo } from '@/hooks/leads/useContactInfo';
@@ -90,14 +90,26 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
           {clientInfo.company_name && (
             <div className="flex items-center gap-2">
               <Building className="h-4 w-4 text-green-600 flex-shrink-0" />
-              <span className="font-medium min-w-24">Company:</span> {clientInfo.company_name}
+              <span className="font-medium min-w-24">Company:</span> 
+              <span>{clientInfo.company_name}</span>
+            </div>
+          )}
+          
+          {clientInfo.website && (
+            <div className="flex items-center gap-2">
+              <Globe className="h-4 w-4 text-green-600 flex-shrink-0" />
+              <span className="font-medium min-w-24">Website:</span>
+              <a href={clientInfo.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline truncate">
+                {clientInfo.website}
+              </a>
             </div>
           )}
           
           {clientInfo.company_address && (
             <div className="flex items-start gap-2">
               <MapPin className="h-4 w-4 text-green-600 flex-shrink-0 mt-1" />
-              <span className="font-medium min-w-24">Address:</span> {clientInfo.company_address}
+              <span className="font-medium min-w-24">Address:</span> 
+              <span>{clientInfo.company_address}</span>
             </div>
           )}
         </div>
