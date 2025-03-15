@@ -2,7 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Eye } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -74,7 +74,6 @@ const UsersList = ({ users, isLoading, error, onRefresh }: UsersListProps) => {
                 <TableHead>Created</TableHead>
                 <TableHead>Last Login</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Profile</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

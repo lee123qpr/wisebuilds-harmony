@@ -58,22 +58,13 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Add some debugging info
-    console.log(`Total users from Supabase: ${users.users.length}`);
-    console.log(`Users with deleted_at not null: ${users.users.filter(user => user.deleted_at !== null).length}`);
-    
-    // Get active users (not deleted)
-    const activeUsers = users.users.filter(user => user.deleted_at === null);
-    console.log(`Active users (deleted_at is null): ${activeUsers.length}`);
-    
-    // Count deleted users
-    const deletedUsersCount = users.users.filter(user => user.deleted_at !== null).length;
-    
-    // Return only active users (not deleted)
+    // Count the number of deleted users (if soft-delete info is available)
+    const deletedUsers = users.users.filter(user => user.deleted_at !== null);
+
     return new Response(
       JSON.stringify({ 
-        users: activeUsers,
-        deletedUsersCount: deletedUsersCount 
+        users: users.users.filter(user => user.deleted_at === null),
+        deletedUsers: deletedUsers 
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

@@ -1,13 +1,15 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Loader2, CheckCircle, XCircle } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import UserRow from './UserRow';
+import { format } from 'date-fns';
 import { AdminUser } from '../../hooks/useUsers';
+import { TableCell } from '@/components/ui/table';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface ClientsListProps {
   users: AdminUser[];
@@ -17,21 +19,17 @@ interface ClientsListProps {
 }
 
 const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) => {
-  // Filter to only show clients (business type)
+  // Filter only business users
   const clients = users.filter(user => 
     user.user_metadata?.user_type === 'business'
   );
-
-  const getUserTypeColor = (userType: string) => {
-    return userType === 'business' ? 'bg-green-500' : 'bg-gray-500';
-  };
 
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Client List</CardTitle>
-          <CardDescription>Manage business accounts</CardDescription>
+          <CardDescription>Manage business client accounts</CardDescription>
         </div>
         <Button 
           variant="outline"
@@ -59,27 +57,53 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : clients.length === 0 ? (
-          <p className="text-center py-8 text-muted-foreground">No clients found.</p>
+          <p className="text-center py-8 text-muted-foreground">No business clients found.</p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
-                <TableHead>Type</TableHead>
+                <TableHead>Company/User</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Last Login</TableHead>
                 <TableHead>Email Status</TableHead>
-                <TableHead>Profile</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {clients.map(user => (
-                <UserRow 
-                  key={user.id} 
-                  user={user} 
-                  getUserTypeColor={getUserTypeColor} 
-                />
+                <TableRow key={user.id}>
+                  <TableCell>
+                    <div className="flex items-center space-x-2">
+                      <Avatar>
+                        <AvatarFallback>
+                          {user.user_metadata?.full_name?.[0] || user.email[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-medium">
+                        {user.user_metadata?.full_name || 'N/A'}
+                      </span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{user.email}</TableCell>
+                  <TableCell>{format(new Date(user.created_at), 'MMM d, yyyy')}</TableCell>
+                  <TableCell>
+                    {user.last_sign_in_at 
+                      ? format(new Date(user.last_sign_in_at), 'MMM d, yyyy')
+                      : 'Never'}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center">
+                      {user.is_verified ? (
+                        <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+                      ) : (
+                        <XCircle className="h-4 w-4 text-red-500 mr-1" />
+                      )}
+                      <span>
+                        {user.is_verified ? 'Verified' : 'Unverified'}
+                      </span>
+                    </div>
+                  </TableCell>
+                </TableRow>
               ))}
             </TableBody>
           </Table>
