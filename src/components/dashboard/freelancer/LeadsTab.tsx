@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -23,6 +22,7 @@ interface ProjectLead {
   role: string;
   created_at: string;
   location: string;
+  work_type?: string;
   tags?: string[];
 }
 
