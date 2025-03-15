@@ -41,8 +41,10 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
     );
   }
 
-  // If we only have email and no other profile data
-  if (!clientInfo.is_profile_complete && clientInfo.email) {
+  // If we have email but no other profile fields
+  const hasOnlyEmail = clientInfo.email && !clientInfo.contact_name && !clientInfo.phone_number && !clientInfo.company_name && !clientInfo.website && !clientInfo.company_address;
+
+  if (hasOnlyEmail) {
     return (
       <div className="bg-blue-50 border border-blue-100 rounded-md p-4 space-y-3">
         <h3 className="text-blue-800 font-medium flex items-center gap-2">

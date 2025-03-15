@@ -56,14 +56,19 @@ export const useContactInfo = (projectId: string) => {
       const email = userData && userData.length > 0 ? userData[0]?.email : null;
 
       // Check if any profile data exists besides email
-      const hasProfileData = !!(
-        clientProfile?.contact_name || 
+      // Also check for contact_name and phone_number specifically to meet the requirements
+      const hasContactName = !!clientProfile?.contact_name;
+      const hasPhoneNumber = !!clientProfile?.phone_number;
+      const hasOtherProfileData = !!(
         clientProfile?.company_name || 
-        clientProfile?.phone_number || 
         clientProfile?.website
       );
       
+      const hasProfileData = hasContactName || hasPhoneNumber || hasOtherProfileData;
+      
       console.log('Has profile data:', hasProfileData);
+      console.log('Has contact name:', hasContactName);
+      console.log('Has phone number:', hasPhoneNumber);
       
       // Create a proper object with all the fields we need
       setClientInfo({
@@ -73,7 +78,7 @@ export const useContactInfo = (projectId: string) => {
         website: clientProfile?.website || null,
         company_address: clientProfile?.company_address || null,
         email: email,
-        is_profile_complete: hasProfileData // Set flag based on profile data existence
+        is_profile_complete: hasProfileData || (email != null) // Set flag based on profile data existence or email
       });
     } catch (error) {
       console.error('Error fetching client info:', error);
