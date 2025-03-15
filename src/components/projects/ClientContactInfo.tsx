@@ -15,6 +15,7 @@ interface ClientInfo {
   phone_number: string | null;
   email: string | null;
   website: string | null;
+  full_name?: string | null; // Added full name property
 }
 
 const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
@@ -37,7 +38,7 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         // Then get the client profile using the user_id
         const { data: clientProfile, error: clientError } = await supabase
           .from('client_profiles')
-          .select('contact_name, company_name, phone_number, website')
+          .select('contact_name, company_name, phone_number, website, full_name')
           .eq('id', project.user_id)
           .maybeSingle();
         
@@ -96,10 +97,10 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {clientInfo.contact_name && (
+        {(clientInfo.full_name || clientInfo.contact_name) && (
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Contact:</span> {clientInfo.contact_name}
+            <span className="font-medium">Contact:</span> {clientInfo.full_name || clientInfo.contact_name}
           </div>
         )}
         
