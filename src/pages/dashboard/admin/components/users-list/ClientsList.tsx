@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Eye } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -23,6 +23,10 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
   const clients = users.filter(user => 
     user.user_metadata?.user_type === 'business'
   );
+
+  const handleViewProfile = (userId: string) => {
+    window.open(`/dashboard/client/profile/${userId}`, '_blank');
+  };
 
   return (
     <Card>
@@ -67,6 +71,7 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
                 <TableHead>Created</TableHead>
                 <TableHead>Last Login</TableHead>
                 <TableHead>Email Status</TableHead>
+                <TableHead>Profile</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -102,6 +107,17 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
                         {user.is_verified ? 'Verified' : 'Unverified'}
                       </span>
                     </div>
+                  </TableCell>
+                  <TableCell>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleViewProfile(user.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>View</span>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}

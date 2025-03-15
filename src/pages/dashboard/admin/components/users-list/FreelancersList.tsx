@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle, Shield, ShieldAlert, ShieldCheck, ShieldQuestion } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Shield, ShieldAlert, ShieldCheck, ShieldQuestion, Eye } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -70,6 +70,10 @@ const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersList
     }
   };
 
+  const handleViewProfile = (userId: string) => {
+    window.open(`/dashboard/freelancer/profile/${userId}`, '_blank');
+  };
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -114,6 +118,7 @@ const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersList
                 <TableHead>Last Login</TableHead>
                 <TableHead>Email Status</TableHead>
                 <TableHead>ID Verified</TableHead>
+                <TableHead>Profile</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -155,6 +160,17 @@ const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersList
                       {getVerificationIcon(user.verification_status)}
                       {getVerificationText(user.verification_status)}
                     </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Button 
+                      variant="ghost" 
+                      size="sm" 
+                      onClick={() => handleViewProfile(user.id)}
+                      className="flex items-center gap-1"
+                    >
+                      <Eye className="h-4 w-4" />
+                      <span>View</span>
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
