@@ -47,13 +47,17 @@ export const usePurchaseLead = () => {
 
       if (error) throw error;
 
-      // Parse the response data
+      // Properly handle the JSON response by first checking its shape
+      if (!data || typeof data !== 'object' || !('success' in data) || !('message' in data)) {
+        throw new Error('Invalid response format from server');
+      }
+      
       const response = data as PurchaseResponse;
       
-      if (!response || !response.success) {
+      if (!response.success) {
         toast({
           title: 'Purchase failed',
-          description: response?.message || 'Unknown error occurred',
+          description: response.message || 'Unknown error occurred',
           variant: 'destructive',
         });
         return false;
