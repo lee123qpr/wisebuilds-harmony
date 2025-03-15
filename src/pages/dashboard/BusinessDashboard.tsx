@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { PlusCircle, MessageSquare, ClipboardList } from 'lucide-react';
 import NewProjectDialog from '@/components/projects/NewProjectDialog';
 import ProjectsTable from '@/components/projects/ProjectsTable';
+import BusinessMessagesTab from '@/components/dashboard/business/MessagesTab';
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
@@ -77,7 +79,7 @@ const BusinessDashboard = () => {
                 <CardDescription>Conversations with freelancers</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-center py-8 text-muted-foreground">You don't have any messages yet.</p>
+                <BusinessMessagesTab />
               </CardContent>
             </Card>
           </TabsContent>

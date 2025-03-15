@@ -1,14 +1,22 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from '@/components/ui/use-toast';
+import { useToast } from '@/components/ui/use-toast';
 import { Conversation } from '@/types/messaging';
 import { getClientInfo } from './utils/getClientInfo';
+import { getFreelancerInfo } from './utils/getFreelancerInfo';
 
 /**
  * Fetches all conversations for a user
+ * @param userId The ID of the current user
+ * @param isBusinessClient Whether the current user is a business client
  */
-export const fetchConversations = async (userId: string) => {
+export const fetchConversations = async (userId: string, isBusinessClient: boolean = false) => {
+  const { toast } = useToast();
+  
   try {
+    // Determine which field to filter by based on user type
+    const filterField = isBusinessClient ? 'client_id' : 'freelancer_id';
+    
     // First fetch all conversations
     const { data: conversationsData, error: conversationsError } = await (supabase
       .from('conversations') as any)
@@ -20,7 +28,7 @@ export const fetchConversations = async (userId: string) => {
         last_message_time,
         projects:project_id (title)
       `)
-      .eq('freelancer_id', userId)
+      .eq(filterField, userId)
       .order('last_message_time', { ascending: false });
     
     if (conversationsError) {
@@ -33,16 +41,34 @@ export const fetchConversations = async (userId: string) => {
       return [];
     }
     
-    // Then fetch client info separately for each conversation
+    // Then fetch partner info separately for each conversation
     const formattedConversations = await Promise.all(conversationsData.map(async (conv: any) => {
-      // Get client info using our utility function
-      const clientInfo = await getClientInfo(conv.client_id);
-      
-      return {
-        ...conv,
-        project_title: conv.projects?.title || 'Unknown Project',
-        client_info: clientInfo
-      };
+      if (isBusinessClient) {
+        // For business clients, get freelancer info
+        const freelancerInfo = await getFreelancerInfo(conv.freelancer_id);
+        
+        return {
+          ...conv,
+          project_title: conv.projects?.title || 'Unknown Project',
+          freelancer_info: freelancerInfo,
+          // Add client_info for compatibility with existing components
+          client_info: {
+            contact_name: freelancerInfo.full_name || 'Unknown Freelancer',
+            company_name: freelancerInfo.business_name,
+            logo_url: freelancerInfo.profile_image,
+            email: freelancerInfo.email
+          }
+        };
+      } else {
+        // For freelancers, get client info (existing functionality)
+        const clientInfo = await getClientInfo(conv.client_id);
+        
+        return {
+          ...conv,
+          project_title: conv.projects?.title || 'Unknown Project',
+          client_info: clientInfo
+        };
+      }
     }));
     
     return formattedConversations;
