@@ -12,8 +12,8 @@ export const getCurrentUserId = async (): Promise<string | null> => {
 // Fetch all conversations for a user
 export const fetchConversations = async (userId: string) => {
   try {
-    // We need to use type assertion because conversations table isn't in the Supabase type definition
-    const { data, error } = await (supabase
+    // First fetch all conversations
+    const { data: conversationsData, error: conversationsError } = await (supabase
       .from('conversations') as any)
       .select(`
         id, 
@@ -21,29 +21,39 @@ export const fetchConversations = async (userId: string) => {
         freelancer_id, 
         project_id, 
         last_message_time,
-        projects:project_id (title),
-        client_info:client_id (
-          contact_name,
-          email,
-          company_name
-        )
+        projects:project_id (title)
       `)
       .eq('freelancer_id', userId)
       .order('last_message_time', { ascending: false });
     
-    if (error) {
-      console.error('Error fetching conversations:', error);
+    if (conversationsError) {
+      console.error('Error fetching conversations:', conversationsError);
       toast({
         title: "Failed to load conversations",
-        description: error.message,
+        description: conversationsError.message,
         variant: "destructive"
       });
       return [];
     }
     
-    const formattedConversations = data.map((conv: any) => ({
-      ...conv,
-      project_title: conv.projects?.title || 'Unknown Project'
+    // Then fetch client info separately for each conversation
+    const formattedConversations = await Promise.all(conversationsData.map(async (conv: any) => {
+      // Get client info
+      const { data: clientData, error: clientError } = await supabase
+        .from('client_profiles')
+        .select('contact_name, email, company_name')
+        .eq('id', conv.client_id)
+        .maybeSingle();
+      
+      if (clientError) {
+        console.error('Error fetching client info:', clientError);
+      }
+      
+      return {
+        ...conv,
+        project_title: conv.projects?.title || 'Unknown Project',
+        client_info: clientData as ClientInfo
+      };
     }));
     
     return formattedConversations;
