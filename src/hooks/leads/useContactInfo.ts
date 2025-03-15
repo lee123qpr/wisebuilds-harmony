@@ -45,24 +45,20 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Client profile data:', clientProfile);
       
-      // Get user email via RPC function
-      const { data: userData, error: userError } = await supabase
-        .rpc('get_user_email', { user_id: project.user_id });
-      
-      if (userError) throw userError;
-      
-      console.log('Email from auth:', userData);
-      
-      // Extract email from the response
-      let email = null;
-      if (userData) {
-        // Handle different possible formats of the response
-        if (Array.isArray(userData) && userData.length > 0) {
-          email = userData[0]?.email || null;
-        } else if (typeof userData === 'object' && userData.email) {
-          email = userData.email;
+      // Get user email via edge function
+      const { data: emailData, error: emailError } = await supabase.functions.invoke(
+        'get-user-email',
+        {
+          body: { user_id: project.user_id }
         }
-      }
+      );
+      
+      if (emailError) throw emailError;
+      
+      console.log('Email data from edge function:', emailData);
+      
+      // Extract the email from the response
+      const email = emailData?.email || null;
       
       console.log('Extracted email:', email);
       

@@ -37,11 +37,10 @@ serve(async (req) => {
       );
     }
 
-    // Get the user's email from auth.users
-    const { data, error } = await supabaseAdmin
-      .from('users')
-      .select('email')
-      .eq('id', user_id);
+    console.log('Fetching email for user:', user_id);
+
+    // Get the user's email from auth.users table
+    const { data, error } = await supabaseAdmin.auth.admin.getUserById(user_id);
 
     if (error) {
       console.error('Error fetching user email:', error);
@@ -54,11 +53,11 @@ serve(async (req) => {
       );
     }
 
-    console.log('Email data fetched:', data);
+    console.log('User data fetched:', data ? 'success' : 'no data');
     
-    // Return the email directly in a simplified format
+    // Return the email in a consistent format
     return new Response(
-      JSON.stringify(data && data.length > 0 ? { email: data[0].email } : { email: null }),
+      JSON.stringify({ email: data?.user?.email || null }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
