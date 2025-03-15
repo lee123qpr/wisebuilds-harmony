@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,7 +42,7 @@ const UsersTab = () => {
     admins: 0
   });
   const { toast } = useToast();
-  const { user: currentUser } = useAuth();
+  const { user: currentUser, session } = useAuth();
 
   useEffect(() => {
     fetchUsers();
@@ -54,18 +53,15 @@ const UsersTab = () => {
     setError(null);
     
     try {
-      // Get session for auth token
-      const { data: sessionData } = await supabase.auth.getSession();
-      const token = sessionData?.session?.access_token;
-      
-      if (!token) {
+      // Get session token from the current session
+      if (!session?.access_token) {
         throw new Error('No authentication token available');
       }
       
-      // Call our secure edge function
+      // Call our secure edge function with the access token
       const response = await supabase.functions.invoke('get-admin-users', {
         headers: {
-          Authorization: `Bearer ${token}`
+          Authorization: `Bearer ${session.access_token}`
         }
       });
       
