@@ -1,15 +1,13 @@
 
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
-import { format } from 'date-fns';
+import UserRow from './UserRow';
 import { AdminUser } from '../../hooks/useUsers';
-import { TableCell } from '@/components/ui/table';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 interface ClientsListProps {
   users: AdminUser[];
@@ -19,13 +17,13 @@ interface ClientsListProps {
 }
 
 const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) => {
-  // Filter only business users
+  // Filter to only show clients (business type)
   const clients = users.filter(user => 
     user.user_metadata?.user_type === 'business'
   );
 
-  const handleViewProfile = (userId: string) => {
-    window.open(`/dashboard/client/profile/${userId}`, '_blank');
+  const getUserTypeColor = (userType: string) => {
+    return userType === 'business' ? 'bg-green-500' : 'bg-gray-500';
   };
 
   return (
@@ -33,7 +31,7 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Client List</CardTitle>
-          <CardDescription>Manage business client accounts</CardDescription>
+          <CardDescription>Manage business accounts</CardDescription>
         </div>
         <Button 
           variant="outline"
@@ -61,12 +59,13 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
             <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
           </div>
         ) : clients.length === 0 ? (
-          <p className="text-center py-8 text-muted-foreground">No business clients found.</p>
+          <p className="text-center py-8 text-muted-foreground">No clients found.</p>
         ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Company/User</TableHead>
+                <TableHead>User</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Last Login</TableHead>
@@ -76,50 +75,11 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
             </TableHeader>
             <TableBody>
               {clients.map(user => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Avatar>
-                        <AvatarFallback>
-                          {user.user_metadata?.full_name?.[0] || user.email[0].toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="font-medium">
-                        {user.user_metadata?.full_name || 'N/A'}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{format(new Date(user.created_at), 'MMM d, yyyy')}</TableCell>
-                  <TableCell>
-                    {user.last_sign_in_at 
-                      ? format(new Date(user.last_sign_in_at), 'MMM d, yyyy')
-                      : 'Never'}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center">
-                      {user.is_verified ? (
-                        <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
-                      ) : (
-                        <XCircle className="h-4 w-4 text-red-500 mr-1" />
-                      )}
-                      <span>
-                        {user.is_verified ? 'Verified' : 'Unverified'}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => handleViewProfile(user.id)}
-                      className="flex items-center gap-1"
-                    >
-                      <Eye className="h-4 w-4" />
-                      <span>View</span>
-                    </Button>
-                  </TableCell>
-                </TableRow>
+                <UserRow 
+                  key={user.id} 
+                  user={user} 
+                  getUserTypeColor={getUserTypeColor} 
+                />
               ))}
             </TableBody>
           </Table>

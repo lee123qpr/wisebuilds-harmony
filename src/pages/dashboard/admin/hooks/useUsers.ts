@@ -67,23 +67,27 @@ export const useUsers = () => {
       const userData = response.data?.users || [];
       const deletedUsers = response.data?.deletedUsers || [];
       
-      // Fetch freelancer verification statuses
-      const { data: verificationData, error: verificationError } = await supabase
-        .from('freelancer_verification')
-        .select('user_id, verification_status');
-      
-      if (verificationError) {
-        console.error('Error fetching verification statuses:', verificationError);
+      // Fetch freelancer verification statuses with proper error handling
+      let verificationMap = new Map();
+      try {
+        const { data: verificationData, error: verificationError } = await supabase
+          .from('freelancer_verification')
+          .select('user_id, verification_status');
+        
+        if (verificationError) {
+          console.error('Error fetching verification statuses:', verificationError);
+          // Continue without verification data rather than failing
+        } else if (verificationData) {
+          verificationData.forEach((item: any) => {
+            verificationMap.set(item.user_id, item.verification_status);
+          });
+        }
+      } catch (verificationError) {
+        console.error('Exception fetching verification statuses:', verificationError);
+        // Continue without verification data
       }
       
-      // Create a map of user_id to verification_status
-      const verificationMap = new Map();
-      if (verificationData) {
-        verificationData.forEach((item: any) => {
-          verificationMap.set(item.user_id, item.verification_status);
-        });
-      }
-      
+      // Process users even if verification data couldn't be fetched
       const formattedUsers: AdminUser[] = userData.map((user: any) => ({
         id: user.id,
         email: user.email || '',
