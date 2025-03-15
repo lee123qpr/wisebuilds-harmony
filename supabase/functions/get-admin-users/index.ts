@@ -58,14 +58,8 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Count the number of deleted users (if soft-delete info is available)
-    const deletedUsers = users.users.filter(user => user.deleted_at !== null);
-
     return new Response(
-      JSON.stringify({ 
-        users: users.users.filter(user => user.deleted_at === null),
-        deletedUsers: deletedUsers 
-      }),
+      JSON.stringify({ users: users.users }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
