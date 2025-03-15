@@ -1,7 +1,7 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Message, MessageAttachment } from '@/types/messaging';
-import { FileIcon, Paperclip, Download } from 'lucide-react';
+import { FileIcon, Paperclip, Download, FileText, Image, FileSpreadsheet, Music, Video, Archive, File } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MessagesListProps {
@@ -13,10 +13,14 @@ const AttachmentPreview = ({ attachment }: { attachment: MessageAttachment }) =>
   const isImage = attachment.type.startsWith('image/');
   
   const getFileIcon = (mimeType: string) => {
-    if (mimeType.includes('pdf')) return '📄';
-    if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
-    if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return '📊';
-    return '📎';
+    if (isImage) return <Image className="h-4 w-4 text-blue-500" />;
+    if (mimeType.includes('pdf')) return <FileText className="h-4 w-4 text-red-500" />;
+    if (mimeType.includes('word') || mimeType.includes('document')) return <FileText className="h-4 w-4 text-blue-700" />;
+    if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return <FileSpreadsheet className="h-4 w-4 text-green-600" />;
+    if (mimeType.includes('audio')) return <Music className="h-4 w-4 text-purple-500" />;
+    if (mimeType.includes('video')) return <Video className="h-4 w-4 text-orange-500" />;
+    if (mimeType.includes('zip') || mimeType.includes('archive')) return <Archive className="h-4 w-4 text-yellow-500" />;
+    return <File className="h-4 w-4 text-gray-500" />;
   };
   
   return (
@@ -33,25 +37,25 @@ const AttachmentPreview = ({ attachment }: { attachment: MessageAttachment }) =>
             <img 
               src={attachment.url} 
               alt={attachment.name} 
-              className="max-w-[180px] max-h-[120px] rounded-md object-cover"
+              className="max-w-[160px] max-h-[100px] rounded-md object-cover"
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <Download className="h-5 w-5 text-white" />
+              <Download className="h-4 w-4 text-white" />
             </div>
           </div>
           <div className="flex justify-between items-center mt-1">
-            <span className="text-xs truncate max-w-[160px]">{attachment.name}</span>
+            <span className="text-xs truncate max-w-[140px]">{attachment.name}</span>
             <span className="text-xs text-muted-foreground">{(attachment.size / 1024).toFixed(0)} KB</span>
           </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 p-1.5 bg-background/80 rounded-md border hover:bg-muted/30 transition-colors">
-          <span className="text-base">{getFileIcon(attachment.type)}</span>
+        <div className="flex items-center gap-2 bg-white rounded-md border border-gray-200 p-1.5 hover:bg-gray-50 transition-colors">
+          {getFileIcon(attachment.type)}
           <div className="flex-grow truncate">
-            <span className="text-xs font-medium truncate block">{attachment.name}</span>
-            <span className="text-xs text-muted-foreground">{(attachment.size / 1024).toFixed(0)} KB</span>
+            <span className="text-xs font-medium text-gray-900 truncate block">{attachment.name}</span>
+            <span className="text-xs text-gray-500">{(attachment.size / 1024).toFixed(0)} KB</span>
           </div>
-          <Download className="h-3.5 w-3.5 text-muted-foreground flex-shrink-0" />
+          <Download className="h-3 w-3 text-gray-500 flex-shrink-0" />
         </div>
       )}
     </a>
@@ -86,7 +90,7 @@ const MessagesList: React.FC<MessagesListProps> = ({ messages, currentUserId }) 
             className={`flex ${isCurrentUser ? 'justify-end' : 'justify-start'}`}
           >
             <div 
-              className={`max-w-[80%] rounded-lg p-3 ${
+              className={`max-w-[80%] rounded-lg p-2.5 ${
                 isCurrentUser 
                   ? 'bg-primary text-primary-foreground' 
                   : 'bg-muted'
@@ -98,12 +102,12 @@ const MessagesList: React.FC<MessagesListProps> = ({ messages, currentUserId }) 
               
               {/* Display attachments if any */}
               {hasAttachments && (
-                <div className={`${message.message ? 'mt-2 pt-1 border-t border-opacity-20' : ''} space-y-1`}>
+                <div className={`${message.message ? 'mt-2 pt-1 border-t border-opacity-10' : ''} space-y-1`}>
                   <div className="text-xs font-medium mb-0.5 opacity-70 flex items-center gap-1">
                     <Paperclip className="h-3 w-3" />
                     {message.attachments.length === 1 ? '1 attachment' : `${message.attachments.length} attachments`}
                   </div>
-                  <div className="space-y-1.5">
+                  <div className="space-y-1">
                     {message.attachments?.map((attachment, index) => (
                       <AttachmentPreview key={index} attachment={attachment} />
                     ))}
