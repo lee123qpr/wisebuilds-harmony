@@ -5,13 +5,16 @@ import MainLayout from '@/components/layout/MainLayout';
 import DashboardHeader from '@/components/dashboard/freelancer/DashboardHeader';
 import FreelancerTabs from '@/pages/dashboard/freelancer/FreelancerTabs';
 import DashboardSummary from '@/components/dashboard/freelancer/DashboardSummary';
+import VerificationDialog from '@/components/dashboard/freelancer/VerificationDialog';
 import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
 import { useCredits } from '@/hooks/useCredits';
+import { useVerification } from '@/hooks/useVerification';
 
 const FreelancerDashboard = () => {
   const { user } = useAuth();
   const { leadSettings, isLoadingSettings, projectLeads } = useFreelancerDashboard();
   const { creditBalance, isLoadingBalance } = useCredits();
+  const { verificationStatus } = useVerification();
   
   const fullName = user?.user_metadata?.full_name || 'Freelancer';
 
@@ -23,10 +26,14 @@ const FreelancerDashboard = () => {
           hasLeadSettings={!!leadSettings} 
         />
         
-        <DashboardSummary 
-          creditBalance={creditBalance}
-          isLoadingBalance={isLoadingBalance}
-        />
+        <div className="flex flex-wrap justify-between items-center mb-6">
+          <DashboardSummary 
+            creditBalance={creditBalance}
+            isLoadingBalance={isLoadingBalance}
+          />
+          
+          {verificationStatus !== 'approved' && <VerificationDialog />}
+        </div>
         
         <FreelancerTabs 
           isLoadingSettings={isLoadingSettings}

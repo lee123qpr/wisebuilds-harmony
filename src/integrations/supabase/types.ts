@@ -191,6 +191,45 @@ export type Database = {
         }
         Relationships: []
       }
+      freelancer_verification: {
+        Row: {
+          admin_notes: string | null
+          created_at: string | null
+          id: string
+          id_document_path: string | null
+          submitted_at: string | null
+          updated_at: string | null
+          user_id: string
+          verification_status: string
+          verified_at: string | null
+          verified_by: string | null
+        }
+        Insert: {
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          id_document_path?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+          user_id: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Update: {
+          admin_notes?: string | null
+          created_at?: string | null
+          id?: string
+          id_document_path?: string | null
+          submitted_at?: string | null
+          updated_at?: string | null
+          user_id?: string
+          verification_status?: string
+          verified_at?: string | null
+          verified_by?: string | null
+        }
+        Relationships: []
+      }
       lead_settings: {
         Row: {
           budget: string | null
@@ -388,6 +427,12 @@ export type Database = {
         Returns: {
           email: string
         }[]
+      }
+      is_user_verified: {
+        Args: {
+          user_id: string
+        }
+        Returns: boolean
       }
     }
     Enums: {
