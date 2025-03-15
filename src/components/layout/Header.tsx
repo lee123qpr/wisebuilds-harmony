@@ -3,9 +3,12 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
 import AuthStatus from '@/components/auth/AuthStatus';
+import NotificationIcon from '@/components/notifications/NotificationIcon';
+import { useAuth } from '@/context/AuthContext';
 
 const Header: React.FC = () => {
   const [logoError, setLogoError] = useState(false);
+  const { user } = useAuth();
   
   return (
     <header className="w-full bg-white border-b border-bw-gray-light">
@@ -54,7 +57,10 @@ const Header: React.FC = () => {
           </NavigationMenuList>
         </NavigationMenu>
 
-        <AuthStatus />
+        <div className="flex items-center space-x-2">
+          {user && <NotificationIcon />}
+          <AuthStatus />
+        </div>
       </div>
     </header>
   );

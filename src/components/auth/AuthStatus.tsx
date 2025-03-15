@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, LogOut, User, LayoutDashboard, Bell, Coins } from 'lucide-react';
+import { Loader2, LogOut, User, LayoutDashboard, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Popover,
@@ -16,7 +16,6 @@ const AuthStatus = () => {
   const { user, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const [hasNotifications] = useState(false);
   const { creditBalance, isLoadingBalance } = useCredits();
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
 
@@ -100,26 +99,6 @@ const AuthStatus = () => {
         <p className="text-sm font-medium">{displayName}</p>
         <p className="text-xs text-muted-foreground capitalize">{userType}</p>
       </div>
-      
-      {/* Notifications Bell */}
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="ghost" size="icon" className="relative">
-            <Bell className="h-5 w-5" />
-            {hasNotifications && (
-              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
-            )}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-80 p-4">
-          <div className="space-y-2">
-            <h4 className="font-medium leading-none mb-2">Notifications</h4>
-            <p className="text-sm text-muted-foreground">
-              You have no new notifications.
-            </p>
-          </div>
-        </PopoverContent>
-      </Popover>
       
       {/* Credits Button - Only shown for freelancers */}
       {isFreelancer && (
