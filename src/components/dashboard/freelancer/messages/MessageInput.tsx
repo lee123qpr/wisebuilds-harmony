@@ -1,15 +1,15 @@
 
 import React, { useRef, useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 import { Send, Paperclip, X, Loader2, FileIcon, Image, FileText, AlertCircle } from 'lucide-react';
 import { MessageAttachment } from '@/types/messaging';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Textarea } from '@/components/ui/textarea';
 
 interface MessageInputProps {
   value: string;
-  onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => void;
+  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
   onSend: () => void;
   onKeyDown: (e: React.KeyboardEvent) => void;
   isSending: boolean;
@@ -139,28 +139,25 @@ const MessageInput: React.FC<MessageInputProps> = ({
               onClick={handleAttachClick}
               disabled={isSending}
               title="Attach files (up to 30MB)"
-              className="self-end"
             >
               <Paperclip className="h-4 w-4" />
             </Button>
           </>
         )}
         
-        <div className="flex-grow flex flex-col">
-          <Textarea
+        <div className="flex-grow">
+          <Input
             placeholder="Type your message..."
             value={value}
             onChange={onChange}
             onKeyDown={onKeyDown}
             disabled={isSending}
-            className="min-h-[80px] resize-none"
           />
         </div>
         
         <Button 
           onClick={onSend} 
           disabled={((!value.trim()) && attachments.length === 0) || isSending}
-          className="self-end"
         >
           {(isSending || isUploading) ? (
             <>

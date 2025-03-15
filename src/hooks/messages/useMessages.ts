@@ -170,7 +170,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
   }, [selectedConversation, newMessage, attachments, toast]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && e.ctrlKey && !isSending) {
+    if (e.key === 'Enter' && !e.shiftKey && !isSending) {
       e.preventDefault();
       handleSendMessage();
     }
