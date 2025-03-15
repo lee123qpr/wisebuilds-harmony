@@ -80,7 +80,7 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
             password: '', // Not storing password in profile
             confirmPassword: '', // Not storing password in profile
           });
-        } else {
+        } else if (data.userType === 'freelancer') {
           // Create freelancer profile with appropriate data
           await createFreelancerProfile(authData.user.id, {
             fullName: data.fullName,
@@ -91,6 +91,7 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
             confirmPassword: '', // Not storing password in profile
           });
         }
+        // Note: Admin users don't need a specific profile created
       }
       
       toast({
@@ -147,7 +148,13 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
                 Creating Account...
               </>
             ) : (
-              `Create ${userType === 'business' ? 'Business' : 'Freelancer'} Account`
+              `Create ${
+                userType === 'business' 
+                  ? 'Business' 
+                  : userType === 'freelancer' 
+                    ? 'Freelancer' 
+                    : 'Admin'
+              } Account`
             )}
           </Button>
         </form>
