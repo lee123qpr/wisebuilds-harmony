@@ -58,14 +58,14 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Count the number of deleted users
-    const deletedUsers = users.users.filter(user => user.deleted_at !== null);
+    // Get deleted users for count only
+    const deletedUsersCount = users.users.filter(user => user.deleted_at !== null).length;
     
-    // Return active users (not deleted) and count of deleted users
+    // Return only active users (not deleted)
     return new Response(
       JSON.stringify({ 
         users: users.users.filter(user => user.deleted_at === null),
-        deletedUsers: deletedUsers 
+        deletedUsersCount: deletedUsersCount 
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
