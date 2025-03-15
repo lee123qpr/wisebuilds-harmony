@@ -33,15 +33,16 @@ export const useContactInfo = (projectId: string) => {
       console.log('Project user_id:', project.user_id);
       
       // Then get the client profile using the user_id
+      // Make sure we're selecting all the fields we need
       const { data: clientProfile, error: clientError } = await supabase
         .from('client_profiles')
-        .select('contact_name, company_name, phone_number, website')
+        .select('contact_name, company_name, phone_number, website, company_address')
         .eq('id', project.user_id)
         .maybeSingle();
       
       if (clientError) throw clientError;
       
-      console.log('Client profile data:', clientProfile);
+      console.log('Client profile data fetched from database:', clientProfile);
       
       // Get the user email via RPC function
       const { data: userData, error: userError } = await supabase
@@ -65,14 +66,18 @@ export const useContactInfo = (projectId: string) => {
       console.log('Has profile data:', hasProfileData);
       
       // Create a proper object with all the fields we need
-      setClientInfo({
+      const combinedInfo = {
         contact_name: clientProfile?.contact_name || null,
         company_name: clientProfile?.company_name || null,
         phone_number: clientProfile?.phone_number || null,
         website: clientProfile?.website || null,
         email: email,
         is_profile_complete: hasProfileData // Set flag based on profile data existence
-      });
+      };
+      
+      console.log('Combined client info:', combinedInfo);
+      
+      setClientInfo(combinedInfo);
     } catch (error) {
       console.error('Error fetching client info:', error);
       setError(error as Error);

@@ -12,6 +12,10 @@ interface ClientContactInfoProps {
 const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
   const { clientInfo, isLoading, error } = useContactInfo(projectId);
 
+  console.log('Is loading:', isLoading);
+  console.log('Error state:', error);
+  console.log('Client info in component:', clientInfo);
+
   if (isLoading) {
     return (
       <div className="bg-green-50 border border-green-100 rounded-md p-4 space-y-3">
