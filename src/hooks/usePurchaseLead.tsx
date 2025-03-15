@@ -52,7 +52,11 @@ export const usePurchaseLead = () => {
         throw new Error('Invalid response format from server');
       }
       
-      const response = data as PurchaseResponse;
+      // Use type assertion after we've verified the shape matches what we expect
+      const response = {
+        success: data.success as boolean,
+        message: data.message as string
+      };
       
       if (!response.success) {
         toast({
