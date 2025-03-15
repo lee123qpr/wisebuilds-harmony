@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -22,6 +21,7 @@ import LeadSettings from "./pages/dashboard/leadSettings";
 import ClientProfile from "./pages/dashboard/ClientProfile";
 import CreditsPage from "./pages/dashboard/freelancer/credits/CreditsPage";
 import SuccessPage from "./pages/dashboard/freelancer/credits/SuccessPage";
+import ClientProfileAndSettings from './pages/dashboard/ClientProfileAndSettings';
 
 const queryClient = new QueryClient();
 
@@ -148,13 +148,11 @@ const App = () => (
               } 
             />
             
-            {/* Client profile route */}
+            {/* Combined profile and settings page */}
             <Route 
               path="/dashboard/business/profile" 
               element={
-                <ProtectedRoute allowedUserTypes={['business']}>
-                  <ClientProfile />
-                </ProtectedRoute>
+                <ClientProfileAndSettings />
               } 
             />
             
