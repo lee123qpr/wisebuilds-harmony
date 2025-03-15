@@ -3,6 +3,7 @@ import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tag } from 'lucide-react';
 import AnyOptionBadge from './AnyOptionBadge';
+import { formatBudget } from '@/utils/projectFormatters';
 
 interface BudgetBadgeProps {
   budget: string;
@@ -32,30 +33,13 @@ const BudgetBadge = ({ budget }: BudgetBadgeProps) => {
     return 'bg-[#D1FAE5] text-[#047857] border-[#34D399]';
   };
 
-  // Format budget text from constants
-  const getBudgetText = () => {
-    switch (budget) {
-      case '0-500': return '£0-£500';
-      case '500-1000': return '£500-£1,000';
-      case '1000-2500': return '£1,000-£2,500';
-      case '2500-5000': return '£2,500-£5,000';
-      case '5000-10000': return '£5,000-£10,000';
-      case '10000_plus': return '£10,000+';
-      default: 
-        return budget
-          .replace(/_/g, ' ')
-          .split('_')
-          .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-          .join(' ');
-    }
-  };
-
   return (
     <Badge variant="outline" className={`flex items-center gap-1.5 py-1.5 px-3 ${getBudgetStyles()}`}>
       <Tag className="h-3.5 w-3.5" />
-      {getBudgetText()}
+      {formatBudget(budget)}
     </Badge>
   );
 };
 
 export default BudgetBadge;
+

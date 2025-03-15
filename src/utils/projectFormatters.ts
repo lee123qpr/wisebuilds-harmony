@@ -1,4 +1,3 @@
-
 import { format, formatDistanceToNow } from 'date-fns';
 
 // Format date string to readable format
@@ -49,10 +48,15 @@ export const formatBudget = (budget: string) => {
   if (budget === '2500-5000') return '£2,500 - £5,000';
   if (budget === '5000-10000') return '£5,000 - £10,000';
   
-  return budget
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  // For any other format, ensure we add the pound sign
+  if (budget.includes('_')) {
+    return '£' + budget
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  }
+  
+  return '£' + budget;
 };
 
 // Format duration string to readable format
