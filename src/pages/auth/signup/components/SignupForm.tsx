@@ -39,6 +39,35 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
 
   const userType = form.watch('userType');
 
+  // Create profile record for the business user
+  const createBusinessProfile = async (userId: string, userData: SignupFormValues) => {
+    try {
+      const { error } = await supabase
+        .from('client_profiles')
+        .insert({
+          id: userId,
+          contact_name: userData.fullName,
+          phone_number: userData.phoneNumber,
+          member_since: new Date().toISOString(),
+        });
+      
+      if (error) throw error;
+      
+    } catch (error) {
+      console.error('Error creating client profile:', error);
+      // We don't want to block registration if profile creation fails
+      // but we should log it for troubleshooting
+    }
+  };
+  
+  // Create profile record for freelancer (this would be expanded in a real implementation)
+  const createFreelancerProfile = async (userId: string, userData: SignupFormValues) => {
+    // In a real implementation, you'd create a freelancer_profiles table
+    // and insert the initial profile data here
+    // This is a placeholder for the concept
+    console.log('Would create freelancer profile for:', userId);
+  };
+
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
     setAuthError(null);
@@ -62,6 +91,15 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
       
       if (error) {
         throw error;
+      }
+      
+      // Create appropriate profile record based on user type
+      if (authData?.user) {
+        if (data.userType === 'business') {
+          await createBusinessProfile(authData.user.id, data);
+        } else {
+          await createFreelancerProfile(authData.user.id, data);
+        }
       }
       
       toast({

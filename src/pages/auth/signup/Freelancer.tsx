@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -60,12 +59,15 @@ const FreelancerSignup = () => {
     },
   });
 
+  const createFreelancerProfile = async (userId: string, data: FreelancerFormValues) => {
+    console.log('Would create freelancer profile for:', userId, data);
+  };
+
   const onSubmit = async (data: FreelancerFormValues) => {
     setIsLoading(true);
     setAuthError(null);
     
     try {
-      // Register with Supabase
       const { data: authData, error } = await supabase.auth.signUp({
         email: data.email,
         password: data.password,
@@ -83,12 +85,15 @@ const FreelancerSignup = () => {
         throw error;
       }
       
+      if (authData?.user) {
+        await createFreelancerProfile(authData.user.id, data);
+      }
+      
       toast({
         title: 'Registration Successful',
         description: 'Please check your email to verify your account.',
       });
       
-      // For now, redirect to login page after successful signup
       navigate('/auth/login');
       
     } catch (error: any) {
