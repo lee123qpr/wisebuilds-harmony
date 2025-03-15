@@ -18,8 +18,8 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
     const filterField = isBusinessClient ? 'client_id' : 'freelancer_id';
     
     // First fetch all conversations
-    const { data: conversationsData, error: conversationsError } = await (supabase
-      .from('conversations') as any)
+    const { data: conversationsData, error: conversationsError } = await supabase
+      .from('conversations')
       .select(`
         id, 
         client_id, 
@@ -42,7 +42,7 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
     }
     
     // Then fetch partner info separately for each conversation
-    const formattedConversations = await Promise.all(conversationsData.map(async (conv: any) => {
+    const formattedConversations = await Promise.all(conversationsData.map(async (conv) => {
       if (isBusinessClient) {
         // For business clients, get freelancer info
         const freelancerInfo = await getFreelancerInfo(conv.freelancer_id);
