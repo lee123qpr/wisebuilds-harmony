@@ -50,7 +50,7 @@ export const useContactInfo = (projectId: string) => {
       const { data: userData, error: userError } = await supabase.functions.invoke(
         'get-user-email',
         {
-          body: { user_id: project.user_id }
+          body: { userId: project.user_id } // Changed from user_id to userId to match the edge function parameter
         }
       );
       
