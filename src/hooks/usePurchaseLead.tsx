@@ -47,14 +47,21 @@ export const usePurchaseLead = () => {
 
       if (error) throw error;
 
-      // Properly handle the JSON response
-      if (!data || typeof data !== 'object') {
-        throw new Error('Invalid response format from server');
+      // First check if data exists and is an object
+      if (!data) {
+        throw new Error('No data returned from server');
       }
       
-      // Safely extract success and message properties
-      const success = typeof data.success === 'boolean' ? data.success : false;
-      const responseMessage = typeof data.message === 'string' ? data.message : 'Unknown error';
+      // Now check if data is an array or an object and handle accordingly
+      if (Array.isArray(data)) {
+        throw new Error('Unexpected array response from server');
+      }
+      
+      // At this point TypeScript knows data is an object
+      // Now check if it has the expected properties
+      const responseObj = data as Record<string, unknown>;
+      const success = typeof responseObj.success === 'boolean' ? responseObj.success : false;
+      const responseMessage = typeof responseObj.message === 'string' ? responseObj.message : 'Unknown error';
       
       if (!success) {
         toast({
