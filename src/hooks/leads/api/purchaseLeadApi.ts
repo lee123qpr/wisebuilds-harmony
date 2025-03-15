@@ -1,15 +1,31 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { PurchaseLeadOptions, PurchaseLeadResult } from '../types';
+import { calculateLeadCredits } from '../utils/calculateLeadCredits';
 
 export const purchaseLeadApi = async (options: PurchaseLeadOptions): Promise<PurchaseLeadResult> => {
-  const { projectId, message } = options;
+  const { projectId, message, projectDetails } = options;
+  
+  let creditsToUse = 1; // Default to 1 credit
+  
+  // If project details are provided, calculate dynamic credit cost
+  if (projectDetails && projectDetails.budget && projectDetails.duration && projectDetails.hiring_status) {
+    creditsToUse = calculateLeadCredits(
+      projectDetails.budget,
+      projectDetails.duration,
+      projectDetails.hiring_status
+    );
+    
+    console.log(`Dynamic credit calculation for project "${projectDetails.title}": ${creditsToUse} credits`);
+  } else {
+    console.log('Using default credit cost: 1 credit (project details not provided)');
+  }
   
   // Call the apply_to_project RPC function
   const { data, error } = await supabase.rpc('apply_to_project', {
     project_id: projectId,
     message: message || null,
-    credits_to_use: 1
+    credits_to_use: creditsToUse
   });
 
   if (error) {

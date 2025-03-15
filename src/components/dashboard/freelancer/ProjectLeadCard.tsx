@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { usePurchaseLead } from '@/hooks/usePurchaseLead';
 import { Loader2 } from 'lucide-react';
+import LeadPurchaseButton from '@/components/projects/LeadPurchaseButton';
 
 interface ProjectLead {
   id: string;
@@ -14,6 +15,9 @@ interface ProjectLead {
   role: string;
   created_at: string;
   location: string;
+  duration: string;
+  hiring_status: string;
+  purchases_count?: number;
   tags?: string[];
 }
 
@@ -23,14 +27,6 @@ interface ProjectLeadCardProps {
 
 const ProjectLeadCard: React.FC<ProjectLeadCardProps> = ({ lead }) => {
   const navigate = useNavigate();
-  const { purchaseLead, isPurchasing } = usePurchaseLead();
-
-  const handlePurchase = async () => {
-    const success = await purchaseLead(lead.id, lead.title);
-    if (success) {
-      navigate('/dashboard/freelancer/applications');
-    }
-  };
 
   const handleView = () => {
     navigate(`/project/${lead.id}`);
@@ -62,15 +58,13 @@ const ProjectLeadCard: React.FC<ProjectLeadCardProps> = ({ lead }) => {
           <Button className="flex-1" onClick={handleView}>
             View Details
           </Button>
-          <Button 
-            variant="outline" 
-            className="flex-1"
-            onClick={handlePurchase}
-            disabled={isPurchasing}
-          >
-            {isPurchasing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Purchase Lead
-          </Button>
+          <LeadPurchaseButton 
+            projectId={lead.id}
+            projectTitle={lead.title}
+            project={lead}
+            purchasesCount={lead.purchases_count || 0}
+            onPurchaseSuccess={() => navigate('/dashboard/freelancer/applications')}
+          />
         </div>
       </CardContent>
     </Card>

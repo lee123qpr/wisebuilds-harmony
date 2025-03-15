@@ -6,6 +6,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useQueryClient } from '@tanstack/react-query';
 import { purchaseLeadApi } from './api/purchaseLeadApi';
 import { PurchaseLeadOptions } from './types';
+import { calculateLeadCredits } from './utils/calculateLeadCredits';
 
 export const usePurchaseLead = () => {
   const [isPurchasing, setIsPurchasing] = useState(false);
@@ -14,7 +15,7 @@ export const usePurchaseLead = () => {
   const { user } = useAuth();
   const { creditBalance, refetchCredits } = useCredits();
 
-  const purchaseLead = async (projectId: string, projectTitle?: string, message?: string) => {
+  const purchaseLead = async (projectId: string, projectTitle?: string, message?: string, projectDetails?: any) => {
     if (!projectId) {
       toast({
         title: 'Error',
@@ -24,10 +25,20 @@ export const usePurchaseLead = () => {
       return false;
     }
 
-    if (typeof creditBalance !== 'number' || creditBalance <= 0) {
+    // Calculate required credits if project details are available
+    let requiredCredits = 1; // Default
+    if (projectDetails && projectDetails.budget && projectDetails.duration && projectDetails.hiring_status) {
+      requiredCredits = calculateLeadCredits(
+        projectDetails.budget,
+        projectDetails.duration,
+        projectDetails.hiring_status
+      );
+    }
+
+    if (typeof creditBalance !== 'number' || creditBalance < requiredCredits) {
       toast({
         title: 'Not enough credits',
-        description: 'You need at least 1 credit to purchase this lead',
+        description: `You need at least ${requiredCredits} ${requiredCredits === 1 ? 'credit' : 'credits'} to purchase this lead`,
         variant: 'destructive',
       });
       return false;
@@ -37,12 +48,13 @@ export const usePurchaseLead = () => {
     const displayTitle = projectTitle || `Project ID: ${projectId.substring(0, 8)}...`;
 
     try {
-      console.log(`Purchasing lead for project: ${displayTitle} (${projectId})`);
+      console.log(`Purchasing lead for project: ${displayTitle} (${projectId}), required credits: ${requiredCredits}`);
       
       const result = await purchaseLeadApi({
         projectId,
         projectTitle,
-        message
+        message,
+        projectDetails
       });
       
       console.log(`Lead purchase for ${displayTitle}: success=${result.success}, message=${result.message}`);
