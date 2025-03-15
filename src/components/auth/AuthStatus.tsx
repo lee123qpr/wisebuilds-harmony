@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, LogOut, User, LayoutDashboard, Coins } from 'lucide-react';
+import { Loader2, LogOut, User, LayoutDashboard, Coins, Shield } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Popover,
@@ -18,6 +18,7 @@ const AuthStatus = () => {
   const { toast } = useToast();
   const { creditBalance, isLoadingBalance } = useCredits();
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+  const isAdmin = user?.user_metadata?.user_type === 'admin';
 
   const handleSignOut = async () => {
     try {
@@ -88,6 +89,8 @@ const AuthStatus = () => {
         return '/dashboard/business/profile';
       case 'freelancer':
         return '/dashboard/freelancer/profile';
+      case 'admin':
+        return '/dashboard/admin/profile'; // Admin profile if implemented
       default:
         return '/';
     }
@@ -140,6 +143,20 @@ const AuthStatus = () => {
             </div>
           </PopoverContent>
         </Popover>
+      )}
+      
+      {/* Admin Badge - Only shown for admins */}
+      {isAdmin && (
+        <Button 
+          variant="outline" 
+          size="sm" 
+          title="Admin Dashboard" 
+          onClick={() => navigate('/dashboard/admin')}
+          className="flex items-center gap-1.5 bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700"
+        >
+          <Shield className="h-4 w-4" />
+          <span className="text-xs font-medium">Admin</span>
+        </Button>
       )}
       
       {/* Dashboard Button */}

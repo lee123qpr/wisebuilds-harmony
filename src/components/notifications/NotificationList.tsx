@@ -2,13 +2,15 @@
 import React from 'react';
 import { useNotifications, NotificationType } from '@/context/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
-import { Bell, Mail, Package, Star, Briefcase, Eye } from 'lucide-react';
+import { Bell, Mail, Package, Star, Briefcase, Eye, FileCheck, AlertCircle, DollarSign } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useNavigate } from 'react-router-dom';
 
 const NotificationList = () => {
   const { notifications, unreadCount, markAllAsRead, markAsRead, isLoading } = useNotifications();
+  const navigate = useNavigate();
 
   const getNotificationIcon = (type: NotificationType) => {
     switch (type) {
@@ -17,15 +19,30 @@ const NotificationList = () => {
       case 'lead':
         return <Briefcase className="h-4 w-4 text-emerald-500" />;
       case 'hired':
-        return <Briefcase className="h-4 w-4 text-purple-500" />;
+        return <FileCheck className="h-4 w-4 text-purple-500" />;
       case 'project_complete':
         return <Package className="h-4 w-4 text-amber-500" />;
       case 'review':
         return <Star className="h-4 w-4 text-yellow-500" />;
       case 'application_viewed':
         return <Eye className="h-4 w-4 text-indigo-500" />;
+      case 'verification_status':
+        return <AlertCircle className="h-4 w-4 text-green-500" />;
+      case 'payment':
+        return <DollarSign className="h-4 w-4 text-cyan-500" />;
       default:
         return <Bell className="h-4 w-4 text-gray-500" />;
+    }
+  };
+
+  const handleNotificationClick = (notification: any) => {
+    if (!notification.read) {
+      markAsRead(notification.id);
+    }
+    
+    // Handle navigation based on notification type
+    if (notification.link) {
+      navigate(notification.link);
     }
   };
 
@@ -64,8 +81,8 @@ const NotificationList = () => {
             {notifications.map((notification) => (
               <div 
                 key={notification.id} 
-                className={`p-4 hover:bg-muted/30 transition-colors ${!notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}
-                onClick={() => !notification.read && markAsRead(notification.id)}
+                className={`p-4 hover:bg-muted/30 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}
+                onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start gap-3">
                   <div className="mt-0.5">
@@ -83,7 +100,7 @@ const NotificationList = () => {
                     </p>
                   </div>
                   {!notification.read && (
-                    <div className="h-2 w-2 bg-blue-500 rounded-full"></div>
+                    <div className="h-2 w-2 bg-blue-500 rounded-full" aria-hidden="true"></div>
                   )}
                 </div>
               </div>
