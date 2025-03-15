@@ -297,6 +297,7 @@ export type Database = {
           hiring_status: string
           id: string
           location: string
+          purchases_count: number
           requires_equipment: boolean
           requires_insurance: boolean
           requires_site_visits: boolean
@@ -318,6 +319,7 @@ export type Database = {
           hiring_status?: string
           id?: string
           location: string
+          purchases_count?: number
           requires_equipment?: boolean
           requires_insurance?: boolean
           requires_site_visits?: boolean
@@ -339,6 +341,7 @@ export type Database = {
           hiring_status?: string
           id?: string
           location?: string
+          purchases_count?: number
           requires_equipment?: boolean
           requires_insurance?: boolean
           requires_site_visits?: boolean
