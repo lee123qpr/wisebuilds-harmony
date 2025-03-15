@@ -53,6 +53,8 @@ export const useUsers = () => {
         throw new Error('No authentication token available');
       }
       
+      console.log('Fetching users with token...');
+      
       // Call our secure edge function with the access token
       const response = await supabase.functions.invoke('get-admin-users', {
         headers: {
@@ -64,8 +66,12 @@ export const useUsers = () => {
         throw new Error(response.error.message || 'Failed to fetch users');
       }
       
+      console.log('Response from edge function:', response.data);
+      
       const userData = response.data?.users || [];
       const deletedUsersCount = response.data?.deletedUsersCount || 0;
+      
+      console.log(`Received ${userData.length} active users and ${deletedUsersCount} deleted users`);
       
       // Fetch freelancer verification statuses with proper error handling
       let verificationMap = new Map();
@@ -100,6 +106,7 @@ export const useUsers = () => {
         banned_until: user.banned_until
       }));
       
+      console.log(`Formatted ${formattedUsers.length} users for display`);
       setUsers(formattedUsers);
       
       // Calculate metrics for user statistics
