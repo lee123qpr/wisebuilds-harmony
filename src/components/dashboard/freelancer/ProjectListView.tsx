@@ -9,6 +9,7 @@ import EmptyProjectState from './EmptyProjectState';
 import ProjectCard from './ProjectCard';
 import ProjectDetailPlaceholder from './ProjectDetailPlaceholder';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProjectListViewProps {
   projects: Project[];
@@ -26,11 +27,16 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   selectedProject
 }) => {
   const { user } = useAuth();
-  const [refreshContactInfo, setRefreshContactInfo] = useState(false);
+  const { toast } = useToast();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
 
   const handlePurchaseSuccess = () => {
-    setRefreshContactInfo(prev => !prev);
+    toast({
+      title: 'Lead purchased',
+      description: 'You can now view the client contact information',
+    });
+    setRefreshTrigger(prev => prev + 1);
   };
 
   if (isLoading) {
@@ -69,7 +75,10 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
                 />
               </div>
             )}
-            <ProjectDetails project={selectedProject} />
+            <ProjectDetails 
+              project={selectedProject}
+              refreshTrigger={refreshTrigger} 
+            />
           </div>
         ) : (
           <ProjectDetailPlaceholder />

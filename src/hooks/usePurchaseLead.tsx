@@ -5,16 +5,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useCredits } from '@/hooks/useCredits';
 import { useQueryClient } from '@tanstack/react-query';
 
-interface PurchaseResponse {
-  success: boolean;
-  message: string;
-}
-
 export const usePurchaseLead = () => {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const { creditBalance } = useCredits();
+  const { creditBalance, refetchCredits } = useCredits();
 
   const purchaseLead = async (projectId: string, message?: string) => {
     if (!projectId) {
@@ -38,7 +33,7 @@ export const usePurchaseLead = () => {
     setIsPurchasing(true);
 
     try {
-      // Use the apply_to_project function we created in the database
+      // Call the apply_to_project RPC function
       const { data, error } = await supabase.rpc('apply_to_project', {
         project_id: projectId,
         message: message || null,
@@ -47,21 +42,20 @@ export const usePurchaseLead = () => {
 
       if (error) throw error;
 
-      // First check if data exists and is an object
+      // Check if data exists and is not null
       if (!data) {
         throw new Error('No data returned from server');
       }
       
-      // Now check if data is an array or an object and handle accordingly
-      if (Array.isArray(data)) {
-        throw new Error('Unexpected array response from server');
-      }
+      // Now safely handle the response, which could be an object or array
+      let success = false;
+      let responseMessage = 'Unknown response format';
       
-      // At this point TypeScript knows data is an object
-      // Now check if it has the expected properties
-      const responseObj = data as Record<string, unknown>;
-      const success = typeof responseObj.success === 'boolean' ? responseObj.success : false;
-      const responseMessage = typeof responseObj.message === 'string' ? responseObj.message : 'Unknown error';
+      if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
+        // It's an object, extract success and message
+        success = 'success' in data && typeof data.success === 'boolean' ? data.success : false;
+        responseMessage = 'message' in data && typeof data.message === 'string' ? data.message : 'Unknown error';
+      }
       
       if (!success) {
         toast({
@@ -76,6 +70,11 @@ export const usePurchaseLead = () => {
       await queryClient.invalidateQueries({ queryKey: ['creditBalance'] });
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      
+      // Refetch credits directly
+      if (refetchCredits) {
+        await refetchCredits();
+      }
 
       toast({
         title: 'Lead purchased successfully',
@@ -87,7 +86,7 @@ export const usePurchaseLead = () => {
       console.error('Error purchasing lead:', error);
       toast({
         title: 'Error',
-        description: 'Failed to purchase lead. Please try again.',
+        description: error.message || 'Failed to purchase lead. Please try again.',
         variant: 'destructive',
       });
       return false;

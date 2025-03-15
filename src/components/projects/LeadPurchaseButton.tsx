@@ -1,11 +1,12 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CreditCard } from 'lucide-react';
 import { usePurchaseLead } from '@/hooks/usePurchaseLead';
 import { useAuth } from '@/context/AuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 interface LeadPurchaseButtonProps {
   projectId: string;
@@ -14,32 +15,73 @@ interface LeadPurchaseButtonProps {
 
 const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButtonProps) => {
   const [hasBeenPurchased, setHasBeenPurchased] = useState(false);
+  const [isCheckingPurchase, setIsCheckingPurchase] = useState(true);
   const { purchaseLead, isPurchasing } = usePurchaseLead();
   const { user } = useAuth();
-  const { creditBalance, isLoadingBalance } = useCredits();
+  const { creditBalance, isLoadingBalance, refetchCredits } = useCredits();
+  const { toast } = useToast();
 
   const handlePurchaseLead = async () => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'Please sign in to purchase leads',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    console.log('Attempting to purchase lead for project:', projectId);
     const success = await purchaseLead(projectId);
+    
     if (success) {
+      console.log('Lead purchase successful');
       setHasBeenPurchased(true);
       onPurchaseSuccess();
+      
+      // Refetch credit balance
+      if (refetchCredits) {
+        await refetchCredits();
+      }
+    } else {
+      console.log('Lead purchase failed');
     }
   };
 
   const checkIfAlreadyPurchased = async () => {
-    if (!user) return;
+    if (!user || !projectId) {
+      setIsCheckingPurchase(false);
+      return;
+    }
     
-    const { data } = await supabase.rpc('check_application_exists', {
-      p_project_id: projectId,
-      p_user_id: user.id
-    });
-    
-    if (data) {
-      setHasBeenPurchased(true);
+    try {
+      console.log('Checking if project already purchased:', projectId);
+      const { data, error } = await supabase.rpc('check_application_exists', {
+        p_project_id: projectId,
+        p_user_id: user.id
+      });
+      
+      if (error) {
+        console.error('Error checking application exists:', error);
+        toast({
+          title: 'Error',
+          description: 'Could not check if you already purchased this lead',
+          variant: 'destructive',
+        });
+      }
+      
+      console.log('Application check result:', data);
+      if (data === true) {
+        setHasBeenPurchased(true);
+      }
+    } catch (err) {
+      console.error('Error in check_application_exists:', err);
+    } finally {
+      setIsCheckingPurchase(false);
     }
   };
 
-  // Check if the project has already been purchased when component mounts
+  // Check if the project has already been purchased when component mounts or projectId/user changes
   useEffect(() => {
     checkIfAlreadyPurchased();
   }, [projectId, user]);
@@ -48,6 +90,7 @@ const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButton
   const isPurchaseDisabled = 
     isPurchasing || 
     isLoadingBalance || 
+    isCheckingPurchase || 
     (typeof creditBalance === 'number' && creditBalance < 1);
 
   if (hasBeenPurchased) {
@@ -60,8 +103,16 @@ const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButton
       disabled={isPurchaseDisabled}
       className="flex items-center gap-2"
     >
-      {isPurchasing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-      Purchase Lead (1 Credit)
+      {isPurchasing || isCheckingPurchase ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <CreditCard className="h-4 w-4" />
+      )}
+      {isCheckingPurchase 
+        ? 'Checking...' 
+        : isPurchasing 
+          ? 'Purchasing...' 
+          : `Purchase Lead (1 Credit)`}
     </Button>
   );
 };

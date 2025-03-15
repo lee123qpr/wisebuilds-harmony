@@ -35,6 +35,7 @@ export const useCredits = () => {
     data: creditBalance,
     isLoading: isLoadingBalance,
     error: balanceError,
+    refetch: refetchCreditBalance
   } = useQuery({
     queryKey: ['creditBalance', user?.id],
     queryFn: async () => {
@@ -104,6 +105,13 @@ export const useCredits = () => {
     },
     enabled: !!user,
   });
+  
+  // Function to directly refetch credit balance
+  const refetchCredits = async () => {
+    if (refetchCreditBalance) {
+      return refetchCreditBalance();
+    }
+  };
   
   // Create a checkout session
   const purchaseCredits = async (planId: string) => {
@@ -188,5 +196,6 @@ export const useCredits = () => {
     transactionsError,
     purchaseCredits,
     handleCheckoutSuccess,
+    refetchCredits,
   };
 };
