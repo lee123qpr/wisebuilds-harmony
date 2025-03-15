@@ -1,61 +1,43 @@
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import { Verification } from '../types';
-import { mapStatusToVerificationStatus } from '@/hooks/verification/verificationService';
 
 export const useVerifications = () => {
   const [verifications, setVerifications] = useState<Verification[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [isUpdating, setIsUpdating] = useState(false);
   const [adminNotes, setAdminNotes] = useState('');
+  const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
 
-  // Fetch all verifications
+  // Fetch all verification requests
   const fetchVerifications = async () => {
     setIsLoading(true);
     try {
-      // Fetch verifications
+      // Get verifications with user information
       const { data, error } = await supabase
         .from('freelancer_verification')
-        .select('*')
+        .select(`
+          *,
+          user_email:user_id(email),
+          user_full_name:user_id(user_metadata->full_name)
+        `)
         .order('submitted_at', { ascending: false });
-      
+
       if (error) throw error;
       
-      // Get user emails for each verification using the RPC function
-      const enhancedData = await Promise.all(data.map(async (verification) => {
-        // Use the RPC function to get user email
-        const { data: emailData, error: emailError } = await supabase
-          .rpc('get_user_email', { user_id: verification.user_id });
-
-        if (emailError) console.error('Error fetching user email:', emailError);
-        
-        // Get user metadata from session if possible
-        // This is a fallback approach that won't query the auth.users table directly
-        let fullName = 'Unknown';
-        try {
-          const { data: userSession } = await supabase.auth.getUser(verification.user_id);
-          if (userSession?.user?.user_metadata?.full_name) {
-            fullName = userSession.user.user_metadata.full_name;
-          }
-        } catch (metaError) {
-          console.error('Error getting user metadata:', metaError);
-        }
-        
-        return {
-          ...verification,
-          user_email: emailData?.[0]?.email || 'Unknown',
-          user_full_name: fullName,
-          verification_status: mapStatusToVerificationStatus(verification.verification_status)
-        };
+      // Transform the data to match our Verification type
+      const transformedData = data.map(item => ({
+        ...item,
+        user_email: item.user_email?.email,
+        user_full_name: item.user_full_name?.user_metadata?.full_name || 'Unknown'
       }));
       
-      setVerifications(enhancedData);
+      setVerifications(transformedData as Verification[]);
     } catch (error) {
       console.error('Error fetching verifications:', error);
       toast({
@@ -68,37 +50,42 @@ export const useVerifications = () => {
     }
   };
 
-  // View document
+  // Load verifications on component mount
+  useEffect(() => {
+    fetchVerifications();
+  }, []);
+
+  // View document handler
   const viewDocument = async (verification: Verification) => {
     setSelectedVerification(verification);
     setAdminNotes(verification.admin_notes || '');
     
-    try {
-      if (verification.id_document_path) {
-        // Generate a signed URL for the document (privately accessible)
+    // Get document URL if there's a path
+    if (verification.id_document_path) {
+      try {
         const { data, error } = await supabase.storage
-          .from('id-documents')
-          .createSignedUrl(verification.id_document_path, 60 * 60); // Valid for 1 hour
+          .from('verification-documents')
+          .createSignedUrl(verification.id_document_path, 60); // 1 minute expiry
         
         if (error) throw error;
-        
         setDocumentUrl(data.signedUrl);
-      } else {
+      } catch (error) {
+        console.error('Error getting document URL:', error);
         setDocumentUrl(null);
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: 'Failed to load document. It may have been deleted or is no longer accessible.'
+        });
       }
-      
-      setDialogOpen(true);
-    } catch (error) {
-      console.error('Error getting document URL:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'Failed to load document.'
-      });
+    } else {
+      setDocumentUrl(null);
     }
+    
+    setDialogOpen(true);
   };
 
-  // Update verification status
+  // Update verification status handler
   const updateVerificationStatus = async (status: 'approved' | 'rejected') => {
     if (!selectedVerification) return;
     
@@ -108,9 +95,10 @@ export const useVerifications = () => {
         .from('freelancer_verification')
         .update({
           verification_status: status,
+          admin_notes: adminNotes,
           verified_at: new Date().toISOString(),
-          verified_by: (await supabase.auth.getUser()).data.user?.id,
-          admin_notes: adminNotes
+          // In a real app, you'd get the current admin user ID
+          verified_by: (await supabase.auth.getSession()).data.session?.user.id
         })
         .eq('id', selectedVerification.id);
       
@@ -125,28 +113,37 @@ export const useVerifications = () => {
         )
       );
       
-      toast({
-        title: `Verification ${status === 'approved' ? 'Approved' : 'Rejected'}`,
-        description: `The verification request has been ${status}.`
-      });
+      // Send notification to the user
+      await supabase.from('notifications')
+        .insert({
+          user_id: selectedVerification.user_id,
+          type: 'verification_status',
+          title: status === 'approved' ? 'Verification Approved' : 'Verification Rejected',
+          description: status === 'approved' 
+            ? 'Your ID verification has been approved.' 
+            : `Your ID verification has been rejected. Reason: ${adminNotes || 'No reason provided.'}`,
+          read: false
+        })
+        .select();
       
+      // Close dialog
       setDialogOpen(false);
+      
+      toast({
+        title: 'Success',
+        description: `Verification ${status === 'approved' ? 'approved' : 'rejected'} successfully.`
+      });
     } catch (error) {
-      console.error(`Error ${status} verification:`, error);
+      console.error('Error updating verification:', error);
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: `Failed to ${status} verification.`
+        description: 'Failed to update verification status.'
       });
     } finally {
       setIsUpdating(false);
     }
   };
-
-  // Initialize
-  useEffect(() => {
-    fetchVerifications();
-  }, []);
 
   return {
     verifications,
@@ -159,6 +156,7 @@ export const useVerifications = () => {
     setAdminNotes,
     isUpdating,
     viewDocument,
-    updateVerificationStatus
+    updateVerificationStatus,
+    refreshVerifications: fetchVerifications
   };
 };
