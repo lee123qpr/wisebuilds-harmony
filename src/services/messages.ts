@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getCurrentUserId } from './conversations';
@@ -59,13 +60,39 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `${fileName}`;
+    const filePath = fileName; // Simplified path without folder prefix
     
-    console.log('Uploading file to attachments bucket:', filePath);
+    const bucketName = 'attachments';
+    console.log(`Attempting to upload file "${file.name}" (${file.size} bytes) to bucket "${bucketName}" with path "${filePath}"`);
     
-    // Upload the file to 'attachments' bucket
+    // Check if bucket exists first
+    const { data: buckets, error: bucketsError } = await supabase.storage
+      .listBuckets();
+    
+    if (bucketsError) {
+      console.error('Error listing buckets:', bucketsError);
+      toast({
+        title: "Failed to access storage",
+        description: bucketsError.message,
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    const bucketExists = buckets.some(bucket => bucket.name === bucketName);
+    if (!bucketExists) {
+      console.error(`Bucket "${bucketName}" does not exist in this Supabase project`);
+      toast({
+        title: "Storage configuration error",
+        description: `The required storage bucket "${bucketName}" is not configured.`,
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    // Upload the file to the bucket
     const { data, error } = await supabase.storage
-      .from('attachments')
+      .from(bucketName)
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
@@ -73,6 +100,7 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
     
     if (error) {
       console.error('Error uploading file:', error);
+      console.error('Full error details:', JSON.stringify(error, null, 2));
       toast({
         title: "Failed to upload file",
         description: error.message,
@@ -83,8 +111,10 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
     
     // Get the public URL for the file
     const { data: { publicUrl } } = supabase.storage
-      .from('attachments')
+      .from(bucketName)
       .getPublicUrl(filePath);
+    
+    console.log('File uploaded successfully. Public URL:', publicUrl);
     
     return {
       id: filePath,
