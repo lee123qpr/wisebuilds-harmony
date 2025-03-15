@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
-import { Conversation } from '@/types/messaging';
+import { Conversation, Message } from '@/types/messaging';
 import { 
   fetchMessages, 
   markMessagesAsRead, 
@@ -11,7 +11,7 @@ import {
 import { updateConversationTime, getCurrentUserId } from '@/services/conversations';
 
 export const useMessages = (selectedConversation: Conversation | null) => {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
   const { toast } = useToast();
@@ -25,12 +25,12 @@ export const useMessages = (selectedConversation: Conversation | null) => {
       // Mark messages as read
       const userId = await getCurrentUserId();
       if (userId) {
-        const unreadMessages = data.filter((msg: any) => 
+        const unreadMessages = data.filter((msg: Message) => 
           msg.sender_id !== userId && !msg.is_read
         );
         
         if (unreadMessages.length > 0) {
-          const unreadIds = unreadMessages.map((msg: any) => msg.id);
+          const unreadIds = unreadMessages.map((msg: Message) => msg.id);
           await markMessagesAsRead(unreadIds);
         }
       }
@@ -75,7 +75,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
       .on('postgres_changes', 
         { event: 'INSERT', schema: 'public', table: 'messages' }, 
         payload => {
-          const newMsg = payload.new as any;
+          const newMsg = payload.new as Message;
           if (selectedConversation?.id === newMsg.conversation_id) {
             setMessages(prev => [...prev, newMsg]);
           }

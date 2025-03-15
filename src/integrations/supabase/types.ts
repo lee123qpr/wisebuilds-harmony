@@ -104,6 +104,41 @@ export type Database = {
           },
         ]
       }
+      conversations: {
+        Row: {
+          client_id: string
+          created_at: string
+          freelancer_id: string
+          id: string
+          last_message_time: string
+          project_id: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          freelancer_id: string
+          id?: string
+          last_message_time?: string
+          project_id: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          freelancer_id?: string
+          id?: string
+          last_message_time?: string
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "conversations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       credit_plans: {
         Row: {
           created_at: string
@@ -289,6 +324,41 @@ export type Database = {
           work_type?: string | null
         }
         Relationships: []
+      }
+      messages: {
+        Row: {
+          conversation_id: string
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string
+          sender_id: string
+        }
+        Insert: {
+          conversation_id: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message: string
+          sender_id: string
+        }
+        Update: {
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string
+          sender_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "conversations"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       project_applications: {
         Row: {
