@@ -8,6 +8,8 @@ interface ClientInfo {
   phone_number: string | null;
   email: string | null;
   website: string | null;
+  company_address: string | null; // Added company_address field
+  company_description: string | null; // Added company_description field
   is_profile_complete: boolean; // Flag to indicate if profile is complete
 }
 
@@ -32,17 +34,16 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Project user_id:', project.user_id);
       
-      // Then get the client profile using the user_id
-      // Make sure we're selecting all the fields we need
+      // Then get the client profile using the user_id with all relevant fields
       const { data: clientProfile, error: clientError } = await supabase
         .from('client_profiles')
-        .select('contact_name, company_name, phone_number, website, company_address')
+        .select('*') // Select all fields to make sure we get everything
         .eq('id', project.user_id)
         .maybeSingle();
       
       if (clientError) throw clientError;
       
-      console.log('Client profile data fetched from database:', clientProfile);
+      console.log('Complete client profile data:', clientProfile);
       
       // Get the user email via RPC function
       const { data: userData, error: userError } = await supabase
@@ -60,7 +61,9 @@ export const useContactInfo = (projectId: string) => {
         clientProfile?.contact_name || 
         clientProfile?.company_name || 
         clientProfile?.phone_number || 
-        clientProfile?.website
+        clientProfile?.website ||
+        clientProfile?.company_address ||
+        clientProfile?.company_description
       );
       
       console.log('Has profile data:', hasProfileData);
@@ -71,6 +74,8 @@ export const useContactInfo = (projectId: string) => {
         company_name: clientProfile?.company_name || null,
         phone_number: clientProfile?.phone_number || null,
         website: clientProfile?.website || null,
+        company_address: clientProfile?.company_address || null,
+        company_description: clientProfile?.company_description || null,
         email: email,
         is_profile_complete: hasProfileData // Set flag based on profile data existence
       };
