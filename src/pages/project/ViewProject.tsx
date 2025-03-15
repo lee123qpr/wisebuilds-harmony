@@ -9,6 +9,8 @@ import ProjectDocuments from '@/components/projects/ProjectDocuments';
 import ProjectNotFound from '@/components/projects/ProjectNotFound';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
+import LeadPurchaseButton from '@/components/projects/LeadPurchaseButton';
+import { useAuth } from '@/context/AuthContext';
 import { 
   ProjectHeaderSkeleton, 
   ProjectDetailsSkeleton, 
@@ -19,6 +21,14 @@ import {
 const ViewProject = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const { project, loading } = useProjectDetails(projectId);
+  const { user } = useAuth();
+  const [refreshContactInfo, setRefreshContactInfo] = React.useState(false);
+  
+  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+
+  const handlePurchaseSuccess = () => {
+    setRefreshContactInfo(prev => !prev);
+  };
 
   if (!project && !loading) {
     return (
@@ -54,6 +64,15 @@ const ViewProject = () => {
                 />
               )}
             </ProjectDeleteHandler>
+
+            {isFreelancer && (
+              <div className="flex justify-end mb-4">
+                <LeadPurchaseButton 
+                  projectId={project!.id}
+                  onPurchaseSuccess={handlePurchaseSuccess}
+                />
+              </div>
+            )}
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">

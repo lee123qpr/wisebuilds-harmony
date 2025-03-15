@@ -1,12 +1,14 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
+import LeadPurchaseButton from '@/components/projects/LeadPurchaseButton';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import ProjectListSkeleton from './ProjectListSkeleton';
 import EmptyProjectState from './EmptyProjectState';
 import ProjectCard from './ProjectCard';
 import ProjectDetailPlaceholder from './ProjectDetailPlaceholder';
+import { useAuth } from '@/context/AuthContext';
 
 interface ProjectListViewProps {
   projects: Project[];
@@ -23,6 +25,14 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   setSelectedProjectId,
   selectedProject
 }) => {
+  const { user } = useAuth();
+  const [refreshContactInfo, setRefreshContactInfo] = useState(false);
+  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+
+  const handlePurchaseSuccess = () => {
+    setRefreshContactInfo(prev => !prev);
+  };
+
   if (isLoading) {
     return <ProjectListSkeleton />;
   }
@@ -51,6 +61,14 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       <ResizablePanel defaultSize={60}>
         {selectedProject ? (
           <div className="p-6 h-[700px] overflow-auto">
+            {isFreelancer && (
+              <div className="flex justify-end mb-4">
+                <LeadPurchaseButton 
+                  projectId={selectedProject.id}
+                  onPurchaseSuccess={handlePurchaseSuccess}
+                />
+              </div>
+            )}
             <ProjectDetails project={selectedProject} />
           </div>
         ) : (
