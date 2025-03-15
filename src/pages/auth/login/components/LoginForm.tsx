@@ -12,6 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
 
+// Development flag - matches the one in ProtectedRoute
+const BYPASS_AUTH_FOR_DEVELOPMENT = true;
+
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
@@ -77,6 +80,15 @@ const LoginForm = () => {
     }
   };
 
+  // Development-only function to access admin dashboard
+  const goToAdminDashboard = () => {
+    navigate('/dashboard/admin');
+    toast({
+      title: 'Development Mode',
+      description: 'Accessing admin dashboard in development mode',
+    });
+  };
+
   return (
     <>
       {authError && (
@@ -124,6 +136,18 @@ const LoginForm = () => {
               'Log in'
             )}
           </Button>
+
+          {/* Development-only Admin dashboard access button */}
+          {BYPASS_AUTH_FOR_DEVELOPMENT && (
+            <Button 
+              type="button" 
+              variant="outline" 
+              className="w-full mt-2" 
+              onClick={goToAdminDashboard}
+            >
+              Access Admin Dashboard (Dev Mode)
+            </Button>
+          )}
         </form>
       </Form>
     </>
