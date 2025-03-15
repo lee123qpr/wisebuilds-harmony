@@ -46,6 +46,11 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
   // Determine if we have at least the essential contact info
   const hasEssentialContactInfo = !!(clientInfo.contact_name || clientInfo.email || clientInfo.phone_number);
 
+  // Format phone number for tel: link - remove non-digit characters
+  const formatPhoneForLink = (phone: string) => {
+    return phone.replace(/\D/g, '');
+  };
+
   return (
     <div className="bg-green-50 border border-green-100 rounded-md p-4 space-y-4">
       <h3 className="text-green-800 font-medium flex items-center gap-2 pb-1 border-b border-green-100">
@@ -81,7 +86,10 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-green-600 flex-shrink-0" />
               <span className="font-medium min-w-24">Phone:</span>
-              <a href={`tel:${clientInfo.phone_number}`} className="text-blue-600 hover:underline font-semibold">
+              <a 
+                href={`tel:${formatPhoneForLink(clientInfo.phone_number)}`} 
+                className="text-blue-600 hover:underline font-semibold"
+              >
                 {clientInfo.phone_number}
               </a>
             </div>
