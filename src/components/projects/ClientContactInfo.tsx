@@ -15,7 +15,6 @@ interface ClientInfo {
   phone_number: string | null;
   email: string | null;
   website: string | null;
-  full_name?: string | null; // Added full name property
 }
 
 const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
@@ -38,7 +37,7 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         // Then get the client profile using the user_id
         const { data: clientProfile, error: clientError } = await supabase
           .from('client_profiles')
-          .select('contact_name, company_name, phone_number, website, full_name')
+          .select('contact_name, company_name, phone_number, website')
           .eq('id', project.user_id)
           .maybeSingle();
         
@@ -53,13 +52,12 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         // Extract email from response - userData is an array with one object
         const email = userData && userData.length > 0 ? userData[0]?.email : null;
         
-        // Combine the data - fix the spread operator issue by creating a proper object
+        // Create a proper object with all the fields we need
         setClientInfo({
           contact_name: clientProfile?.contact_name || null,
           company_name: clientProfile?.company_name || null,
           phone_number: clientProfile?.phone_number || null,
           website: clientProfile?.website || null,
-          full_name: clientProfile?.full_name || null,
           email: email
         });
       } catch (error) {
@@ -101,10 +99,10 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
       </h3>
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(clientInfo.full_name || clientInfo.contact_name) && (
+        {clientInfo.contact_name && (
           <div className="flex items-center gap-2">
             <User className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Contact:</span> {clientInfo.full_name || clientInfo.contact_name}
+            <span className="font-medium">Contact:</span> {clientInfo.contact_name}
           </div>
         )}
         
