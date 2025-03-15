@@ -8,7 +8,7 @@ interface ClientInfo {
   phone_number: string | null;
   email: string | null;
   website: string | null;
-  is_profile_complete: boolean; // Add flag to indicate if profile is complete
+  is_profile_complete: boolean; // Flag to indicate if profile is complete
 }
 
 export const useContactInfo = (projectId: string) => {
@@ -30,6 +30,8 @@ export const useContactInfo = (projectId: string) => {
       
       if (projectError) throw projectError;
       
+      console.log('Project user_id:', project.user_id);
+      
       // Then get the client profile using the user_id
       const { data: clientProfile, error: clientError } = await supabase
         .from('client_profiles')
@@ -39,11 +41,15 @@ export const useContactInfo = (projectId: string) => {
       
       if (clientError) throw clientError;
       
+      console.log('Client profile data:', clientProfile);
+      
       // Get the user email via RPC function
       const { data: userData, error: userError } = await supabase
         .rpc('get_user_email', { user_id: project.user_id });
       
       if (userError) throw userError;
+      
+      console.log('Email from auth:', userData);
       
       // Extract email from response - userData is an array with one object
       const email = userData && userData.length > 0 ? userData[0]?.email : null;
@@ -56,6 +62,8 @@ export const useContactInfo = (projectId: string) => {
         clientProfile?.website
       );
       
+      console.log('Has profile data:', hasProfileData);
+      
       // Create a proper object with all the fields we need
       setClientInfo({
         contact_name: clientProfile?.contact_name || null,
@@ -65,10 +73,6 @@ export const useContactInfo = (projectId: string) => {
         email: email,
         is_profile_complete: hasProfileData // Set flag based on profile data existence
       });
-
-      console.log('Has profile data:', hasProfileData);
-      console.log('Client profile data:', clientProfile);
-      console.log('Email from auth:', email);
     } catch (error) {
       console.error('Error fetching client info:', error);
       setError(error as Error);
