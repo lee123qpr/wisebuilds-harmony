@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { freelancerProfileSchema } from '../components/profile/freelancerSchema';
+import { UploadedFile } from '@/components/projects/file-upload/types';
 
 type FreelancerProfileFormValues = z.infer<typeof freelancerProfileSchema>;
 
@@ -53,6 +54,18 @@ export const useLoadFreelancerProfile = ({
           }));
         }
         
+        // Handle previous work files
+        let previousWork: UploadedFile[] = [];
+        if (userMetadata.previous_work && Array.isArray(userMetadata.previous_work)) {
+          previousWork = userMetadata.previous_work.map((work: any) => ({
+            name: work.name || '',
+            url: work.url || '',
+            type: work.type || '',
+            size: work.size || 0,
+            path: work.path || ''
+          }));
+        }
+        
         // Populate form with existing data from user metadata
         form.reset({
           fullName: userMetadata.full_name || '',
@@ -72,7 +85,7 @@ export const useLoadFreelancerProfile = ({
             hasInsurance: userMetadata.indemnity_insurance?.hasInsurance || false,
             coverLevel: userMetadata.indemnity_insurance?.coverLevel || '',
           },
-          previousWork: userMetadata.previous_work || [],
+          previousWork: previousWork,
           idVerified: userMetadata.id_verified || false,
         });
         

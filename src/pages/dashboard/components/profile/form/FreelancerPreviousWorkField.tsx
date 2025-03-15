@@ -16,20 +16,20 @@ const FreelancerPreviousWorkField: React.FC<FreelancerPreviousWorkFieldProps> = 
   const previousWork = form.watch('previousWork') as UploadedFile[];
 
   const handleFilesUploaded = (files: UploadedFile[]) => {
-    form.setValue('previousWork', files);
+    form.setValue('previousWork', files, { shouldValidate: true });
   };
 
   return (
     <FormField
       control={form.control}
       name="previousWork"
-      render={() => (
+      render={({ field }) => (
         <FormItem>
           <FormLabel>Examples of Previous Work</FormLabel>
           <div className="mt-2">
             <FileUpload 
               onFilesUploaded={handleFilesUploaded}
-              existingFiles={previousWork}
+              existingFiles={previousWork || []}
             />
           </div>
           <FormDescription>

@@ -83,9 +83,9 @@ export const freelancerProfileSchema = z.object({
         url: z.string(),
         type: z.string(),
         size: z.number(),
-        path: z.string(), // Add the path property to match UploadedFile type
+        path: z.string(),
       })
     )
-    .default([]) as z.ZodType<UploadedFile[]>,
+    .default([]),
   idVerified: z.boolean().default(false),
 });
