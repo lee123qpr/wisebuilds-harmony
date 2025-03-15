@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
 import { Conversation } from '@/types/messaging';
 import { getClientInfo } from './utils/getClientInfo';
 import { getFreelancerInfo } from './utils/getFreelancerInfo';
@@ -10,9 +9,7 @@ import { getFreelancerInfo } from './utils/getFreelancerInfo';
  * @param userId The ID of the current user
  * @param isBusinessClient Whether the current user is a business client
  */
-export const fetchConversations = async (userId: string, isBusinessClient: boolean = false) => {
-  const { toast } = useToast();
-  
+export const fetchConversations = async (userId: string, isBusinessClient: boolean = false): Promise<Conversation[]> => {
   try {
     // Determine which field to filter by based on user type
     const filterField = isBusinessClient ? 'client_id' : 'freelancer_id';
@@ -33,11 +30,10 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
     
     if (conversationsError) {
       console.error('Error fetching conversations:', conversationsError);
-      toast({
-        title: "Failed to load conversations",
-        description: conversationsError.message,
-        variant: "destructive"
-      });
+      return [];
+    }
+    
+    if (!conversationsData) {
       return [];
     }
     
@@ -74,11 +70,6 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
     return formattedConversations;
   } catch (e) {
     console.error('Error in fetchConversations:', e);
-    toast({
-      title: "Failed to load conversations",
-      description: "An unexpected error occurred",
-      variant: "destructive"
-    });
     return [];
   }
 };
