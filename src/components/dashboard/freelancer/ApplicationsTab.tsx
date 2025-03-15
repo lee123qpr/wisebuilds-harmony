@@ -85,7 +85,7 @@ const ApplicationsTab: React.FC = () => {
     return (
       <EmptyStateCard
         title="My Applications"
-        description="You haven't applied to any projects yet."
+        description="Once you purchase a lead, the project details and client contact information will appear here."
         buttonText="Browse Available Projects"
         buttonAction={() => navigate('/marketplace')}
       />
