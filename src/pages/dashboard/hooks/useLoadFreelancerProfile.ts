@@ -47,6 +47,7 @@ export const useLoadFreelancerProfile = ({
         form.reset({
           fullName: userMetadata.full_name || '',
           profession: userMetadata.profession || '',
+          role: userMetadata.role || '',
           location: userMetadata.location || '',
           bio: userMetadata.bio || '',
           phoneNumber: userMetadata.phone_number || userMetadata.phone || '',
@@ -55,6 +56,14 @@ export const useLoadFreelancerProfile = ({
           availability: userMetadata.availability || '',
           skills: userMetadata.skills || [],
           experience: userMetadata.experience || '',
+          qualifications: userMetadata.qualifications || [],
+          accreditations: userMetadata.accreditations || [],
+          indemnityInsurance: {
+            hasInsurance: userMetadata.indemnity_insurance?.hasInsurance || false,
+            coverLevel: userMetadata.indemnity_insurance?.coverLevel || '',
+          },
+          previousWork: userMetadata.previous_work || [],
+          idVerified: userMetadata.id_verified || false,
         });
         
         setProfileImage(userMetadata.profile_image_url || null);

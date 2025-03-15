@@ -17,6 +17,7 @@ interface FreelancerProfileCardProps {
   memberSince: string | null;
   emailVerified: boolean;
   jobsCompleted: number;
+  idVerified?: boolean;
 }
 
 const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
@@ -29,7 +30,8 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   userId,
   memberSince,
   emailVerified,
-  jobsCompleted
+  jobsCompleted,
+  idVerified = false
 }) => {
   console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted });
   
@@ -106,6 +108,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
               formattedMemberSince={formattedMemberSince}
               jobsCompleted={jobsCompleted}
               userId={userId}
+              idVerified={idVerified}
             />
           </div>
         </div>

@@ -10,6 +10,10 @@ export const freelancerProfileSchema = z.object({
     .string()
     .min(2, { message: 'Profession must be at least 2 characters long' })
     .max(100, { message: 'Profession cannot exceed 100 characters' }),
+  role: z
+    .string()
+    .min(2, { message: 'Role must be at least 2 characters long' })
+    .max(100, { message: 'Role cannot exceed 100 characters' }),
   location: z
     .string()
     .min(2, { message: 'Location must be at least 2 characters long' })
@@ -45,11 +49,34 @@ export const freelancerProfileSchema = z.object({
     .or(z.literal('')),
   skills: z
     .array(z.string())
-    .default([])
-    .optional(),
+    .max(6, { message: 'You can select up to 6 skills' })
+    .default([]),
   experience: z
     .string()
     .max(50, { message: 'Experience cannot exceed 50 characters' })
     .optional()
     .or(z.literal('')),
+  qualifications: z
+    .array(z.string())
+    .default([]),
+  accreditations: z
+    .array(z.string())
+    .default([]),
+  indemnityInsurance: z
+    .object({
+      hasInsurance: z.boolean().default(false),
+      coverLevel: z.string().optional().or(z.literal('')),
+    })
+    .default({ hasInsurance: false, coverLevel: '' }),
+  previousWork: z
+    .array(
+      z.object({
+        name: z.string(),
+        url: z.string(),
+        type: z.string(),
+        size: z.number(),
+      })
+    )
+    .default([]),
+  idVerified: z.boolean().default(false),
 });

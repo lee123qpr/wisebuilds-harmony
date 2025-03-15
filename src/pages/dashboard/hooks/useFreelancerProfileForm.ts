@@ -15,6 +15,7 @@ export const useFreelancerProfileForm = () => {
     defaultValues: {
       fullName: '',
       profession: '',
+      role: '',
       location: '',
       bio: '',
       phoneNumber: '',
@@ -23,6 +24,14 @@ export const useFreelancerProfileForm = () => {
       availability: '',
       skills: [],
       experience: '',
+      qualifications: [],
+      accreditations: [],
+      indemnityInsurance: {
+        hasInsurance: false,
+        coverLevel: '',
+      },
+      previousWork: [],
+      idVerified: false,
     },
     mode: 'onChange',
   });

@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -26,6 +27,7 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
         data: {
           full_name: values.fullName,
           profession: values.profession,
+          role: values.role,
           location: values.location,
           bio: values.bio,
           phone_number: values.phoneNumber,
@@ -35,6 +37,11 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
           availability: values.availability,
           skills: values.skills,
           experience: values.experience,
+          qualifications: values.qualifications,
+          accreditations: values.accreditations,
+          indemnity_insurance: values.indemnityInsurance,
+          previous_work: values.previousWork,
+          id_verified: values.idVerified,
         }
       });
       

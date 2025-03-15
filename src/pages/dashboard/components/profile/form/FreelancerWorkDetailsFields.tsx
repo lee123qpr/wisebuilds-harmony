@@ -1,11 +1,14 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/components/ui/form';
+import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 import { freelancerProfileSchema } from '../freelancerSchema';
 import * as z from 'zod';
+import FreelancerSkillsField from './FreelancerSkillsField';
+import FreelancerQualificationsField from './FreelancerQualificationsField';
+import FreelancerIndemnityField from './FreelancerIndemnityField';
 
 type FreelancerWorkDetailsFieldsProps = {
   form: UseFormReturn<z.infer<typeof freelancerProfileSchema>>;
@@ -14,17 +17,20 @@ type FreelancerWorkDetailsFieldsProps = {
 
 const FreelancerWorkDetailsFields: React.FC<FreelancerWorkDetailsFieldsProps> = ({ form, disabled = false }) => {
   return (
-    <>
+    <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
           name="hourlyRate"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Hourly Rate (£)</FormLabel>
+              <FormLabel>Hourly Rate (Guide)</FormLabel>
               <FormControl>
                 <Input placeholder="Enter your hourly rate" {...field} disabled={disabled} />
               </FormControl>
+              <FormDescription>
+                Your typical hourly rate as a guide for clients
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -36,59 +42,60 @@ const FreelancerWorkDetailsFields: React.FC<FreelancerWorkDetailsFieldsProps> = 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Availability</FormLabel>
-              <Select 
-                disabled={disabled} 
-                value={field.value || ""} 
-                onValueChange={field.onChange}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select availability" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="Full-time">Full-time</SelectItem>
-                  <SelectItem value="Part-time">Part-time</SelectItem>
-                  <SelectItem value="Weekends only">Weekends only</SelectItem>
-                  <SelectItem value="Evenings only">Evenings only</SelectItem>
-                  <SelectItem value="Fully booked">Fully booked</SelectItem>
-                </SelectContent>
-              </Select>
+              <FormControl>
+                <Input placeholder="Enter your availability" {...field} disabled={disabled} />
+              </FormControl>
+              <FormDescription>
+                E.g. "Full-time", "Part-time", "Weekends only"
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
       </div>
-      
-      <FormField
-        control={form.control}
-        name="experience"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Years of Experience</FormLabel>
-            <Select 
-              disabled={disabled} 
-              value={field.value || ""} 
-              onValueChange={field.onChange}
-            >
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <FormField
+          control={form.control}
+          name="experience"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Experience</FormLabel>
               <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select experience" />
-                </SelectTrigger>
+                <Input placeholder="Years of experience" {...field} disabled={disabled} />
               </FormControl>
-              <SelectContent>
-                <SelectItem value="Less than 1 year">Less than 1 year</SelectItem>
-                <SelectItem value="1-3 years">1-3 years</SelectItem>
-                <SelectItem value="4-6 years">4-6 years</SelectItem>
-                <SelectItem value="7-10 years">7-10 years</SelectItem>
-                <SelectItem value="10+ years">10+ years</SelectItem>
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-    </>
+              <FormDescription>
+                E.g. "10+ years in residential architecture"
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="role"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Professional Role</FormLabel>
+              <FormControl>
+                <Input placeholder="Enter your professional role" {...field} disabled={disabled} />
+              </FormControl>
+              <FormDescription>
+                E.g. "Senior Architect", "Project Manager"
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </div>
+
+      <FreelancerIndemnityField form={form} disabled={disabled} />
+
+      <FreelancerSkillsField form={form} disabled={disabled} />
+
+      <FreelancerQualificationsField form={form} disabled={disabled} />
+    </div>
   );
 };
 
