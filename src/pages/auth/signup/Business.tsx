@@ -8,6 +8,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessFormValues } from './types';
 import BusinessSignupForm from './components/BusinessSignupForm';
+import { createBusinessProfile } from './services/businessProfileService';
 
 const BusinessSignup = () => {
   const { toast } = useToast();
@@ -42,22 +43,7 @@ const BusinessSignup = () => {
       
       // Create client profile record with the same information
       if (authData?.user) {
-        const { error: profileError } = await supabase
-          .from('client_profiles')
-          .insert({
-            id: authData.user.id,
-            company_name: data.companyName,
-            contact_name: data.contactName,
-            phone_number: data.phone,
-            company_address: data.companyAddress,
-            company_description: data.companyDescription,
-            member_since: new Date().toISOString(),
-          });
-        
-        if (profileError) {
-          console.error('Error creating client profile:', profileError);
-          // We don't throw here to not block registration
-        }
+        await createBusinessProfile(authData.user.id, data);
       }
       
       toast({
