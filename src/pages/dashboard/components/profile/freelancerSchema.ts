@@ -45,8 +45,8 @@ export const freelancerProfileSchema = z.object({
     .or(z.literal('')),
   skills: z
     .array(z.string())
-    .optional()
-    .or(z.literal([])),
+    .default([])
+    .optional(),
   experience: z
     .string()
     .max(50, { message: 'Experience cannot exceed 50 characters' })
