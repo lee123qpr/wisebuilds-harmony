@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Conversation, Message, MessageAttachment } from '@/types/messaging';
 import { fetchMessages, markMessagesAsRead, sendMessage, uploadMessageAttachment } from '@/services/messages';
 import { updateConversationTime } from '@/services/conversations';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useMessages = (selectedConversation: Conversation | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
