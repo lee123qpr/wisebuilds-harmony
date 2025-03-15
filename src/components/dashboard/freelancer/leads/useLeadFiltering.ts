@@ -1,16 +1,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { ProjectLead } from '@/types/projects';
-
-interface LeadSettings {
-  id: string;
-  role: string;
-  location: string;
-  work_type?: string;
-  max_budget?: string;
-  notifications_enabled: boolean;
-  keywords?: string[];
-}
+import { LeadSettings } from '@/hooks/freelancer/types';
 
 export const useLeadFiltering = (leadSettings: LeadSettings | null, projectLeads: ProjectLead[]) => {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -34,12 +25,19 @@ export const useLeadFiltering = (leadSettings: LeadSettings | null, projectLeads
       
       // Match by keywords (if any)
       const keywordsMatch = !leadSettings.keywords || 
-                            leadSettings.keywords.length === 0 || 
-                            (lead.tags && lead.tags.some(tag => 
-                              leadSettings.keywords?.some(keyword => 
-                                tag.toLowerCase().includes(keyword.toLowerCase())
-                              )
-                            ));
+                            (typeof leadSettings.keywords === 'string' 
+                              ? leadSettings.keywords.length === 0 
+                              : leadSettings.keywords.length === 0) || 
+                            (lead.tags && lead.tags.some(tag => {
+                              if (typeof leadSettings.keywords === 'string') {
+                                return tag.toLowerCase().includes(leadSettings.keywords.toLowerCase());
+                              } else if (Array.isArray(leadSettings.keywords)) {
+                                return leadSettings.keywords.some(keyword => 
+                                  tag.toLowerCase().includes(keyword.toLowerCase())
+                                );
+                              }
+                              return false;
+                            }));
       
       // Return true if all specified criteria match
       return roleMatches && locationMatches && workTypeMatches && keywordsMatch;
