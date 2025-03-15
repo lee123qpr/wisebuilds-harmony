@@ -7,33 +7,47 @@ import { ClientInfo } from '@/types/messaging';
  */
 export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   // Try to get client info from client_profiles
-  const { data: clientData, error: clientError } = await supabase
+  const { data: clientProfile, error: clientError } = await supabase
     .from('client_profiles')
-    .select('contact_name, company_name')
+    .select('contact_name, company_name, phone_number, website, company_address')
     .eq('id', clientId)
     .maybeSingle();
   
   if (clientError) {
-    console.error('Error fetching client info:', clientError);
+    console.error('Error fetching client profile:', clientError);
   }
   
-  // If profile exists, return the data
-  if (clientData) {
+  // If profile exists with essential data, return it
+  if (clientProfile && clientProfile.contact_name) {
     return {
-      contact_name: clientData.contact_name || 'Unknown Client',
-      company_name: clientData.company_name,
+      contact_name: clientProfile.contact_name,
+      company_name: clientProfile.company_name,
       email: null
     };
   }
   
-  // If no profile, try to get user data from auth using edge function
+  // If no complete profile, try to get user data from auth using edge function
   try {
-    const { data: userData, error: userError } = await supabase.functions.invoke('get-user-email', {
-      body: { userId: clientId }
-    });
+    const { data: userData, error: userError } = await supabase.functions.invoke(
+      'get-user-email',
+      {
+        body: { userId: clientId }
+      }
+    );
     
     if (userError || !userData) {
       console.error('Error fetching user data from edge function:', userError);
+      
+      // If we have partial client profile data (but no contact_name), use that
+      if (clientProfile) {
+        return {
+          contact_name: 'Unknown Client',
+          company_name: clientProfile.company_name,
+          email: null
+        };
+      }
+      
+      // No data available at all
       return {
         contact_name: 'Unknown Client',
         company_name: null,
@@ -41,14 +55,28 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
       };
     }
     
-    // Use the full name if available, otherwise fallback to email username
+    // Prioritize client profile data for company_name if available
+    const companyName = clientProfile?.company_name || null;
+    
+    // Use auth user metadata for contact name if available
     return {
       contact_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Client'),
-      company_name: null,
+      company_name: companyName,
       email: userData.email || null
     };
   } catch (error) {
     console.error('Error calling edge function:', error);
+    
+    // If we have partial client profile data, use that
+    if (clientProfile) {
+      return {
+        contact_name: clientProfile.contact_name || 'Unknown Client',
+        company_name: clientProfile.company_name,
+        email: null
+      };
+    }
+    
+    // No data available at all
     return {
       contact_name: 'Unknown Client',
       company_name: null,
