@@ -60,6 +60,17 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
           website: clientProfile?.website || null,
           email: email
         });
+        
+        // Log the client info for debugging
+        console.log('Client profile:', clientProfile);
+        console.log('User email:', email);
+        console.log('Combined client info:', {
+          contact_name: clientProfile?.contact_name || null,
+          company_name: clientProfile?.company_name || null,
+          phone_number: clientProfile?.phone_number || null,
+          website: clientProfile?.website || null,
+          email: email
+        });
       } catch (error) {
         console.error('Error fetching client info:', error);
       } finally {
@@ -91,6 +102,12 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
     );
   }
 
+  // Check if we have at least some contact information to display
+  const hasContactInfo = clientInfo.email || 
+                         clientInfo.contact_name || 
+                         clientInfo.company_name || 
+                         clientInfo.phone_number;
+
   return (
     <div className="bg-green-50 border border-green-100 rounded-md p-4 space-y-3">
       <h3 className="text-green-800 font-medium flex items-center gap-2">
@@ -98,41 +115,45 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         Client Contact Information
       </h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {clientInfo.contact_name && (
-          <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Contact:</span> {clientInfo.contact_name}
-          </div>
-        )}
-        
-        {clientInfo.company_name && (
-          <div className="flex items-center gap-2">
-            <Building className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Company:</span> {clientInfo.company_name}
-          </div>
-        )}
-        
-        {clientInfo.phone_number && (
-          <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Phone:</span>
-            <a href={`tel:${clientInfo.phone_number}`} className="text-blue-600 hover:underline">
-              {clientInfo.phone_number}
-            </a>
-          </div>
-        )}
-        
-        {clientInfo.email && (
-          <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Email:</span>
-            <a href={`mailto:${clientInfo.email}`} className="text-blue-600 hover:underline">
-              {clientInfo.email}
-            </a>
-          </div>
-        )}
-      </div>
+      {hasContactInfo ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {clientInfo.contact_name && (
+            <div className="flex items-center gap-2">
+              <User className="h-4 w-4 text-green-600" />
+              <span className="font-medium">Contact:</span> {clientInfo.contact_name}
+            </div>
+          )}
+          
+          {clientInfo.company_name && (
+            <div className="flex items-center gap-2">
+              <Building className="h-4 w-4 text-green-600" />
+              <span className="font-medium">Company:</span> {clientInfo.company_name}
+            </div>
+          )}
+          
+          {clientInfo.phone_number && (
+            <div className="flex items-center gap-2">
+              <Phone className="h-4 w-4 text-green-600" />
+              <span className="font-medium">Phone:</span>
+              <a href={`tel:${clientInfo.phone_number}`} className="text-blue-600 hover:underline">
+                {clientInfo.phone_number}
+              </a>
+            </div>
+          )}
+          
+          {clientInfo.email && (
+            <div className="flex items-center gap-2">
+              <Mail className="h-4 w-4 text-green-600" />
+              <span className="font-medium">Email:</span>
+              <a href={`mailto:${clientInfo.email}`} className="text-blue-600 hover:underline">
+                {clientInfo.email}
+              </a>
+            </div>
+          )}
+        </div>
+      ) : (
+        <p className="text-sm text-green-700">Email: {clientInfo.email}</p>
+      )}
       
       {clientInfo.website && (
         <div className="pt-2">
