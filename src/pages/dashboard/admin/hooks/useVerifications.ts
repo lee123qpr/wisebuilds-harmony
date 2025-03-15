@@ -73,11 +73,14 @@ export const useVerifications = () => {
     
     try {
       if (verification.id_document_path) {
-        const { data } = supabase.storage
+        // Generate a signed URL for the document (privately accessible)
+        const { data, error } = await supabase.storage
           .from('id-documents')
-          .getPublicUrl(verification.id_document_path);
+          .createSignedUrl(verification.id_document_path, 60 * 60); // Valid for 1 hour
         
-        setDocumentUrl(data.publicUrl);
+        if (error) throw error;
+        
+        setDocumentUrl(data.signedUrl);
       } else {
         setDocumentUrl(null);
       }

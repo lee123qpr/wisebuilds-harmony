@@ -31,7 +31,7 @@ serve(async (req) => {
       if (bucketError || !bucketData) {
         console.log('Creating id-documents bucket...');
         const { error: createBucketError } = await supabaseAdmin.storage.createBucket('id-documents', {
-          public: false,
+          public: false, // Make sure it's private
         });
         
         if (createBucketError) {
@@ -52,8 +52,11 @@ serve(async (req) => {
 
     // Set up storage policies for the id-documents bucket
     try {
+      // Remove existing policies to avoid conflicts
+      await supabaseAdmin.storage.from('id-documents').deletePolicy();
+      
       // Create policy for users to upload their own documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy('User Upload Policy', {
+      await supabaseAdmin.storage.from('id-documents').createPolicy({
         name: 'User Upload Policy',
         definition: {
           type: 'INSERT',
@@ -63,7 +66,7 @@ serve(async (req) => {
       });
 
       // Create policy for users to read their own documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy('User Read Policy', {
+      await supabaseAdmin.storage.from('id-documents').createPolicy({
         name: 'User Read Policy',
         definition: {
           type: 'SELECT',
@@ -72,19 +75,19 @@ serve(async (req) => {
         }
       });
 
-      // Create policy for admins to read all documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy('Admin Read Policy', {
+      // Create policy for service_role to read all documents
+      await supabaseAdmin.storage.from('id-documents').createPolicy({
         name: 'Admin Read Policy',
         definition: {
           type: 'SELECT',
-          match: { folderId: '*' },
+          match: { prefix: "*" },
           roles: ['service_role'],
         }
       });
 
     } catch (policyError) {
-      console.log('Policy setup error (might already exist):', policyError);
-      // Continue even if policy creation fails as policies might already exist
+      console.log('Policy setup error (may already exist):', policyError);
+      // We continue even if policy creation fails as policies might already exist
     }
 
     // Return success
