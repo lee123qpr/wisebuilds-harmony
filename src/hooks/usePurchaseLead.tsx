@@ -5,6 +5,11 @@ import { useToast } from '@/hooks/use-toast';
 import { useCredits } from '@/hooks/useCredits';
 import { useQueryClient } from '@tanstack/react-query';
 
+interface PurchaseResponse {
+  success: boolean;
+  message: string;
+}
+
 export const usePurchaseLead = () => {
   const [isPurchasing, setIsPurchasing] = useState(false);
   const { toast } = useToast();
@@ -21,7 +26,7 @@ export const usePurchaseLead = () => {
       return false;
     }
 
-    if (!creditBalance || creditBalance <= 0) {
+    if (typeof creditBalance !== 'number' || creditBalance <= 0) {
       toast({
         title: 'Not enough credits',
         description: 'You need at least 1 credit to purchase this lead',
@@ -42,8 +47,8 @@ export const usePurchaseLead = () => {
 
       if (error) throw error;
 
-      // Parse the response data as needed
-      const response = data as { success: boolean; message: string };
+      // Parse the response data
+      const response = data as PurchaseResponse;
       
       if (!response || !response.success) {
         toast({

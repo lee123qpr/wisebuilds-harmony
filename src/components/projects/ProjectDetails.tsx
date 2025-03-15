@@ -50,6 +50,12 @@ const ProjectDetails = ({ project }: ProjectDetailsProps) => {
     checkIfAlreadyPurchased();
   }, [project.id, user]);
 
+  // Determine if the purchase button should be disabled
+  const isPurchaseDisabled = 
+    isPurchasing || 
+    isLoadingBalance || 
+    (typeof creditBalance === 'number' && creditBalance < 1);
+
   return (
     <Card>
       <CardHeader>
@@ -62,7 +68,7 @@ const ProjectDetails = ({ project }: ProjectDetailsProps) => {
           {isFreelancer && !hasBeenPurchased && (
             <Button 
               onClick={handlePurchaseLead} 
-              disabled={isPurchasing || isLoadingBalance || !creditBalance || creditBalance < 1}
+              disabled={isPurchaseDisabled}
               className="flex items-center gap-2"
             >
               {isPurchasing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
