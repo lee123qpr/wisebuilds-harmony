@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, CreditCard, ShieldCheck, Info } from 'lucide-react';
@@ -42,7 +41,6 @@ const LeadPurchaseButton = ({
   const limitReached = purchasesCount >= purchaseLimit;
   const notEnoughCredits = typeof creditBalance === 'number' && creditBalance < requiredCredits;
 
-  // Calculate required credits based on project details
   useEffect(() => {
     if (project && project.budget && project.duration && project.hiring_status) {
       console.log('Project details for credit calculation:', {
@@ -103,7 +101,6 @@ const LeadPurchaseButton = ({
         console.log(`Lead purchase successful for ${projectTitle || projectId}`);
         onPurchaseSuccess();
         
-        // Refetch credit balance
         if (refetchCredits) {
           await refetchCredits();
         }
@@ -120,13 +117,21 @@ const LeadPurchaseButton = ({
     }
   };
 
-  // Format project value for display
   const formatProjectValue = (value: string) => {
     if (!value) return 'N/A';
+    
+    if (value.includes('-') || value.includes('_plus')) {
+      if (value === '0-500') return '£0-£500';
+      if (value === '500-1000') return '£500-£1,000';
+      if (value === '1000-2500') return '£1,000-£2,500';
+      if (value === '2500-5000') return '£2,500-£5,000';
+      if (value === '5000-10000') return '£5,000-£10,000';
+      if (value === '10000_plus') return '£10,000+';
+    }
+    
     return value.replace(/_/g, ' ');
   };
 
-  // Determine if the purchase button should be disabled
   const isPurchaseDisabled = 
     isPurchasing || 
     isLoadingBalance || 
@@ -139,7 +144,6 @@ const LeadPurchaseButton = ({
     return null;
   }
 
-  // Show verification tooltip if needed
   if (verificationStatus === 'pending' || verificationStatus === 'rejected') {
     return (
       <TooltipProvider>
@@ -163,7 +167,6 @@ const LeadPurchaseButton = ({
     );
   }
 
-  // Collect credits for each attribute if we have a project
   const budgetCredit = project?.budget ? budgetCredits[project.budget as keyof typeof budgetCredits] || 0 : 0;
   const durationCredit = project?.duration ? durationCredits[project.duration as keyof typeof durationCredits] || 0 : 0;
   const hiringStatusCredit = project?.hiring_status ? hiringStatusCredits[project.hiring_status as keyof typeof hiringStatusCredits] || 0 : 0;
