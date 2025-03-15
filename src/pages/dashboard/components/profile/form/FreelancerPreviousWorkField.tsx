@@ -1,12 +1,10 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormDescription, FormMessage } from '@/components/ui/form';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { X, FileText, Image, Upload } from 'lucide-react';
 import { freelancerProfileSchema } from '../freelancerSchema';
 import FileUpload from '@/components/projects/FileUpload';
+import { UploadedFile } from '@/components/projects/file-upload/types';
 import * as z from 'zod';
 
 type FreelancerPreviousWorkFieldProps = {
@@ -15,9 +13,9 @@ type FreelancerPreviousWorkFieldProps = {
 };
 
 const FreelancerPreviousWorkField: React.FC<FreelancerPreviousWorkFieldProps> = ({ form, disabled = false }) => {
-  const previousWork = form.watch('previousWork');
+  const previousWork = form.watch('previousWork') as UploadedFile[];
 
-  const handleFilesUploaded = (files: any[]) => {
+  const handleFilesUploaded = (files: UploadedFile[]) => {
     form.setValue('previousWork', files);
   };
 

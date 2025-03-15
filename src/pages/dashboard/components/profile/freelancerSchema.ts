@@ -1,5 +1,6 @@
 
 import * as z from 'zod';
+import { UploadedFile } from '@/components/projects/file-upload/types';
 
 export const freelancerProfileSchema = z.object({
   fullName: z
@@ -75,8 +76,9 @@ export const freelancerProfileSchema = z.object({
         url: z.string(),
         type: z.string(),
         size: z.number(),
+        path: z.string(), // Add the path property to match UploadedFile type
       })
     )
-    .default([]),
+    .default([]) as z.ZodType<UploadedFile[]>,
   idVerified: z.boolean().default(false),
 });
