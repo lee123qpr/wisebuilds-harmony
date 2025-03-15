@@ -10,21 +10,39 @@ import { useToast } from '@/hooks/use-toast';
 interface LeadPurchaseButtonProps {
   projectId: string;
   projectTitle?: string;
+  purchasesCount?: number;
   onPurchaseSuccess: () => void;
 }
 
-const LeadPurchaseButton = ({ projectId, projectTitle, onPurchaseSuccess }: LeadPurchaseButtonProps) => {
+const LeadPurchaseButton = ({ 
+  projectId, 
+  projectTitle, 
+  purchasesCount = 0,
+  onPurchaseSuccess 
+}: LeadPurchaseButtonProps) => {
   const { purchaseLead, isPurchasing } = usePurchaseLead();
   const { hasBeenPurchased, isCheckingPurchase } = useCheckPurchaseStatus(projectId, projectTitle);
   const { user } = useAuth();
   const { creditBalance, isLoadingBalance, refetchCredits } = useCredits();
   const { toast } = useToast();
+  
+  const purchaseLimit = 5;
+  const limitReached = purchasesCount >= purchaseLimit;
 
   const handlePurchaseLead = async () => {
     if (!user) {
       toast({
         title: 'Authentication required',
         description: 'Please sign in to purchase leads',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    if (limitReached) {
+      toast({
+        title: 'Purchase limit reached',
+        description: 'This lead has reached its maximum number of purchases',
         variant: 'destructive',
       });
       return;
@@ -63,6 +81,7 @@ const LeadPurchaseButton = ({ projectId, projectTitle, onPurchaseSuccess }: Lead
     isPurchasing || 
     isLoadingBalance || 
     isCheckingPurchase || 
+    limitReached ||
     (typeof creditBalance === 'number' && creditBalance < 1);
 
   if (hasBeenPurchased) {
@@ -84,7 +103,9 @@ const LeadPurchaseButton = ({ projectId, projectTitle, onPurchaseSuccess }: Lead
         ? 'Checking...' 
         : isPurchasing 
           ? 'Purchasing...' 
-          : `Purchase Lead (1 Credit)`}
+          : limitReached
+            ? 'Limit Reached'
+            : `Purchase Lead (1 Credit)`}
     </Button>
   );
 };

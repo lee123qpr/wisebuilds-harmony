@@ -8,6 +8,7 @@ import DurationBadge from './badges/DurationBadge';
 import BudgetBadge from './badges/BudgetBadge';
 import HiringStatusBadge from './badges/HiringStatusBadge';
 import { Badge } from '@/components/ui/badge';
+import PurchaseLimitBar from '@/components/projects/PurchaseLimitBar';
 
 interface ProjectCardProps {
   project: Project;
@@ -24,6 +25,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
 }) => {
   // Format dates
   const postedDate = formatDate(project.created_at);
+  const purchasesCount = project.purchases_count || 0;
   
   return (
     <div 
@@ -43,6 +45,11 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
             Purchased
           </Badge>
         )}
+      </div>
+      
+      {/* Purchase limit indicator */}
+      <div className="mt-3 mb-3">
+        <PurchaseLimitBar purchasesCount={purchasesCount} />
       </div>
       
       {/* Basic Information - No color (neutral gray) */}

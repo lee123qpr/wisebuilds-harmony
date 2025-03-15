@@ -11,6 +11,7 @@ import ClientContactInfo from './ClientContactInfo';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Check } from 'lucide-react';
+import PurchaseLimitBar from './PurchaseLimitBar';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -22,6 +23,8 @@ const ProjectDetails = ({ project, refreshTrigger = 0, forceShowContactInfo = fa
   const [hasBeenPurchased, setHasBeenPurchased] = useState(false);
   const { user } = useAuth();
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+  const purchasesCount = project.purchases_count || 0;
+  const purchaseLimit = 5;
 
   // Check if the user has already applied to this project
   useEffect(() => {
@@ -67,6 +70,12 @@ const ProjectDetails = ({ project, refreshTrigger = 0, forceShowContactInfo = fa
             </Badge>
           )}
         </div>
+        
+        {isFreelancer && (
+          <div className="mt-4">
+            <PurchaseLimitBar purchasesCount={purchasesCount} limit={purchaseLimit} />
+          </div>
+        )}
       </CardHeader>
       <CardContent className="space-y-6">
         {shouldShowContactInfo && (

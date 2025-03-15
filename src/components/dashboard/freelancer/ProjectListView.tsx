@@ -117,6 +117,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
                 <LeadPurchaseButton 
                   projectId={selectedProject.id}
                   projectTitle={selectedProject.title}
+                  purchasesCount={selectedProject.purchases_count || 0}
                   onPurchaseSuccess={handlePurchaseSuccess}
                 />
               </div>
