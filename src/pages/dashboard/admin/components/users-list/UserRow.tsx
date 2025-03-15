@@ -108,9 +108,11 @@ const UserRow = ({ user, getUserTypeColor }: UserRowProps) => {
           </span>
         </div>
       </TableCell>
-      <TableCell>
-        {user.user_metadata?.user_type === 'freelancer' && renderIdVerificationStatus()}
-      </TableCell>
+      {user.user_metadata?.user_type === 'freelancer' && (
+        <TableCell>
+          {renderIdVerificationStatus()}
+        </TableCell>
+      )}
       <TableCell>
         <Button 
           variant="ghost" 

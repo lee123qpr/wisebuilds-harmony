@@ -58,9 +58,10 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Count the number of deleted users (if soft-delete info is available)
+    // Count the number of deleted users
     const deletedUsers = users.users.filter(user => user.deleted_at !== null);
-
+    
+    // Return active users (not deleted) and count of deleted users
     return new Response(
       JSON.stringify({ 
         users: users.users.filter(user => user.deleted_at === null),

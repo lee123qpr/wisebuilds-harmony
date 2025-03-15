@@ -17,6 +17,7 @@ export interface AdminUser {
   email_confirmed_at?: string | null;
   verification_status?: string | null;
   banned_until?: string | null;
+  deleted_at?: string | null;
 }
 
 export interface UserCounts {
@@ -65,7 +66,7 @@ export const useUsers = () => {
       }
       
       const userData = response.data?.users || [];
-      const deletedUsers = response.data?.deletedUsers || [];
+      const deletedUsersCount = response.data?.deletedUsers?.length || 0;
       
       // Fetch freelancer verification statuses with proper error handling
       let verificationMap = new Map();
@@ -97,7 +98,8 @@ export const useUsers = () => {
         is_verified: !!user.email_confirmed_at,
         email_confirmed_at: user.email_confirmed_at,
         verification_status: verificationMap.get(user.id) || null,
-        banned_until: user.banned_until
+        banned_until: user.banned_until,
+        deleted_at: user.deleted_at
       }));
       
       setUsers(formattedUsers);
@@ -113,7 +115,7 @@ export const useUsers = () => {
         businesses: 0,
         admins: 0,
         activeUsers: 0,
-        deletedAccounts: deletedUsers.length || 0
+        deletedAccounts: deletedUsersCount
       };
       
       formattedUsers.forEach(user => {
