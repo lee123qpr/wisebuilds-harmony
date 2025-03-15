@@ -73,19 +73,25 @@ export const useVerification = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/id-document-${Date.now()}.${fileExt}`;
       
-      // Check if the storage bucket exists
-      const { data: bucketData } = await supabase.storage.getBucket('id-documents');
-      
-      // If the bucket doesn't exist, create it
-      if (!bucketData) {
-        const { error: createBucketError } = await supabase.storage.createBucket('id-documents', {
-          public: false
-        });
+      // Initialize storage bucket if it doesn't exist
+      try {
+        // Check if the storage bucket exists
+        const { data: bucketData, error: bucketError } = await supabase.storage.getBucket('id-documents');
         
-        if (createBucketError) {
-          console.error('Error creating bucket:', createBucketError);
-          throw createBucketError;
+        if (bucketError || !bucketData) {
+          console.log('Creating id-documents bucket...');
+          const { error: createBucketError } = await supabase.storage.createBucket('id-documents', {
+            public: false
+          });
+          
+          if (createBucketError) {
+            console.error('Error creating bucket:', createBucketError);
+            throw createBucketError;
+          }
         }
+      } catch (bucketError) {
+        console.error('Bucket operation error:', bucketError);
+        // Continue even if bucket check/creation fails as it might already exist
       }
       
       // Upload the file
@@ -97,14 +103,17 @@ export const useVerification = () => {
         });
       
       if (uploadError) {
+        console.error('Upload error:', uploadError);
         throw uploadError;
       }
       
       // Get the file path
       const filePath = uploadData?.path;
+      console.log('File uploaded successfully to:', filePath);
       
       // Check if verification record exists
       if (!verificationData) {
+        console.log('Creating new verification record...');
         // Create new verification record
         const { data, error } = await supabase
           .from('freelancer_verification')
@@ -117,7 +126,10 @@ export const useVerification = () => {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Insert verification record error:', error);
+          throw error;
+        }
         
         setVerificationData({
           id: data.id,
@@ -128,6 +140,7 @@ export const useVerification = () => {
           verified_at: data.verified_at
         });
       } else {
+        console.log('Updating existing verification record...');
         // Update existing verification record
         const { data, error } = await supabase
           .from('freelancer_verification')
@@ -140,7 +153,10 @@ export const useVerification = () => {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Update verification record error:', error);
+          throw error;
+        }
         
         setVerificationData({
           id: data.id,
