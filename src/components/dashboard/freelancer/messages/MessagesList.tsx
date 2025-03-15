@@ -1,7 +1,10 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Message, MessageAttachment } from '@/types/messaging';
-import { FileIcon, Paperclip, Download, FileText, Image, FileSpreadsheet, Music, Video, Archive, File } from 'lucide-react';
+import { 
+  FileIcon, Paperclip, Download, FileText, Image, FileSpreadsheet, Music, 
+  Video, Archive, File, X 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface MessagesListProps {
@@ -15,8 +18,9 @@ const AttachmentPreview = ({ attachment }: { attachment: MessageAttachment }) =>
   const getFileIcon = (mimeType: string, fileName: string) => {
     if (isImage) return <Image className="h-4 w-4 text-blue-500" />;
     if (mimeType.includes('pdf')) return <FileText className="h-4 w-4 text-red-500" />;
-    if (mimeType.includes('word') || mimeType.includes('document')) return <FileText className="h-4 w-4 text-blue-700" />;
-    if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls')) 
+    if (mimeType.includes('word') || mimeType.includes('document') || fileName.endsWith('.doc') || fileName.endsWith('.docx')) 
+      return <FileText className="h-4 w-4 text-blue-700" />;
+    if (mimeType.includes('excel') || mimeType.includes('spreadsheet') || fileName.endsWith('.xlsx') || fileName.endsWith('.xls') || fileName.endsWith('.csv')) 
       return <FileSpreadsheet className="h-4 w-4 text-green-600" />;
     if (mimeType.includes('audio')) return <Music className="h-4 w-4 text-purple-500" />;
     if (mimeType.includes('video')) return <Video className="h-4 w-4 text-orange-500" />;
@@ -38,7 +42,7 @@ const AttachmentPreview = ({ attachment }: { attachment: MessageAttachment }) =>
             <img 
               src={attachment.url} 
               alt={attachment.name} 
-              className="max-w-[160px] max-h-[100px] rounded-md object-cover"
+              className="max-w-[140px] max-h-[90px] rounded-md object-cover"
             />
             <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
               <Download className="h-4 w-4 text-white" />

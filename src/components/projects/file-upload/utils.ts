@@ -9,8 +9,8 @@ export const allowedFileTypes = [
   'application/msword', // doc
   'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
   'application/vnd.ms-excel', // xls
-  'application/vnd.autocad.dwg', // dwg
   'application/acad', // dwg alternative
+  'application/vnd.autocad.dwg', // dwg
   'image/vnd.dwg', // dwg alternative
 ];
 
@@ -23,10 +23,28 @@ export const formatFileSize = (size: number) => {
 
 // Get file icon
 export const getFileIcon = (file: File | UploadedFile) => {
+  // Check for Excel files first by both MIME type and extension
+  if (
+    file.type.includes('excel') || 
+    file.type.includes('spreadsheet') || 
+    file.name.endsWith('.xlsx') || 
+    file.name.endsWith('.xls') || 
+    file.name.endsWith('.csv')
+  ) return '📊';
+  
+  // Then check other file types
   if (file.type.startsWith('image/')) return '🖼️';
   else if (file.type.includes('pdf')) return '📄';
-  else if (file.type.includes('word') || file.name.endsWith('.doc') || file.name.endsWith('.docx')) return '📝';
-  else if (file.type.includes('excel') || file.type.includes('spreadsheet') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) return '📊';
-  else if (file.type.includes('dwg') || file.name.endsWith('.dwg')) return '📐';
+  else if (
+    file.type.includes('word') || 
+    file.type.includes('document') || 
+    file.name.endsWith('.doc') || 
+    file.name.endsWith('.docx')
+  ) return '📝';
+  else if (
+    file.type.includes('dwg') || 
+    file.name.endsWith('.dwg')
+  ) return '📐';
+  
   return '📎';
 };
