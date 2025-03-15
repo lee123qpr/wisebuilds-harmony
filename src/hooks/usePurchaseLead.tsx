@@ -47,21 +47,19 @@ export const usePurchaseLead = () => {
 
       if (error) throw error;
 
-      // Properly handle the JSON response by first checking its shape
-      if (!data || typeof data !== 'object' || !('success' in data) || !('message' in data)) {
+      // Properly handle the JSON response
+      if (!data || typeof data !== 'object') {
         throw new Error('Invalid response format from server');
       }
       
-      // Use type assertion after we've verified the shape matches what we expect
-      const response = {
-        success: data.success as boolean,
-        message: data.message as string
-      };
+      // Safely extract success and message properties
+      const success = typeof data.success === 'boolean' ? data.success : false;
+      const responseMessage = typeof data.message === 'string' ? data.message : 'Unknown error';
       
-      if (!response.success) {
+      if (!success) {
         toast({
           title: 'Purchase failed',
-          description: response.message || 'Unknown error occurred',
+          description: responseMessage,
           variant: 'destructive',
         });
         return false;
