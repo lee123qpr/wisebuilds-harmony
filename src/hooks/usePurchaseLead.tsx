@@ -33,6 +33,8 @@ export const usePurchaseLead = () => {
     setIsPurchasing(true);
 
     try {
+      console.log('Calling apply_to_project with projectId:', projectId);
+      
       // Call the apply_to_project RPC function
       const { data, error } = await supabase.rpc('apply_to_project', {
         project_id: projectId,
@@ -40,21 +42,29 @@ export const usePurchaseLead = () => {
         credits_to_use: 1
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('RPC error:', error);
+        throw error;
+      }
 
       // Check if data exists and is not null
       if (!data) {
+        console.error('No data returned from server');
         throw new Error('No data returned from server');
       }
       
-      // Now safely handle the response, which could be an object or array
+      console.log('RPC response data:', data);
+      
+      // Determine if operation was successful
       let success = false;
       let responseMessage = 'Unknown response format';
       
       if (typeof data === 'object' && !Array.isArray(data) && data !== null) {
-        // It's an object, extract success and message
-        success = 'success' in data && typeof data.success === 'boolean' ? data.success : false;
-        responseMessage = 'message' in data && typeof data.message === 'string' ? data.message : 'Unknown error';
+        // It's an object, extract success and message properties if they exist
+        success = data.success === true;
+        responseMessage = typeof data.message === 'string' ? data.message : 'Unknown error';
+        
+        console.log('Extracted success:', success, 'message:', responseMessage);
       }
       
       if (!success) {

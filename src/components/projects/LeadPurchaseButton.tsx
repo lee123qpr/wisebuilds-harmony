@@ -32,19 +32,31 @@ const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButton
     }
     
     console.log('Attempting to purchase lead for project:', projectId);
-    const success = await purchaseLead(projectId);
     
-    if (success) {
-      console.log('Lead purchase successful');
-      setHasBeenPurchased(true);
-      onPurchaseSuccess();
+    try {
+      const success = await purchaseLead(projectId);
       
-      // Refetch credit balance
-      if (refetchCredits) {
-        await refetchCredits();
+      console.log('Purchase lead result:', success);
+      
+      if (success) {
+        console.log('Lead purchase successful');
+        setHasBeenPurchased(true);
+        onPurchaseSuccess();
+        
+        // Refetch credit balance
+        if (refetchCredits) {
+          await refetchCredits();
+        }
+      } else {
+        console.log('Lead purchase failed');
       }
-    } else {
-      console.log('Lead purchase failed');
+    } catch (error) {
+      console.error('Error in handlePurchaseLead:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to purchase lead. Please try again.',
+        variant: 'destructive',
+      });
     }
   };
 
@@ -71,9 +83,7 @@ const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButton
       }
       
       console.log('Application check result:', data);
-      if (data === true) {
-        setHasBeenPurchased(true);
-      }
+      setHasBeenPurchased(data === true);
     } catch (err) {
       console.error('Error in check_application_exists:', err);
     } finally {
