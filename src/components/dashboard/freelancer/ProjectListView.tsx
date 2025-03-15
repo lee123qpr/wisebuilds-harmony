@@ -100,7 +100,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
 
   return (
     <ResizablePanelGroup direction="horizontal" className="rounded-lg border bg-white">
-      <ResizablePanel defaultSize={40} minSize={30}>
+      <ResizablePanel defaultSize={35} minSize={25}>
         <div className="divide-y h-[700px] overflow-auto">
           {projects.map((project) => (
             <ProjectCard
@@ -116,7 +116,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       
       <ResizableHandle withHandle />
       
-      <ResizablePanel defaultSize={60}>
+      <ResizablePanel defaultSize={65}>
         {selectedProject ? (
           <div className="p-6 h-[700px] overflow-auto">
             {isFreelancer && !showContactInfo && !purchasedProjects[selectedProject.id] && (
