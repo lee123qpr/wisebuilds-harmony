@@ -98,6 +98,9 @@ const VerificationDialog: React.FC = () => {
           <DialogTitle>Identity Verification</DialogTitle>
           <DialogDescription>
             Upload a government-issued ID (passport, driver's license, or national ID card) to verify your identity.
+            <span className="text-orange-500 font-medium block mt-1">
+              Note: Must be a UK or Ireland issued document.
+            </span>
           </DialogDescription>
         </DialogHeader>
         
@@ -125,6 +128,9 @@ const VerificationDialog: React.FC = () => {
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 JPEG, PNG or PDF (max. 5MB)
+              </p>
+              <p className="text-xs text-orange-500 mt-1">
+                UK or Ireland documents only
               </p>
             </label>
           </div>
