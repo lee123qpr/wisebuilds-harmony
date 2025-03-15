@@ -34,22 +34,20 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       }`} 
       onClick={onClick}
     >
-      <div>
+      <div className="flex justify-between items-start">
         <h3 className="font-semibold text-lg truncate">{project.title}</h3>
-      </div>
-      
-      {/* Purchase limit indicator and purchased badge */}
-      <div className="mt-2 mb-2 flex items-center justify-between">
-        <div className="flex-1">
-          <PurchaseLimitBar purchasesCount={purchasesCount} />
-        </div>
         
         {isPurchased && (
-          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1 ml-2 text-xs">
+          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1 text-xs ml-2">
             <Check className="h-3 w-3" />
             Purchased
           </Badge>
         )}
+      </div>
+      
+      {/* Purchase limit indicator - full width */}
+      <div className="mt-2 mb-2">
+        <PurchaseLimitBar purchasesCount={purchasesCount} />
       </div>
       
       {/* Basic Information - No color (neutral gray) */}
