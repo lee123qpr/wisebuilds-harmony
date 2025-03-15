@@ -125,12 +125,18 @@ const AuthStatus = () => {
       {isFreelancer && (
         <Popover>
           <PopoverTrigger asChild>
-            <Button variant="ghost" size="icon" title="Credits" onClick={() => navigate('/dashboard/freelancer/credits')}>
-              <Coins className="h-5 w-5 text-yellow-500" />
-              {!isLoadingBalance && creditBalance > 0 && (
-                <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-primary text-[10px] text-white flex items-center justify-center font-medium">
-                  {creditBalance > 99 ? '99+' : creditBalance}
-                </span>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              title="Credits" 
+              onClick={() => navigate('/dashboard/freelancer/credits')}
+              className="flex items-center gap-1.5"
+            >
+              <Coins className="h-4 w-4 text-yellow-500" />
+              {isLoadingBalance ? (
+                <span className="h-4 w-8 bg-gray-200 animate-pulse rounded text-xs"></span>
+              ) : (
+                <span className="text-xs font-medium">{creditBalance || 0}</span>
               )}
             </Button>
           </PopoverTrigger>
