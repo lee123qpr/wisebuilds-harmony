@@ -1,18 +1,12 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
+import { Conversation } from '@/types/messaging';
 import { 
-  Conversation, 
   fetchConversations, 
   createConversation, 
   getCurrentUserId 
 } from '@/services/conversations';
-
-export interface ClientInfo {
-  contact_name: string | null;
-  email: string | null;
-  company_name: string | null;
-}
 
 export const useConversations = (projectId?: string | null, clientId?: string | null) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);

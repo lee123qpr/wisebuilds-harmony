@@ -1,18 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { ClientInfo } from '@/hooks/messages/useConversations';
-
-// Define types
-export interface Conversation {
-  id: string;
-  client_id: string;
-  freelancer_id: string;
-  project_id: string;
-  last_message_time: string;
-  project_title: string;
-  client_info: ClientInfo | null;
-}
+import { ClientInfo, Conversation } from '@/types/messaging';
 
 // Get current user ID helper
 export const getCurrentUserId = async (): Promise<string | null> => {

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Mail, User } from 'lucide-react';
-import { Conversation } from '@/hooks/messages/useConversations';
+import { Conversation } from '@/types/messaging';
 
 interface ChatHeaderProps {
   conversation: Conversation;

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Conversation } from '@/hooks/messages/useConversations';
+import { Conversation } from '@/types/messaging';
 import { Button } from '@/components/ui/button';
 import { RefreshCcw, User } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';

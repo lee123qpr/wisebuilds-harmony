@@ -2,16 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getCurrentUserId } from './conversations';
-
-// Define types
-export interface Message {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  message: string;
-  created_at: string;
-  is_read: boolean;
-}
+import { Message } from '@/types/messaging';
 
 // Fetch messages for a conversation
 export const fetchMessages = async (conversationId: string) => {

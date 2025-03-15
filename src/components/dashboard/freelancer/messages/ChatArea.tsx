@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
-import { Conversation } from '@/hooks/messages/useConversations';
+import { Conversation } from '@/types/messaging';
 import { useMessages } from '@/hooks/messages/useMessages';
 import ChatHeader from './ChatHeader';
 import MessagesList from './MessagesList';
