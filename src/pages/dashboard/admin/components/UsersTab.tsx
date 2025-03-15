@@ -19,12 +19,20 @@ interface AdminUser {
     full_name?: string;
     user_type?: string;
   };
+  is_verified?: boolean;
+}
+
+interface UserCounts {
+  total: number;
+  freelancers: number;
+  businesses: number;
+  admins: number;
 }
 
 const UsersTab = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [userCounts, setUserCounts] = useState({
+  const [userCounts, setUserCounts] = useState<UserCounts>({
     total: 0,
     freelancers: 0,
     businesses: 0,
@@ -45,17 +53,31 @@ const UsersTab = () => {
       
       if (error) throw error;
       
-      setUsers(userData as AdminUser[]);
+      const formattedUsers: AdminUser[] = (userData || []).map(user => ({
+        id: user.id,
+        email: user.email || '',
+        created_at: user.created_at || '',
+        last_sign_in_at: user.last_sign_in_at,
+        user_metadata: user.user_metadata || { full_name: '', user_type: '' },
+        is_verified: !!user.email_confirmed_at
+      }));
+      
+      setUsers(formattedUsers);
       
       // Calculate counts
-      const counts = userData.reduce((acc, user) => {
-        acc.total++;
+      const counts: UserCounts = {
+        total: formattedUsers.length,
+        freelancers: 0,
+        businesses: 0,
+        admins: 0
+      };
+      
+      formattedUsers.forEach(user => {
         const userType = user.user_metadata?.user_type;
-        if (userType === 'freelancer') acc.freelancers++;
-        else if (userType === 'business') acc.businesses++;
-        else if (userType === 'admin') acc.admins++;
-        return acc;
-      }, { total: 0, freelancers: 0, businesses: 0, admins: 0 });
+        if (userType === 'freelancer') counts.freelancers++;
+        else if (userType === 'business') counts.businesses++;
+        else if (userType === 'admin') counts.admins++;
+      });
       
       setUserCounts(counts);
     } catch (error) {
@@ -195,13 +217,13 @@ const UsersTab = () => {
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center">
-                        {user.email_confirmed_at ? (
+                        {user.is_verified ? (
                           <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
                         ) : (
                           <XCircle className="h-4 w-4 text-red-500 mr-1" />
                         )}
                         <span>
-                          {user.email_confirmed_at ? 'Verified' : 'Unverified'}
+                          {user.is_verified ? 'Verified' : 'Unverified'}
                         </span>
                       </div>
                     </TableCell>

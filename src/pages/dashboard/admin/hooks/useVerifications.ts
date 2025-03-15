@@ -21,23 +21,35 @@ export const useVerifications = () => {
       // Get verifications with user information
       const { data, error } = await supabase
         .from('freelancer_verification')
-        .select(`
-          *,
-          user_email:user_id(email),
-          user_full_name:user_id(user_metadata->full_name)
-        `)
-        .order('submitted_at', { ascending: false });
+        .select('*');
 
       if (error) throw error;
       
-      // Transform the data to match our Verification type
-      const transformedData = data.map(item => ({
-        ...item,
-        user_email: item.user_email?.email,
-        user_full_name: item.user_full_name?.user_metadata?.full_name || 'Unknown'
-      }));
+      // For each verification, fetch the user email and name separately
+      const enhancedData: Verification[] = await Promise.all(
+        data.map(async (item) => {
+          // Get the user email from auth.users
+          const { data: userData, error: userError } = await supabase.auth.admin.getUserById(
+            item.user_id
+          );
+          
+          if (userError || !userData.user) {
+            return {
+              ...item,
+              user_email: 'Unknown',
+              user_full_name: 'Unknown'
+            };
+          }
+          
+          return {
+            ...item,
+            user_email: userData.user.email || 'Unknown',
+            user_full_name: userData.user.user_metadata?.full_name || 'Unknown'
+          };
+        })
+      );
       
-      setVerifications(transformedData as Verification[]);
+      setVerifications(enhancedData);
     } catch (error) {
       console.error('Error fetching verifications:', error);
       toast({
@@ -113,7 +125,9 @@ export const useVerifications = () => {
         )
       );
       
-      // Send notification to the user
+      // We need a 'notifications' table in Supabase for this to work
+      // Commenting out for now as it's causing errors
+      /*
       await supabase.from('notifications')
         .insert({
           user_id: selectedVerification.user_id,
@@ -125,6 +139,7 @@ export const useVerifications = () => {
           read: false
         })
         .select();
+      */
       
       // Close dialog
       setDialogOpen(false);
