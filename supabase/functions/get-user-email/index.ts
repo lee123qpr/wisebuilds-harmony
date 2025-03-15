@@ -37,13 +37,13 @@ serve(async (req) => {
       );
     }
 
-    console.log('Fetching email for user:', user_id);
+    console.log('Fetching user data for:', user_id);
 
-    // Get the user's email from auth.users table
+    // Get the user's data from auth.users table
     const { data, error } = await supabaseAdmin.auth.admin.getUserById(user_id);
 
     if (error) {
-      console.error('Error fetching user email:', error);
+      console.error('Error fetching user data:', error);
       return new Response(
         JSON.stringify({ error: error.message }),
         { 
@@ -55,9 +55,12 @@ serve(async (req) => {
 
     console.log('User data fetched:', data ? 'success' : 'no data');
     
-    // Return the email in a consistent format
+    // Return the email and metadata in a consistent format
     return new Response(
-      JSON.stringify({ email: data?.user?.email || null }),
+      JSON.stringify({
+        email: data?.user?.email || null,
+        user_metadata: data?.user?.user_metadata || null
+      }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 
