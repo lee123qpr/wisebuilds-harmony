@@ -64,12 +64,15 @@ export const useContactInfo = (projectId: string) => {
       console.log('Extracted email:', email);
       console.log('Extracted user metadata:', userMetadata);
       
+      // Ensure phone number is properly formatted
+      let phoneNumber = clientProfile?.phone_number || userMetadata?.phone_number || null;
+      
       // Create a proper object with all the fields we need
       // Priority: use client profile data first, then fall back to user metadata if available
       setClientInfo({
         contact_name: clientProfile?.contact_name || userMetadata?.full_name || null,
         company_name: clientProfile?.company_name || null,
-        phone_number: clientProfile?.phone_number || userMetadata?.phone_number || null,
+        phone_number: phoneNumber,
         website: clientProfile?.website || null,
         company_address: clientProfile?.company_address || null,
         email: email,
