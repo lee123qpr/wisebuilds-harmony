@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Project } from '@/components/projects/useProjects';
 import { ProjectLead } from '@/types/projects';
@@ -7,16 +6,7 @@ import LeadSettingsAlert from './leads/LeadSettingsAlert';
 import LeadsHeader from './leads/LeadsHeader';
 import EmptyLeadsMessage from './leads/EmptyLeadsMessage';
 import { useLeadFiltering } from './leads/useLeadFiltering';
-
-interface LeadSettings {
-  id: string;
-  role: string;
-  location: string;
-  work_type?: string;
-  max_budget?: string;
-  notifications_enabled: boolean;
-  keywords?: string[];
-}
+import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 
 interface LeadsTabProps {
   isLoadingSettings: boolean;

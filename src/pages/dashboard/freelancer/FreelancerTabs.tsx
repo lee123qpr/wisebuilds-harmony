@@ -1,11 +1,5 @@
-
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import AvailableProjectsTab from '@/components/dashboard/freelancer/AvailableProjectsTab';
-import LeadsTab from '@/components/dashboard/freelancer/LeadsTab';
-import ApplicationsTab from '@/components/dashboard/freelancer/ApplicationsTab';
-import ActiveJobsTab from '@/components/dashboard/freelancer/ActiveJobsTab';
-import MessagesTab from '@/components/dashboard/freelancer/MessagesTab';
 import { ProjectLead } from '@/types/projects';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 import AvailableTabContent from './tabs/AvailableTabContent';
