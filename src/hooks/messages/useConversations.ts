@@ -46,7 +46,7 @@ export const useConversations = (
     }
     
     try {
-      // Fetch conversations for either client or freelancer based on isBusinessClient
+      // Import from the new import path which accepts isBusinessClient parameter
       const data = await fetchConversations(userId, isBusinessClient);
       setConversations(data);
       
