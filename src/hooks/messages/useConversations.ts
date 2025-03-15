@@ -2,11 +2,8 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Conversation } from '@/types/messaging';
-import { 
-  fetchConversations, 
-  createConversation, 
-  getCurrentUserId 
-} from '@/services/conversations';
+import { createConversation, getCurrentUserId } from '@/services/conversations';
+import { fetchConversations } from '@/services/conversations/fetchConversations';
 
 export const useConversations = (
   projectId?: string | null, 
