@@ -21,6 +21,14 @@ export const useVerification = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
 
+  // Converts database string status to our VerificationStatus type
+  const mapStatusToVerificationStatus = (status: string): VerificationStatus => {
+    if (status === 'pending' || status === 'approved' || status === 'rejected') {
+      return status;
+    }
+    return 'not_submitted';
+  };
+
   // Fetch verification status
   const fetchVerificationStatus = async () => {
     if (!user) return;
@@ -38,7 +46,16 @@ export const useVerification = () => {
         throw error;
       }
       
-      setVerificationData(data);
+      if (data) {
+        setVerificationData({
+          id: data.id,
+          user_id: data.user_id,
+          verification_status: mapStatusToVerificationStatus(data.verification_status),
+          id_document_path: data.id_document_path,
+          submitted_at: data.submitted_at,
+          verified_at: data.verified_at
+        });
+      }
     } catch (error) {
       console.error('Error:', error);
     } finally {
@@ -85,7 +102,15 @@ export const useVerification = () => {
           .single();
         
         if (error) throw error;
-        setVerificationData(data);
+        
+        setVerificationData({
+          id: data.id,
+          user_id: data.user_id,
+          verification_status: mapStatusToVerificationStatus(data.verification_status),
+          id_document_path: data.id_document_path,
+          submitted_at: data.submitted_at,
+          verified_at: data.verified_at
+        });
       } else {
         // Update existing verification record
         const { data, error } = await supabase
@@ -100,7 +125,15 @@ export const useVerification = () => {
           .single();
         
         if (error) throw error;
-        setVerificationData(data);
+        
+        setVerificationData({
+          id: data.id,
+          user_id: data.user_id,
+          verification_status: mapStatusToVerificationStatus(data.verification_status),
+          id_document_path: data.id_document_path,
+          submitted_at: data.submitted_at,
+          verified_at: data.verified_at
+        });
       }
       
       toast({
