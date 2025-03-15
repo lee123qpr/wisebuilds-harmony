@@ -39,13 +39,15 @@ const DurationBadge = ({ duration }: DurationBadgeProps) => {
     return 'bg-[#EFF6FF] text-[#2563EB] border-[#60A5FA]';
   };
 
-  // Format duration for display
-  const formattedDuration = duration
-    .replace(/_/g, ' ')
-    .replace('plus', '+')
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  // Format duration for display (safely)
+  const formattedDuration = typeof duration === 'string' 
+    ? duration
+        .replace(/_/g, ' ')
+        .replace('plus', '+')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    : 'Unknown';
 
   return (
     <Badge variant="outline" className={`flex items-center gap-1.5 py-1.5 px-3 ${getDurationStyles()}`}>

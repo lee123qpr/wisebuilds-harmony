@@ -7,6 +7,7 @@ import DashboardHeader from '@/components/dashboard/freelancer/DashboardHeader';
 import FreelancerTabs from '@/pages/dashboard/freelancer/FreelancerTabs';
 import CreditBalanceCard from '@/components/dashboard/freelancer/credits/CreditBalanceCard';
 import { useCredits } from '@/hooks/useCredits';
+import { ProjectLead } from '@/types/projects';
 
 interface LeadSettings {
   id: string;
@@ -16,35 +17,6 @@ interface LeadSettings {
   max_budget?: string;
   notifications_enabled: boolean;
   keywords?: string[];
-}
-
-interface ProjectLead {
-  id: string;
-  title: string;
-  description: string;
-  budget: string;
-  role: string;
-  created_at: string;
-  location: string;
-  work_type: string;
-  tags?: string[];
-  duration: string;
-  hiring_status: string;
-  requires_equipment: boolean;
-  requires_insurance: boolean;
-  requires_qualifications: boolean;
-  published: boolean;
-  client_id: string;
-  client_name?: string;
-  client_company?: string;
-  start_date?: string;
-  applications: number;
-  documents: any;
-  requires_site_visits: boolean;
-  requires_security_check?: boolean;
-  status: string;
-  updated_at: string;
-  user_id: string;
 }
 
 const FreelancerDashboard = () => {

@@ -7,6 +7,7 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { RefreshCw, AlertTriangle, Info, Briefcase, Filter } from 'lucide-react';
 import ProjectListView from './ProjectListView';
 import { Project } from '@/components/projects/useProjects';
+import { ProjectLead } from '@/types/projects';
 
 interface LeadSettings {
   id: string;
@@ -16,37 +17,6 @@ interface LeadSettings {
   max_budget?: string;
   notifications_enabled: boolean;
   keywords?: string[];
-}
-
-// Updated to fully match Project interface
-interface ProjectLead {
-  id: string;
-  title: string;
-  description: string;
-  budget: string;
-  role: string;
-  created_at: string;
-  location: string;
-  work_type: string;
-  tags?: string[];
-  duration: string;
-  hiring_status: string;
-  requires_equipment: boolean;
-  requires_security_check: boolean;
-  requires_insurance: boolean;
-  requires_qualifications: boolean;
-  published: boolean;
-  client_id: string;
-  client_name?: string;
-  client_company?: string;
-  start_date?: string;
-  applications: number;
-  documents: any;
-  // Adding missing properties required by Project interface
-  requires_site_visits: boolean;
-  status: string;
-  updated_at: string;
-  user_id: string;
 }
 
 interface LeadsTabProps {
@@ -197,11 +167,11 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, pr
         </Card>
       ) : (
         <ProjectListView 
-          projects={filteredLeads as Project[]}
+          projects={filteredLeads as unknown as Project[]}
           isLoading={isLoadingSettings}
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
-          selectedProject={selectedProject as Project}
+          selectedProject={selectedProject as unknown as Project}
           showContactInfo={true}
         />
       )}

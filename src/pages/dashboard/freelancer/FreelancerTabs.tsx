@@ -6,6 +6,7 @@ import LeadsTab from '@/components/dashboard/freelancer/LeadsTab';
 import ApplicationsTab from '@/components/dashboard/freelancer/ApplicationsTab';
 import ActiveJobsTab from '@/components/dashboard/freelancer/ActiveJobsTab';
 import MessagesTab from '@/components/dashboard/freelancer/MessagesTab';
+import { ProjectLead } from '@/types/projects';
 
 interface LeadSettings {
   id: string;
@@ -15,37 +16,6 @@ interface LeadSettings {
   max_budget?: string;
   notifications_enabled: boolean;
   keywords?: string[];
-}
-
-// Updated to fully match Project interface required fields
-interface ProjectLead {
-  id: string;
-  title: string;
-  description: string;
-  budget: string;
-  role: string;
-  created_at: string;
-  location: string;
-  work_type: string;
-  tags?: string[];
-  duration: string;
-  hiring_status: string;
-  requires_equipment: boolean;
-  requires_security_check: boolean;
-  requires_insurance: boolean;
-  requires_qualifications: boolean;
-  published: boolean;
-  client_id: string;
-  client_name?: string;
-  client_company?: string;
-  start_date?: string;
-  applications: number;
-  documents: any;
-  // Adding missing properties required by Project interface
-  requires_site_visits: boolean;
-  status: string;
-  updated_at: string;
-  user_id: string;
 }
 
 interface FreelancerTabsProps {
