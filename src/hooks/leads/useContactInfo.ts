@@ -8,6 +8,7 @@ interface ClientInfo {
   phone_number: string | null;
   email: string | null;
   website: string | null;
+  is_profile_complete: boolean; // Add flag to indicate if profile is complete
 }
 
 export const useContactInfo = (projectId: string) => {
@@ -46,6 +47,14 @@ export const useContactInfo = (projectId: string) => {
       
       // Extract email from response - userData is an array with one object
       const email = userData && userData.length > 0 ? userData[0]?.email : null;
+
+      // Check if any profile data exists besides email
+      const hasProfileData = !!(
+        clientProfile?.contact_name || 
+        clientProfile?.company_name || 
+        clientProfile?.phone_number || 
+        clientProfile?.website
+      );
       
       // Create a proper object with all the fields we need
       setClientInfo({
@@ -53,8 +62,13 @@ export const useContactInfo = (projectId: string) => {
         company_name: clientProfile?.company_name || null,
         phone_number: clientProfile?.phone_number || null,
         website: clientProfile?.website || null,
-        email: email
+        email: email,
+        is_profile_complete: hasProfileData // Set flag based on profile data existence
       });
+
+      console.log('Has profile data:', hasProfileData);
+      console.log('Client profile data:', clientProfile);
+      console.log('Email from auth:', email);
     } catch (error) {
       console.error('Error fetching client info:', error);
       setError(error as Error);
