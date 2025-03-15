@@ -53,31 +53,32 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Email from auth:', userData);
       
-      // Instead of using an RPC function that doesn't exist, let's
-      // directly fetch basic data from the auth user through the existing functions
-      // We'll assume the email has the user metadata we need
-      let metadata: Record<string, any> | null = null;
-      
-      if (userData && Array.isArray(userData) && userData.length > 0) {
-        // Use this email data as a source of information
-        console.log('User email data available');
+      // Extract email from the response
+      let email = null;
+      if (userData) {
+        // Handle different possible formats of the response
+        if (Array.isArray(userData) && userData.length > 0) {
+          email = userData[0]?.email || null;
+        } else if (typeof userData === 'object' && userData.email) {
+          email = userData.email;
+        }
       }
+      
+      console.log('Extracted email:', email);
       
       // Create a proper object with all the fields we need
       setClientInfo({
-        // IMPORTANT: Always prioritize client profile data over metadata
-        // since profile data can be updated by the user after signup
         contact_name: clientProfile?.contact_name || null,
         company_name: clientProfile?.company_name || null,
         phone_number: clientProfile?.phone_number || null,
         website: clientProfile?.website || null,
         company_address: clientProfile?.company_address || null,
-        email: userData && Array.isArray(userData) && userData.length > 0 ? userData[0]?.email : null,
-        user_metadata: metadata,
+        email: email,
+        user_metadata: null,
         // A profile is considered complete if we have at least name, email, and phone
         is_profile_complete: !!(
           clientProfile?.contact_name && 
-          (userData && Array.isArray(userData) && userData.length > 0 ? userData[0]?.email : null) && 
+          email && 
           clientProfile?.phone_number
         )
       });

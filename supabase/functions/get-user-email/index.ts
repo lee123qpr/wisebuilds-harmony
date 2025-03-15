@@ -41,8 +41,7 @@ serve(async (req) => {
     const { data, error } = await supabaseAdmin
       .from('users')
       .select('email')
-      .eq('id', user_id)
-      .single();
+      .eq('id', user_id);
 
     if (error) {
       console.error('Error fetching user email:', error);
@@ -55,8 +54,11 @@ serve(async (req) => {
       );
     }
 
+    console.log('Email data fetched:', data);
+    
+    // Return the email directly in a simplified format
     return new Response(
-      JSON.stringify({ email: data?.email }),
+      JSON.stringify(data && data.length > 0 ? { email: data[0].email } : { email: null }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200 

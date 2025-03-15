@@ -11,6 +11,8 @@ interface ClientContactInfoProps {
 
 const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
   const { clientInfo, isLoading, error } = useContactInfo(projectId);
+  
+  console.log('ClientContactInfo rendering with:', { clientInfo, isLoading, error });
 
   if (isLoading) {
     return (
