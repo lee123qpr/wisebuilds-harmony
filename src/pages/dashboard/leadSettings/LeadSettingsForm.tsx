@@ -9,6 +9,7 @@ import { useLeadSettingsMutation } from './hooks/useLeadSettingsMutation';
 import { FormActions } from './components/FormActions';
 import { LeadSettingsFormValues } from './schema';
 import { useToast } from '@/hooks/use-toast';
+import { Progress } from '@/components/ui/progress';
 
 const LeadSettingsForm = () => {
   const { form, existingSettings, isLoading } = useLeadSettingsForm();
@@ -19,16 +20,7 @@ const LeadSettingsForm = () => {
     console.log('Form submitted with values:', values);
     
     try {
-      saveSettingsMutation.mutate(values, {
-        onError: (error: any) => {
-          console.error('Mutation error:', error);
-          toast({
-            variant: 'destructive',
-            title: 'Error saving settings',
-            description: error.message || 'Failed to save lead settings',
-          });
-        }
-      });
+      saveSettingsMutation.mutate(values);
     } catch (error) {
       console.error('Error in submit handler:', error);
       toast({
@@ -62,8 +54,9 @@ const LeadSettingsForm = () => {
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
           <CardContent className="space-y-6">
             {isLoading ? (
-              <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+              <div className="flex flex-col items-center justify-center py-8 space-y-4">
+                <Progress value={45} className="w-full" />
+                <p className="text-muted-foreground">Loading your settings...</p>
               </div>
             ) : (
               <>
