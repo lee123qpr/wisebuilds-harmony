@@ -16,6 +16,7 @@ export interface AdminUser {
   is_verified?: boolean;
   email_confirmed_at?: string | null;
   verification_status?: string | null;
+  banned_until?: string | null;
 }
 
 export interface UserCounts {
@@ -23,6 +24,8 @@ export interface UserCounts {
   freelancers: number;
   businesses: number;
   admins: number;
+  activeUsers: number;
+  deletedAccounts: number;
 }
 
 export const useUsers = () => {
@@ -33,7 +36,9 @@ export const useUsers = () => {
     total: 0,
     freelancers: 0,
     businesses: 0,
-    admins: 0
+    admins: 0,
+    activeUsers: 0,
+    deletedAccounts: 0
   });
   const { toast } = useToast();
   const { user: currentUser, session } = useAuth();
@@ -60,6 +65,7 @@ export const useUsers = () => {
       }
       
       const userData = response.data?.users || [];
+      const deletedUsers = response.data?.deletedUsers || [];
       
       // Fetch freelancer verification statuses
       const { data: verificationData, error: verificationError } = await supabase
@@ -86,17 +92,24 @@ export const useUsers = () => {
         user_metadata: user.user_metadata || { full_name: '', user_type: '' },
         is_verified: !!user.email_confirmed_at,
         email_confirmed_at: user.email_confirmed_at,
-        verification_status: verificationMap.get(user.id) || null
+        verification_status: verificationMap.get(user.id) || null,
+        banned_until: user.banned_until
       }));
       
       setUsers(formattedUsers);
+      
+      // Calculate metrics for user statistics
+      const now = new Date();
+      const thirtyMinutesAgo = new Date(now.getTime() - 30 * 60 * 1000); // Active in last 30 minutes
       
       // Calculate counts
       const counts: UserCounts = {
         total: formattedUsers.length,
         freelancers: 0,
         businesses: 0,
-        admins: 0
+        admins: 0,
+        activeUsers: 0,
+        deletedAccounts: deletedUsers.length || 0
       };
       
       formattedUsers.forEach(user => {
@@ -104,6 +117,14 @@ export const useUsers = () => {
         if (userType === 'freelancer') counts.freelancers++;
         else if (userType === 'business') counts.businesses++;
         else if (userType === 'admin') counts.admins++;
+        
+        // Check if user is active (has signed in recently)
+        if (user.last_sign_in_at) {
+          const lastSignIn = new Date(user.last_sign_in_at);
+          if (lastSignIn > thirtyMinutesAgo) {
+            counts.activeUsers++;
+          }
+        }
       });
       
       setUserCounts(counts);
