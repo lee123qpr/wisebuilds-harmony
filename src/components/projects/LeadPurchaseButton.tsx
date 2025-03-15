@@ -10,10 +10,11 @@ import { useToast } from '@/hooks/use-toast';
 
 interface LeadPurchaseButtonProps {
   projectId: string;
+  projectTitle?: string;
   onPurchaseSuccess: () => void;
 }
 
-const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButtonProps) => {
+const LeadPurchaseButton = ({ projectId, projectTitle, onPurchaseSuccess }: LeadPurchaseButtonProps) => {
   const [hasBeenPurchased, setHasBeenPurchased] = useState(false);
   const [isCheckingPurchase, setIsCheckingPurchase] = useState(true);
   const { purchaseLead, isPurchasing } = usePurchaseLead();
@@ -31,15 +32,15 @@ const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButton
       return;
     }
     
-    console.log('Attempting to purchase lead for project:', projectId);
+    console.log(`Attempting to purchase lead for project: ${projectTitle || projectId}`);
     
     try {
-      const success = await purchaseLead(projectId);
+      const success = await purchaseLead(projectId, projectTitle);
       
-      console.log('Purchase lead result:', success);
+      console.log(`Purchase result for ${projectTitle || projectId}:`, success);
       
       if (success) {
-        console.log('Lead purchase successful');
+        console.log(`Lead purchase successful for ${projectTitle || projectId}`);
         setHasBeenPurchased(true);
         onPurchaseSuccess();
         
@@ -48,10 +49,10 @@ const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButton
           await refetchCredits();
         }
       } else {
-        console.log('Lead purchase failed');
+        console.log(`Lead purchase failed for ${projectTitle || projectId}`);
       }
     } catch (error) {
-      console.error('Error in handlePurchaseLead:', error);
+      console.error(`Error purchasing lead for ${projectTitle || projectId}:`, error);
       toast({
         title: 'Error',
         description: 'Failed to purchase lead. Please try again.',
@@ -67,7 +68,7 @@ const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButton
     }
     
     try {
-      console.log('Checking if project already purchased:', projectId);
+      console.log(`Checking if project already purchased: ${projectTitle || projectId}`);
       const { data, error } = await supabase.rpc('check_application_exists', {
         p_project_id: projectId,
         p_user_id: user.id
@@ -82,10 +83,10 @@ const LeadPurchaseButton = ({ projectId, onPurchaseSuccess }: LeadPurchaseButton
         });
       }
       
-      console.log('Application check result:', data);
+      console.log(`Application check result for ${projectTitle || projectId}:`, data);
       setHasBeenPurchased(data === true);
     } catch (err) {
-      console.error('Error in check_application_exists:', err);
+      console.error(`Error checking application for ${projectTitle || projectId}:`, err);
     } finally {
       setIsCheckingPurchase(false);
     }

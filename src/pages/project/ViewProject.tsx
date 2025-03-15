@@ -69,6 +69,7 @@ const ViewProject = () => {
               <div className="flex justify-end mb-4">
                 <LeadPurchaseButton 
                   projectId={project!.id}
+                  projectTitle={project!.title}
                   onPurchaseSuccess={handlePurchaseSuccess}
                 />
               </div>

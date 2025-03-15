@@ -11,7 +11,7 @@ export const usePurchaseLead = () => {
   const queryClient = useQueryClient();
   const { creditBalance, refetchCredits } = useCredits();
 
-  const purchaseLead = async (projectId: string, message?: string) => {
+  const purchaseLead = async (projectId: string, projectTitle?: string, message?: string) => {
     if (!projectId) {
       toast({
         title: 'Error',
@@ -31,9 +31,10 @@ export const usePurchaseLead = () => {
     }
 
     setIsPurchasing(true);
+    const displayTitle = projectTitle || `Project ID: ${projectId.substring(0, 8)}...`;
 
     try {
-      console.log('Calling apply_to_project with projectId:', projectId);
+      console.log(`Purchasing lead for project: ${displayTitle} (${projectId})`);
       
       // Call the apply_to_project RPC function
       const { data, error } = await supabase.rpc('apply_to_project', {
@@ -53,7 +54,7 @@ export const usePurchaseLead = () => {
         throw new Error('No data returned from server');
       }
       
-      console.log('RPC response data:', data);
+      console.log(`RPC response for project ${displayTitle}:`, data);
       
       // Determine if operation was successful
       let success = false;
@@ -64,7 +65,7 @@ export const usePurchaseLead = () => {
         success = data.success === true;
         responseMessage = typeof data.message === 'string' ? data.message : 'Unknown error';
         
-        console.log('Extracted success:', success, 'message:', responseMessage);
+        console.log(`Lead purchase for ${displayTitle}: success=${success}, message=${responseMessage}`);
       }
       
       if (!success) {
@@ -88,12 +89,12 @@ export const usePurchaseLead = () => {
 
       toast({
         title: 'Lead purchased successfully',
-        description: 'You can now contact the client directly',
+        description: `You can now contact the client for ${displayTitle}`,
       });
       
       return true;
     } catch (error: any) {
-      console.error('Error purchasing lead:', error);
+      console.error(`Error purchasing lead for ${displayTitle}:`, error);
       toast({
         title: 'Error',
         description: error.message || 'Failed to purchase lead. Please try again.',

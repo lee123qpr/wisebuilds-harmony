@@ -26,7 +26,7 @@ const ProjectLeadCard: React.FC<ProjectLeadCardProps> = ({ lead }) => {
   const { purchaseLead, isPurchasing } = usePurchaseLead();
 
   const handlePurchase = async () => {
-    const success = await purchaseLead(lead.id);
+    const success = await purchaseLead(lead.id, lead.title);
     if (success) {
       navigate('/dashboard/freelancer/applications');
     }

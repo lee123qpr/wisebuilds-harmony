@@ -71,6 +71,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
               <div className="flex justify-end mb-4">
                 <LeadPurchaseButton 
                   projectId={selectedProject.id}
+                  projectTitle={selectedProject.title}
                   onPurchaseSuccess={handlePurchaseSuccess}
                 />
               </div>
