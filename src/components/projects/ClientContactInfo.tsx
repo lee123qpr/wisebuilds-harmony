@@ -43,7 +43,7 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         
         if (clientError) throw clientError;
         
-        // Get the user email from auth.users via RPC function (we'll need to create this)
+        // Get the user email via RPC function
         const { data: userData, error: userError } = await supabase
           .rpc('get_user_email', { user_id: project.user_id });
         
@@ -52,7 +52,7 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         // Combine the data
         setClientInfo({
           ...clientProfile,
-          email: userData?.email || null
+          email: userData && userData.email ? userData.email : null
         });
       } catch (error) {
         console.error('Error fetching client info:', error);

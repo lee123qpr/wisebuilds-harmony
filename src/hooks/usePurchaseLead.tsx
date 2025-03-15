@@ -34,15 +34,18 @@ export const usePurchaseLead = () => {
 
     try {
       // Use the apply_to_project function we created in the database
-      const { data, error } = await supabase.rpc('apply_to_project', {
+      // We need to cast to 'any' to work around TypeScript issues with the dynamic table
+      const response = await (supabase as any).rpc('apply_to_project', {
         project_id: projectId,
         message: message || null,
         credits_to_use: 1
       });
 
+      const { data, error } = response;
+
       if (error) throw error;
 
-      if (!data?.success) {
+      if (!data || !data.success) {
         toast({
           title: 'Purchase failed',
           description: data?.message || 'Unknown error occurred',

@@ -11,7 +11,7 @@ import ProjectListView from './ProjectListView';
 interface Application {
   id: string;
   created_at: string;
-  project: Project;
+  project_id: string;
 }
 
 interface ApplicationWithProject extends Project {
@@ -33,45 +33,33 @@ const ApplicationsTab: React.FC = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      // First get the applications
-      const { data: applicationData, error: appError } = await supabase
-        .from('project_applications')
-        .select('id, created_at, project_id')
-        .eq('user_id', user.id)
-        .order('created_at', { ascending: false });
-      
-      if (appError) {
-        console.error('Error fetching applications:', appError);
-        throw appError;
-      }
-      
-      if (!applicationData || applicationData.length === 0) {
-        return [];
-      }
-      
-      // Then get the projects for those applications
-      const projectPromises = applicationData.map(async (app) => {
-        const { data: projectData, error: projectError } = await supabase
-          .from('projects')
-          .select('*')
-          .eq('id', app.project_id)
-          .single();
-          
-        if (projectError) {
-          console.error('Error fetching project:', projectError);
-          return null;
+      try {
+        // Use custom RPC function to get applications
+        const { data: applicationData, error: appError } = await supabase.rpc('get_user_applications', {
+          user_id: user.id
+        });
+        
+        if (appError) {
+          console.error('Error fetching applications:', appError);
+          throw appError;
         }
         
-        // Transform the data to fit the ApplicationWithProject type
-        return {
-          ...projectData,
+        if (!applicationData || applicationData.length === 0) {
+          return [];
+        }
+        
+        // Get project details for each application
+        const applicationProjects = applicationData.map((app: any) => ({
+          ...app.project,
           application_id: app.id,
           application_created_at: app.created_at
-        } as ApplicationWithProject;
-      });
-      
-      const results = await Promise.all(projectPromises);
-      return results.filter(Boolean) as ApplicationWithProject[];
+        }));
+        
+        return applicationProjects as ApplicationWithProject[];
+      } catch (error) {
+        console.error('Error fetching applications:', error);
+        return [];
+      }
     },
     enabled: !!user
   });
