@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import AvailableProjectsTab from '@/components/dashboard/freelancer/AvailableProjectsTab';
@@ -7,6 +8,11 @@ import ActiveJobsTab from '@/components/dashboard/freelancer/ActiveJobsTab';
 import MessagesTab from '@/components/dashboard/freelancer/MessagesTab';
 import { ProjectLead } from '@/types/projects';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
+import AvailableTabContent from './tabs/AvailableTabContent';
+import LeadsTabContent from './tabs/LeadsTabContent';
+import ApplicationsTabContent from './tabs/ApplicationsTabContent';
+import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
+import MessagesTabContent from './tabs/MessagesTabContent';
 
 interface FreelancerTabsProps {
   isLoadingSettings: boolean;
@@ -30,11 +36,11 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       </TabsList>
       
       <TabsContent value="available" className="space-y-6">
-        <AvailableProjectsTab />
+        <AvailableTabContent />
       </TabsContent>
       
       <TabsContent value="leads" className="space-y-6">
-        <LeadsTab 
+        <LeadsTabContent 
           isLoadingSettings={isLoadingSettings} 
           leadSettings={leadSettings} 
           projectLeads={projectLeads} 
@@ -42,15 +48,15 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="applied" className="space-y-4">
-        <ApplicationsTab />
+        <ApplicationsTabContent />
       </TabsContent>
       
       <TabsContent value="active" className="space-y-4">
-        <ActiveJobsTab />
+        <ActiveJobsTabContent />
       </TabsContent>
       
       <TabsContent value="messages" className="space-y-4">
-        <MessagesTab />
+        <MessagesTabContent />
       </TabsContent>
     </Tabs>
   );
