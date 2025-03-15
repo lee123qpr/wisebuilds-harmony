@@ -1,8 +1,10 @@
+
 import React from 'react';
-import { Mail, Phone, Building, User, ExternalLink, MapPin, Globe } from 'lucide-react';
+import { Mail, Phone, Building, User, ExternalLink, MapPin, Globe, MessageCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useContactInfo } from '@/hooks/leads/useContactInfo';
+import { useNavigate } from 'react-router-dom';
 
 interface ClientContactInfoProps {
   projectId: string;
@@ -10,8 +12,13 @@ interface ClientContactInfoProps {
 
 const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
   const { clientInfo, isLoading, error } = useContactInfo(projectId);
+  const navigate = useNavigate();
   
   console.log('ClientContactInfo rendering with:', { clientInfo, isLoading, error });
+
+  const handleMessageNow = () => {
+    navigate('/dashboard/freelancer?tab=messages');
+  };
 
   if (isLoading) {
     return (
@@ -137,8 +144,8 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         </div>
       )}
       
-      {clientInfo.website && (
-        <div className="pt-2">
+      <div className="flex items-center justify-between pt-2 gap-2">
+        {clientInfo.website && (
           <Button
             variant="outline"
             size="sm"
@@ -148,8 +155,18 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
             <ExternalLink className="h-4 w-4 mr-2" />
             Visit Website
           </Button>
-        </div>
-      )}
+        )}
+        
+        <Button
+          variant="default"
+          size="sm"
+          className="bg-green-600 hover:bg-green-700 text-white ml-auto"
+          onClick={handleMessageNow}
+        >
+          <MessageCircle className="h-4 w-4 mr-2" />
+          Message Now
+        </Button>
+      </div>
     </div>
   );
 };

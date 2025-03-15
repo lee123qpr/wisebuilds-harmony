@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { ProjectLead } from '@/types/projects';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
@@ -7,6 +8,7 @@ import LeadsTabContent from './tabs/LeadsTabContent';
 import ApplicationsTabContent from './tabs/ApplicationsTabContent';
 import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
 import MessagesTabContent from './tabs/MessagesTabContent';
+import { useSearchParams } from 'react-router-dom';
 
 interface FreelancerTabsProps {
   isLoadingSettings: boolean;
@@ -19,8 +21,25 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
   leadSettings, 
   projectLeads 
 }) => {
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState<string>('available');
+  
+  // Set initial tab based on URL or default to 'available'
+  useEffect(() => {
+    if (tabFromUrl && ['available', 'leads', 'applied', 'active', 'messages'].includes(tabFromUrl)) {
+      setActiveTab(tabFromUrl);
+    }
+  }, [tabFromUrl]);
+  
+  // Update URL when tab changes
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    setSearchParams({ tab: value });
+  };
+  
   return (
-    <Tabs defaultValue="available" className="w-full">
+    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="mb-6">
         <TabsTrigger value="available">Available Projects</TabsTrigger>
         <TabsTrigger value="leads">My Leads</TabsTrigger>
