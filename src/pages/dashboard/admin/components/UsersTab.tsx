@@ -7,8 +7,10 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { format } from 'date-fns';
-import { User, UserPlus, Loader2, CheckCircle, XCircle, ShieldAlert } from 'lucide-react';
+import { User, UserPlus, Loader2, CheckCircle, XCircle, ShieldAlert, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { useAuth } from '@/context/AuthContext';
 
 interface AdminUser {
   id: string;
@@ -20,6 +22,7 @@ interface AdminUser {
     user_type?: string;
   };
   is_verified?: boolean;
+  email_confirmed_at?: string | null;
 }
 
 interface UserCounts {
@@ -32,6 +35,7 @@ interface UserCounts {
 const UsersTab = () => {
   const [users, setUsers] = useState<AdminUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [userCounts, setUserCounts] = useState<UserCounts>({
     total: 0,
     freelancers: 0,
@@ -39,6 +43,7 @@ const UsersTab = () => {
     admins: 0
   });
   const { toast } = useToast();
+  const { user: currentUser } = useAuth();
 
   useEffect(() => {
     fetchUsers();
@@ -46,20 +51,38 @@ const UsersTab = () => {
 
   const fetchUsers = async () => {
     setIsLoading(true);
+    setError(null);
+    
     try {
-      // In a production app, this would use a secure admin API
-      // For this demo, we're using direct access (which would be secured by RLS)
-      const { data: { users: userData }, error } = await supabase.auth.admin.listUsers();
+      // Get session for auth token
+      const { data: sessionData } = await supabase.auth.getSession();
+      const token = sessionData?.session?.access_token;
       
-      if (error) throw error;
+      if (!token) {
+        throw new Error('No authentication token available');
+      }
       
-      const formattedUsers: AdminUser[] = (userData || []).map(user => ({
+      // Call our secure edge function
+      const response = await supabase.functions.invoke('get-admin-users', {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+      
+      if (response.error) {
+        throw new Error(response.error.message || 'Failed to fetch users');
+      }
+      
+      const userData = response.data?.users || [];
+      
+      const formattedUsers: AdminUser[] = userData.map((user: any) => ({
         id: user.id,
         email: user.email || '',
         created_at: user.created_at || '',
         last_sign_in_at: user.last_sign_in_at,
         user_metadata: user.user_metadata || { full_name: '', user_type: '' },
-        is_verified: !!user.email_confirmed_at
+        is_verified: !!user.email_confirmed_at,
+        email_confirmed_at: user.email_confirmed_at
       }));
       
       setUsers(formattedUsers);
@@ -80,12 +103,13 @@ const UsersTab = () => {
       });
       
       setUserCounts(counts);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching users:', error);
+      setError(error.message || 'Failed to load users');
       toast({
         variant: 'destructive',
         title: 'Error',
-        description: 'Failed to load users. This is likely because you need admin privileges.'
+        description: error.message || 'Failed to load users. Admin privileges required.'
       });
       // Set empty array to handle error gracefully
       setUsers([]);
@@ -109,6 +133,16 @@ const UsersTab = () => {
 
   return (
     <div className="space-y-6">
+      {error && (
+        <Alert variant="destructive">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle>Error</AlertTitle>
+          <AlertDescription>
+            {error}
+          </AlertDescription>
+        </Alert>
+      )}
+      
       <Card>
         <CardHeader>
           <CardTitle>User Statistics</CardTitle>
@@ -165,9 +199,20 @@ const UsersTab = () => {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle>User List</CardTitle>
-          <CardDescription>Manage user accounts and permissions</CardDescription>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle>User List</CardTitle>
+            <CardDescription>Manage user accounts and permissions</CardDescription>
+          </div>
+          <Button 
+            variant="outline"
+            size="sm"
+            onClick={fetchUsers}
+            disabled={isLoading}
+          >
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+            Refresh
+          </Button>
         </CardHeader>
         <CardContent>
           {isLoading ? (
