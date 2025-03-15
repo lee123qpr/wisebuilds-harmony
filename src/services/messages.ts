@@ -60,11 +60,11 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `message-attachments/${fileName}`;
+    const filePath = `attachments/${fileName}`;
     
-    // Upload the file
+    // Upload the file to 'attachments' bucket instead of 'message-attachments'
     const { data, error } = await supabase.storage
-      .from('message-attachments')
+      .from('attachments')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
@@ -82,7 +82,7 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
     
     // Get the public URL for the file
     const { data: { publicUrl } } = supabase.storage
-      .from('message-attachments')
+      .from('attachments')
       .getPublicUrl(filePath);
     
     return {

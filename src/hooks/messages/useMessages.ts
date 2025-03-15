@@ -50,7 +50,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
           setMessages(prev => [...prev, newMsg]);
           
           // Mark as read if it's not from the current user
-          if (newMsg.sender_id !== supabase.auth.getUser()?.data?.user?.id) {
+          if (newMsg.sender_id !== supabase.auth.getSession().data?.session?.user?.id) {
             markMessagesAsRead([newMsg.id]);
           }
         }
