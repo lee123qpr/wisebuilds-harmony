@@ -35,6 +35,37 @@ interface LeadsTabProps {
 const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, projectLeads }) => {
   const navigate = useNavigate();
   
+  // Filter leads based on the user's lead settings
+  const filteredLeads = React.useMemo(() => {
+    if (!leadSettings) return [];
+    
+    return projectLeads.filter(lead => {
+      // Match by role (required)
+      const roleMatches = lead.role === leadSettings.role;
+      
+      // Match by location (required)
+      const locationMatches = lead.location === leadSettings.location || 
+                              lead.location.includes(leadSettings.location) || 
+                              leadSettings.location.includes(lead.location);
+      
+      // Match by work type (if specified)
+      const workTypeMatches = !leadSettings.work_type || 
+                              lead.work_type === leadSettings.work_type;
+      
+      // Match by keywords (if any)
+      const keywordsMatch = !leadSettings.keywords || 
+                            leadSettings.keywords.length === 0 || 
+                            (lead.tags && lead.tags.some(tag => 
+                              leadSettings.keywords?.some(keyword => 
+                                tag.toLowerCase().includes(keyword.toLowerCase())
+                              )
+                            ));
+      
+      // Return true if all specified criteria match
+      return roleMatches && locationMatches && workTypeMatches && keywordsMatch;
+    });
+  }, [leadSettings, projectLeads]);
+  
   if (isLoadingSettings) {
     return (
       <Card>
@@ -66,12 +97,12 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, pr
     );
   }
   
-  if (projectLeads.length === 0) {
+  if (filteredLeads.length === 0) {
     return (
       <Card>
         <CardHeader>
-          <CardTitle>No Leads Available</CardTitle>
-          <CardDescription>We'll notify you when projects matching your preferences become available</CardDescription>
+          <CardTitle>No Matching Leads Available</CardTitle>
+          <CardDescription>We couldn't find any projects matching your current preferences</CardDescription>
         </CardHeader>
         <CardContent>
           <Button 
@@ -87,7 +118,7 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, pr
   
   return (
     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-      {projectLeads.map((lead) => (
+      {filteredLeads.map((lead) => (
         <ProjectLeadCard key={lead.id} lead={lead} />
       ))}
     </div>

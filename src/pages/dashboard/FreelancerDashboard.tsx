@@ -27,6 +27,7 @@ interface ProjectLead {
   role: string;
   created_at: string;
   location: string;
+  work_type?: string;
   tags?: string[];
 }
 
@@ -60,34 +61,73 @@ const FreelancerDashboard = () => {
     enabled: !!user
   });
 
-  // For now, we'll use mock project leads based on the settings
+  // Generate sample project leads based on the settings
   useEffect(() => {
     if (leadSettings) {
-      // Sample project leads matching the settings
-      const leads: ProjectLead[] = [
+      console.log('Generating leads based on settings:', leadSettings);
+      
+      // Create sample project leads
+      const allLeads: ProjectLead[] = [
+        // Matching leads based on settings
         {
           id: '1',
-          title: 'Kitchen Renovation in Manchester',
-          description: 'Looking for an experienced contractor to renovate a kitchen in a Victorian home.',
-          budget: '£2,000-£3,500',
+          title: `${leadSettings.role} needed in ${leadSettings.location}`,
+          description: `Looking for an experienced professional to handle a project in ${leadSettings.location}.`,
+          budget: leadSettings.max_budget || '£2,000-£3,500',
           role: leadSettings.role,
           created_at: new Date().toISOString(),
           location: leadSettings.location,
-          tags: ['Plumbing', 'Tiling', 'Carpentry']
+          work_type: leadSettings.work_type,
+          tags: leadSettings.keywords || ['Professional', 'Experienced']
         },
         {
           id: '2',
-          title: 'Bathroom Remodel',
-          description: 'Complete bathroom renovation needed for a modern apartment.',
+          title: `Urgent ${leadSettings.role} project`,
+          description: 'Client looking for immediate start on a high-priority project.',
           budget: '£3,000-£5,000',
           role: leadSettings.role,
           created_at: new Date().toISOString(),
-          location: 'Liverpool',
-          tags: ['Plumbing', 'Tiling']
+          location: leadSettings.location,
+          work_type: leadSettings.work_type,
+          tags: ['Urgent', 'High-Priority']
+        },
+        // Non-matching leads by role
+        {
+          id: '3',
+          title: 'Website Developer needed',
+          description: 'Looking for a web developer to create a new e-commerce site.',
+          budget: '£1,500-£3,000',
+          role: 'web_developer',
+          created_at: new Date().toISOString(),
+          location: leadSettings.location,
+          tags: ['Web', 'E-commerce']
+        },
+        // Non-matching leads by location
+        {
+          id: '4',
+          title: `${leadSettings.role} project in Birmingham`,
+          description: 'Major renovation project requiring an experienced professional.',
+          budget: '£5,000-£10,000',
+          role: leadSettings.role,
+          created_at: new Date().toISOString(),
+          location: 'Birmingham',
+          tags: ['Renovation', 'Large-Scale']
+        },
+        // Non-matching work type
+        {
+          id: '5',
+          title: `Remote ${leadSettings.role} opportunity`,
+          description: 'Virtual project that can be completed entirely remotely.',
+          budget: '£2,000-£4,000',
+          role: leadSettings.role,
+          created_at: new Date().toISOString(),
+          location: leadSettings.location,
+          work_type: leadSettings.work_type === 'remote' ? 'on_site' : 'remote',
+          tags: ['Remote', 'Virtual']
         }
       ];
       
-      setProjectLeads(leads);
+      setProjectLeads(allLeads);
     }
   }, [leadSettings]);
 
