@@ -1,10 +1,10 @@
 
-import { useNavigate } from 'react-router-dom';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { LeadSettingsFormValues } from '../schema';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { LeadSettingsFormValues } from '../schema';
 
 export const useLeadSettingsMutation = (existingSettings: any) => {
   const { user } = useAuth();
@@ -12,7 +12,7 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-  const saveSettingsMutation = useMutation({
+  const mutation = useMutation({
     mutationFn: async (values: LeadSettingsFormValues) => {
       if (!user) throw new Error('User not authenticated');
       
@@ -46,50 +46,41 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         updated_at: new Date().toISOString()
       };
       
-      console.log('Data being saved to Supabase:', settingsData);
-      
-      try {
-        if (existingSettings?.id) {
-          // Update existing settings
-          const { data, error } = await supabase
-            .from('lead_settings')
-            .update(settingsData)
-            .eq('id', existingSettings.id)
-            .select();
-          
-          if (error) {
-            console.error('Supabase update error:', error);
-            throw error;
-          }
-          
-          console.log('Settings updated successfully:', data);
-          return data?.[0] || { ...existingSettings, ...settingsData };
-        } else {
-          // Create new settings
-          const { data, error } = await supabase
-            .from('lead_settings')
-            .insert({
-              ...settingsData, 
-              created_at: new Date().toISOString()
-            })
-            .select();
-          
-          if (error) {
-            console.error('Supabase insert error:', error);
-            throw error;
-          }
-          
-          console.log('Settings created successfully:', data);
-          return data?.[0];
+      if (existingSettings?.id) {
+        // Update existing settings
+        const { data, error } = await supabase
+          .from('lead_settings')
+          .update(settingsData)
+          .eq('id', existingSettings.id)
+          .select();
+        
+        if (error) {
+          console.error('Supabase update error:', error);
+          throw error;
         }
-      } catch (err) {
-        console.error('Exception in mutation function:', err);
-        throw err;
+        
+        console.log('Settings updated successfully:', data);
+        return data?.[0] || { ...existingSettings, ...settingsData };
+      } else {
+        // Create new settings
+        const { data, error } = await supabase
+          .from('lead_settings')
+          .insert({
+            ...settingsData, 
+            created_at: new Date().toISOString()
+          })
+          .select();
+        
+        if (error) {
+          console.error('Supabase insert error:', error);
+          throw error;
+        }
+        
+        console.log('Settings created successfully:', data);
+        return data?.[0];
       }
     },
-    onSuccess: (data) => {
-      console.log('onSuccess data:', data);
-      
+    onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
       
       toast({
@@ -98,7 +89,6 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         variant: 'default',
       });
       
-      // Always navigate to the same dashboard regardless of current path
       navigate('/dashboard/freelancer');
     },
     onError: (error: any) => {
@@ -111,5 +101,8 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
     }
   });
 
-  return saveSettingsMutation;
+  return {
+    mutate: mutation.mutate,
+    isPending: mutation.isPending
+  };
 };

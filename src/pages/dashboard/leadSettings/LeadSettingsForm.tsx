@@ -13,14 +13,14 @@ import { Progress } from '@/components/ui/progress';
 
 const LeadSettingsForm = () => {
   const { form, leadSettings, isLoading } = useLeadSettingsForm();
-  const saveSettingsMutation = useLeadSettingsMutation(leadSettings);
+  const { mutate, isPending } = useLeadSettingsMutation(leadSettings);
   const { toast } = useToast();
 
   const onSubmit = (values: LeadSettingsFormValues) => {
     console.log('Form submitted with values:', values);
     
     try {
-      saveSettingsMutation.mutate(values);
+      mutate(values);
     } catch (error) {
       console.error('Error in submit handler:', error);
       toast({
@@ -66,7 +66,7 @@ const LeadSettingsForm = () => {
             )}
           </CardContent>
           <FormActions 
-            isSubmitting={saveSettingsMutation.isPending} 
+            isSubmitting={isPending} 
             isLoading={isLoading} 
           />
         </form>
