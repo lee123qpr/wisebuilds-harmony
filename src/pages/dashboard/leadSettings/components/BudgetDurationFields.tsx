@@ -33,6 +33,7 @@ export const BudgetDurationFields: React.FC<BudgetDurationFieldsProps> = ({ form
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
+                <SelectItem value="any">Any</SelectItem>
                 {budgetOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -65,6 +66,7 @@ export const BudgetDurationFields: React.FC<BudgetDurationFieldsProps> = ({ form
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
+                <SelectItem value="any">Any</SelectItem>
                 {durationOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}

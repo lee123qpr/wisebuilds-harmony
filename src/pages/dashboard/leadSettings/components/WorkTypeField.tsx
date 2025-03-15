@@ -31,6 +31,7 @@ export const WorkTypeField: React.FC<WorkTypeFieldProps> = ({ form }) => {
               </SelectTrigger>
             </FormControl>
             <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
               {workTypeOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

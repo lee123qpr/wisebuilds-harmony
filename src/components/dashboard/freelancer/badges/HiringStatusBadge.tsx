@@ -2,12 +2,17 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Users } from 'lucide-react';
+import AnyOptionBadge from './AnyOptionBadge';
 
 interface HiringStatusBadgeProps {
   status: string;
 }
 
 const HiringStatusBadge = ({ status }: HiringStatusBadgeProps) => {
+  if (status === 'any') {
+    return <AnyOptionBadge label="Hiring Status" />;
+  }
+
   const getHiringStatusStyles = () => {
     switch (status) {
       case 'enquiring':

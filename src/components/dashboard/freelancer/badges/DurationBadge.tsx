@@ -2,12 +2,17 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Clock } from 'lucide-react';
+import AnyOptionBadge from './AnyOptionBadge';
 
 interface DurationBadgeProps {
   duration: string;
 }
 
 const DurationBadge = ({ duration }: DurationBadgeProps) => {
+  if (duration === 'any') {
+    return <AnyOptionBadge label="Duration" />;
+  }
+
   const getDurationStyles = () => {
     // Short durations (light blue)
     if (['1_day', '3_days'].includes(duration)) {

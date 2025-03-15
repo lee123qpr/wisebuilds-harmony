@@ -31,6 +31,7 @@ export const HiringStatusField: React.FC<HiringStatusFieldProps> = ({ form }) =>
               </SelectTrigger>
             </FormControl>
             <SelectContent>
+              <SelectItem value="any">Any</SelectItem>
               {hiringStatusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

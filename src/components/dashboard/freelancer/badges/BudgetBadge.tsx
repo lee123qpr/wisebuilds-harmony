@@ -2,12 +2,17 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Tag } from 'lucide-react';
+import AnyOptionBadge from './AnyOptionBadge';
 
 interface BudgetBadgeProps {
   budget: string;
 }
 
 const BudgetBadge = ({ budget }: BudgetBadgeProps) => {
+  if (budget === 'any') {
+    return <AnyOptionBadge label="Budget" />;
+  }
+  
   const getBudgetStyles = () => {
     // Lower budget range (light green)
     if (['0-500', '500-1000'].includes(budget)) {
