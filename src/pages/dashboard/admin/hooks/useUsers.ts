@@ -4,6 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 
+// Development flag - matches the one in ProtectedRoute
+const BYPASS_AUTH_FOR_DEVELOPMENT = true;
+
 export interface AdminUser {
   id: string;
   email: string;
@@ -42,6 +45,57 @@ export const useUsers = () => {
     setError(null);
     
     try {
+      // In development mode with auth bypass, use mock data
+      if (BYPASS_AUTH_FOR_DEVELOPMENT && !session?.access_token) {
+        console.log('Development mode: Using mock user data');
+        
+        // Mock data for development testing
+        const mockUsers: AdminUser[] = [
+          {
+            id: '1',
+            email: 'admin@example.com',
+            created_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            user_metadata: { full_name: 'Admin User', user_type: 'admin' },
+            is_verified: true,
+            email_confirmed_at: new Date().toISOString()
+          },
+          {
+            id: '2',
+            email: 'freelancer@example.com',
+            created_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            user_metadata: { full_name: 'Freelancer User', user_type: 'freelancer' },
+            is_verified: true,
+            email_confirmed_at: new Date().toISOString()
+          },
+          {
+            id: '3',
+            email: 'business@example.com',
+            created_at: new Date().toISOString(),
+            last_sign_in_at: null,
+            user_metadata: { full_name: 'Business User', user_type: 'business' },
+            is_verified: false,
+            email_confirmed_at: null
+          },
+        ];
+        
+        setUsers(mockUsers);
+        
+        // Calculate mock counts
+        const counts: UserCounts = {
+          total: mockUsers.length,
+          freelancers: 1,
+          businesses: 1,
+          admins: 1
+        };
+        
+        setUserCounts(counts);
+        setIsLoading(false);
+        return;
+      }
+      
+      // For non-development mode or when a session token is available
       // Get session token from the current session
       if (!session?.access_token) {
         throw new Error('No authentication token available');
