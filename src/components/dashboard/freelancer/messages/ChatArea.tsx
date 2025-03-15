@@ -24,7 +24,8 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
     handleFileSelect,
     removeAttachment,
     attachments,
-    isUploading
+    isUploading,
+    uploadProgress
   } = useMessages(selectedConversation);
 
   // Get current user ID
@@ -69,6 +70,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
         attachments={attachments}
         onRemoveAttachment={removeAttachment}
         isUploading={isUploading}
+        uploadProgress={uploadProgress}
       />
     </div>
   );
