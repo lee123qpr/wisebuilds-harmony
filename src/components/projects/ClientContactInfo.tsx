@@ -53,9 +53,13 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         // Extract email from response - userData is an array with one object
         const email = userData && userData.length > 0 ? userData[0]?.email : null;
         
-        // Combine the data
+        // Combine the data - fix the spread operator issue by creating a proper object
         setClientInfo({
-          ...clientProfile,
+          contact_name: clientProfile?.contact_name || null,
+          company_name: clientProfile?.company_name || null,
+          phone_number: clientProfile?.phone_number || null,
+          website: clientProfile?.website || null,
+          full_name: clientProfile?.full_name || null,
           email: email
         });
       } catch (error) {
