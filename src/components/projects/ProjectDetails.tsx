@@ -35,7 +35,6 @@ const ProjectDetails = ({ project }: ProjectDetailsProps) => {
   const checkIfAlreadyPurchased = async () => {
     if (!user) return;
     
-    // Use raw query to work around TypeScript limitations
     const { data } = await supabase.rpc('check_application_exists', {
       p_project_id: project.id,
       p_user_id: user.id

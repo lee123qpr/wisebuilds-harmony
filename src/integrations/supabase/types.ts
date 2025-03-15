@@ -251,6 +251,41 @@ export type Database = {
         }
         Relationships: []
       }
+      project_applications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          project_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          project_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          project_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_applications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           applications: number
@@ -322,7 +357,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      apply_to_project: {
+        Args: {
+          project_id: string
+          message?: string
+          credits_to_use?: number
+        }
+        Returns: Json
+      }
+      check_application_exists: {
+        Args: {
+          p_project_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      get_user_applications: {
+        Args: {
+          user_id: string
+        }
+        Returns: Json[]
+      }
+      get_user_email: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          email: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
