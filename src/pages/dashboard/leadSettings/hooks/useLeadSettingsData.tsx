@@ -27,6 +27,16 @@ export const useLeadSettingsData = () => {
         }
         
         console.log('Retrieved lead settings:', data);
+        
+        // Ensure string values for dropdowns
+        if (data) {
+          data.role = data.role || '';
+          data.work_type = data.work_type || '';
+          data.budget = data.budget || data.max_budget || '';
+          data.duration = data.duration || '';
+          data.hiring_status = data.hiring_status || '';
+        }
+        
         return data;
       } catch (err) {
         console.error('Exception in query function:', err);
