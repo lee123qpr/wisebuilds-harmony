@@ -1,6 +1,5 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { LucideIcon } from 'lucide-react';
 
 interface UserStatsCardProps {
@@ -10,19 +9,16 @@ interface UserStatsCardProps {
   iconColor?: string;
 }
 
+// This component is replaced by the inline StatCard in UserStatistics.tsx
 const UserStatsCard = ({ title, count, icon: Icon, iconColor }: UserStatsCardProps) => {
   return (
-    <Card>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-lg">{title}</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="flex items-center">
-          <Icon className={`mr-2 h-4 w-4 ${iconColor || 'text-muted-foreground'}`} />
-          <p className="text-3xl font-bold">{count}</p>
-        </div>
-      </CardContent>
-    </Card>
+    <div className="p-4 bg-white rounded-lg border shadow-sm">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-sm font-medium">{title}</h3>
+        <Icon className={`h-4 w-4 ${iconColor || 'text-muted-foreground'}`} />
+      </div>
+      <p className="text-2xl font-bold">{count}</p>
+    </div>
   );
 };
 
