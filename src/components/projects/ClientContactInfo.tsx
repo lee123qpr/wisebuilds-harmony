@@ -49,10 +49,13 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         
         if (userError) throw userError;
         
+        // Extract email from response - userData is an array with one object
+        const email = userData && userData.length > 0 ? userData[0]?.email : null;
+        
         // Combine the data
         setClientInfo({
           ...clientProfile,
-          email: userData && userData.email ? userData.email : null
+          email: email
         });
       } catch (error) {
         console.error('Error fetching client info:', error);

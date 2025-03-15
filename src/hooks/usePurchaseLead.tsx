@@ -42,10 +42,13 @@ export const usePurchaseLead = () => {
 
       if (error) throw error;
 
-      if (!data || !data.success) {
+      // Parse the response data as needed
+      const response = data as { success: boolean; message: string };
+      
+      if (!response || !response.success) {
         toast({
           title: 'Purchase failed',
-          description: data?.message || 'Unknown error occurred',
+          description: response?.message || 'Unknown error occurred',
           variant: 'destructive',
         });
         return false;
