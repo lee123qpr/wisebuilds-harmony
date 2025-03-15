@@ -12,8 +12,8 @@ import { useToast } from '@/hooks/use-toast';
 import { Progress } from '@/components/ui/progress';
 
 const LeadSettingsForm = () => {
-  const { form, existingSettings, isLoading } = useLeadSettingsForm();
-  const saveSettingsMutation = useLeadSettingsMutation(existingSettings);
+  const { form, leadSettings, isLoading } = useLeadSettingsForm();
+  const saveSettingsMutation = useLeadSettingsMutation(leadSettings);
   const { toast } = useToast();
 
   const onSubmit = (values: LeadSettingsFormValues) => {
@@ -35,12 +35,12 @@ const LeadSettingsForm = () => {
   React.useEffect(() => {
     console.log('Form state in LeadSettingsForm:', {
       isLoading,
-      existingSettings,
+      leadSettings,
       formValues: form.getValues(),
       isDirty: form.formState.isDirty,
       isSubmitting: form.formState.isSubmitting,
     });
-  }, [form, isLoading, existingSettings]);
+  }, [form, isLoading, leadSettings]);
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
