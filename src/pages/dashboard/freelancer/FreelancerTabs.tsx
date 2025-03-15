@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import AvailableProjectsTab from '@/components/dashboard/freelancer/AvailableProjectsTab';
@@ -7,16 +6,7 @@ import ApplicationsTab from '@/components/dashboard/freelancer/ApplicationsTab';
 import ActiveJobsTab from '@/components/dashboard/freelancer/ActiveJobsTab';
 import MessagesTab from '@/components/dashboard/freelancer/MessagesTab';
 import { ProjectLead } from '@/types/projects';
-
-interface LeadSettings {
-  id: string;
-  role: string;
-  location: string;
-  work_type?: string;
-  max_budget?: string;
-  notifications_enabled: boolean;
-  keywords?: string[];
-}
+import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 
 interface FreelancerTabsProps {
   isLoadingSettings: boolean;
