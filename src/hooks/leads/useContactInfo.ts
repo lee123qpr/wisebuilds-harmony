@@ -45,7 +45,7 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Client profile data:', clientProfile);
       
-      // Get user metadata and email via RPC function
+      // Get user email via RPC function
       const { data: userData, error: userError } = await supabase
         .rpc('get_user_email', { user_id: project.user_id });
       
@@ -62,15 +62,16 @@ export const useContactInfo = (projectId: string) => {
         console.error('Error fetching user metadata:', authError);
       }
       
-      const metadata = authUser && authUser.length > 0 ? authUser[0]?.metadata : null;
+      const metadata = authUser && Array.isArray(authUser) && authUser.length > 0 ? authUser[0]?.metadata : null;
       console.log('User metadata:', metadata);
         
       // Extract the useful data from all sources
-      const email = userData && userData.length > 0 ? userData[0]?.email : null;
+      const email = userData && Array.isArray(userData) && userData.length > 0 ? userData[0]?.email : null;
       
       // Create a proper object with all the fields we need
       setClientInfo({
-        // Prioritize client profile data, but use user metadata as fallback
+        // IMPORTANT: Always prioritize client profile data over metadata
+        // since profile data can be updated by the user after signup
         contact_name: clientProfile?.contact_name || metadata?.full_name || null,
         company_name: clientProfile?.company_name || null,
         phone_number: clientProfile?.phone_number || metadata?.phone_number || null,
