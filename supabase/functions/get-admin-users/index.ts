@@ -13,7 +13,6 @@ const supabaseAdmin = createClient(
   Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
 )
 
-// Handle CORS preflight requests
 Deno.serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -35,12 +34,12 @@ Deno.serve(async (req) => {
     
     if (authError || !user) {
       return new Response(
-        JSON.stringify({ error: 'Unauthorized' }),
+        JSON.stringify({ error: 'Unauthorized', details: authError }),
         { status: 401, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       )
     }
 
-    // Check if user is an admin (modify this according to your admin role logic)
+    // Check if user is an admin
     if (user.user_metadata?.user_type !== 'admin') {
       return new Response(
         JSON.stringify({ error: 'Forbidden: Admin access required' }),
@@ -66,7 +65,7 @@ Deno.serve(async (req) => {
   } catch (error) {
     console.error('Unexpected error:', error)
     return new Response(
-      JSON.stringify({ error: 'Internal server error' }),
+      JSON.stringify({ error: 'Internal server error', details: error.message }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   }
