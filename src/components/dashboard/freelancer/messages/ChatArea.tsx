@@ -56,7 +56,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
     <div className="flex flex-col h-full">
       <ChatHeader conversation={selectedConversation} />
       
-      <div className="flex-grow overflow-y-auto p-4">
+      <div className="flex-grow overflow-y-auto p-4 pb-1">
         <MessagesList messages={messages} currentUserId={currentUserId} />
       </div>
       

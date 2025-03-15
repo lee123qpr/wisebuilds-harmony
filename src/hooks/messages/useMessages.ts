@@ -136,8 +136,8 @@ export const useMessages = (selectedConversation: Conversation | null) => {
             console.error(`Error uploading file ${file.name}:`, error);
             setUploadProgress(prev => ({
               ...prev,
-              [index]: -1
-            }));
+                [index]: -1
+              }));
           }
         }
         
@@ -170,11 +170,11 @@ export const useMessages = (selectedConversation: Conversation | null) => {
   }, [selectedConversation, newMessage, attachments, toast]);
 
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && !isSending && newMessage.trim()) {
+    if (e.key === 'Enter' && e.ctrlKey && !isSending) {
       e.preventDefault();
       handleSendMessage();
     }
-  }, [handleSendMessage, isSending, newMessage]);
+  }, [handleSendMessage, isSending]);
 
   return {
     messages,
