@@ -1,3 +1,4 @@
+
 import { useState, useEffect, useCallback } from 'react';
 import { Conversation, Message, MessageAttachment } from '@/types/messaging';
 import { fetchMessages, markMessagesAsRead, sendMessage, uploadMessageAttachment } from '@/services/messages';
@@ -73,13 +74,13 @@ export const useMessages = (selectedConversation: Conversation | null) => {
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return;
     
-    const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20MB
+    const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
     
     const validFiles = Array.from(files).filter(file => {
       if (file.size > MAX_FILE_SIZE) {
         toast({
           title: "File too large",
-          description: `${file.name} exceeds the 20MB size limit`,
+          description: `${file.name} exceeds the 30MB size limit. For larger files, consider using WeTransfer or similar services.`,
           variant: "destructive"
         });
         return false;
