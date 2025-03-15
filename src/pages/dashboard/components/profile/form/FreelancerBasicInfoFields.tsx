@@ -5,6 +5,7 @@ import { FormField, FormItem, FormLabel, FormControl, FormMessage } from '@/comp
 import { Input } from '@/components/ui/input';
 import { freelancerProfileSchema } from '../freelancerSchema';
 import * as z from 'zod';
+import { LocationField } from '@/components/location/LocationField';
 
 type FreelancerBasicInfoFieldsProps = {
   form: UseFormReturn<z.infer<typeof freelancerProfileSchema>>;
@@ -44,18 +45,11 @@ const FreelancerBasicInfoFields: React.FC<FreelancerBasicInfoFieldsProps> = ({ f
         />
       </div>
       
-      <FormField
-        control={form.control}
-        name="location"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Location</FormLabel>
-            <FormControl>
-              <Input placeholder="Enter your location" {...field} disabled={disabled} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+      <LocationField 
+        form={form} 
+        name="location" 
+        label="Location"
+        description="Enter your city or town"
       />
     </>
   );
