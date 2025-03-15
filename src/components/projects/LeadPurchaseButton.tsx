@@ -1,11 +1,10 @@
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Loader2, CreditCard } from 'lucide-react';
-import { usePurchaseLead } from '@/hooks/usePurchaseLead';
+import { usePurchaseLead, useCheckPurchaseStatus } from '@/hooks/usePurchaseLead';
 import { useAuth } from '@/context/AuthContext';
 import { useCredits } from '@/hooks/useCredits';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface LeadPurchaseButtonProps {
@@ -15,9 +14,8 @@ interface LeadPurchaseButtonProps {
 }
 
 const LeadPurchaseButton = ({ projectId, projectTitle, onPurchaseSuccess }: LeadPurchaseButtonProps) => {
-  const [hasBeenPurchased, setHasBeenPurchased] = useState(false);
-  const [isCheckingPurchase, setIsCheckingPurchase] = useState(true);
   const { purchaseLead, isPurchasing } = usePurchaseLead();
+  const { hasBeenPurchased, isCheckingPurchase } = useCheckPurchaseStatus(projectId, projectTitle);
   const { user } = useAuth();
   const { creditBalance, isLoadingBalance, refetchCredits } = useCredits();
   const { toast } = useToast();
@@ -41,7 +39,6 @@ const LeadPurchaseButton = ({ projectId, projectTitle, onPurchaseSuccess }: Lead
       
       if (success) {
         console.log(`Lead purchase successful for ${projectTitle || projectId}`);
-        setHasBeenPurchased(true);
         onPurchaseSuccess();
         
         // Refetch credit balance
@@ -60,42 +57,6 @@ const LeadPurchaseButton = ({ projectId, projectTitle, onPurchaseSuccess }: Lead
       });
     }
   };
-
-  const checkIfAlreadyPurchased = async () => {
-    if (!user || !projectId) {
-      setIsCheckingPurchase(false);
-      return;
-    }
-    
-    try {
-      console.log(`Checking if project already purchased: ${projectTitle || projectId}`);
-      const { data, error } = await supabase.rpc('check_application_exists', {
-        p_project_id: projectId,
-        p_user_id: user.id
-      });
-      
-      if (error) {
-        console.error('Error checking application exists:', error);
-        toast({
-          title: 'Error',
-          description: 'Could not check if you already purchased this lead',
-          variant: 'destructive',
-        });
-      }
-      
-      console.log(`Application check result for ${projectTitle || projectId}:`, data);
-      setHasBeenPurchased(data === true);
-    } catch (err) {
-      console.error(`Error checking application for ${projectTitle || projectId}:`, err);
-    } finally {
-      setIsCheckingPurchase(false);
-    }
-  };
-
-  // Check if the project has already been purchased when component mounts or projectId/user changes
-  useEffect(() => {
-    checkIfAlreadyPurchased();
-  }, [projectId, user]);
 
   // Determine if the purchase button should be disabled
   const isPurchaseDisabled = 
