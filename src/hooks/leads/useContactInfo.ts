@@ -10,6 +10,7 @@ interface ClientInfo {
   website: string | null;
   company_address: string | null;
   is_profile_complete: boolean;
+  user_metadata?: Record<string, any> | null;
 }
 
 export const useContactInfo = (projectId: string) => {
@@ -44,7 +45,7 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Client profile data:', clientProfile);
       
-      // Get the user email via RPC function
+      // Get user metadata and email via RPC function
       const { data: userData, error: userError } = await supabase
         .rpc('get_user_email', { user_id: project.user_id });
       
@@ -52,23 +53,34 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Email from auth:', userData);
       
-      // Extract email from response - userData is an array with one object
+      // Get user metadata from auth.users table
+      const { data: userMetadata, error: metadataError } = await supabase
+        .from('users')
+        .select('raw_user_meta_data')
+        .eq('id', project.user_id)
+        .maybeSingle();
+        
+      // Extract the useful data from all sources
       const email = userData && userData.length > 0 ? userData[0]?.email : null;
-
+      const metadata = userMetadata?.raw_user_meta_data || null;
+      
+      console.log('User metadata:', metadata);
+      
       // Create a proper object with all the fields we need
-      // Prioritize client profile data, but ensure we always have at least basic contact info
       setClientInfo({
-        contact_name: clientProfile?.contact_name || null,
+        // Prioritize client profile data, but use user metadata as fallback
+        contact_name: clientProfile?.contact_name || metadata?.full_name || null,
         company_name: clientProfile?.company_name || null,
-        phone_number: clientProfile?.phone_number || null,
+        phone_number: clientProfile?.phone_number || metadata?.phone_number || null,
         website: clientProfile?.website || null,
         company_address: clientProfile?.company_address || null,
         email: email,
-        // A profile is considered complete if we have the essential contact info (name, email, phone)
+        user_metadata: metadata,
+        // A profile is considered complete if we have at least name, email, and phone
         is_profile_complete: !!(
-          (clientProfile?.contact_name || email) && 
+          (clientProfile?.contact_name || metadata?.full_name) && 
           email && 
-          (clientProfile?.phone_number)
+          (clientProfile?.phone_number || metadata?.phone_number)
         )
       });
     } catch (error) {
