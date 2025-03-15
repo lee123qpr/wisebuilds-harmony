@@ -55,8 +55,8 @@ export const useContactInfo = (projectId: string) => {
       // Extract email from response - userData is an array with one object
       const email = userData && userData.length > 0 ? userData[0]?.email : null;
 
-      // Create a proper object with all the fields we need, preferring data from client_profiles
-      // but falling back to what we know must exist (email is always present)
+      // Create a proper object with all the fields we need
+      // Prioritize client profile data, but ensure we always have at least basic contact info
       setClientInfo({
         contact_name: clientProfile?.contact_name || null,
         company_name: clientProfile?.company_name || null,
@@ -64,8 +64,12 @@ export const useContactInfo = (projectId: string) => {
         website: clientProfile?.website || null,
         company_address: clientProfile?.company_address || null,
         email: email,
-        // We consider the profile complete if we have at least the essential contact info (name, email, phone)
-        is_profile_complete: !!(email || (clientProfile && Object.values(clientProfile).some(val => val)))
+        // A profile is considered complete if we have the essential contact info (name, email, phone)
+        is_profile_complete: !!(
+          (clientProfile?.contact_name || email) && 
+          email && 
+          (clientProfile?.phone_number)
+        )
       });
     } catch (error) {
       console.error('Error fetching client info:', error);
