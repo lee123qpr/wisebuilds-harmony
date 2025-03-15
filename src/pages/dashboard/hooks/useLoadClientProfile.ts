@@ -45,19 +45,22 @@ export const useLoadClientProfile = ({
         
         if (error) throw error;
         
+        // Extract user metadata for fallback values
+        const userMetadata = user.user_metadata || {};
+        
         if (data) {
           // Populate form with existing data
           form.reset({
-            companyName: data.company_name || '',
-            contactName: data.contact_name || '',
-            companyAddress: data.company_address || '',
-            companyDescription: data.company_description || '',
-            phoneNumber: data.phone_number || '',
-            website: data.website || '',
-            companyType: data.company_type || '',
-            companyTurnover: data.company_turnover || '',
-            employeeSize: data.employee_size || '',
-            companySpecialism: data.company_specialism || '',
+            companyName: data.company_name || userMetadata.company_name || '',
+            contactName: data.contact_name || userMetadata.contact_name || userMetadata.full_name || '',
+            companyAddress: data.company_address || userMetadata.company_address || '',
+            companyDescription: data.company_description || userMetadata.company_description || '',
+            phoneNumber: data.phone_number || userMetadata.phone_number || userMetadata.phone || '',
+            website: data.website || userMetadata.website || '',
+            companyType: data.company_type || userMetadata.company_type || '',
+            companyTurnover: data.company_turnover || userMetadata.company_turnover || '',
+            employeeSize: data.employee_size || userMetadata.employee_size || '',
+            companySpecialism: data.company_specialism || userMetadata.company_specialism || '',
           });
           
           setLogoUrl(data.logo_url);
@@ -66,11 +69,11 @@ export const useLoadClientProfile = ({
           setJobsCompleted(data.jobs_completed || 0);
         } else {
           // Create initial profile with data from auth.user metadata
-          const companyName = user.user_metadata?.company_name || '';
-          const contactName = user.user_metadata?.contact_name || '';
-          const phoneNumber = user.user_metadata?.phone || '';
-          const companyAddress = user.user_metadata?.company_address || '';
-          const companyDescription = user.user_metadata?.company_description || '';
+          const companyName = userMetadata.company_name || '';
+          const contactName = userMetadata.contact_name || userMetadata.full_name || '';
+          const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
+          const companyAddress = userMetadata.company_address || '';
+          const companyDescription = userMetadata.company_description || '';
           
           form.reset({
             companyName,
@@ -78,11 +81,11 @@ export const useLoadClientProfile = ({
             companyAddress,
             companyDescription,
             phoneNumber,
-            website: '',
-            companyType: '',
-            companyTurnover: '',
-            employeeSize: '',
-            companySpecialism: '',
+            website: userMetadata.website || '',
+            companyType: userMetadata.company_type || '',
+            companyTurnover: userMetadata.company_turnover || '',
+            employeeSize: userMetadata.employee_size || '',
+            companySpecialism: userMetadata.company_specialism || '',
           });
         }
       } catch (error) {
