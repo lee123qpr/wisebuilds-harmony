@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Phone, Building, User, ExternalLink, AlertCircle, MapPin } from 'lucide-react';
+import { Mail, Phone, Building, User, ExternalLink, MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useContactInfo } from '@/hooks/leads/useContactInfo';
@@ -41,35 +41,6 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
     );
   }
 
-  // If we have email but no other profile fields
-  const hasOnlyEmail = clientInfo.email && !clientInfo.contact_name && !clientInfo.phone_number && !clientInfo.company_name && !clientInfo.website && !clientInfo.company_address;
-
-  if (hasOnlyEmail) {
-    return (
-      <div className="bg-blue-50 border border-blue-100 rounded-md p-4 space-y-3">
-        <h3 className="text-blue-800 font-medium flex items-center gap-2">
-          <User className="h-4 w-4" />
-          Limited Client Contact Information
-        </h3>
-        
-        <div className="flex items-center gap-2 text-blue-700">
-          <AlertCircle className="h-4 w-4" />
-          <p className="text-sm">
-            This client has a limited profile. Only email is available.
-          </p>
-        </div>
-        
-        <div className="flex items-center gap-2">
-          <Mail className="h-4 w-4 text-blue-600" />
-          <span className="font-medium">Email:</span>
-          <a href={`mailto:${clientInfo.email}`} className="text-blue-600 hover:underline">
-            {clientInfo.email}
-          </a>
-        </div>
-      </div>
-    );
-  }
-
   return (
     <div className="bg-green-50 border border-green-100 rounded-md p-4 space-y-4">
       <h3 className="text-green-800 font-medium flex items-center gap-2 pb-1 border-b border-green-100">
@@ -86,10 +57,13 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
           </div>
         )}
         
-        {clientInfo.company_name && (
+        {clientInfo.email && (
           <div className="flex items-center gap-2">
-            <Building className="h-4 w-4 text-green-600 flex-shrink-0" />
-            <span className="font-medium min-w-24">Company:</span> {clientInfo.company_name}
+            <Mail className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="font-medium min-w-24">Email:</span>
+            <a href={`mailto:${clientInfo.email}`} className="text-blue-600 hover:underline">
+              {clientInfo.email}
+            </a>
           </div>
         )}
         
@@ -103,13 +77,10 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
           </div>
         )}
         
-        {clientInfo.email && (
+        {clientInfo.company_name && (
           <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-green-600 flex-shrink-0" />
-            <span className="font-medium min-w-24">Email:</span>
-            <a href={`mailto:${clientInfo.email}`} className="text-blue-600 hover:underline">
-              {clientInfo.email}
-            </a>
+            <Building className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="font-medium min-w-24">Company:</span> {clientInfo.company_name}
           </div>
         )}
         
