@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Project } from '@/components/projects/useProjects';
 import { MapPin, Users, Calendar as CalendarIcon } from 'lucide-react';
@@ -8,14 +7,12 @@ import DurationBadge from './badges/DurationBadge';
 import BudgetBadge from './badges/BudgetBadge';
 import HiringStatusBadge from './badges/HiringStatusBadge';
 import PurchaseLimitBar from '@/components/projects/PurchaseLimitBar';
-
 interface ProjectCardProps {
   project: Project;
   isSelected: boolean;
   onClick: () => void;
   isPurchased?: boolean;
 }
-
 const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   isSelected,
@@ -25,14 +22,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   // Format dates as "X days ago"
   const postedDateAgo = formatDateAgo(project.created_at);
   const purchasesCount = project.purchases_count || 0;
-  
-  return (
-    <div 
-      className={`p-3 cursor-pointer transition-all ${
-        isSelected ? 'bg-primary/5 border-l-4 border-primary' : 'hover:bg-muted/50 border-l-4 border-transparent'
-      }`} 
-      onClick={onClick}
-    >
+  return <div className={`p-3 cursor-pointer transition-all ${isSelected ? 'bg-primary/5 border-l-4 border-primary' : 'hover:bg-muted/50 border-l-4 border-transparent'}`} onClick={onClick}>
       <div>
         <h3 className="font-semibold text-lg truncate">{project.title}</h3>
       </div>
@@ -65,7 +55,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
             <CalendarIcon className="h-3 w-3 text-gray-600" />
           </span>
-          <span className="text-sm text-gray-600 font-medium">Posted {postedDateAgo}</span>
+          <span className="text-sm text-gray-600 font-bold">Posted {postedDateAgo}</span>
         </div>
       </div>
       
@@ -76,8 +66,6 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <BudgetBadge budget={project.budget} />
         <HiringStatusBadge status={project.hiring_status || 'enquiring'} />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ProjectCard;
