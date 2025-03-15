@@ -4,7 +4,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import UserStatistics from './user-stats/UserStatistics';
 import UsersList from './users-list/UsersList';
+import FreelancersList from './users-list/FreelancersList';
+import ClientsList from './users-list/ClientsList';
 import { useUsers } from '../hooks/useUsers';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const UsersTab = () => {
   const { users, isLoading, error, userCounts, fetchUsers } = useUsers();
@@ -22,12 +25,41 @@ const UsersTab = () => {
       )}
       
       <UserStatistics userCounts={userCounts} />
-      <UsersList 
-        users={users}
-        isLoading={isLoading}
-        error={error}
-        onRefresh={fetchUsers}
-      />
+      
+      <Tabs defaultValue="all">
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="all">All Users</TabsTrigger>
+          <TabsTrigger value="freelancers">Freelancers</TabsTrigger>
+          <TabsTrigger value="clients">Clients</TabsTrigger>
+        </TabsList>
+        
+        <TabsContent value="all" className="mt-6">
+          <UsersList 
+            users={users}
+            isLoading={isLoading}
+            error={error}
+            onRefresh={fetchUsers}
+          />
+        </TabsContent>
+        
+        <TabsContent value="freelancers" className="mt-6">
+          <FreelancersList 
+            users={users}
+            isLoading={isLoading}
+            error={error}
+            onRefresh={fetchUsers}
+          />
+        </TabsContent>
+        
+        <TabsContent value="clients" className="mt-6">
+          <ClientsList 
+            users={users}
+            isLoading={isLoading}
+            error={error}
+            onRefresh={fetchUsers}
+          />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 };

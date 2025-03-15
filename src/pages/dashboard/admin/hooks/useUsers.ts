@@ -15,6 +15,7 @@ export interface AdminUser {
   };
   is_verified?: boolean;
   email_confirmed_at?: string | null;
+  verification_status?: string | null;
 }
 
 export interface UserCounts {
@@ -60,6 +61,23 @@ export const useUsers = () => {
       
       const userData = response.data?.users || [];
       
+      // Fetch freelancer verification statuses
+      const { data: verificationData, error: verificationError } = await supabase
+        .from('freelancer_verification')
+        .select('user_id, verification_status');
+      
+      if (verificationError) {
+        console.error('Error fetching verification statuses:', verificationError);
+      }
+      
+      // Create a map of user_id to verification_status
+      const verificationMap = new Map();
+      if (verificationData) {
+        verificationData.forEach((item: any) => {
+          verificationMap.set(item.user_id, item.verification_status);
+        });
+      }
+      
       const formattedUsers: AdminUser[] = userData.map((user: any) => ({
         id: user.id,
         email: user.email || '',
@@ -67,7 +85,8 @@ export const useUsers = () => {
         last_sign_in_at: user.last_sign_in_at,
         user_metadata: user.user_metadata || { full_name: '', user_type: '' },
         is_verified: !!user.email_confirmed_at,
-        email_confirmed_at: user.email_confirmed_at
+        email_confirmed_at: user.email_confirmed_at,
+        verification_status: verificationMap.get(user.id) || null
       }));
       
       setUsers(formattedUsers);
