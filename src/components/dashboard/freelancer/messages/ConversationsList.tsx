@@ -66,10 +66,15 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
                 <div className="flex-grow min-w-0">
                   <div className="font-medium truncate">
                     {conversation.client_info?.contact_name || 'Unknown Client'}
+                    {conversation.client_info?.company_name && (
+                      <span className="ml-1 text-sm text-muted-foreground">
+                        ({conversation.client_info.company_name})
+                      </span>
+                    )}
                   </div>
                   <div className="flex items-center gap-1 text-xs text-primary truncate mt-1">
                     <Briefcase className="h-3 w-3 flex-shrink-0" />
-                    <span className="truncate">{conversation.project_title}</span>
+                    <span className="truncate">Project: {conversation.project_title}</span>
                   </div>
                   <div className="text-xs text-muted-foreground mt-1">
                     {format(new Date(conversation.last_message_time), 'dd/MM/yyyy, HH:mm')}
