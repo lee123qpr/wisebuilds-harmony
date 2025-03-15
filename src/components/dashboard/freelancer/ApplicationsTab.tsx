@@ -57,6 +57,7 @@ const ApplicationsTab: React.FC = () => {
           application_created_at: app.created_at
         }));
         
+        console.log('Fetched applications:', applicationProjects);
         return applicationProjects as ApplicationWithProject[];
       } catch (error) {
         console.error('Error fetching applications:', error);
