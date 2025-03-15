@@ -1,20 +1,27 @@
 
 import React from 'react';
 import { Project } from '@/components/projects/useProjects';
-import { MapPin, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { MapPin, Users, Calendar as CalendarIcon, Check } from 'lucide-react';
 import { formatDate, formatRole } from '@/utils/projectFormatters';
 import WorkTypeBadge from './badges/WorkTypeBadge';
 import DurationBadge from './badges/DurationBadge';
 import BudgetBadge from './badges/BudgetBadge';
 import HiringStatusBadge from './badges/HiringStatusBadge';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectCardProps {
   project: Project;
   isSelected: boolean;
   onClick: () => void;
+  isPurchased?: boolean;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ project, isSelected, onClick }) => {
+const ProjectCard: React.FC<ProjectCardProps> = ({ 
+  project, 
+  isSelected, 
+  onClick, 
+  isPurchased = false 
+}) => {
   // Format dates
   const postedDate = formatDate(project.created_at);
   
@@ -27,7 +34,16 @@ const ProjectCard: React.FC<ProjectCardProps> = ({ project, isSelected, onClick 
       }`}
       onClick={onClick}
     >
-      <h3 className="font-semibold text-lg truncate">{project.title}</h3>
+      <div className="flex justify-between items-start">
+        <h3 className="font-semibold text-lg truncate">{project.title}</h3>
+        
+        {isPurchased && (
+          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+            <Check className="h-3 w-3" />
+            Purchased
+          </Badge>
+        )}
+      </div>
       
       {/* Basic Information - No color (neutral gray) */}
       <div className="space-y-3 mt-3 mb-4">
