@@ -53,7 +53,12 @@ export const calculateLeadCredits = (
   // Calculate total credits (sum of individual credits + base credit)
   const totalCredits = budgetValue + durationValue + hiringValue + BASE_CREDIT;
   
-  console.log(`Credit calculation: ${budget}(${budgetValue}) + ${duration}(${durationValue}) + ${hiringStatus}(${hiringValue}) + Base(${BASE_CREDIT}) = ${totalCredits}`);
+  console.log(`Credit calculation breakdown:
+  - Budget (${budget}): ${budgetValue} credits
+  - Duration (${duration}): ${durationValue} credits 
+  - Hiring Status (${hiringStatus}): ${hiringValue} credits
+  - Base credit: ${BASE_CREDIT}
+  - Total: ${totalCredits} credits`);
   
   return totalCredits;
 };

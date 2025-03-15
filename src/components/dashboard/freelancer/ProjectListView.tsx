@@ -91,6 +91,8 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
     return <EmptyProjectState />;
   }
 
+  console.log('Selected project for purchase:', selectedProject);
+
   return (
     <ResizablePanelGroup direction="horizontal" className="rounded-lg border bg-white">
       <ResizablePanel defaultSize={40} minSize={30}>
@@ -117,6 +119,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
                 <LeadPurchaseButton 
                   projectId={selectedProject.id}
                   projectTitle={selectedProject.title}
+                  project={selectedProject}
                   purchasesCount={selectedProject.purchases_count || 0}
                   onPurchaseSuccess={handlePurchaseSuccess}
                 />

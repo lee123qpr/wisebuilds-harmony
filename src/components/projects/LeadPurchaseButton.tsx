@@ -7,7 +7,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { useVerification } from '@/hooks/useVerification';
 import { useToast } from '@/hooks/use-toast';
-import { calculateLeadCredits } from '@/hooks/leads/utils/calculateLeadCredits';
+import { calculateLeadCredits, budgetCredits, durationCredits, hiringStatusCredits } from '@/hooks/leads/utils/calculateLeadCredits';
 import {
   Tooltip,
   TooltipContent,
@@ -45,12 +45,22 @@ const LeadPurchaseButton = ({
   // Calculate required credits based on project details
   useEffect(() => {
     if (project && project.budget && project.duration && project.hiring_status) {
+      console.log('Project details for credit calculation:', {
+        budget: project.budget,
+        duration: project.duration,
+        hiring_status: project.hiring_status
+      });
+      
       const credits = calculateLeadCredits(
         project.budget,
         project.duration,
         project.hiring_status
       );
       setRequiredCredits(credits);
+      console.log(`Required credits calculated: ${credits}`);
+    } else {
+      console.log('Missing project details for credit calculation:', project);
+      setRequiredCredits(1); // Default fallback
     }
   }, [project]);
 
@@ -110,6 +120,12 @@ const LeadPurchaseButton = ({
     }
   };
 
+  // Format project value for display
+  const formatProjectValue = (value: string) => {
+    if (!value) return 'N/A';
+    return value.replace(/_/g, ' ');
+  };
+
   // Determine if the purchase button should be disabled
   const isPurchaseDisabled = 
     isPurchasing || 
@@ -147,6 +163,12 @@ const LeadPurchaseButton = ({
     );
   }
 
+  // Collect credits for each attribute if we have a project
+  const budgetCredit = project?.budget ? budgetCredits[project.budget as keyof typeof budgetCredits] || 0 : 0;
+  const durationCredit = project?.duration ? durationCredits[project.duration as keyof typeof durationCredits] || 0 : 0;
+  const hiringStatusCredit = project?.hiring_status ? hiringStatusCredits[project.hiring_status as keyof typeof hiringStatusCredits] || 0 : 0;
+  const baseCredit = 1;
+
   return (
     <TooltipProvider>
       <Tooltip>
@@ -172,16 +194,34 @@ const LeadPurchaseButton = ({
                     : `Purchase Lead (${requiredCredits} ${requiredCredits === 1 ? 'Credit' : 'Credits'})`}
           </Button>
         </TooltipTrigger>
-        <TooltipContent>
+        <TooltipContent className="p-3 w-64">
           <div className="text-sm">
-            <div className="font-semibold mb-1">Credit Cost Breakdown:</div>
-            {project && (
+            <div className="font-semibold mb-2">Credit Cost Breakdown:</div>
+            {project ? (
               <div className="space-y-1">
-                <div>Budget: {requiredCredits > 0 ? project.budget.replace(/_/g, ' ') : 'N/A'}</div>
-                <div>Duration: {project?.duration?.replace(/_/g, ' ')}</div>
-                <div>Hiring Status: {project?.hiring_status?.replace(/_/g, ' ')}</div>
-                <div className="border-t pt-1 mt-1">Total: {requiredCredits} credits</div>
+                <div className="flex justify-between">
+                  <span>Budget ({formatProjectValue(project.budget)}):</span>
+                  <span className="font-medium">{budgetCredit} credit{budgetCredit !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Duration ({formatProjectValue(project.duration)}):</span>
+                  <span className="font-medium">{durationCredit} credit{durationCredit !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Hiring Status ({formatProjectValue(project.hiring_status)}):</span>
+                  <span className="font-medium">{hiringStatusCredit} credit{hiringStatusCredit !== 1 ? 's' : ''}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Base Credit:</span>
+                  <span className="font-medium">{baseCredit} credit</span>
+                </div>
+                <div className="flex justify-between pt-2 mt-1 border-t border-gray-200 font-bold">
+                  <span>Total:</span>
+                  <span>{requiredCredits} credit{requiredCredits !== 1 ? 's' : ''}</span>
+                </div>
               </div>
+            ) : (
+              <div className="text-gray-500 italic">Project details not available</div>
             )}
           </div>
         </TooltipContent>

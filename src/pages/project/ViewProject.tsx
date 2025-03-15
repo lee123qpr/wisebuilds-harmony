@@ -70,6 +70,8 @@ const ViewProject = () => {
                 <LeadPurchaseButton 
                   projectId={project!.id}
                   projectTitle={project!.title}
+                  project={project}
+                  purchasesCount={project!.purchases_count || 0}
                   onPurchaseSuccess={handlePurchaseSuccess}
                 />
               </div>

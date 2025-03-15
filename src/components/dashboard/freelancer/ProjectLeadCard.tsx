@@ -32,6 +32,8 @@ const ProjectLeadCard: React.FC<ProjectLeadCardProps> = ({ lead }) => {
     navigate(`/project/${lead.id}`);
   };
 
+  console.log('Project lead details:', lead);
+
   return (
     <Card key={lead.id}>
       <CardHeader>
