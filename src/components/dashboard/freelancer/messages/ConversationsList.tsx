@@ -2,9 +2,10 @@
 import React from 'react';
 import { Conversation } from '@/types/messaging';
 import { Button } from '@/components/ui/button';
-import { RefreshCcw, User, Briefcase } from 'lucide-react';
+import { RefreshCcw, Briefcase } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
+import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ConversationsListProps {
   conversations: Conversation[];
@@ -31,6 +32,27 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
       </div>
     );
   }
+
+  // Generate initials for avatar fallback
+  const getInitials = (name: string | null, companyName: string | null) => {
+    if (companyName) {
+      return companyName
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+    }
+    if (name) {
+      return name
+        .split(' ')
+        .map(word => word[0])
+        .join('')
+        .toUpperCase()
+        .substring(0, 2);
+    }
+    return 'UC'; // Unknown Client
+  };
 
   return (
     <div className="border rounded-md overflow-hidden flex flex-col h-full">
@@ -60,9 +82,21 @@ const ConversationsList: React.FC<ConversationsListProps> = ({
               onClick={() => onSelectConversation(conversation)}
             >
               <div className="flex items-start gap-3">
-                <div className="bg-primary/10 text-primary rounded-full p-2">
-                  <User className="h-5 w-5" />
-                </div>
+                <Avatar className="h-9 w-9">
+                  {conversation.client_info?.logo_url ? (
+                    <AvatarImage 
+                      src={conversation.client_info.logo_url} 
+                      alt={conversation.client_info?.company_name || conversation.client_info?.contact_name || 'Client'} 
+                    />
+                  ) : (
+                    <AvatarFallback className="bg-primary/10 text-primary">
+                      {getInitials(
+                        conversation.client_info?.contact_name,
+                        conversation.client_info?.company_name
+                      )}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
                 <div className="flex-grow min-w-0">
                   <div className="font-medium truncate">
                     {conversation.client_info?.contact_name || 'Unknown Client'}
