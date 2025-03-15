@@ -54,7 +54,7 @@ export const fetchConversations = async (userId: string) => {
       // If no client profile found, try to get user data from auth using edge function
       if (!clientData) {
         try {
-          // Call the edge function to get user email
+          // Call the edge function to get user email and full name
           const { data: userData, error: userError } = await supabase.functions.invoke('get-user-email', {
             body: { userId: conv.client_id }
           });
@@ -67,9 +67,9 @@ export const fetchConversations = async (userId: string) => {
               email: null
             };
           } else {
-            // Use the email as contact name if available
+            // Use the full name if available, otherwise fallback to email username
             clientInfo = {
-              contact_name: userData?.email ? userData.email.split('@')[0] : 'Unknown Client',
+              contact_name: userData?.full_name || (userData?.email ? userData.email.split('@')[0] : 'Unknown Client'),
               company_name: null,
               email: userData?.email || null
             };
@@ -144,7 +144,7 @@ export const createConversation = async (freelancerId: string, clientId: string,
           };
         } else {
           clientInfo = {
-            contact_name: userData.email ? userData.email.split('@')[0] : 'Unknown Client',
+            contact_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Client'),
             company_name: null,
             email: userData.email || null
           };
