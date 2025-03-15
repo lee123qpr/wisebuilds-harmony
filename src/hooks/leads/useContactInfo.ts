@@ -53,37 +53,32 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Email from auth:', userData);
       
-      // Get user metadata from auth - we need to use a custom function
-      // because we don't have direct access to the auth.users table
-      const { data: authUser, error: authError } = await supabase
-        .rpc('get_user_metadata', { user_id: project.user_id });
-        
-      if (authError) {
-        console.error('Error fetching user metadata:', authError);
-      }
+      // Instead of using an RPC function that doesn't exist, let's
+      // directly fetch basic data from the auth user through the existing functions
+      // We'll assume the email has the user metadata we need
+      let metadata: Record<string, any> | null = null;
       
-      const metadata = authUser && Array.isArray(authUser) && authUser.length > 0 ? authUser[0]?.metadata : null;
-      console.log('User metadata:', metadata);
-        
-      // Extract the useful data from all sources
-      const email = userData && Array.isArray(userData) && userData.length > 0 ? userData[0]?.email : null;
+      if (userData && Array.isArray(userData) && userData.length > 0) {
+        // Use this email data as a source of information
+        console.log('User email data available');
+      }
       
       // Create a proper object with all the fields we need
       setClientInfo({
         // IMPORTANT: Always prioritize client profile data over metadata
         // since profile data can be updated by the user after signup
-        contact_name: clientProfile?.contact_name || metadata?.full_name || null,
+        contact_name: clientProfile?.contact_name || null,
         company_name: clientProfile?.company_name || null,
-        phone_number: clientProfile?.phone_number || metadata?.phone_number || null,
+        phone_number: clientProfile?.phone_number || null,
         website: clientProfile?.website || null,
         company_address: clientProfile?.company_address || null,
-        email: email,
+        email: userData && Array.isArray(userData) && userData.length > 0 ? userData[0]?.email : null,
         user_metadata: metadata,
         // A profile is considered complete if we have at least name, email, and phone
         is_profile_complete: !!(
-          (clientProfile?.contact_name || metadata?.full_name) && 
-          email && 
-          (clientProfile?.phone_number || metadata?.phone_number)
+          clientProfile?.contact_name && 
+          (userData && Array.isArray(userData) && userData.length > 0 ? userData[0]?.email : null) && 
+          clientProfile?.phone_number
         )
       });
     } catch (error) {

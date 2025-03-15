@@ -41,13 +41,8 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
     );
   }
 
-  // Get data from user metadata if needed
-  const metadata = clientInfo.user_metadata || {};
-  const contactName = clientInfo.contact_name || metadata.full_name;
-  const phoneNumber = clientInfo.phone_number || metadata.phone_number;
-  
   // Determine if we have at least the essential contact info
-  const hasEssentialContactInfo = !!(contactName || clientInfo.email || phoneNumber);
+  const hasEssentialContactInfo = !!(clientInfo.contact_name || clientInfo.email || clientInfo.phone_number);
 
   return (
     <div className="bg-green-50 border border-green-100 rounded-md p-4 space-y-4">
@@ -62,11 +57,11 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         </div>
       ) : (
         <div className="space-y-3">
-          {contactName && (
+          {clientInfo.contact_name && (
             <div className="flex items-center gap-2">
               <User className="h-4 w-4 text-green-600 flex-shrink-0" />
               <span className="font-medium min-w-24">Contact Name:</span> 
-              <span className="font-semibold">{contactName}</span>
+              <span className="font-semibold">{clientInfo.contact_name}</span>
             </div>
           )}
           
@@ -80,12 +75,12 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
             </div>
           )}
           
-          {phoneNumber && (
+          {clientInfo.phone_number && (
             <div className="flex items-center gap-2">
               <Phone className="h-4 w-4 text-green-600 flex-shrink-0" />
               <span className="font-medium min-w-24">Phone:</span>
-              <a href={`tel:${phoneNumber}`} className="text-blue-600 hover:underline font-semibold">
-                {phoneNumber}
+              <a href={`tel:${clientInfo.phone_number}`} className="text-blue-600 hover:underline font-semibold">
+                {clientInfo.phone_number}
               </a>
             </div>
           )}
