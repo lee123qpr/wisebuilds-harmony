@@ -10,6 +10,7 @@ interface ClientInfo {
   website: string | null;
   company_address: string | null;
   is_profile_complete: boolean;
+  user_id: string;
   user_metadata?: Record<string, any> | null;
 }
 
@@ -76,6 +77,7 @@ export const useContactInfo = (projectId: string) => {
         website: clientProfile?.website || null,
         company_address: clientProfile?.company_address || null,
         email: email,
+        user_id: project.user_id,
         user_metadata: userMetadata,
         // A profile is considered complete if we have at least name, email, and phone
         is_profile_complete: !!(
