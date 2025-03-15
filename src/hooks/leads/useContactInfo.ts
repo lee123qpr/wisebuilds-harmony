@@ -53,18 +53,20 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Email from auth:', userData);
       
-      // Get user metadata from auth.users table
-      const { data: userMetadata, error: metadataError } = await supabase
-        .from('users')
-        .select('raw_user_meta_data')
-        .eq('id', project.user_id)
-        .maybeSingle();
+      // Get user metadata from auth - we need to use a custom function
+      // because we don't have direct access to the auth.users table
+      const { data: authUser, error: authError } = await supabase
+        .rpc('get_user_metadata', { user_id: project.user_id });
+        
+      if (authError) {
+        console.error('Error fetching user metadata:', authError);
+      }
+      
+      const metadata = authUser && authUser.length > 0 ? authUser[0]?.metadata : null;
+      console.log('User metadata:', metadata);
         
       // Extract the useful data from all sources
       const email = userData && userData.length > 0 ? userData[0]?.email : null;
-      const metadata = userMetadata?.raw_user_meta_data || null;
-      
-      console.log('User metadata:', metadata);
       
       // Create a proper object with all the fields we need
       setClientInfo({
