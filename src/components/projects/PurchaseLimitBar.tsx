@@ -1,16 +1,19 @@
 
 import React from 'react';
 import { Progress } from '@/components/ui/progress';
-import { Tally1, Tally2, Tally3, Tally4, Tally5 } from 'lucide-react';
+import { Check, Tally1, Tally2, Tally3, Tally4, Tally5 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface PurchaseLimitBarProps {
   purchasesCount: number;
   limit?: number;
+  isPurchased?: boolean;
 }
 
 const PurchaseLimitBar: React.FC<PurchaseLimitBarProps> = ({
   purchasesCount,
-  limit = 5
+  limit = 5,
+  isPurchased = false
 }) => {
   const percentage = (purchasesCount / limit) * 100;
   
@@ -39,7 +42,13 @@ const PurchaseLimitBar: React.FC<PurchaseLimitBarProps> = ({
           {getTallyIcon()}
           <span>{purchasesCount} of {limit} purchases</span>
         </div>
-        {purchasesCount >= limit && (
+        {isPurchased && (
+          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1 text-xs">
+            <Check className="h-3 w-3" />
+            Purchased
+          </Badge>
+        )}
+        {!isPurchased && purchasesCount >= limit && (
           <span className="text-amber-600 font-medium">Limit reached</span>
         )}
       </div>

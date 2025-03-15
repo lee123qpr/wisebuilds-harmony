@@ -1,13 +1,12 @@
 
 import React from 'react';
 import { Project } from '@/components/projects/useProjects';
-import { MapPin, Users, Calendar as CalendarIcon, Check } from 'lucide-react';
+import { MapPin, Users, Calendar as CalendarIcon } from 'lucide-react';
 import { formatDateAgo, formatRole } from '@/utils/projectFormatters';
 import WorkTypeBadge from './badges/WorkTypeBadge';
 import DurationBadge from './badges/DurationBadge';
 import BudgetBadge from './badges/BudgetBadge';
 import HiringStatusBadge from './badges/HiringStatusBadge';
-import { Badge } from '@/components/ui/badge';
 import PurchaseLimitBar from '@/components/projects/PurchaseLimitBar';
 
 interface ProjectCardProps {
@@ -34,20 +33,13 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       }`} 
       onClick={onClick}
     >
-      <div className="flex justify-between items-start">
+      <div>
         <h3 className="font-semibold text-lg truncate">{project.title}</h3>
-        
-        {isPurchased && (
-          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1 text-xs ml-2">
-            <Check className="h-3 w-3" />
-            Purchased
-          </Badge>
-        )}
       </div>
       
       {/* Purchase limit indicator - full width */}
       <div className="mt-2 mb-2">
-        <PurchaseLimitBar purchasesCount={purchasesCount} />
+        <PurchaseLimitBar purchasesCount={purchasesCount} isPurchased={isPurchased} />
       </div>
       
       {/* Basic Information - No color (neutral gray) */}
