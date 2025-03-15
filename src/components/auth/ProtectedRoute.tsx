@@ -3,10 +3,6 @@ import React from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
-// Development flag - set to true to bypass authentication checks
-// IMPORTANT: Set this to false before deploying to production
-const BYPASS_AUTH_FOR_DEVELOPMENT = true;
-
 interface ProtectedRouteProps {
   children: React.ReactNode;
   allowedUserTypes?: string[];
@@ -18,12 +14,6 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 }) => {
   const { user, isLoading } = useAuth();
   const location = useLocation();
-  
-  // Special case for admin dashboard in development mode
-  if (BYPASS_AUTH_FOR_DEVELOPMENT && location.pathname.includes('/dashboard/admin')) {
-    console.log('Development mode: Bypassing authentication for admin dashboard');
-    return <>{children}</>;
-  }
 
   // While checking authentication status, show nothing
   if (isLoading) {
