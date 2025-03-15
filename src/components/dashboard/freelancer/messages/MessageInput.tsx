@@ -117,7 +117,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
               size="icon" 
               onClick={handleAttachClick}
               disabled={isSending}
-              title="Attach files"
+              title="Attach files (up to 20MB)"
             >
               <Paperclip className="h-4 w-4" />
             </Button>
