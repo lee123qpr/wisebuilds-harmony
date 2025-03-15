@@ -37,7 +37,6 @@ interface Message {
   is_read: boolean;
 }
 
-// Use type assertion for Supabase queries
 const MessagesTab: React.FC = () => {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId');
@@ -67,138 +66,166 @@ const MessagesTab: React.FC = () => {
       return;
     }
     
-    // Using any to work around type issues
-    const { data, error } = await supabase
-      .from('conversations')
-      .select(`
-        id, 
-        client_id, 
-        freelancer_id, 
-        project_id, 
-        last_message_time,
-        projects:project_id (title),
-        client_info:client_id (
-          contact_name,
-          email,
-          company_name
-        )
-      `)
-      .eq('freelancer_id', userId)
-      .order('last_message_time', { ascending: false }) as any;
-    
-    if (error) {
-      console.error('Error fetching conversations:', error);
+    try {
+      // We need to use type assertion because conversations table isn't in the Supabase type definition
+      const { data, error } = await (supabase
+        .from('conversations') as any)
+        .select(`
+          id, 
+          client_id, 
+          freelancer_id, 
+          project_id, 
+          last_message_time,
+          projects:project_id (title),
+          client_info:client_id (
+            contact_name,
+            email,
+            company_name
+          )
+        `)
+        .eq('freelancer_id', userId)
+        .order('last_message_time', { ascending: false });
+      
+      if (error) {
+        console.error('Error fetching conversations:', error);
+        toast({
+          title: "Failed to load conversations",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        const formattedConversations = data.map((conv: any) => ({
+          ...conv,
+          project_title: conv.projects?.title || 'Unknown Project'
+        }));
+        setConversations(formattedConversations);
+        
+        // If there's a projectId and clientId in the URL, select or create that conversation
+        if (projectId && clientId) {
+          const existingConversation = formattedConversations.find(
+            (c: Conversation) => c.project_id === projectId && c.client_id === clientId
+          );
+          
+          if (existingConversation) {
+            setSelectedConversation(existingConversation);
+          } else {
+            // Create a new conversation if it doesn't exist
+            createNewConversation(userId, clientId, projectId);
+          }
+        } else if (formattedConversations.length > 0) {
+          // Select the first conversation by default
+          setSelectedConversation(formattedConversations[0]);
+        }
+      }
+    } catch (e) {
+      console.error('Error in fetchConversations:', e);
       toast({
         title: "Failed to load conversations",
-        description: error.message,
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
-    } else {
-      const formattedConversations = data.map((conv: any) => ({
-        ...conv,
-        project_title: conv.projects?.title || 'Unknown Project'
-      }));
-      setConversations(formattedConversations);
-      
-      // If there's a projectId and clientId in the URL, select or create that conversation
-      if (projectId && clientId) {
-        const existingConversation = formattedConversations.find(
-          (c: Conversation) => c.project_id === projectId && c.client_id === clientId
-        );
-        
-        if (existingConversation) {
-          setSelectedConversation(existingConversation);
-        } else {
-          // Create a new conversation if it doesn't exist
-          createNewConversation(userId, clientId, projectId);
-        }
-      } else if (formattedConversations.length > 0) {
-        // Select the first conversation by default
-        setSelectedConversation(formattedConversations[0]);
-      }
     }
+    
     setIsLoading(false);
   };
   
   // Create a new conversation
   const createNewConversation = async (freelancerId: string, clientId: string, projectId: string) => {
-    // Get the project title
-    const { data: projectData } = await supabase
-      .from('projects')
-      .select('title')
-      .eq('id', projectId)
-      .single();
-    
-    // Get client info
-    const { data: clientData } = await supabase
-      .from('client_profiles')
-      .select('contact_name, email, company_name')
-      .eq('id', clientId)
-      .maybeSingle();
-    
-    // Using any to work around type issues
-    const { data, error } = await supabase
-      .from('conversations')
-      .insert({
-        freelancer_id: freelancerId,
-        client_id: clientId,
-        project_id: projectId,
-        last_message_time: new Date().toISOString()
-      })
-      .select()
-      .single() as any;
-    
-    if (error) {
-      console.error('Error creating conversation:', error);
+    try {
+      // Get the project title
+      const { data: projectData } = await supabase
+        .from('projects')
+        .select('title')
+        .eq('id', projectId)
+        .single();
+      
+      // Get client info
+      const { data: clientData } = await supabase
+        .from('client_profiles')
+        .select('contact_name, email, company_name')
+        .eq('id', clientId)
+        .maybeSingle();
+      
+      // We need to use type assertion because conversations table isn't in the Supabase type definition
+      const { data, error } = await (supabase
+        .from('conversations') as any)
+        .insert({
+          freelancer_id: freelancerId,
+          client_id: clientId,
+          project_id: projectId,
+          last_message_time: new Date().toISOString()
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error creating conversation:', error);
+        toast({
+          title: "Failed to create conversation",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        const newConversation: Conversation = {
+          ...data,
+          project_title: projectData?.title || 'Unknown Project',
+          client_info: clientData || null
+        };
+        
+        setConversations(prev => [newConversation, ...prev]);
+        setSelectedConversation(newConversation);
+      }
+    } catch (e) {
+      console.error('Error in createNewConversation:', e);
       toast({
         title: "Failed to create conversation",
-        description: error.message,
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
-    } else {
-      const newConversation = {
-        ...data,
-        project_title: projectData?.title || 'Unknown Project',
-        client_info: clientData
-      };
-      
-      setConversations(prev => [newConversation, ...prev]);
-      setSelectedConversation(newConversation);
     }
   };
   
   // Fetch messages for a conversation
   const fetchMessages = async (conversationId: string) => {
-    // Using any to work around type issues
-    const { data, error } = await supabase
-      .from('messages')
-      .select('*')
-      .eq('conversation_id', conversationId)
-      .order('created_at', { ascending: true }) as any;
-    
-    if (error) {
-      console.error('Error fetching messages:', error);
+    try {
+      // We need to use type assertion because messages table isn't in the Supabase type definition
+      const { data, error } = await (supabase
+        .from('messages') as any)
+        .select('*')
+        .eq('conversation_id', conversationId)
+        .order('created_at', { ascending: true });
+      
+      if (error) {
+        console.error('Error fetching messages:', error);
+        toast({
+          title: "Failed to load messages",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        setMessages(data || []);
+        
+        // Mark messages as read
+        const userId = await getCurrentUserId();
+        const unreadMessages = (data?.filter((msg: Message) => 
+          msg.sender_id !== userId && !msg.is_read
+        ) || []) as Message[];
+        
+        if (unreadMessages.length > 0) {
+          const unreadIds = unreadMessages.map((msg: Message) => msg.id);
+          await (supabase
+            .from('messages') as any)
+            .update({ is_read: true })
+            .in('id', unreadIds);
+        }
+      }
+    } catch (e) {
+      console.error('Error in fetchMessages:', e);
       toast({
         title: "Failed to load messages",
-        description: error.message,
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
-    } else {
-      setMessages(data || []);
-      
-      // Mark messages as read
-      const userId = await getCurrentUserId();
-      const unreadMessages = data?.filter((msg: Message) => 
-        msg.sender_id !== userId && !msg.is_read
-      ) || [];
-      
-      if (unreadMessages.length > 0) {
-        const unreadIds = unreadMessages.map((msg: Message) => msg.id);
-        await supabase
-          .from('messages')
-          .update({ is_read: true })
-          .in('id', unreadIds);
-      }
     }
   };
   
@@ -207,34 +234,43 @@ const MessagesTab: React.FC = () => {
     if (!newMessage.trim() || !selectedConversation) return;
     
     setIsSending(true);
-    const userId = await getCurrentUserId();
-    
-    // Using any to work around type issues
-    const { error } = await supabase
-      .from('messages')
-      .insert({
-        conversation_id: selectedConversation.id,
-        sender_id: userId,
-        message: newMessage.trim(),
-        is_read: false
-      }) as any;
-    
-    if (error) {
-      console.error('Error sending message:', error);
+    try {
+      const userId = await getCurrentUserId();
+      
+      // We need to use type assertion because messages table isn't in the Supabase type definition
+      const { error } = await (supabase
+        .from('messages') as any)
+        .insert({
+          conversation_id: selectedConversation.id,
+          sender_id: userId,
+          message: newMessage.trim(),
+          is_read: false
+        });
+      
+      if (error) {
+        console.error('Error sending message:', error);
+        toast({
+          title: "Failed to send message",
+          description: error.message,
+          variant: "destructive"
+        });
+      } else {
+        // Update last message time
+        await (supabase
+          .from('conversations') as any)
+          .update({ last_message_time: new Date().toISOString() })
+          .eq('id', selectedConversation.id);
+        
+        setNewMessage('');
+        fetchMessages(selectedConversation.id);
+      }
+    } catch (e) {
+      console.error('Error in sendMessage:', e);
       toast({
         title: "Failed to send message",
-        description: error.message,
+        description: "An unexpected error occurred",
         variant: "destructive"
       });
-    } else {
-      // Update last message time
-      await supabase
-        .from('conversations')
-        .update({ last_message_time: new Date().toISOString() })
-        .eq('id', selectedConversation.id);
-      
-      setNewMessage('');
-      fetchMessages(selectedConversation.id);
     }
     setIsSending(false);
   };
@@ -391,8 +427,8 @@ const MessagesTab: React.FC = () => {
                 </div>
               ) : (
                 messages.map(message => {
-                  // Use async IIFE to check user ID
-                  const isCurrentUser = message.sender_id === (async () => await getCurrentUserId())() ? true : false;
+                  const userId = localStorage.getItem('userId') || '';
+                  const isCurrentUser = message.sender_id === userId;
                   
                   return (
                     <div 
