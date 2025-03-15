@@ -20,7 +20,11 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
     setNewMessage, 
     isSending, 
     sendMessage, 
-    handleKeyPress 
+    handleKeyPress,
+    handleFileSelect,
+    removeAttachment,
+    attachments,
+    isUploading
   } = useMessages(selectedConversation);
 
   // Get current user ID
@@ -61,6 +65,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
         onSend={sendMessage}
         onKeyDown={handleKeyPress}
         isSending={isSending}
+        onFileSelect={handleFileSelect}
+        attachments={attachments}
+        onRemoveAttachment={removeAttachment}
+        isUploading={isUploading}
       />
     </div>
   );

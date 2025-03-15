@@ -2,7 +2,7 @@
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getCurrentUserId } from './conversations';
-import { Message } from '@/types/messaging';
+import { Message, MessageAttachment } from '@/types/messaging';
 
 // Fetch messages for a conversation
 export const fetchMessages = async (conversationId: string) => {
@@ -54,8 +54,58 @@ export const markMessagesAsRead = async (messageIds: string[]) => {
   }
 };
 
+// Upload a file for a message
+export const uploadMessageAttachment = async (file: File): Promise<MessageAttachment | null> => {
+  try {
+    // Create a unique file path
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+    const filePath = `message-attachments/${fileName}`;
+    
+    // Upload the file
+    const { data, error } = await supabase.storage
+      .from('message-attachments')
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+    
+    if (error) {
+      console.error('Error uploading file:', error);
+      toast({
+        title: "Failed to upload file",
+        description: error.message,
+        variant: "destructive"
+      });
+      return null;
+    }
+    
+    // Get the public URL for the file
+    const { data: { publicUrl } } = supabase.storage
+      .from('message-attachments')
+      .getPublicUrl(filePath);
+    
+    return {
+      id: filePath,
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      url: publicUrl,
+      path: filePath
+    };
+  } catch (e) {
+    console.error('Error in uploadMessageAttachment:', e);
+    toast({
+      title: "Failed to upload file",
+      description: "An unexpected error occurred",
+      variant: "destructive"
+    });
+    return null;
+  }
+};
+
 // Send a new message
-export const sendMessage = async (conversationId: string, message: string) => {
+export const sendMessage = async (conversationId: string, message: string, attachments: MessageAttachment[] = []) => {
   try {
     const userId = await getCurrentUserId();
     if (!userId) {
@@ -69,7 +119,8 @@ export const sendMessage = async (conversationId: string, message: string) => {
         conversation_id: conversationId,
         sender_id: userId,
         message: message.trim(),
-        is_read: false
+        is_read: false,
+        attachments: attachments.length > 0 ? attachments : null
       });
     
     if (error) {
