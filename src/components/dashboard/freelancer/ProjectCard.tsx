@@ -1,7 +1,8 @@
+
 import React from 'react';
 import { Project } from '@/components/projects/useProjects';
 import { MapPin, Users, Calendar as CalendarIcon, Check } from 'lucide-react';
-import { formatDate, formatRole } from '@/utils/projectFormatters';
+import { formatDateAgo, formatRole } from '@/utils/projectFormatters';
 import WorkTypeBadge from './badges/WorkTypeBadge';
 import DurationBadge from './badges/DurationBadge';
 import BudgetBadge from './badges/BudgetBadge';
@@ -20,8 +21,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   onClick,
   isPurchased = false
 }) => {
-  // Format dates
-  const postedDate = formatDate(project.created_at);
+  // Format dates as "X days ago"
+  const postedDateAgo = formatDateAgo(project.created_at);
   const purchasesCount = project.purchases_count || 0;
   return <div className={`p-5 cursor-pointer transition-all ${isSelected ? 'bg-primary/5 border-l-4 border-primary' : 'hover:bg-muted/50 border-l-4 border-transparent'}`} onClick={onClick}>
       <div className="flex justify-between items-start">
@@ -61,7 +62,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
           <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100">
             <CalendarIcon className="h-4 w-4 text-gray-600" />
           </span>
-          <span className="text-sm text-gray-600 font-bold">Posted {postedDate}</span>
+          <span className="text-sm text-gray-600 font-bold">Posted {postedDateAgo}</span>
         </div>
       </div>
       
