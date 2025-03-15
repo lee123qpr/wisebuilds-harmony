@@ -1,8 +1,7 @@
-
 import React, { useState, useEffect } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
-import LeadPurchaseButton from '@/components/projects/LeadPurchaseButton';
+import { LeadPurchaseButton } from '@/components/projects/lead-purchase';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import ProjectListSkeleton from './ProjectListSkeleton';
 import EmptyProjectState from './EmptyProjectState';
@@ -50,7 +49,6 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
     }
   };
 
-  // Check which projects have been purchased
   useEffect(() => {
     const checkPurchasedProjects = async () => {
       if (!user || !isFreelancer || projects.length === 0) return;
@@ -59,7 +57,6 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
         const projectIds = projects.map(project => project.id);
         const purchasedStatus: Record<string, boolean> = {};
         
-        // Check each project individually
         for (const projectId of projectIds) {
           const { data, error } = await supabase.rpc('check_application_exists', {
             p_project_id: projectId,

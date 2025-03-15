@@ -1,11 +1,10 @@
-
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { usePurchaseLead } from '@/hooks/usePurchaseLead';
 import { Loader2 } from 'lucide-react';
-import LeadPurchaseButton from '@/components/projects/LeadPurchaseButton';
+import { LeadPurchaseButton } from '@/components/projects/lead-purchase';
 
 interface ProjectLead {
   id: string;
