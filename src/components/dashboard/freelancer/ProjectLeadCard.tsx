@@ -1,7 +1,10 @@
 
 import React from 'react';
-import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
+import { usePurchaseLead } from '@/hooks/usePurchaseLead';
+import { Loader2 } from 'lucide-react';
 
 interface ProjectLead {
   id: string;
@@ -19,6 +22,20 @@ interface ProjectLeadCardProps {
 }
 
 const ProjectLeadCard: React.FC<ProjectLeadCardProps> = ({ lead }) => {
+  const navigate = useNavigate();
+  const { purchaseLead, isPurchasing } = usePurchaseLead();
+
+  const handlePurchase = async () => {
+    const success = await purchaseLead(lead.id);
+    if (success) {
+      navigate('/dashboard/freelancer/applications');
+    }
+  };
+
+  const handleView = () => {
+    navigate(`/project/${lead.id}`);
+  };
+
   return (
     <Card key={lead.id}>
       <CardHeader>
@@ -42,10 +59,16 @@ const ProjectLeadCard: React.FC<ProjectLeadCardProps> = ({ lead }) => {
           ))}
         </div>
         <div className="flex gap-2">
-          <Button className="flex-1">
+          <Button className="flex-1" onClick={handleView}>
             View Details
           </Button>
-          <Button variant="outline" className="flex-1">
+          <Button 
+            variant="outline" 
+            className="flex-1"
+            onClick={handlePurchase}
+            disabled={isPurchasing}
+          >
+            {isPurchasing ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
             Purchase Lead
           </Button>
         </div>
