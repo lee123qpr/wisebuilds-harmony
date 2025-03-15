@@ -49,15 +49,29 @@ export const fetchConversations = async (userId: string) => {
         console.error('Error fetching client info:', clientError);
       }
       
-      // Make sure we create a valid ClientInfo object even if there's an error
-      const clientInfo: ClientInfo = clientData ? {
-        contact_name: clientData.contact_name,
-        company_name: clientData.company_name,
-        email: null // Since email doesn't exist in the table, set it to null
-      } : {
-        contact_name: null,
-        company_name: null,
-        email: null
+      // Improved error handling and logging for debugging
+      if (!clientData) {
+        console.log(`No client profile found for client_id: ${conv.client_id}`);
+        
+        // Check if this client exists in auth.users
+        // This is a temporary debugging step
+        const { data: userData, error: userError } = await supabase.auth.admin
+          .getUserById(conv.client_id);
+        
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+        } else if (userData) {
+          console.log('Found user in auth.users:', userData.user);
+        } else {
+          console.log(`No user found with id: ${conv.client_id}`);
+        }
+      }
+      
+      // Make sure we create a valid ClientInfo object
+      const clientInfo: ClientInfo = {
+        contact_name: clientData?.contact_name || `Client ID: ${conv.client_id.slice(0, 8)}`,
+        company_name: clientData?.company_name || null,
+        email: null // Since email doesn't exist in the table
       };
       
       return {
