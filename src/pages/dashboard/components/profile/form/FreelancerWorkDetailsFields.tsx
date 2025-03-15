@@ -3,12 +3,12 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Switch } from '@/components/ui/switch';
 import { freelancerProfileSchema } from '../freelancerSchema';
 import * as z from 'zod';
 import FreelancerSkillsField from './FreelancerSkillsField';
 import FreelancerQualificationsField from './FreelancerQualificationsField';
 import FreelancerIndemnityField from './FreelancerIndemnityField';
+import FreelancerPreviousEmployersField from './FreelancerPreviousEmployersField';
 
 type FreelancerWorkDetailsFieldsProps = {
   form: UseFormReturn<z.infer<typeof freelancerProfileSchema>>;
@@ -71,24 +71,9 @@ const FreelancerWorkDetailsFields: React.FC<FreelancerWorkDetailsFieldsProps> = 
             </FormItem>
           )}
         />
-        
-        <FormField
-          control={form.control}
-          name="role"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Professional Role</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your professional role" {...field} disabled={disabled} />
-              </FormControl>
-              <FormDescription>
-                E.g. "Senior Architect", "Project Manager"
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </div>
+
+      <FreelancerPreviousEmployersField form={form} disabled={disabled} />
 
       <FreelancerIndemnityField form={form} disabled={disabled} />
 

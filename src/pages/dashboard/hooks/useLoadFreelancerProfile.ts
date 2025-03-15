@@ -43,11 +43,21 @@ export const useLoadFreelancerProfile = ({
         // Extract user metadata for values
         const userMetadata = user.user_metadata || {};
         
+        // Convert dates to Date objects for previousEmployers
+        let previousEmployers = userMetadata.previous_employers || [];
+        if (previousEmployers.length > 0) {
+          previousEmployers = previousEmployers.map((employer: any) => ({
+            ...employer,
+            startDate: employer.startDate ? new Date(employer.startDate) : new Date(),
+            endDate: employer.endDate ? new Date(employer.endDate) : null
+          }));
+        }
+        
         // Populate form with existing data from user metadata
         form.reset({
           fullName: userMetadata.full_name || '',
           profession: userMetadata.profession || '',
-          role: userMetadata.role || '',
+          previousEmployers: previousEmployers,
           location: userMetadata.location || '',
           bio: userMetadata.bio || '',
           phoneNumber: userMetadata.phone_number || userMetadata.phone || '',

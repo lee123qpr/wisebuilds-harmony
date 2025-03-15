@@ -27,7 +27,7 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
         data: {
           full_name: values.fullName,
           profession: values.profession,
-          role: values.role,
+          previous_employers: values.previousEmployers,
           location: values.location,
           bio: values.bio,
           phone_number: values.phoneNumber,

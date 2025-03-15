@@ -15,7 +15,7 @@ export const useFreelancerProfileForm = () => {
     defaultValues: {
       fullName: '',
       profession: '',
-      role: '',
+      previousEmployers: [],
       location: '',
       bio: '',
       phoneNumber: '',

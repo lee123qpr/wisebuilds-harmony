@@ -11,10 +11,17 @@ export const freelancerProfileSchema = z.object({
     .string()
     .min(2, { message: 'Profession must be at least 2 characters long' })
     .max(100, { message: 'Profession cannot exceed 100 characters' }),
-  role: z
-    .string()
-    .min(2, { message: 'Role must be at least 2 characters long' })
-    .max(100, { message: 'Role cannot exceed 100 characters' }),
+  previousEmployers: z
+    .array(
+      z.object({
+        employerName: z.string().min(2, { message: 'Employer name must be at least 2 characters long' }),
+        startDate: z.date(),
+        endDate: z.date().nullable().optional(),
+        current: z.boolean().default(false),
+        position: z.string().min(2, { message: 'Position must be at least 2 characters long' }),
+      })
+    )
+    .default([]),
   location: z
     .string()
     .min(2, { message: 'Location must be at least 2 characters long' })
