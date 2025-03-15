@@ -37,13 +37,23 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         // Then get the client profile using the user_id
         const { data: clientProfile, error: clientError } = await supabase
           .from('client_profiles')
-          .select('contact_name, company_name, phone_number, email, website')
+          .select('contact_name, company_name, phone_number, website')
           .eq('id', project.user_id)
           .maybeSingle();
         
         if (clientError) throw clientError;
         
-        setClientInfo(clientProfile);
+        // Get the user email from auth.users via RPC function (we'll need to create this)
+        const { data: userData, error: userError } = await supabase
+          .rpc('get_user_email', { user_id: project.user_id });
+        
+        if (userError) throw userError;
+        
+        // Combine the data
+        setClientInfo({
+          ...clientProfile,
+          email: userData?.email || null
+        });
       } catch (error) {
         console.error('Error fetching client info:', error);
       } finally {

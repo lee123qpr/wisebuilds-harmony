@@ -8,6 +8,12 @@ import EmptyStateCard from './EmptyStateCard';
 import { Project } from '@/components/projects/useProjects';
 import ProjectListView from './ProjectListView';
 
+interface Application {
+  id: string;
+  created_at: string;
+  project: Project;
+}
+
 interface ApplicationWithProject extends Project {
   application_id: string;
   application_created_at: string;
@@ -27,31 +33,45 @@ const ApplicationsTab: React.FC = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      const { data, error } = await supabase
+      // First get the applications
+      const { data: applicationData, error: appError } = await supabase
         .from('project_applications')
-        .select(`
-          id,
-          created_at,
-          projects:project_id (
-            id, title, description, budget, duration, role, location, work_type,
-            created_at, start_date, status, hiring_status, applications,
-            requires_insurance, requires_equipment, requires_site_visits, documents
-          )
-        `)
+        .select('id, created_at, project_id')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
-        
-      if (error) {
-        console.error('Error fetching applications:', error);
-        throw error;
+      
+      if (appError) {
+        console.error('Error fetching applications:', appError);
+        throw appError;
       }
       
-      // Transform the data to fit the Project type
-      return data.map(app => ({
-        ...app.projects,
-        application_id: app.id,
-        application_created_at: app.created_at
-      })) as ApplicationWithProject[];
+      if (!applicationData || applicationData.length === 0) {
+        return [];
+      }
+      
+      // Then get the projects for those applications
+      const projectPromises = applicationData.map(async (app) => {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('id', app.project_id)
+          .single();
+          
+        if (projectError) {
+          console.error('Error fetching project:', projectError);
+          return null;
+        }
+        
+        // Transform the data to fit the ApplicationWithProject type
+        return {
+          ...projectData,
+          application_id: app.id,
+          application_created_at: app.created_at
+        } as ApplicationWithProject;
+      });
+      
+      const results = await Promise.all(projectPromises);
+      return results.filter(Boolean) as ApplicationWithProject[];
     },
     enabled: !!user
   });

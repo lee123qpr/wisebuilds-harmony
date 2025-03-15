@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { Loader2, Phone, Mail } from 'lucide-react';
 import ClientContactInfo from './ClientContactInfo';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -47,7 +48,7 @@ const ProjectDetails = ({ project }: ProjectDetailsProps) => {
   };
 
   // Check if the project has already been purchased when component mounts
-  React.useEffect(() => {
+  useEffect(() => {
     checkIfAlreadyPurchased();
   }, [project.id, user]);
 

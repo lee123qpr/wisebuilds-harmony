@@ -42,10 +42,10 @@ export const usePurchaseLead = () => {
 
       if (error) throw error;
 
-      if (!data.success) {
+      if (!data?.success) {
         toast({
           title: 'Purchase failed',
-          description: data.message,
+          description: data?.message || 'Unknown error occurred',
           variant: 'destructive',
         });
         return false;
@@ -62,7 +62,7 @@ export const usePurchaseLead = () => {
       });
       
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error purchasing lead:', error);
       toast({
         title: 'Error',
