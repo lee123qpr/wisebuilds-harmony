@@ -17,6 +17,7 @@ interface ProjectListViewProps {
   selectedProjectId: string | null;
   setSelectedProjectId: (id: string) => void;
   selectedProject: Project | null;
+  showContactInfo?: boolean;
 }
 
 const ProjectListView: React.FC<ProjectListViewProps> = ({
@@ -24,7 +25,8 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   isLoading,
   selectedProjectId,
   setSelectedProjectId,
-  selectedProject
+  selectedProject,
+  showContactInfo = false
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -67,7 +69,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       <ResizablePanel defaultSize={60}>
         {selectedProject ? (
           <div className="p-6 h-[700px] overflow-auto">
-            {isFreelancer && (
+            {isFreelancer && !showContactInfo && (
               <div className="flex justify-end mb-4">
                 <LeadPurchaseButton 
                   projectId={selectedProject.id}
@@ -78,7 +80,8 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
             )}
             <ProjectDetails 
               project={selectedProject}
-              refreshTrigger={refreshTrigger} 
+              refreshTrigger={refreshTrigger}
+              forceShowContactInfo={showContactInfo}
             />
           </div>
         ) : (

@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Mail, Phone, Building, User, ExternalLink, AlertCircle } from 'lucide-react';
+import { Mail, Phone, Building, User, ExternalLink, AlertCircle, MapPin } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useContactInfo } from '@/hooks/leads/useContactInfo';
@@ -69,32 +69,33 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
   }
 
   return (
-    <div className="bg-green-50 border border-green-100 rounded-md p-4 space-y-3">
-      <h3 className="text-green-800 font-medium flex items-center gap-2">
+    <div className="bg-green-50 border border-green-100 rounded-md p-4 space-y-4">
+      <h3 className="text-green-800 font-medium flex items-center gap-2 pb-1 border-b border-green-100">
         <User className="h-4 w-4" />
         Client Contact Information
       </h3>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-3">
         {clientInfo.contact_name && (
           <div className="flex items-center gap-2">
-            <User className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Contact:</span> {clientInfo.contact_name}
+            <User className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="font-medium min-w-24">Contact Name:</span> 
+            <span className="font-semibold">{clientInfo.contact_name}</span>
           </div>
         )}
         
         {clientInfo.company_name && (
           <div className="flex items-center gap-2">
-            <Building className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Company:</span> {clientInfo.company_name}
+            <Building className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="font-medium min-w-24">Company:</span> {clientInfo.company_name}
           </div>
         )}
         
         {clientInfo.phone_number && (
           <div className="flex items-center gap-2">
-            <Phone className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Phone:</span>
-            <a href={`tel:${clientInfo.phone_number}`} className="text-blue-600 hover:underline">
+            <Phone className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="font-medium min-w-24">Phone:</span>
+            <a href={`tel:${clientInfo.phone_number}`} className="text-blue-600 hover:underline font-semibold">
               {clientInfo.phone_number}
             </a>
           </div>
@@ -102,11 +103,18 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         
         {clientInfo.email && (
           <div className="flex items-center gap-2">
-            <Mail className="h-4 w-4 text-green-600" />
-            <span className="font-medium">Email:</span>
+            <Mail className="h-4 w-4 text-green-600 flex-shrink-0" />
+            <span className="font-medium min-w-24">Email:</span>
             <a href={`mailto:${clientInfo.email}`} className="text-blue-600 hover:underline">
               {clientInfo.email}
             </a>
+          </div>
+        )}
+        
+        {clientInfo.company_address && (
+          <div className="flex items-start gap-2">
+            <MapPin className="h-4 w-4 text-green-600 flex-shrink-0 mt-1" />
+            <span className="font-medium min-w-24">Address:</span> {clientInfo.company_address}
           </div>
         )}
       </div>

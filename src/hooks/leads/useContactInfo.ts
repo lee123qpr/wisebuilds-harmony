@@ -8,6 +8,7 @@ interface ClientInfo {
   phone_number: string | null;
   email: string | null;
   website: string | null;
+  company_address: string | null;
   is_profile_complete: boolean; // Flag to indicate if profile is complete
 }
 
@@ -35,7 +36,7 @@ export const useContactInfo = (projectId: string) => {
       // Then get the client profile using the user_id
       const { data: clientProfile, error: clientError } = await supabase
         .from('client_profiles')
-        .select('contact_name, company_name, phone_number, website')
+        .select('contact_name, company_name, phone_number, website, company_address')
         .eq('id', project.user_id)
         .maybeSingle();
       
@@ -70,6 +71,7 @@ export const useContactInfo = (projectId: string) => {
         company_name: clientProfile?.company_name || null,
         phone_number: clientProfile?.phone_number || null,
         website: clientProfile?.website || null,
+        company_address: clientProfile?.company_address || null,
         email: email,
         is_profile_complete: hasProfileData // Set flag based on profile data existence
       });

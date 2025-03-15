@@ -7,6 +7,8 @@ import { useQuery } from '@tanstack/react-query';
 import EmptyStateCard from './EmptyStateCard';
 import { Project } from '@/components/projects/useProjects';
 import ProjectListView from './ProjectListView';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { InfoCircle } from 'lucide-react';
 
 interface Application {
   id: string;
@@ -92,9 +94,16 @@ const ApplicationsTab: React.FC = () => {
   return (
     <div className="space-y-4">
       <h2 className="text-2xl font-bold">My Applications</h2>
-      <p className="text-muted-foreground mb-6">
+      <p className="text-muted-foreground mb-4">
         Projects you've purchased contact information for
       </p>
+      
+      <Alert variant="info" className="mb-4 bg-blue-50 border-blue-200">
+        <InfoCircle className="h-4 w-4 text-blue-600 mr-2" />
+        <AlertDescription className="text-blue-800">
+          You've purchased these leads and can now access their full project details and contact information. Select a project to view all available details.
+        </AlertDescription>
+      </Alert>
       
       <ProjectListView
         projects={applications || []}
@@ -102,6 +111,7 @@ const ApplicationsTab: React.FC = () => {
         selectedProjectId={selectedProjectId}
         setSelectedProjectId={setSelectedProjectId}
         selectedProject={selectedProject}
+        showContactInfo={true}
       />
     </div>
   );
