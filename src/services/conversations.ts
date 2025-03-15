@@ -41,7 +41,7 @@ export const fetchConversations = async (userId: string) => {
       // Get client info
       const { data: clientData, error: clientError } = await supabase
         .from('client_profiles')
-        .select('contact_name, email, company_name')
+        .select('contact_name, company_name')
         .eq('id', conv.client_id)
         .maybeSingle();
       
@@ -49,10 +49,21 @@ export const fetchConversations = async (userId: string) => {
         console.error('Error fetching client info:', clientError);
       }
       
+      // Make sure we create a valid ClientInfo object even if there's an error
+      const clientInfo: ClientInfo = clientData ? {
+        contact_name: clientData.contact_name,
+        company_name: clientData.company_name,
+        email: null // Since email doesn't exist in the table, set it to null
+      } : {
+        contact_name: null,
+        company_name: null,
+        email: null
+      };
+      
       return {
         ...conv,
         project_title: conv.projects?.title || 'Unknown Project',
-        client_info: clientData as ClientInfo
+        client_info: clientInfo
       };
     }));
     
@@ -81,9 +92,20 @@ export const createConversation = async (freelancerId: string, clientId: string,
     // Get client info
     const { data: clientData } = await supabase
       .from('client_profiles')
-      .select('contact_name, email, company_name')
+      .select('contact_name, company_name')
       .eq('id', clientId)
       .maybeSingle();
+    
+    // Create a valid ClientInfo object
+    const clientInfo: ClientInfo = clientData ? {
+      contact_name: clientData.contact_name,
+      company_name: clientData.company_name,
+      email: null // Since email doesn't exist in the table, set it to null
+    } : {
+      contact_name: null,
+      company_name: null,
+      email: null
+    };
     
     // We need to use type assertion because conversations table isn't in the Supabase type definition
     const { data, error } = await (supabase
@@ -110,7 +132,7 @@ export const createConversation = async (freelancerId: string, clientId: string,
     const newConversation: Conversation = {
       ...data,
       project_title: projectData?.title || 'Unknown Project',
-      client_info: clientData || null
+      client_info: clientInfo
     };
     
     return newConversation;
