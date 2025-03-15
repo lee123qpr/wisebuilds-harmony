@@ -38,7 +38,7 @@ export const fetchConversations = async (userId: string) => {
     
     // Then fetch client info separately for each conversation
     const formattedConversations = await Promise.all(conversationsData.map(async (conv: any) => {
-      // Get client info
+      // Get client info from client_profiles
       const { data: clientData, error: clientError } = await supabase
         .from('client_profiles')
         .select('contact_name, company_name')
@@ -49,30 +49,47 @@ export const fetchConversations = async (userId: string) => {
         console.error('Error fetching client info:', clientError);
       }
       
-      // Improved error handling and logging for debugging
-      if (!clientData) {
-        console.log(`No client profile found for client_id: ${conv.client_id}`);
-        
-        // Check if this client exists in auth.users
-        // This is a temporary debugging step
-        const { data: userData, error: userError } = await supabase.auth.admin
-          .getUserById(conv.client_id);
-        
-        if (userError) {
-          console.error('Error fetching user data:', userError);
-        } else if (userData) {
-          console.log('Found user in auth.users:', userData.user);
-        } else {
-          console.log(`No user found with id: ${conv.client_id}`);
-        }
-      }
+      let clientInfo: ClientInfo;
       
-      // Make sure we create a valid ClientInfo object
-      const clientInfo: ClientInfo = {
-        contact_name: clientData?.contact_name || `Client ID: ${conv.client_id.slice(0, 8)}`,
-        company_name: clientData?.company_name || null,
-        email: null // Since email doesn't exist in the table
-      };
+      // If no client profile found, try to get user data from auth using edge function
+      if (!clientData) {
+        try {
+          // Call the edge function to get user email
+          const { data: userData, error: userError } = await supabase.functions.invoke('get-user-email', {
+            body: { userId: conv.client_id }
+          });
+          
+          if (userError) {
+            console.error('Error fetching user data from edge function:', userError);
+            clientInfo = {
+              contact_name: 'Unknown Client',
+              company_name: null,
+              email: null
+            };
+          } else {
+            // Use the email as contact name if available
+            clientInfo = {
+              contact_name: userData?.email ? userData.email.split('@')[0] : 'Unknown Client',
+              company_name: null,
+              email: userData?.email || null
+            };
+          }
+        } catch (error) {
+          console.error('Error calling edge function:', error);
+          clientInfo = {
+            contact_name: 'Unknown Client',
+            company_name: null,
+            email: null
+          };
+        }
+      } else {
+        // Use the client profile data
+        clientInfo = {
+          contact_name: clientData.contact_name || 'Unknown Client',
+          company_name: clientData.company_name,
+          email: null
+        };
+      }
       
       return {
         ...conv,
@@ -110,16 +127,43 @@ export const createConversation = async (freelancerId: string, clientId: string,
       .eq('id', clientId)
       .maybeSingle();
     
-    // Create a valid ClientInfo object
-    const clientInfo: ClientInfo = clientData ? {
-      contact_name: clientData.contact_name,
-      company_name: clientData.company_name,
-      email: null // Since email doesn't exist in the table, set it to null
-    } : {
-      contact_name: null,
-      company_name: null,
-      email: null
-    };
+    let clientInfo: ClientInfo;
+    
+    // If no client profile found, try to get user data from auth
+    if (!clientData) {
+      try {
+        const { data: userData, error: userError } = await supabase.functions.invoke('get-user-email', {
+          body: { userId: clientId }
+        });
+        
+        if (userError || !userData) {
+          clientInfo = {
+            contact_name: 'Unknown Client',
+            company_name: null,
+            email: null
+          };
+        } else {
+          clientInfo = {
+            contact_name: userData.email ? userData.email.split('@')[0] : 'Unknown Client',
+            company_name: null,
+            email: userData.email || null
+          };
+        }
+      } catch (error) {
+        console.error('Error calling edge function:', error);
+        clientInfo = {
+          contact_name: 'Unknown Client',
+          company_name: null,
+          email: null
+        };
+      }
+    } else {
+      clientInfo = {
+        contact_name: clientData.contact_name || 'Unknown Client',
+        company_name: clientData.company_name,
+        email: null
+      };
+    }
     
     // We need to use type assertion because conversations table isn't in the Supabase type definition
     const { data, error } = await (supabase
