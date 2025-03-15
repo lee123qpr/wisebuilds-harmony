@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -10,7 +9,9 @@ export type NotificationType =
   | 'hired'
   | 'project_complete'
   | 'review'
-  | 'application_viewed';
+  | 'application_viewed'
+  | 'verification_status'
+  | 'payment';
 
 export interface Notification {
   id: string;
@@ -103,7 +104,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     const mockInterval = setInterval(() => {
       // Randomly add a new notification (1 in 10 chance) for demo purposes
       if (Math.random() < 0.1) {
-        const types: NotificationType[] = ['message', 'lead', 'hired', 'project_complete', 'review'];
+        const types: NotificationType[] = ['message', 'lead', 'hired', 'project_complete', 'review', 'verification_status', 'payment'];
         const randomType = types[Math.floor(Math.random() * types.length)];
         
         const newNotification: Notification = {
@@ -138,6 +139,8 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       case 'project_complete': return 'Project Completed';
       case 'review': return 'New Review';
       case 'application_viewed': return 'Application Viewed';
+      case 'verification_status': return 'Verification Update';
+      case 'payment': return 'Payment Received';
       default: return 'New Notification';
     }
   };
@@ -150,6 +153,8 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       case 'project_complete': return 'A project has been marked as complete.';
       case 'review': return 'Someone left you a new review.';
       case 'application_viewed': return 'A client viewed your application.';
+      case 'verification_status': return 'There is an update to your verification status.';
+      case 'payment': return 'You have received a payment.';
       default: return 'You have a new notification.';
     }
   };
