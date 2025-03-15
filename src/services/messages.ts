@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getCurrentUserId } from './conversations';
@@ -60,7 +59,7 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `attachments/${fileName}`;
+    const filePath = `${fileName}`;
     
     console.log('Uploading file to attachments bucket:', filePath);
     
