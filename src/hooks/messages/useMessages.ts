@@ -11,6 +11,17 @@ export const useMessages = (selectedConversation: Conversation | null) => {
   const [isSending, setIsSending] = useState(false);
   const [attachments, setAttachments] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  // Get and store the current user ID
+  useEffect(() => {
+    const getCurrentUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      setCurrentUserId(data.session?.user?.id || null);
+    };
+    
+    getCurrentUser();
+  }, []);
 
   // Fetch messages when the conversation changes
   useEffect(() => {
@@ -50,7 +61,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
           setMessages(prev => [...prev, newMsg]);
           
           // Mark as read if it's not from the current user
-          if (newMsg.sender_id !== supabase.auth.getSession().data?.session?.user?.id) {
+          if (newMsg.sender_id !== currentUserId) {
             markMessagesAsRead([newMsg.id]);
           }
         }
@@ -60,7 +71,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     return () => {
       messagesSubscription.unsubscribe();
     };
-  }, [selectedConversation]);
+  }, [selectedConversation, currentUserId]);
 
   // Function to handle file selection
   const handleFileSelect = useCallback((files: FileList | null) => {
