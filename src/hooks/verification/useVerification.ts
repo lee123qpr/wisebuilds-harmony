@@ -3,8 +3,7 @@ import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { fetchVerificationStatus, uploadVerificationDocument } from './verificationService';
-import type { VerificationData, UseVerificationResult } from './types';
-import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
+import type { VerificationData, UseVerificationResult, VerificationStatus } from './types';
 
 export const useVerification = (): UseVerificationResult => {
   const { user } = useAuth();
@@ -12,17 +11,27 @@ export const useVerification = (): UseVerificationResult => {
   const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   // Fetch verification status
   const refreshVerificationStatus = async () => {
     if (!user) return;
 
     setIsLoading(true);
-    const data = await fetchVerificationStatus(user.id);
-    if (data) {
-      setVerificationData(data);
+    setStatus('loading');
+    try {
+      const data = await fetchVerificationStatus(user.id);
+      if (data) {
+        setVerificationData(data);
+      }
+      setStatus('success');
+    } catch (err) {
+      setError(err instanceof Error ? err : new Error('Unknown error'));
+      setStatus('error');
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   // Upload ID document
@@ -73,6 +82,10 @@ export const useVerification = (): UseVerificationResult => {
     isVerified: verificationData?.verification_status === 'approved',
     isLoading,
     isUploading,
+    error,
+    status,
+    isSubmitting: isUploading,
+    submitVerification: handleUploadVerificationDocument,
     uploadVerificationDocument: handleUploadVerificationDocument,
     refreshVerificationStatus
   };

@@ -1,7 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { VerificationData } from './types';
-import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
+import type { VerificationData, VerificationStatus } from './types';
 
 // Converts database string status to our VerificationStatus type
 export const mapStatusToVerificationStatus = (status: string): VerificationStatus => {
@@ -29,11 +28,14 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       return {
         id: data.id,
         user_id: data.user_id,
-        verification_status: mapStatusToVerificationStatus(data.verification_status),
+        verification_status: data.verification_status as 'pending' | 'approved' | 'rejected',
         id_document_path: data.id_document_path,
         submitted_at: data.submitted_at,
         verified_at: data.verified_at,
-        admin_notes: data.admin_notes
+        admin_notes: data.admin_notes,
+        created_at: data.created_at,
+        updated_at: data.updated_at,
+        verified_by: data.verified_by
       };
     }
     
@@ -133,11 +135,14 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       const verificationData: VerificationData = {
         id: resultData.id,
         user_id: resultData.user_id,
-        verification_status: mapStatusToVerificationStatus(resultData.verification_status),
+        verification_status: resultData.verification_status as 'pending' | 'approved' | 'rejected',
         id_document_path: resultData.id_document_path,
         submitted_at: resultData.submitted_at,
         verified_at: resultData.verified_at,
-        admin_notes: resultData.admin_notes
+        admin_notes: resultData.admin_notes,
+        created_at: resultData.created_at,
+        updated_at: resultData.updated_at,
+        verified_by: resultData.verified_by
       };
       
       return {

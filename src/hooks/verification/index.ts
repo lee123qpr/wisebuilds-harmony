@@ -1,3 +1,3 @@
 
 export { useVerification } from './useVerification';
-export type { VerificationData, UseVerificationResult } from './types';
+export type { VerificationData, UseVerificationResult, VerificationStatus } from './types';

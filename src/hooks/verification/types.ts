@@ -12,6 +12,8 @@ export interface VerificationData {
   verified_by: string | null;
 }
 
+export type VerificationStatus = 'pending' | 'approved' | 'rejected' | 'not_submitted';
+
 export interface UseVerificationResult {
   verificationData: VerificationData | null;
   isLoading: boolean;
@@ -19,4 +21,10 @@ export interface UseVerificationResult {
   submitVerification: (file: File) => Promise<void>;
   status: 'idle' | 'loading' | 'success' | 'error';
   isSubmitting: boolean;
+  // Add the missing properties
+  verificationStatus: VerificationStatus;
+  isVerified: boolean;
+  isUploading: boolean;
+  uploadVerificationDocument: (file: File) => Promise<string | null>;
+  refreshVerificationStatus: () => Promise<void>;
 }
