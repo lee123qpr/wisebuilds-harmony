@@ -2,8 +2,9 @@
 import React, { useRef } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, Paperclip, X, Loader2 } from 'lucide-react';
+import { Send, Paperclip, X, Loader2, FileIcon, Image, FileText } from 'lucide-react';
 import { MessageAttachment } from '@/types/messaging';
+import { Progress } from '@/components/ui/progress';
 
 interface MessageInputProps {
   value: string;
@@ -15,6 +16,7 @@ interface MessageInputProps {
   attachments?: File[];
   onRemoveAttachment?: (index: number) => void;
   isUploading?: boolean;
+  uploadProgress?: {[key: string]: number};
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -26,7 +28,8 @@ const MessageInput: React.FC<MessageInputProps> = ({
   onFileSelect,
   attachments = [],
   onRemoveAttachment,
-  isUploading = false
+  isUploading = false,
+  uploadProgress = {}
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -34,38 +37,65 @@ const MessageInput: React.FC<MessageInputProps> = ({
     fileInputRef.current?.click();
   };
 
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType.startsWith('image/')) return '🖼️';
-    if (mimeType.includes('pdf')) return '📄';
-    if (mimeType.includes('word') || mimeType.includes('document')) return '📝';
-    if (mimeType.includes('spreadsheet') || mimeType.includes('excel')) return '📊';
-    return '📎';
+  const getFileIcon = (file: File) => {
+    if (file.type.startsWith('image/')) return <Image className="h-4 w-4 text-blue-500" />;
+    if (file.type.includes('pdf')) return <FileText className="h-4 w-4 text-red-500" />;
+    if (file.type.includes('word') || file.type.includes('document')) return <FileText className="h-4 w-4 text-blue-700" />;
+    if (file.type.includes('spreadsheet') || file.type.includes('excel')) return <FileText className="h-4 w-4 text-green-600" />;
+    return <FileIcon className="h-4 w-4 text-gray-500" />;
+  };
+
+  const getFileSize = (size: number) => {
+    if (size < 1024) return `${size} B`;
+    if (size < 1024 * 1024) return `${(size / 1024).toFixed(0)} KB`;
+    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
     <div className="p-3 border-t">
       {/* Attachments preview */}
       {attachments.length > 0 && (
-        <div className="flex flex-wrap gap-2 mb-3">
-          {attachments.map((file, index) => (
-            <div 
-              key={index}
-              className="flex items-center gap-1 bg-muted/50 pl-2 pr-1 py-1 rounded text-xs"
-            >
-              <span>{getFileIcon(file.type)}</span>
-              <span className="max-w-[120px] truncate">{file.name}</span>
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="icon" 
-                className="h-5 w-5" 
-                onClick={() => onRemoveAttachment?.(index)}
-                disabled={isSending}
+        <div className="flex flex-wrap gap-2 mb-3 max-h-[120px] overflow-y-auto p-2 bg-muted/30 rounded-md">
+          {attachments.map((file, index) => {
+            const progress = uploadProgress[index];
+            const isUploading = progress !== undefined && progress >= 0 && progress < 100;
+            const hasError = progress === -1;
+            
+            return (
+              <div 
+                key={index}
+                className={`flex items-center gap-1 p-2 rounded text-xs ${
+                  hasError ? 'bg-red-100 border-red-200' : 'bg-muted/50 border'
+                }`}
               >
-                <X className="h-3 w-3" />
-              </Button>
-            </div>
-          ))}
+                <span className="mr-1">{getFileIcon(file)}</span>
+                <div className="flex-grow">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium truncate max-w-[120px]">{file.name}</span>
+                    <Button 
+                      type="button" 
+                      variant="ghost" 
+                      size="icon" 
+                      className="h-5 w-5 ml-1" 
+                      onClick={() => onRemoveAttachment?.(index)}
+                      disabled={isSending || isUploading}
+                    >
+                      <X className="h-3 w-3" />
+                    </Button>
+                  </div>
+                  <span className="text-muted-foreground block">{getFileSize(file.size)}</span>
+                  
+                  {isUploading && (
+                    <Progress value={progress} className="h-1 mt-1" />
+                  )}
+                  
+                  {hasError && (
+                    <span className="text-red-500 text-[10px]">Upload failed</span>
+                  )}
+                </div>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -79,6 +109,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
               onChange={(e) => onFileSelect(e.target.files)}
               className="hidden"
               disabled={isSending}
+              accept="image/*,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/vnd.ms-excel,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,text/plain"
             />
             <Button 
               type="button" 
@@ -86,6 +117,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
               size="icon" 
               onClick={handleAttachClick}
               disabled={isSending}
+              title="Attach files"
             >
               <Paperclip className="h-4 w-4" />
             </Button>

@@ -20,14 +20,13 @@ serve(async (req) => {
       // Supabase API URL - env var exported by default.
       Deno.env.get('SUPABASE_URL') ?? '',
       // Supabase API SERVICE ROLE KEY - env var exported by default.
-      // WARNING: The service role key has admin privileges and should only be used in secure server environments!
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
     // Extract the request body
-    const { user_id } = await req.json();
+    const { userId } = await req.json();
     
-    if (!user_id) {
+    if (!userId) {
       return new Response(
         JSON.stringify({ error: 'User ID is required' }),
         { 
@@ -37,10 +36,10 @@ serve(async (req) => {
       );
     }
 
-    console.log('Fetching user data for:', user_id);
+    console.log('Fetching user data for:', userId);
 
     // Get the user's data from auth.users table
-    const { data, error } = await supabaseAdmin.auth.admin.getUserById(user_id);
+    const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
 
     if (error) {
       console.error('Error fetching user data:', error);
@@ -55,10 +54,15 @@ serve(async (req) => {
 
     console.log('User data fetched:', data ? 'success' : 'no data');
     
-    // Return the email and metadata in a consistent format
+    // Get the full name from user metadata
+    const fullName = data?.user?.user_metadata?.full_name || null;
+    const email = data?.user?.email || null;
+    
+    // Return the user information
     return new Response(
       JSON.stringify({
-        email: data?.user?.email || null,
+        email,
+        full_name: fullName,
         user_metadata: data?.user?.user_metadata || null
       }),
       { 

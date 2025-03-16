@@ -1,7 +1,8 @@
 
 import React, { useEffect, useRef } from 'react';
 import { Message, MessageAttachment } from '@/types/messaging';
-import { Paperclip } from 'lucide-react';
+import { FileIcon, Paperclip, Download } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface MessagesListProps {
   messages: Message[];
@@ -24,20 +25,33 @@ const AttachmentPreview = ({ attachment }: { attachment: MessageAttachment }) =>
       target="_blank" 
       rel="noopener noreferrer" 
       className="block mt-2 break-all"
+      download={attachment.name}
     >
       {isImage ? (
         <div className="mt-2">
-          <img 
-            src={attachment.url} 
-            alt={attachment.name} 
-            className="max-w-[200px] max-h-[150px] rounded-md object-cover"
-          />
-          <span className="text-xs block mt-1">{attachment.name}</span>
+          <div className="relative group">
+            <img 
+              src={attachment.url} 
+              alt={attachment.name} 
+              className="max-w-[200px] max-h-[150px] rounded-md object-cover"
+            />
+            <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <Download className="h-6 w-6 text-white" />
+            </div>
+          </div>
+          <div className="flex justify-between items-center mt-1">
+            <span className="text-xs truncate max-w-[160px]">{attachment.name}</span>
+            <span className="text-xs text-muted-foreground">{(attachment.size / 1024).toFixed(0)} KB</span>
+          </div>
         </div>
       ) : (
-        <div className="flex items-center gap-2 p-2 bg-background rounded-md">
+        <div className="flex items-center gap-2 p-2 bg-background rounded-md border hover:bg-muted/50 transition-colors">
           <span className="text-lg">{getFileIcon(attachment.type)}</span>
-          <span className="text-sm truncate max-w-[160px]">{attachment.name}</span>
+          <div className="flex-grow">
+            <span className="text-sm truncate max-w-[160px] block">{attachment.name}</span>
+            <span className="text-xs text-muted-foreground">{(attachment.size / 1024).toFixed(0)} KB</span>
+          </div>
+          <Download className="h-4 w-4 text-muted-foreground" />
         </div>
       )}
     </a>
@@ -78,18 +92,26 @@ const MessagesList: React.FC<MessagesListProps> = ({ messages, currentUserId }) 
                   : 'bg-muted'
               }`}
             >
-              {message.message && <div>{message.message}</div>}
+              {message.message && 
+                <div className="mb-2">{message.message}</div>
+              }
               
               {/* Display attachments if any */}
               {hasAttachments && (
-                <div className="mt-2 space-y-2">
-                  {message.attachments?.map((attachment, index) => (
-                    <AttachmentPreview key={index} attachment={attachment} />
-                  ))}
+                <div className={`${message.message ? 'mt-3 pt-3 border-t' : ''} space-y-2`}>
+                  <div className="text-xs font-medium mb-1 opacity-70 flex items-center gap-1">
+                    <Paperclip className="h-3 w-3" />
+                    {message.attachments.length === 1 ? '1 attachment' : `${message.attachments.length} attachments`}
+                  </div>
+                  <div className="space-y-2">
+                    {message.attachments?.map((attachment, index) => (
+                      <AttachmentPreview key={index} attachment={attachment} />
+                    ))}
+                  </div>
                 </div>
               )}
               
-              <div className="text-xs opacity-75 mt-1">
+              <div className="text-xs opacity-75 mt-2 text-right">
                 {new Date(message.created_at).toLocaleTimeString()}
               </div>
             </div>

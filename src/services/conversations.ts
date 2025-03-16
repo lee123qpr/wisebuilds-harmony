@@ -9,107 +9,6 @@ export const getCurrentUserId = async (): Promise<string | null> => {
   return data.session?.user.id || null;
 };
 
-// Fetch all conversations for a user
-export const fetchConversations = async (userId: string) => {
-  try {
-    // First fetch all conversations
-    const { data: conversationsData, error: conversationsError } = await (supabase
-      .from('conversations') as any)
-      .select(`
-        id, 
-        client_id, 
-        freelancer_id, 
-        project_id, 
-        last_message_time,
-        projects:project_id (title)
-      `)
-      .eq('freelancer_id', userId)
-      .order('last_message_time', { ascending: false });
-    
-    if (conversationsError) {
-      console.error('Error fetching conversations:', conversationsError);
-      toast({
-        title: "Failed to load conversations",
-        description: conversationsError.message,
-        variant: "destructive"
-      });
-      return [];
-    }
-    
-    // Then fetch client info separately for each conversation
-    const formattedConversations = await Promise.all(conversationsData.map(async (conv: any) => {
-      // Get client info from client_profiles
-      const { data: clientData, error: clientError } = await supabase
-        .from('client_profiles')
-        .select('contact_name, company_name')
-        .eq('id', conv.client_id)
-        .maybeSingle();
-      
-      if (clientError) {
-        console.error('Error fetching client info:', clientError);
-      }
-      
-      let clientInfo: ClientInfo;
-      
-      // If no client profile found, try to get user data from auth using edge function
-      if (!clientData) {
-        try {
-          // Call the edge function to get user email
-          const { data: userData, error: userError } = await supabase.functions.invoke('get-user-email', {
-            body: { userId: conv.client_id }
-          });
-          
-          if (userError) {
-            console.error('Error fetching user data from edge function:', userError);
-            clientInfo = {
-              contact_name: 'Unknown Client',
-              company_name: null,
-              email: null
-            };
-          } else {
-            // Use the email as contact name if available
-            clientInfo = {
-              contact_name: userData?.email ? userData.email.split('@')[0] : 'Unknown Client',
-              company_name: null,
-              email: userData?.email || null
-            };
-          }
-        } catch (error) {
-          console.error('Error calling edge function:', error);
-          clientInfo = {
-            contact_name: 'Unknown Client',
-            company_name: null,
-            email: null
-          };
-        }
-      } else {
-        // Use the client profile data
-        clientInfo = {
-          contact_name: clientData.contact_name || 'Unknown Client',
-          company_name: clientData.company_name,
-          email: null
-        };
-      }
-      
-      return {
-        ...conv,
-        project_title: conv.projects?.title || 'Unknown Project',
-        client_info: clientInfo
-      };
-    }));
-    
-    return formattedConversations;
-  } catch (e) {
-    console.error('Error in fetchConversations:', e);
-    toast({
-      title: "Failed to load conversations",
-      description: "An unexpected error occurred",
-      variant: "destructive"
-    });
-    return [];
-  }
-};
-
 // Create a new conversation
 export const createConversation = async (freelancerId: string, clientId: string, projectId: string) => {
   try {
@@ -144,7 +43,7 @@ export const createConversation = async (freelancerId: string, clientId: string,
           };
         } else {
           clientInfo = {
-            contact_name: userData.email ? userData.email.split('@')[0] : 'Unknown Client',
+            contact_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Client'),
             company_name: null,
             email: userData.email || null
           };

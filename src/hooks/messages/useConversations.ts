@@ -2,20 +2,26 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/components/ui/use-toast';
 import { Conversation } from '@/types/messaging';
-import { 
-  fetchConversations, 
-  createConversation, 
-  getCurrentUserId 
-} from '@/services/conversations';
+import { createConversation, getCurrentUserId } from '@/services/conversations';
+import { fetchConversations } from '@/services/conversations/fetchConversations';
 
-export const useConversations = (projectId?: string | null, clientId?: string | null) => {
+export const useConversations = (
+  projectId?: string | null, 
+  partnerId?: string | null, 
+  isBusinessClient: boolean = false
+) => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [selectedConversation, setSelectedConversation] = useState<Conversation | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const { toast } = useToast();
   
   // Create a new conversation
-  const createNewConversation = async (freelancerId: string, clientId: string, projectId: string) => {
+  const createNewConversation = async (currentUserId: string, partnerId: string, projectId: string) => {
+    // For business client, currentUserId is the client_id and partnerId is the freelancer_id
+    // For freelancer, currentUserId is the freelancer_id and partnerId is the client_id
+    const clientId = isBusinessClient ? currentUserId : partnerId;
+    const freelancerId = isBusinessClient ? partnerId : currentUserId;
+    
     const newConversation = await createConversation(freelancerId, clientId, projectId);
     
     if (newConversation) {
@@ -37,20 +43,22 @@ export const useConversations = (projectId?: string | null, clientId?: string | 
     }
     
     try {
-      const data = await fetchConversations(userId);
+      // Import from the new import path which accepts isBusinessClient parameter
+      const data = await fetchConversations(userId, isBusinessClient);
       setConversations(data);
       
-      // If there's a projectId and clientId in the URL, select or create that conversation
-      if (projectId && clientId) {
+      // If there's a projectId and partnerId in the URL, select or create that conversation
+      if (projectId && partnerId) {
         const existingConversation = data.find(
-          (c: Conversation) => c.project_id === projectId && c.client_id === clientId
+          (c: Conversation) => c.project_id === projectId && 
+            (isBusinessClient ? c.freelancer_id === partnerId : c.client_id === partnerId)
         );
         
         if (existingConversation) {
           setSelectedConversation(existingConversation);
         } else {
           // Create a new conversation if it doesn't exist
-          await createNewConversation(userId, clientId, projectId);
+          await createNewConversation(userId, partnerId, projectId);
         }
       } else if (data.length > 0) {
         // Select the first conversation by default
@@ -70,7 +78,7 @@ export const useConversations = (projectId?: string | null, clientId?: string | 
 
   useEffect(() => {
     fetchConversationsList();
-  }, [projectId, clientId]);
+  }, [projectId, partnerId]);
 
   return { 
     conversations, 

@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getCurrentUserId } from './conversations';
@@ -60,9 +59,11 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-    const filePath = `attachments/${fileName}`;
+    const filePath = `${fileName}`;
     
-    // Upload the file to 'attachments' bucket instead of 'message-attachments'
+    console.log('Uploading file to attachments bucket:', filePath);
+    
+    // Upload the file to 'attachments' bucket
     const { data, error } = await supabase.storage
       .from('attachments')
       .upload(filePath, file, {
@@ -112,13 +113,31 @@ export const sendMessage = async (conversationId: string, message: string, attac
       throw new Error('User not authenticated');
     }
     
+    // Generate a better default message when sending attachments
+    let messageText = message.trim();
+    if (!messageText && attachments.length > 0) {
+      const fileTypes = [...new Set(attachments.map(a => {
+        if (a.type.startsWith('image/')) return 'image';
+        if (a.type.includes('pdf')) return 'PDF';
+        if (a.type.includes('word') || a.type.includes('document')) return 'document';
+        if (a.type.includes('spreadsheet') || a.type.includes('excel')) return 'spreadsheet';
+        return 'file';
+      }))];
+      
+      if (fileTypes.length === 1) {
+        messageText = `Sent ${attachments.length > 1 ? `${attachments.length} ${fileTypes[0]}s` : `an ${fileTypes[0]}`}`;
+      } else {
+        messageText = `Sent ${attachments.length} files`;
+      }
+    }
+    
     // Send the message
     const { error } = await (supabase
       .from('messages') as any)
       .insert({
         conversation_id: conversationId,
         sender_id: userId,
-        message: message.trim(),
+        message: messageText,
         is_read: false,
         attachments: attachments.length > 0 ? attachments : null
       });

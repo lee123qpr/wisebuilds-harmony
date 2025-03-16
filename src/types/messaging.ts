@@ -1,8 +1,11 @@
-
 export interface ClientInfo {
   contact_name: string | null;
   email: string | null;
   company_name: string | null;
+  logo_url?: string | null;
+  phone_number?: string | null;
+  website?: string | null;
+  company_address?: string | null;
 }
 
 export interface Conversation {
