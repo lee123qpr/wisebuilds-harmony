@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Project } from '@/components/projects/useProjects';
 import { MapPin, Users, Calendar as CalendarIcon } from 'lucide-react';
@@ -7,12 +8,14 @@ import DurationBadge from './badges/DurationBadge';
 import BudgetBadge from './badges/BudgetBadge';
 import HiringStatusBadge from './badges/HiringStatusBadge';
 import PurchaseLimitBar from '@/components/projects/PurchaseLimitBar';
+
 interface ProjectCardProps {
   project: Project;
   isSelected: boolean;
   onClick: () => void;
   isPurchased?: boolean;
 }
+
 const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   isSelected,
@@ -22,6 +25,7 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
   // Format dates as "X days ago"
   const postedDateAgo = formatDateAgo(project.created_at);
   const purchasesCount = project.purchases_count || 0;
+  
   return <div className={`p-3 cursor-pointer transition-all ${isSelected ? 'bg-primary/5 border-l-4 border-primary' : 'hover:bg-muted/50 border-l-4 border-transparent'}`} onClick={onClick}>
       <div>
         <h3 className="font-semibold text-lg truncate">{project.title}</h3>
@@ -34,6 +38,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       
       {/* Basic Information - No color (neutral gray) */}
       <div className="space-y-2 mt-2">
+        <h4 className="text-xs uppercase font-semibold text-gray-500 tracking-wider mb-1">Project Details</h4>
+        
         {/* Location */}
         <div className="flex items-center gap-2">
           <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
@@ -68,4 +74,5 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
       </div>
     </div>;
 };
+
 export default ProjectCard;

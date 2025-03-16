@@ -53,8 +53,6 @@ export const useUsers = () => {
         throw new Error('No authentication token available');
       }
       
-      console.log('Fetching users with token...');
-      
       // Call our secure edge function with the access token
       const response = await supabase.functions.invoke('get-admin-users', {
         headers: {
@@ -66,34 +64,34 @@ export const useUsers = () => {
         throw new Error(response.error.message || 'Failed to fetch users');
       }
       
-      console.log('Response from edge function:', response.data);
+      console.log('Response from get-admin-users:', response.data);
       
-      const userData = response.data?.users || [];
-      const deletedUsersCount = response.data?.deletedUsersCount || 0;
-      
-      console.log(`Received ${userData.length} active users and ${deletedUsersCount} deleted users`);
-      
-      // Fetch freelancer verification statuses with proper error handling
-      let verificationMap = new Map();
-      try {
-        const { data: verificationData, error: verificationError } = await supabase
-          .from('freelancer_verification')
-          .select('user_id, verification_status');
-        
-        if (verificationError) {
-          console.error('Error fetching verification statuses:', verificationError);
-          // Continue without verification data rather than failing
-        } else if (verificationData) {
-          verificationData.forEach((item: any) => {
-            verificationMap.set(item.user_id, item.verification_status);
-          });
-        }
-      } catch (verificationError) {
-        console.error('Exception fetching verification statuses:', verificationError);
-        // Continue without verification data
+      // Verify the structure of the data and handle it properly
+      if (!response.data || typeof response.data !== 'object') {
+        throw new Error('Invalid response format received from server');
       }
       
-      // Process users even if verification data couldn't be fetched
+      // Extract users and deletedUsers, ensuring they're arrays (even if empty)
+      const userData = Array.isArray(response.data.users) ? response.data.users : [];
+      const deletedUsers = Array.isArray(response.data.deletedUsers) ? response.data.deletedUsers : [];
+      
+      // Fetch freelancer verification statuses
+      const { data: verificationData, error: verificationError } = await supabase
+        .from('freelancer_verification')
+        .select('user_id, verification_status');
+      
+      if (verificationError) {
+        console.error('Error fetching verification statuses:', verificationError);
+      }
+      
+      // Create a map of user_id to verification_status
+      const verificationMap = new Map();
+      if (verificationData) {
+        verificationData.forEach((item: any) => {
+          verificationMap.set(item.user_id, item.verification_status);
+        });
+      }
+      
       const formattedUsers: AdminUser[] = userData.map((user: any) => ({
         id: user.id,
         email: user.email || '',
@@ -106,7 +104,8 @@ export const useUsers = () => {
         banned_until: user.banned_until
       }));
       
-      console.log(`Formatted ${formattedUsers.length} users for display`);
+      console.log('Formatted users:', formattedUsers);
+      console.log('Deleted users count:', deletedUsers.length);
       setUsers(formattedUsers);
       
       // Calculate metrics for user statistics
@@ -120,7 +119,7 @@ export const useUsers = () => {
         businesses: 0,
         admins: 0,
         activeUsers: 0,
-        deletedAccounts: deletedUsersCount
+        deletedAccounts: deletedUsers.length || 0
       };
       
       formattedUsers.forEach(user => {
@@ -149,6 +148,14 @@ export const useUsers = () => {
       });
       // Set empty array to handle error gracefully
       setUsers([]);
+      setUserCounts({
+        total: 0,
+        freelancers: 0,
+        businesses: 0,
+        admins: 0,
+        activeUsers: 0,
+        deletedAccounts: 0
+      });
     } finally {
       setIsLoading(false);
     }

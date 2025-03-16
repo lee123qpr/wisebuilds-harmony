@@ -2,8 +2,13 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import { fetchVerificationStatus, uploadVerificationDocument } from './verificationService';
-import type { VerificationData, UseVerificationResult, VerificationStatus } from './types';
+import { 
+  fetchVerificationStatus, 
+  uploadVerificationDocument, 
+  deleteVerificationDocument 
+} from './verificationService';
+import type { VerificationData, UseVerificationResult } from './types';
+import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
 
 export const useVerification = (): UseVerificationResult => {
   const { user } = useAuth();
@@ -11,24 +16,21 @@ export const useVerification = (): UseVerificationResult => {
   const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch verification status
   const refreshVerificationStatus = async () => {
-    if (!user) return;
-
+    if (!user) return null;
+    
     setIsLoading(true);
-    setStatus('loading');
     try {
       const data = await fetchVerificationStatus(user.id);
-      if (data) {
-        setVerificationData(data);
-      }
-      setStatus('success');
-    } catch (err) {
-      setError(err instanceof Error ? err : new Error('Unknown error'));
-      setStatus('error');
+      setVerificationData(data);
+      console.log('Refreshed verification status:', data);
+      return data;
+    } catch (error) {
+      console.error('Error refreshing verification status:', error);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -40,32 +42,54 @@ export const useVerification = (): UseVerificationResult => {
     
     setIsUploading(true);
     try {
+      console.log('Starting document upload for user:', user.id);
       const result = await uploadVerificationDocument(user.id, file);
       
       if (!result.success) {
+        console.error('Upload failed with result:', result);
         throw result.error || new Error('Upload failed');
       }
+      
+      console.log('Upload successful:', result);
       
       if (result.verificationData) {
         setVerificationData(result.verificationData);
       }
       
-      toast({
-        title: 'Document uploaded',
-        description: 'Your ID document has been submitted for verification.',
-      });
-      
-      return result.filePath || null;
+      return result.filePath || true;
     } catch (error: any) {
       console.error('Error uploading document:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Upload failed',
-        description: error.message || 'Failed to upload document. Please try again.',
-      });
-      return null;
+      throw error;
     } finally {
       setIsUploading(false);
+    }
+  };
+
+  // Delete ID document
+  const handleDeleteVerificationDocument = async () => {
+    if (!user || !verificationData?.id_document_path) return false;
+    
+    setIsDeleting(true);
+    try {
+      console.log('Deleting document for user:', user.id);
+      const result = await deleteVerificationDocument(user.id, verificationData.id_document_path);
+      
+      if (!result.success) {
+        console.error('Delete failed with result:', result);
+        throw result.error || new Error('Delete failed');
+      }
+      
+      console.log('Delete successful:', result);
+      
+      // Reset verification data
+      await refreshVerificationStatus();
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting document:', error);
+      throw error;
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -73,23 +97,22 @@ export const useVerification = (): UseVerificationResult => {
   useEffect(() => {
     if (user) {
       refreshVerificationStatus();
+    } else {
+      // If no user, reset the state
+      setVerificationData(null);
+      setIsLoading(false);
     }
   }, [user]);
 
-  const verificationStatus: VerificationStatus = verificationData?.verification_status || 'not_submitted';
-  const isVerified = verificationData?.verification_status === 'approved';
-
   return {
     verificationData,
-    verificationStatus,
-    isVerified,
+    verificationStatus: verificationData?.verification_status || 'not_submitted',
+    isVerified: verificationData?.verification_status === 'approved',
     isLoading,
     isUploading,
-    error,
-    status,
-    isSubmitting: isUploading,
-    submitVerification: handleUploadVerificationDocument,
+    isDeleting,
     uploadVerificationDocument: handleUploadVerificationDocument,
+    deleteVerificationDocument: handleDeleteVerificationDocument,
     refreshVerificationStatus
   };
 };

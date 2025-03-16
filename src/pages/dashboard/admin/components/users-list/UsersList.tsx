@@ -1,8 +1,8 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, Eye } from 'lucide-react';
+import { Loader2, Eye, ArrowUpDown } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
@@ -17,6 +17,14 @@ interface UsersListProps {
 }
 
 const UsersList = ({ users, isLoading, error, onRefresh }: UsersListProps) => {
+  const [sortConfig, setSortConfig] = useState<{
+    key: 'created_at' | 'last_sign_in_at' | null;
+    direction: 'ascending' | 'descending';
+  }>({
+    key: null,
+    direction: 'descending'
+  });
+
   const getUserTypeColor = (userType: string) => {
     switch (userType) {
       case 'admin': 
@@ -28,6 +36,43 @@ const UsersList = ({ users, isLoading, error, onRefresh }: UsersListProps) => {
       default: 
         return 'bg-gray-500';
     }
+  };
+
+  const handleSort = (key: 'created_at' | 'last_sign_in_at') => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
+  const sortedUsers = React.useMemo(() => {
+    if (!sortConfig.key) return users;
+    
+    return [...users].sort((a, b) => {
+      // Handle null values for last_sign_in_at
+      if (sortConfig.key === 'last_sign_in_at') {
+        if (!a[sortConfig.key] && !b[sortConfig.key]) return 0;
+        if (!a[sortConfig.key]) return sortConfig.direction === 'ascending' ? 1 : -1;
+        if (!b[sortConfig.key]) return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      
+      const aValue = a[sortConfig.key] ? new Date(a[sortConfig.key]).getTime() : 0;
+      const bValue = b[sortConfig.key] ? new Date(b[sortConfig.key]).getTime() : 0;
+      
+      if (sortConfig.direction === 'ascending') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+  }, [users, sortConfig]);
+
+  const getSortIndicator = (key: 'created_at' | 'last_sign_in_at') => {
+    if (sortConfig.key !== key) return '';
+    return sortConfig.direction === 'ascending' ? ' 🔼' : ' 🔽';
   };
 
   return (
@@ -71,14 +116,32 @@ const UsersList = ({ users, isLoading, error, onRefresh }: UsersListProps) => {
                 <TableHead>User</TableHead>
                 <TableHead>Type</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Last Login</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort('created_at')}
+                >
+                  <div className="flex items-center">
+                    Created
+                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <span className="ml-1">{getSortIndicator('created_at')}</span>
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort('last_sign_in_at')}
+                >
+                  <div className="flex items-center">
+                    Last Login
+                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <span className="ml-1">{getSortIndicator('last_sign_in_at')}</span>
+                  </div>
+                </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Profile</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {users.map(user => (
+              {sortedUsers.map(user => (
                 <UserRow 
                   key={user.id} 
                   user={user} 
