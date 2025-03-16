@@ -1,13 +1,14 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { FreelancerInfo } from '@/types/messaging';
 
 /**
  * Gets freelancer information from freelancer_profiles table
  */
-export const getFreelancerInfo = async (freelancerId: string) => {
+export const getFreelancerInfo = async (freelancerId: string): Promise<FreelancerInfo> => {
   try {
-    // First try to get the freelancer profile from the database
-    const { data: profileData, error: profileError } = await supabase
+    // Get freelancer info from freelancer_profiles
+    const { data: freelancerProfile, error: profileError } = await supabase
       .from('freelancer_profiles')
       .select('*')
       .eq('id', freelancerId)
@@ -17,52 +18,57 @@ export const getFreelancerInfo = async (freelancerId: string) => {
       console.error('Error fetching freelancer profile:', profileError);
     }
     
-    // If we found a profile, return the data
-    if (profileData) {
+    // If profile exists, return it
+    if (freelancerProfile) {
       return {
-        full_name: profileData.display_name || 'Unknown Freelancer',
-        business_name: null,
-        profile_image: profileData.profile_photo || null,
-        phone_number: profileData.phone_number || null,
-        email: profileData.email || null
+        name: freelancerProfile.display_name || 
+              `${freelancerProfile.first_name || ''} ${freelancerProfile.last_name || ''}`.trim() || 
+              'Unknown Freelancer',
+        profile_photo: freelancerProfile.profile_photo || null,
+        phone_number: freelancerProfile.phone_number || null,
+        email: freelancerProfile.email || null,
+        id: freelancerId
       };
     }
     
-    // If no profile was found, fall back to the edge function as a last resort
-    const { data: userData, error: userError } = await supabase.functions.invoke(
-      'get-user-email',
-      {
-        body: { userId: freelancerId }
+    // If no profile, try to get basic user info from auth
+    try {
+      const { data: userData, error: userError } = await supabase.functions.invoke(
+        'get-user-email',
+        {
+          body: { userId: freelancerId }
+        }
+      );
+      
+      if (userError || !userData) {
+        console.error('Error fetching user data:', userError || 'No user data returned');
+        return {
+          name: 'Unknown Freelancer',
+          profile_photo: null,
+          id: freelancerId
+        };
       }
-    );
-    
-    if (userError || !userData) {
-      console.error('Error fetching user data from edge function:', userError);
+      
       return {
-        full_name: 'Unknown Freelancer',
-        business_name: null,
-        profile_image: null,
-        email: null
+        name: userData.full_name || 'Unknown Freelancer',
+        email: userData.email || null,
+        profile_photo: null,
+        id: freelancerId
+      };
+    } catch (error) {
+      console.error('Error calling edge function:', error);
+      return {
+        name: 'Unknown Freelancer',
+        profile_photo: null,
+        id: freelancerId
       };
     }
-    
-    // Return user data
-    return {
-      full_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Freelancer'),
-      business_name: null,
-      profile_image: null,
-      phone_number: null,
-      email: userData.email || null
-    };
   } catch (error) {
-    console.error('Error getting freelancer info:', error);
-    
-    // No data available
+    console.error('Error in getFreelancerInfo:', error);
     return {
-      full_name: 'Unknown Freelancer',
-      business_name: null,
-      profile_image: null,
-      email: null
+      name: 'Unknown Freelancer',
+      profile_photo: null,
+      id: freelancerId
     };
   }
 };

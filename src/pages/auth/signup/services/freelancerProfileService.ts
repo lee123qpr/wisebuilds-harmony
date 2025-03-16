@@ -1,64 +1,65 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { FreelancerFormValues } from '../components/FreelancerSignupForm';
+import { FreelancerSignupValues } from '../types';
 
-export const createFreelancerProfile = async (userId: string, data: FreelancerFormValues) => {
+export const createFreelancerProfile = async (userId: string, freelancerData: FreelancerSignupValues) => {
   try {
-    // Create a freelancer profile record
-    const { error: profileError } = await supabase
+    // Check if profile already exists
+    const { data: existingProfile, error: checkError } = await supabase
+      .from('freelancer_profiles')
+      .select('id')
+      .eq('id', userId)
+      .maybeSingle();
+    
+    if (checkError) {
+      console.error('Error checking existing profile:', checkError);
+      throw checkError;
+    }
+    
+    if (existingProfile) {
+      console.log('Profile already exists, updating instead');
+      // Update existing profile
+      const { error: updateError } = await supabase
+        .from('freelancer_profiles')
+        .update({
+          first_name: freelancerData.firstName,
+          last_name: freelancerData.lastName,
+          display_name: `${freelancerData.firstName} ${freelancerData.lastName}`,
+          email: freelancerData.email,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', userId);
+        
+      if (updateError) {
+        console.error('Error updating freelancer profile:', updateError);
+        throw updateError;
+      }
+      
+      return { success: true };
+    }
+    
+    // Create new profile
+    const { error: insertError } = await supabase
       .from('freelancer_profiles')
       .insert({
         id: userId,
-        display_name: data.fullName,
-        job_title: data.profession,
-        location: data.location,
-        email: data.email,
+        first_name: freelancerData.firstName,
+        last_name: freelancerData.lastName,
+        display_name: `${freelancerData.firstName} ${freelancerData.lastName}`,
+        email: freelancerData.email,
         member_since: new Date().toISOString(),
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       });
-    
-    if (profileError) {
-      // If the error is because the record already exists, update instead
-      if (profileError.message.includes('duplicate key value')) {
-        const { error: updateError } = await supabase
-          .from('freelancer_profiles')
-          .update({
-            display_name: data.fullName,
-            job_title: data.profession,
-            location: data.location,
-            email: data.email,
-            updated_at: new Date().toISOString(),
-          })
-          .eq('id', userId);
-          
-        if (updateError) {
-          console.error('Error updating freelancer profile:', updateError);
-          return { success: false, error: updateError };
-        }
-      } else {
-        console.error('Error creating freelancer profile:', profileError);
-        return { success: false, error: profileError };
-      }
-    }
-    
-    // Create entry in freelancer_credits for the user
-    const { error: creditsError } = await supabase
-      .from('freelancer_credits')
-      .insert({
-        user_id: userId,
-        credit_balance: 5, // Give them 5 free credits to start
-      });
-    
-    if (creditsError) {
-      // If the error is because the record already exists, that's okay
-      if (!creditsError.message.includes('duplicate key value')) {
-        console.error('Error creating freelancer credits:', creditsError);
-        return { success: false, error: creditsError };
-      }
+      
+    if (insertError) {
+      console.error('Error creating freelancer profile:', insertError);
+      throw insertError;
     }
     
     return { success: true };
   } catch (error) {
-    console.error('Error creating freelancer profile:', error);
+    console.error('Error in createFreelancerProfile:', error);
     return { success: false, error };
   }
 };

@@ -1,171 +1,119 @@
 
-import { useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
-import { useToast } from '@/hooks/use-toast';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { User } from '@supabase/supabase-js';
-import { z } from 'zod';
-import { freelancerProfileSchema } from '../components/profile/freelancerSchema';
-import { UploadedFile } from '@/components/projects/file-upload/types';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { FreelancerProfileData } from '@/pages/dashboard/components/profile/freelancerSchema';
+import { getStorageUrl } from '@/integrations/supabase/client';
 
-type FreelancerProfileFormValues = z.infer<typeof freelancerProfileSchema>;
-
-interface UseLoadFreelancerProfileProps {
-  user: User | null;
-  form: UseFormReturn<FreelancerProfileFormValues>;
-  setProfileImage: (url: string | null) => void;
-  setMemberSince: (date: string | null) => void;
-  setEmailVerified: (verified: boolean) => void;
-  setJobsCompleted: (count: number) => void;
-  setIsLoading: (loading: boolean) => void;
-}
-
-export const useLoadFreelancerProfile = ({
-  user,
-  form,
-  setProfileImage,
-  setMemberSince,
-  setEmailVerified,
-  setJobsCompleted,
-  setIsLoading
-}: UseLoadFreelancerProfileProps) => {
+export const useLoadFreelancerProfile = () => {
+  const { user } = useAuth();
+  const [isLoading, setIsLoading] = useState(true);
+  const [profile, setProfile] = useState<FreelancerProfileData | null>(null);
+  const [error, setError] = useState<Error | null>(null);
   const { toast } = useToast();
 
-  // Fetch freelancer profile data
   useEffect(() => {
-    async function getProfileData() {
+    const loadFreelancerProfile = async () => {
       if (!user) return;
       
+      setIsLoading(true);
+      
       try {
-        setIsLoading(true);
+        console.log('Loading freelancer profile for user:', user.id);
         
-        // Try to get the freelancer profile from the database
+        // Fetch user metadata from auth service
+        const { data: userData, error: userError } = await supabase.auth.getUser();
+        
+        if (userError) {
+          console.error('Error fetching user data:', userError);
+          throw userError;
+        }
+        
+        const userMetadata = userData.user?.user_metadata || {};
+        console.log('User metadata:', userMetadata);
+        
+        // Fetch profile data from freelancer_profiles table
         const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
           .select('*')
           .eq('id', user.id)
-          .maybeSingle();
+          .single();
         
         if (profileError) {
           console.error('Error fetching freelancer profile:', profileError);
-          throw profileError;
+          // Don't throw here, we can still use the metadata if available
         }
         
-        if (profileData) {
-          // Handle previous work files
-          let previousWork: UploadedFile[] = [];
-          if (profileData.previous_work && Array.isArray(profileData.previous_work)) {
-            previousWork = profileData.previous_work.map((work: any) => ({
-              name: work.name || '',
-              url: work.url || '',
-              type: work.type || '',
-              size: work.size || 0,
-              path: work.path || ''
-            }));
-          }
-          
-          // Convert dates to Date objects for previousEmployers
-          let previousEmployers = profileData.previous_employers || [];
-          if (previousEmployers.length > 0) {
-            previousEmployers = previousEmployers.map((employer: any) => ({
-              ...employer,
-              startDate: employer.startDate ? new Date(employer.startDate) : new Date(),
-              endDate: employer.endDate ? new Date(employer.endDate) : null
-            }));
-          }
-          
-          // Populate form with data from the profile table
-          form.reset({
-            fullName: profileData.display_name || '',
-            profession: profileData.job_title || '',
-            previousEmployers: previousEmployers,
-            location: profileData.location || '',
-            bio: profileData.bio || '',
-            phoneNumber: profileData.phone_number || '',
-            website: profileData.website || '',
-            hourlyRate: profileData.hourly_rate || '',
-            availability: profileData.availability || '',
-            skills: profileData.skills || [],
-            experience: profileData.experience || '',
-            qualifications: profileData.qualifications || [],
-            accreditations: profileData.accreditations || [],
-            indemnityInsurance: {
-              hasInsurance: profileData.indemnity_insurance?.hasInsurance || false,
-              coverLevel: profileData.indemnity_insurance?.coverLevel || '',
-            },
-            previousWork: previousWork,
-            idVerified: profileData.id_verified || false,
-          });
-          
-          setProfileImage(profileData.profile_photo || null);
-          setMemberSince(profileData.member_since || user.created_at);
-          setJobsCompleted(profileData.jobs_completed || 0);
-        } else {
-          // If no profile exists, use user metadata as a fallback
-          const userMetadata = user.user_metadata || {};
-          
-          // Convert dates to Date objects for previousEmployers
-          let previousEmployers = userMetadata.previous_employers || [];
-          if (previousEmployers.length > 0) {
-            previousEmployers = previousEmployers.map((employer: any) => ({
-              ...employer,
-              startDate: employer.startDate ? new Date(employer.startDate) : new Date(),
-              endDate: employer.endDate ? new Date(employer.endDate) : null
-            }));
-          }
-          
-          // Handle previous work files
-          let previousWork: UploadedFile[] = [];
-          if (userMetadata.previous_work && Array.isArray(userMetadata.previous_work)) {
-            previousWork = userMetadata.previous_work.map((work: any) => ({
-              name: work.name || '',
-              url: work.url || '',
-              type: work.type || '',
-              size: work.size || 0,
-              path: work.path || ''
-            }));
-          }
-          
-          form.reset({
-            fullName: userMetadata.full_name || '',
-            profession: userMetadata.profession || '',
-            previousEmployers: previousEmployers,
-            location: userMetadata.location || '',
-            bio: userMetadata.bio || '',
-            phoneNumber: userMetadata.phone_number || userMetadata.phone || '',
-            website: userMetadata.website || '',
-            hourlyRate: userMetadata.hourly_rate || '',
-            availability: userMetadata.availability || '',
-            skills: userMetadata.skills || [],
-            experience: userMetadata.experience || '',
-            qualifications: userMetadata.qualifications || [],
-            accreditations: userMetadata.accreditations || [],
-            indemnityInsurance: {
-              hasInsurance: userMetadata.indemnity_insurance?.hasInsurance || false,
-              coverLevel: userMetadata.indemnity_insurance?.coverLevel || '',
-            },
-            previousWork: previousWork,
-            idVerified: userMetadata.id_verified || false,
-          });
-          
-          setProfileImage(userMetadata.profile_image_url || null);
-          setMemberSince(userMetadata.created_at || user.created_at);
-          setJobsCompleted(userMetadata.jobs_completed || 0);
-        }
+        console.log('Fetched profile data:', profileData);
         
-        setEmailVerified(user.email_confirmed_at !== null);
-      } catch (error) {
-        console.error('Error fetching profile:', error);
+        // Process the fetched data
+        const previousWorkData = profileData?.previous_work || [];
+        const previousWork = Array.isArray(previousWorkData) 
+          ? previousWorkData 
+          : [];
+          
+        const previousEmployersData = profileData?.previous_employers || [];
+        const previousEmployers = Array.isArray(previousEmployersData) 
+          ? previousEmployersData 
+          : [];
+        
+        // Process skills, qualifications and accreditations
+        const skillsData = profileData?.skills || [];
+        const skills = Array.isArray(skillsData) ? skillsData : [];
+        
+        const qualificationsData = profileData?.qualifications || [];
+        const qualifications = Array.isArray(qualificationsData) ? qualificationsData : [];
+        
+        const accreditationsData = profileData?.accreditations || [];
+        const accreditations = Array.isArray(accreditationsData) ? accreditationsData : [];
+        
+        // Combine data, prioritizing the profile data from the database
+        const fullProfile: FreelancerProfileData = {
+          display_name: profileData?.display_name || '',
+          first_name: profileData?.first_name || userMetadata.firstName || '',
+          last_name: profileData?.last_name || userMetadata.lastName || '',
+          location: profileData?.location || '',
+          bio: profileData?.bio || '',
+          phone_number: profileData?.phone_number || '',
+          website: profileData?.website || '',
+          hourly_rate: profileData?.hourly_rate || '',
+          availability: profileData?.availability || '',
+          skills: skills,
+          experience: profileData?.experience || '',
+          qualifications: qualifications,
+          accreditations: accreditations,
+          // Handle indemnity insurance
+          indemnity_insurance: profileData?.indemnity_insurance || null,
+          has_indemnity_insurance: !!profileData?.indemnity_insurance,
+          // ID verification
+          id_verified: !!profileData?.id_verified,
+          previous_work: previousWork,
+          previous_employers: previousEmployers,
+          profile_photo: profileData?.profile_photo || '',
+          member_since: profileData?.member_since || null,
+          jobs_completed: profileData?.jobs_completed || 0,
+          email: profileData?.email || userMetadata.email || '',
+          job_title: profileData?.job_title || ''
+        };
+        
+        setProfile(fullProfile);
+        console.log('Loaded freelancer profile:', fullProfile);
+      } catch (err) {
+        console.error('Error loading freelancer profile:', err);
+        setError(err instanceof Error ? err : new Error('Error loading profile'));
         toast({
+          title: 'Failed to load profile',
+          description: 'There was an error loading your profile. Please try again.',
           variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to load profile information.',
         });
       } finally {
         setIsLoading(false);
       }
-    }
+    };
     
-    getProfileData();
-  }, [user, form, toast, setProfileImage, setMemberSince, setEmailVerified, setJobsCompleted, setIsLoading]);
+    loadFreelancerProfile();
+  }, [user, toast]);
+
+  return { profile, isLoading, error };
 };
