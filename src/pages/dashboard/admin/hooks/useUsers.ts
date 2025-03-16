@@ -104,6 +104,7 @@ export const useUsers = () => {
       }));
       
       console.log('Formatted users:', formattedUsers);
+      console.log('Deleted users count:', deletedUsers.length);
       setUsers(formattedUsers);
       
       // Calculate metrics for user statistics
