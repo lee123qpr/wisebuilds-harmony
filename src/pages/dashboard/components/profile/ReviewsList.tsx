@@ -1,120 +1,86 @@
 
 import React from 'react';
-import { UserCircle } from 'lucide-react';
-import { useClientReviews } from '../../hooks/useClientReviews';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { Star } from 'lucide-react';
 
 interface Review {
   id: string;
   rating: number;
   review_text: string;
   created_at: string;
-  reviewer_name?: string;
 }
 
 interface ReviewsListProps {
   userId: string;
 }
 
-// Mock reviews to display if no real reviews exist
-const mockReviews: Review[] = [
-  {
-    id: 'mock-1',
-    rating: 5,
-    review_text: "Excellent work! Very professional and delivered the project ahead of schedule. Would definitely hire again.",
-    created_at: "2025-03-08T00:00:00.000Z", // Format as YYYY-MM-DD
-    reviewer_name: "Sarah Johnson"
-  },
-  {
-    id: 'mock-2',
-    rating: 4,
-    review_text: "Great communication throughout the project. The quality of work was very good, just needed a few minor revisions.",
-    created_at: "2025-02-13T00:00:00.000Z", // Format as YYYY-MM-DD
-    reviewer_name: "Michael Brown"
-  },
-  {
-    id: 'mock-3',
-    rating: 5,
-    review_text: "Outstanding attention to detail. Went above and beyond what was required. Highly recommended!",
-    created_at: "2025-01-14T00:00:00.000Z", // Format as YYYY-MM-DD
-    reviewer_name: "David Miller"
-  }
-];
-
 const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
   console.log('ReviewsList - Props:', { userId });
   
-  const { reviews, isLoading, reviewCount } = useClientReviews(userId);
+  const { data: reviews, isLoading, error } = useQuery({
+    queryKey: ['client-reviews', userId],
+    queryFn: async () => {
+      console.log('Fetching reviews for user ID:', userId);
+      const { data, error } = await supabase
+        .from('client_reviews')
+        .select('*')
+        .eq('client_id', userId)
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching reviews:', error);
+        throw error;
+      }
+      
+      console.log('Fetched reviews:', data);
+      return data as Review[];
+    },
+  });
+
+  if (error) {
+    console.error('ReviewsList - Query error:', error);
+  }
 
   if (isLoading) {
     return <div className="text-center py-8">Loading reviews...</div>;
   }
 
-  // Display mock reviews if no real reviews exist
-  const displayReviews = reviews?.length ? reviews : mockReviews;
-  const reviewSource = reviews?.length ? "Real reviews from your clients" : "Sample reviews (these are examples only)";
-
-  console.log('ReviewsList - Rendering reviews:', displayReviews);
-  
-  // Helper function to format date as DD/MM/YYYY
-  const formatDate = (dateString: string) => {
-    const date = new Date(dateString);
-    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
-  };
-
-  // Helper function to render stars
-  const renderStars = (rating: number) => {
+  if (!reviews?.length) {
+    console.log('ReviewsList - No reviews found');
     return (
-      <div className="flex">
-        {[...Array(5)].map((_, i) => (
-          <svg
-            key={i}
-            className={`w-5 h-5 ${i < rating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'}`}
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          >
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
-          </svg>
-        ))}
+      <div className="text-center py-8 text-muted-foreground">
+        No reviews yet. Reviews will appear here when freelancers rate their experience working with you.
       </div>
     );
-  };
+  }
 
+  console.log('ReviewsList - Rendering reviews:', reviews);
   return (
-    <div>
-      {!reviews?.length && (
-        <div className="mb-6 p-4 bg-slate-50 rounded-md text-sm text-slate-600">
-          {reviewSource}
-        </div>
-      )}
-      <div className="space-y-6">
-        {displayReviews.map((review) => (
-          <div
-            key={review.id}
-            className="border rounded-lg p-6 space-y-4"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-2">
-                <UserCircle className="h-10 w-10 text-slate-400" />
-                <span className="font-semibold text-lg">
-                  {review.reviewer_name || "Client"}
-                </span>
-              </div>
-              <div className="text-sm text-slate-500">
-                {formatDate(review.created_at)}
-              </div>
-            </div>
-            
-            {renderStars(review.rating)}
-            
-            <p className="text-base mt-2">{review.review_text}</p>
+    <div className="space-y-4">
+      {reviews.map((review) => (
+        <div
+          key={review.id}
+          className="border rounded-lg p-4 space-y-2"
+        >
+          <div className="flex items-center gap-1">
+            {[...Array(5)].map((_, index) => (
+              <Star
+                key={index}
+                className={`h-4 w-4 ${
+                  index < review.rating
+                    ? 'fill-yellow-400 text-yellow-400'
+                    : 'text-gray-300'
+                }`}
+              />
+            ))}
+            <span className="text-sm text-muted-foreground ml-2">
+              {new Date(review.created_at).toLocaleDateString()}
+            </span>
           </div>
-        ))}
-      </div>
+          <p className="text-sm">{review.review_text}</p>
+        </div>
+      ))}
     </div>
   );
 };

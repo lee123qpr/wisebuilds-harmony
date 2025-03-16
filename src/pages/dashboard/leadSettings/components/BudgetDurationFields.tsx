@@ -11,9 +11,6 @@ interface BudgetDurationFieldsProps {
 }
 
 export const BudgetDurationFields: React.FC<BudgetDurationFieldsProps> = ({ form }) => {
-  console.log('Budget field value:', form.watch('budget'));
-  console.log('Duration field value:', form.watch('duration'));
-  
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
       <FormField
@@ -22,18 +19,13 @@ export const BudgetDurationFields: React.FC<BudgetDurationFieldsProps> = ({ form
         render={({ field }) => (
           <FormItem>
             <FormLabel>Budget</FormLabel>
-            <Select 
-              onValueChange={field.onChange} 
-              value={field.value || undefined} 
-              defaultValue={field.value || undefined}
-            >
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select budget range" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="any">Any</SelectItem>
                 {budgetOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}
@@ -55,18 +47,13 @@ export const BudgetDurationFields: React.FC<BudgetDurationFieldsProps> = ({ form
         render={({ field }) => (
           <FormItem>
             <FormLabel>Duration</FormLabel>
-            <Select 
-              onValueChange={field.onChange} 
-              value={field.value || undefined} 
-              defaultValue={field.value || undefined}
-            >
+            <Select onValueChange={field.onChange} defaultValue={field.value}>
               <FormControl>
                 <SelectTrigger>
                   <SelectValue placeholder="Select duration" />
                 </SelectTrigger>
               </FormControl>
               <SelectContent>
-                <SelectItem value="any">Any</SelectItem>
                 {durationOptions.map((option) => (
                   <SelectItem key={option.value} value={option.value}>
                     {option.label}

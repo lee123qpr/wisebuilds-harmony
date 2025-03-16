@@ -13,8 +13,6 @@ import { signupSchema, SignupFormValues } from '../types';
 import AccountTypeSelector from './AccountTypeSelector';
 import UserInfoFields from './UserInfoFields';
 import PasswordFields from './PasswordFields';
-import { createBusinessProfile } from '../services/businessProfileService';
-import { createFreelancerProfile } from '../services/freelancerProfileService';
 
 type SignupFormProps = {
   onSuccess?: () => void;
@@ -64,34 +62,6 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
       
       if (error) {
         throw error;
-      }
-      
-      // Create appropriate profile record based on user type
-      if (authData?.user) {
-        if (data.userType === 'business') {
-          // Create business profile with appropriate data
-          await createBusinessProfile(authData.user.id, {
-            companyName: '',
-            contactName: data.fullName,
-            email: data.email,
-            phone: data.phoneNumber,
-            companyAddress: '',
-            companyDescription: '',
-            password: '', // Not storing password in profile
-            confirmPassword: '', // Not storing password in profile
-          });
-        } else if (data.userType === 'freelancer') {
-          // Create freelancer profile with appropriate data
-          await createFreelancerProfile(authData.user.id, {
-            fullName: data.fullName,
-            email: data.email,
-            profession: '',
-            location: '',
-            password: '', // Not storing password in profile
-            confirmPassword: '', // Not storing password in profile
-          });
-        }
-        // Note: Admin users don't need a specific profile created
       }
       
       toast({
@@ -148,13 +118,7 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
                 Creating Account...
               </>
             ) : (
-              `Create ${
-                userType === 'business' 
-                  ? 'Business' 
-                  : userType === 'freelancer' 
-                    ? 'Freelancer' 
-                    : 'Admin'
-              } Account`
+              `Create ${userType === 'business' ? 'Business' : 'Freelancer'} Account`
             )}
           </Button>
         </form>

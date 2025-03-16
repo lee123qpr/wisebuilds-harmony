@@ -1,9 +1,9 @@
+
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import MainLayout from '@/components/layout/MainLayout';
-import { Users, Briefcase, BarChart4, Shield, UserCheck } from 'lucide-react';
-import VerificationTab from './admin/VerificationTab';
-import UsersTab from './admin/components/UsersTab';
+import { Users, Briefcase, BarChart4, Shield } from 'lucide-react';
 
 const AdminDashboard = () => {
   return (
@@ -16,55 +16,83 @@ const AdminDashboard = () => {
 
         <Tabs defaultValue="users" className="w-full">
           <TabsList className="mb-6">
-            <TabsTrigger value="users" className="flex items-center gap-2">
-              <Users className="h-4 w-4" />
-              Users
-            </TabsTrigger>
-            <TabsTrigger value="projects" className="flex items-center gap-2">
-              <Briefcase className="h-4 w-4" />
-              Projects
-            </TabsTrigger>
-            <TabsTrigger value="verifications" className="flex items-center gap-2">
-              <UserCheck className="h-4 w-4" />
-              Verifications
-            </TabsTrigger>
-            <TabsTrigger value="analytics" className="flex items-center gap-2">
-              <BarChart4 className="h-4 w-4" />
-              Analytics
-            </TabsTrigger>
-            <TabsTrigger value="moderation" className="flex items-center gap-2">
-              <Shield className="h-4 w-4" />
-              Moderation
-            </TabsTrigger>
+            <TabsTrigger value="users">Users</TabsTrigger>
+            <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
+            <TabsTrigger value="moderation">Moderation</TabsTrigger>
           </TabsList>
           
           <TabsContent value="users" className="space-y-6">
-            <UsersTab />
+            <Card>
+              <CardHeader>
+                <CardTitle>User Management</CardTitle>
+                <CardDescription>Manage user accounts and permissions</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Total Users</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold">0</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Freelancers</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold">0</p>
+                    </CardContent>
+                  </Card>
+                  <Card>
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-lg">Business Clients</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <p className="text-3xl font-bold">0</p>
+                    </CardContent>
+                  </Card>
+                </div>
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="projects" className="space-y-4">
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
-              <h3 className="text-xl font-semibold mb-4">Project Management</h3>
-              <p className="text-muted-foreground">This feature is coming soon.</p>
-            </div>
-          </TabsContent>
-          
-          <TabsContent value="verifications" className="space-y-4">
-            <VerificationTab />
+            <Card>
+              <CardHeader>
+                <CardTitle>Project Management</CardTitle>
+                <CardDescription>Monitor and manage all projects</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-muted-foreground">There are no projects in the system yet.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="analytics" className="space-y-4">
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
-              <h3 className="text-xl font-semibold mb-4">Platform Analytics</h3>
-              <p className="text-muted-foreground">Analytics dashboard coming soon.</p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Platform Analytics</CardTitle>
+                <CardDescription>Key metrics and platform performance</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-muted-foreground">Analytics will be displayed here once there is platform activity.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="moderation" className="space-y-4">
-            <div className="bg-white p-6 rounded-lg border shadow-sm">
-              <h3 className="text-xl font-semibold mb-4">Content Moderation</h3>
-              <p className="text-muted-foreground">Moderation tools coming soon.</p>
-            </div>
+            <Card>
+              <CardHeader>
+                <CardTitle>Content Moderation</CardTitle>
+                <CardDescription>Review flagged content and resolve disputes</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <p className="text-center py-8 text-muted-foreground">No content currently requires moderation.</p>
+              </CardContent>
+            </Card>
           </TabsContent>
         </Tabs>
       </div>

@@ -8,7 +8,6 @@ import MainLayout from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessFormValues } from './types';
 import BusinessSignupForm from './components/BusinessSignupForm';
-import { createBusinessProfile } from './services/businessProfileService';
 
 const BusinessSignup = () => {
   const { toast } = useToast();
@@ -39,16 +38,6 @@ const BusinessSignup = () => {
       
       if (error) {
         throw error;
-      }
-      
-      // Create client profile record with the same information
-      if (authData?.user) {
-        const result = await createBusinessProfile(authData.user.id, data);
-        if (!result.success) {
-          console.error('Profile creation warning:', result.error);
-          // We don't throw an error here to not block the signup process
-          // but we do log it for troubleshooting
-        }
       }
       
       toast({

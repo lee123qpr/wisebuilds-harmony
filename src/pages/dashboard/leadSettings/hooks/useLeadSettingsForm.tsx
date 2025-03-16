@@ -1,46 +1,14 @@
 
 import React from 'react';
-import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { leadSettingsSchema, LeadSettingsFormValues } from '../schema';
+import { useForm } from 'react-hook-form';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { leadSettingsSchema, LeadSettingsFormValues } from '../schema';
 import { useAuth } from '@/context/AuthContext';
 
 export const useLeadSettingsForm = () => {
   const { user } = useAuth();
-  const [isFormInitialized, setIsFormInitialized] = React.useState(false);
-  
-  // Fetch settings directly from the database
-  const { data: leadSettings, isLoading, error } = useQuery({
-    queryKey: ['leadSettings', user?.id],
-    queryFn: async () => {
-      if (!user) return null;
-      
-      console.log('Fetching lead settings for user:', user.id);
-      
-      try {
-        const { data, error } = await supabase
-          .from('lead_settings')
-          .select('*')
-          .eq('user_id', user.id)
-          .maybeSingle();
-        
-        if (error) {
-          console.error('Error fetching lead settings:', error);
-          throw error;
-        }
-        
-        console.log('Retrieved lead settings:', data);
-        
-        return data;
-      } catch (err) {
-        console.error('Exception in query function:', err);
-        throw err;
-      }
-    },
-    enabled: !!user,
-  });
   
   // Create form with zod validation
   const form = useForm<LeadSettingsFormValues>({
@@ -59,49 +27,95 @@ export const useLeadSettingsForm = () => {
       notifications_enabled: true,
       email_alerts: true,
     },
-    mode: 'onChange',
   });
-
+  
+  // Fetch existing lead settings
+  const { data: existingSettings, isLoading } = useQuery({
+    queryKey: ['leadSettings', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      console.log('Fetching lead settings for user:', user.id);
+      
+      const { data, error } = await supabase
+        .from('lead_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      
+      if (error) {
+        console.error('Error fetching lead settings:', error);
+        throw error;
+      }
+      
+      console.log('Retrieved lead settings:', data);
+      return data;
+    },
+    enabled: !!user
+  });
+  
   // Update form with existing settings when data is loaded
   React.useEffect(() => {
-    if (!leadSettings || isFormInitialized) return;
-    
-    console.log('Setting form values from existing settings:', leadSettings);
-    
-    // Handle arrays safely - ensure they're always arrays
-    const project_type = Array.isArray(leadSettings.project_type) 
-      ? leadSettings.project_type 
-      : (leadSettings.project_type ? [leadSettings.project_type] : []);
-    
-    const keywords = Array.isArray(leadSettings.keywords) 
-      ? leadSettings.keywords 
-      : (leadSettings.keywords ? [leadSettings.keywords] : []);
-    
-    // Create values object with correct types
-    const values: LeadSettingsFormValues = {
-      role: leadSettings.role || '',
-      location: leadSettings.location || '',
-      budget: leadSettings.budget || leadSettings.max_budget || '',
-      duration: leadSettings.duration || '',
-      work_type: leadSettings.work_type || '',
-      project_type,
-      keywords,
-      hiring_status: leadSettings.hiring_status || '',
-      requires_insurance: !!leadSettings.requires_insurance,
-      requires_site_visits: !!leadSettings.requires_site_visits,
-      notifications_enabled: leadSettings.notifications_enabled !== false,
-      email_alerts: leadSettings.email_alerts !== false,
-    };
-    
-    form.reset(values);
-    setIsFormInitialized(true);
-  }, [leadSettings, form, isFormInitialized]);
+    if (existingSettings) {
+      console.log('Setting form values from existing settings:', existingSettings);
+      
+      // Ensure array fields are properly handled
+      const project_type = Array.isArray(existingSettings.project_type) 
+        ? existingSettings.project_type 
+        : existingSettings.project_type 
+          ? [existingSettings.project_type] 
+          : [];
+          
+      const keywords = Array.isArray(existingSettings.keywords) 
+        ? existingSettings.keywords 
+        : existingSettings.keywords 
+          ? [existingSettings.keywords] 
+          : [];
+      
+      // Ensure boolean fields are properly handled
+      const requires_insurance = existingSettings.requires_insurance !== undefined 
+        ? existingSettings.requires_insurance 
+        : false;
+        
+      const requires_site_visits = existingSettings.requires_site_visits !== undefined 
+        ? existingSettings.requires_site_visits 
+        : false;
+        
+      const notifications_enabled = existingSettings.notifications_enabled !== undefined 
+        ? existingSettings.notifications_enabled 
+        : true;
+        
+      const email_alerts = existingSettings.email_alerts !== undefined 
+        ? existingSettings.email_alerts 
+        : true;
+      
+      // Map the budget field correctly - use budget if available, fall back to max_budget
+      const budget = existingSettings.budget || 
+                     (existingSettings.max_budget ? existingSettings.max_budget : '');
+      
+      form.reset({
+        role: existingSettings.role || '',
+        location: existingSettings.location || '',
+        budget,
+        duration: existingSettings.duration || '',
+        work_type: existingSettings.work_type || '',
+        project_type,
+        keywords,
+        hiring_status: existingSettings.hiring_status || '',
+        requires_insurance,
+        requires_site_visits,
+        notifications_enabled,
+        email_alerts,
+      });
+      
+      // Log the form state after reset
+      console.log('Form state after reset:', form.getValues());
+    }
+  }, [existingSettings, form]);
 
   return {
     form,
-    leadSettings,
+    existingSettings,
     isLoading,
-    error,
-    isFormInitialized
   };
 };

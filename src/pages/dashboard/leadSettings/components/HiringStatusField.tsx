@@ -11,8 +11,6 @@ interface HiringStatusFieldProps {
 }
 
 export const HiringStatusField: React.FC<HiringStatusFieldProps> = ({ form }) => {
-  console.log('Hiring status field value:', form.watch('hiring_status'));
-  
   return (
     <FormField
       control={form.control}
@@ -20,18 +18,13 @@ export const HiringStatusField: React.FC<HiringStatusFieldProps> = ({ form }) =>
       render={({ field }) => (
         <FormItem>
           <FormLabel>Hiring Status</FormLabel>
-          <Select 
-            onValueChange={field.onChange} 
-            value={field.value || undefined} 
-            defaultValue={field.value || undefined}
-          >
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select hiring status" />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="any">Any</SelectItem>
               {hiringStatusOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

@@ -1,50 +1,92 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import DashboardHeader from '@/components/dashboard/freelancer/DashboardHeader';
 import FreelancerTabs from '@/pages/dashboard/freelancer/FreelancerTabs';
-import DashboardSummary from '@/components/dashboard/freelancer/DashboardSummary';
-import VerificationDialog from '@/components/dashboard/freelancer/VerificationDialog';
-import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
-import { useCredits } from '@/hooks/useCredits';
-import { useVerification } from '@/hooks/verification';
-import { useQueryClient } from '@tanstack/react-query';
+
+interface LeadSettings {
+  id: string;
+  role: string;
+  location: string;
+  work_type?: string;
+  max_budget?: string;
+  notifications_enabled: boolean;
+  keywords?: string[];
+}
+
+interface ProjectLead {
+  id: string;
+  title: string;
+  description: string;
+  budget: string;
+  role: string;
+  created_at: string;
+  location: string;
+  tags?: string[];
+}
 
 const FreelancerDashboard = () => {
   const { user } = useAuth();
-  const { leadSettings, isLoadingSettings, refetchLeadSettings } = useFreelancerDashboard();
-  const { creditBalance, isLoadingBalance } = useCredits();
-  const { verificationStatus } = useVerification();
-  const queryClient = useQueryClient();
+  const [projectLeads, setProjectLeads] = useState<ProjectLead[]>([]);
   
+  // Extract user information
   const fullName = user?.user_metadata?.full_name || 'Freelancer';
 
-  // Ensure we have fresh data when viewing the dashboard
-  useEffect(() => {
-    if (user) {
-      console.log('Dashboard loaded, refreshing data for user:', user.id);
+  // Fetch lead settings from database
+  const { data: leadSettings, isLoading: isLoadingSettings } = useQuery({
+    queryKey: ['leadSettings', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
       
-      // Refresh applications data when dashboard loads
-      queryClient.invalidateQueries({ queryKey: ['applications'] });
+      const { data, error } = await supabase
+        .from('lead_settings')
+        .select('*')
+        .eq('user_id', user.id)
+        .maybeSingle();
       
-      // Explicitly refetch lead settings to ensure we have the latest data
-      queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
-      if (refetchLeadSettings) {
-        console.log('Refetching lead settings...');
-        refetchLeadSettings();
+      if (error) {
+        console.error('Error fetching lead settings:', error);
+        throw error;
       }
       
-      // Also refresh projects data
-      queryClient.invalidateQueries({ queryKey: ['projects'] });
-    }
-  }, [user, queryClient, refetchLeadSettings]);
-
-  console.log('FreelancerDashboard render state:', { 
-    hasUser: !!user, 
-    leadSettings, 
-    isLoadingSettings
+      return data;
+    },
+    enabled: !!user
   });
+
+  // For now, we'll use mock project leads based on the settings
+  useEffect(() => {
+    if (leadSettings) {
+      // Sample project leads matching the settings
+      const leads: ProjectLead[] = [
+        {
+          id: '1',
+          title: 'Kitchen Renovation in Manchester',
+          description: 'Looking for an experienced contractor to renovate a kitchen in a Victorian home.',
+          budget: '£2,000-£3,500',
+          role: leadSettings.role,
+          created_at: new Date().toISOString(),
+          location: leadSettings.location,
+          tags: ['Plumbing', 'Tiling', 'Carpentry']
+        },
+        {
+          id: '2',
+          title: 'Bathroom Remodel',
+          description: 'Complete bathroom renovation needed for a modern apartment.',
+          budget: '£3,000-£5,000',
+          role: leadSettings.role,
+          created_at: new Date().toISOString(),
+          location: 'Liverpool',
+          tags: ['Plumbing', 'Tiling']
+        }
+      ];
+      
+      setProjectLeads(leads);
+    }
+  }, [leadSettings]);
 
   return (
     <MainLayout>
@@ -54,18 +96,10 @@ const FreelancerDashboard = () => {
           hasLeadSettings={!!leadSettings} 
         />
         
-        <div className="flex flex-wrap justify-between items-center mb-6">
-          <DashboardSummary 
-            creditBalance={creditBalance}
-            isLoadingBalance={isLoadingBalance}
-          />
-          
-          {verificationStatus !== 'approved' && <VerificationDialog />}
-        </div>
-        
         <FreelancerTabs 
           isLoadingSettings={isLoadingSettings}
           leadSettings={leadSettings}
+          projectLeads={projectLeads}
         />
       </div>
     </MainLayout>

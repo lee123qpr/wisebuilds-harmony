@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -20,6 +21,9 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
       const websiteUrl = values.website ? 
         (values.website.match(/^https?:\/\//) ? values.website : `https://${values.website}`) : 
         values.website;
+      
+      // Use the logo URL as is - the useLogoUpload hook already handles cache busting
+      // This simplifies our code and ensures consistency across the codebase
       
       // First, check if the profile already exists
       const { data: existingProfile } = await supabase
@@ -46,7 +50,6 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
             company_turnover: values.companyTurnover,
             employee_size: values.employeeSize,
             company_specialism: values.companySpecialism,
-            updated_at: new Date().toISOString(),
           })
           .eq('id', user.id);
         
@@ -68,34 +71,12 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
             company_turnover: values.companyTurnover,
             employee_size: values.employeeSize,
             company_specialism: values.companySpecialism,
-            member_since: new Date().toISOString(),
           });
         
         error = insertError;
       }
       
       if (error) throw error;
-      
-      // Also update user metadata to keep it in sync
-      const { error: updateUserError } = await supabase.auth.updateUser({
-        data: {
-          company_name: values.companyName,
-          contact_name: values.contactName,
-          company_address: values.companyAddress,
-          company_description: values.companyDescription,
-          phone_number: values.phoneNumber,
-          website: websiteUrl,
-          company_type: values.companyType,
-          company_turnover: values.companyTurnover,
-          employee_size: values.employeeSize,
-          company_specialism: values.companySpecialism,
-        }
-      });
-      
-      if (updateUserError) {
-        console.error('Warning: Could not update user metadata:', updateUserError);
-        // We don't throw here as this is not critical
-      }
       
       toast({
         title: 'Profile Updated',

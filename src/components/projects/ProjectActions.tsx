@@ -14,19 +14,19 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
-import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 type ProjectActionsProps = {
   applications: number;
   projectId: string;
   hasDocuments?: boolean;
   refreshProjects?: () => Promise<void>;
-  projectTitle?: string;
 };
 
-const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects, projectTitle }: ProjectActionsProps) => {
+const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects }: ProjectActionsProps) => {
   const navigate = useNavigate();
-  const isTestProject = projectTitle?.startsWith('Test ');
+  const { toast } = useToast();
 
   const handleViewProject = () => {
     // Navigate to view project details page
@@ -36,6 +36,34 @@ const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects
   const handleEditProject = () => {
     // Navigate to edit project page
     navigate(`/project/${projectId}/edit`);
+  };
+
+  const handleDeleteProject = async () => {
+    try {
+      const { error } = await supabase
+        .from('projects')
+        .delete()
+        .eq('id', projectId);
+
+      if (error) throw error;
+
+      toast({
+        title: "Project deleted",
+        description: "The project has been deleted successfully.",
+      });
+
+      // Refresh projects list after deletion
+      if (refreshProjects) {
+        refreshProjects();
+      }
+    } catch (error: any) {
+      console.error('Error deleting project:', error);
+      toast({
+        variant: 'destructive',
+        title: "Error deleting project",
+        description: error.message || "There was an error deleting the project.",
+      });
+    }
   };
 
   const handleViewDocuments = () => {
@@ -68,31 +96,25 @@ const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects
         <PenSquare className="h-4 w-4" />
       </Button>
       
-      <ProjectDeleteHandler projectId={projectId} refreshProjects={refreshProjects}>
-        {(handleDelete) => (
-          <AlertDialog>
-            <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" title={isTestProject ? "Delete Test Project" : "Delete"}>
-                <Trash2 className={`h-4 w-4 ${isTestProject ? "text-red-500" : ""}`} />
-              </Button>
-            </AlertDialogTrigger>
-            <AlertDialogContent>
-              <AlertDialogHeader>
-                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  {isTestProject 
-                    ? "This will delete the test project. Any user can delete test projects."
-                    : "This action cannot be undone. This will permanently delete the project and all associated data."}
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-        )}
-      </ProjectDeleteHandler>
+      <AlertDialog>
+        <AlertDialogTrigger asChild>
+          <Button variant="ghost" size="icon" title="Delete">
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </AlertDialogTrigger>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the project and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteProject}>Delete</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       
       {hasDocuments && (
         <Button 

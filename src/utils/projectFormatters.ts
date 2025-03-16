@@ -1,21 +1,11 @@
-import { format, formatDistanceToNow } from 'date-fns';
+
+import { format } from 'date-fns';
 
 // Format date string to readable format
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Not specified';
   try {
     return format(new Date(dateString), 'dd MMM yyyy');
-  } catch (error) {
-    return dateString;
-  }
-};
-
-// Format date as "X days ago"
-export const formatDateAgo = (dateString: string | null) => {
-  if (!dateString) return 'not specified';
-  try {
-    const date = new Date(dateString);
-    return formatDistanceToNow(date, { addSuffix: true });
   } catch (error) {
     return dateString;
   }
@@ -48,15 +38,10 @@ export const formatBudget = (budget: string) => {
   if (budget === '2500-5000') return '£2,500 - £5,000';
   if (budget === '5000-10000') return '£5,000 - £10,000';
   
-  // For any other format, ensure we add the pound sign
-  if (budget.includes('_')) {
-    return '£' + budget
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
-  }
-  
-  return '£' + budget;
+  return budget
+    .split('_')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
 };
 
 // Format duration string to readable format

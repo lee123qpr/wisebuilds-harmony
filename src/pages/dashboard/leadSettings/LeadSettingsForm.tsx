@@ -8,39 +8,15 @@ import { useLeadSettingsForm } from './hooks/useLeadSettingsForm';
 import { useLeadSettingsMutation } from './hooks/useLeadSettingsMutation';
 import { FormActions } from './components/FormActions';
 import { LeadSettingsFormValues } from './schema';
-import { useToast } from '@/hooks/use-toast';
-import { Progress } from '@/components/ui/progress';
 
 const LeadSettingsForm = () => {
-  const { form, leadSettings, isLoading } = useLeadSettingsForm();
-  const { mutate, isPending } = useLeadSettingsMutation(leadSettings);
-  const { toast } = useToast();
+  const { form, existingSettings, isLoading } = useLeadSettingsForm();
+  const saveSettingsMutation = useLeadSettingsMutation(existingSettings);
 
   const onSubmit = (values: LeadSettingsFormValues) => {
     console.log('Form submitted with values:', values);
-    
-    try {
-      mutate(values);
-    } catch (error) {
-      console.error('Error in submit handler:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'An unexpected error occurred',
-      });
-    }
+    saveSettingsMutation.mutate(values);
   };
-
-  // Debug output
-  React.useEffect(() => {
-    console.log('Form state in LeadSettingsForm:', {
-      isLoading,
-      leadSettings,
-      formValues: form.getValues(),
-      isDirty: form.formState.isDirty,
-      isSubmitting: form.formState.isSubmitting,
-    });
-  }, [form, isLoading, leadSettings]);
 
   return (
     <Card className="w-full max-w-4xl mx-auto">
@@ -51,12 +27,11 @@ const LeadSettingsForm = () => {
         </CardDescription>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(onSubmit)}>
           <CardContent className="space-y-6">
             {isLoading ? (
-              <div className="flex flex-col items-center justify-center py-8 space-y-4">
-                <Progress value={45} className="w-full" />
-                <p className="text-muted-foreground">Loading your settings...</p>
+              <div className="flex items-center justify-center py-8">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : (
               <>
@@ -66,7 +41,7 @@ const LeadSettingsForm = () => {
             )}
           </CardContent>
           <FormActions 
-            isSubmitting={isPending} 
+            isSubmitting={saveSettingsMutation.isPending} 
             isLoading={isLoading} 
           />
         </form>

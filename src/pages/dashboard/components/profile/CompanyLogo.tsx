@@ -17,7 +17,6 @@ interface CompanyLogoProps {
   memberSince: string | null;
   emailVerified: boolean;
   jobsCompleted: number;
-  idVerified?: boolean; // Add optional idVerified prop
 }
 
 const CompanyLogo: React.FC<CompanyLogoProps> = ({
@@ -30,8 +29,7 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
   userId,
   memberSince,
   emailVerified,
-  jobsCompleted,
-  idVerified = false // Default to false if not provided
+  jobsCompleted
 }) => {
   console.log('CompanyLogo - Props:', { userId, emailVerified, memberSince, jobsCompleted });
   
@@ -108,7 +106,6 @@ const CompanyLogo: React.FC<CompanyLogoProps> = ({
               formattedMemberSince={formattedMemberSince}
               jobsCompleted={jobsCompleted}
               userId={userId}
-              idVerified={idVerified}
             />
           </div>
         </div>

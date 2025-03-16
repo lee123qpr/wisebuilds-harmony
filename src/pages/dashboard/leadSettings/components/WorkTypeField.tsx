@@ -11,8 +11,6 @@ interface WorkTypeFieldProps {
 }
 
 export const WorkTypeField: React.FC<WorkTypeFieldProps> = ({ form }) => {
-  console.log('Work type field value:', form.watch('work_type'));
-  
   return (
     <FormField
       control={form.control}
@@ -20,18 +18,13 @@ export const WorkTypeField: React.FC<WorkTypeFieldProps> = ({ form }) => {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Work Type</FormLabel>
-          <Select 
-            onValueChange={field.onChange} 
-            value={field.value || undefined} 
-            defaultValue={field.value || undefined}
-          >
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select work type" />
               </SelectTrigger>
             </FormControl>
             <SelectContent>
-              <SelectItem value="any">Any</SelectItem>
               {workTypeOptions.map((option) => (
                 <SelectItem key={option.value} value={option.value}>
                   {option.label}

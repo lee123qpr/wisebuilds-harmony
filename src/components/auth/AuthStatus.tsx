@@ -3,22 +3,19 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, LogOut, User, LayoutDashboard, Coins, Shield } from 'lucide-react';
+import { Loader2, LogOut, User, LayoutDashboard, Bell } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { useCredits } from '@/hooks/useCredits';
 
 const AuthStatus = () => {
   const { user, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { creditBalance, isLoadingBalance } = useCredits();
-  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
-  const isAdmin = user?.user_metadata?.user_type === 'admin';
+  const [hasNotifications] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -89,8 +86,6 @@ const AuthStatus = () => {
         return '/dashboard/business/profile';
       case 'freelancer':
         return '/dashboard/freelancer/profile';
-      case 'admin':
-        return '/dashboard/admin/profile'; // Admin profile if implemented
       default:
         return '/';
     }
@@ -103,61 +98,25 @@ const AuthStatus = () => {
         <p className="text-xs text-muted-foreground capitalize">{userType}</p>
       </div>
       
-      {/* Credits Button - Only shown for freelancers */}
-      {isFreelancer && (
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              title="Credits" 
-              onClick={() => navigate('/dashboard/freelancer/credits')}
-              className="flex items-center gap-1.5"
-            >
-              <Coins className="h-4 w-4 text-yellow-500" />
-              {isLoadingBalance ? (
-                <span className="h-4 w-8 bg-gray-200 animate-pulse rounded text-xs"></span>
-              ) : (
-                <span className="text-xs font-medium">{creditBalance || 0}</span>
-              )}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-60 p-4">
-            <div className="space-y-2">
-              <h4 className="font-medium leading-none mb-2">Credit Balance</h4>
-              {isLoadingBalance ? (
-                <div className="h-6 w-16 bg-gray-200 animate-pulse rounded"></div>
-              ) : (
-                <div className="flex items-baseline">
-                  <span className="text-xl font-bold">{creditBalance || 0}</span>
-                  <span className="ml-2 text-sm text-muted-foreground">credits</span>
-                </div>
-              )}
-              <Button 
-                className="w-full mt-2" 
-                size="sm"
-                onClick={() => navigate('/dashboard/freelancer/credits')}
-              >
-                Buy More Credits
-              </Button>
-            </div>
-          </PopoverContent>
-        </Popover>
-      )}
-      
-      {/* Admin Badge - Only shown for admins */}
-      {isAdmin && (
-        <Button 
-          variant="outline" 
-          size="sm" 
-          title="Admin Dashboard" 
-          onClick={() => navigate('/dashboard/admin')}
-          className="flex items-center gap-1.5 bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:text-red-700"
-        >
-          <Shield className="h-4 w-4" />
-          <span className="text-xs font-medium">Admin</span>
-        </Button>
-      )}
+      {/* Notifications Bell */}
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative">
+            <Bell className="h-5 w-5" />
+            {hasNotifications && (
+              <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive" />
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-80 p-4">
+          <div className="space-y-2">
+            <h4 className="font-medium leading-none mb-2">Notifications</h4>
+            <p className="text-sm text-muted-foreground">
+              You have no new notifications.
+            </p>
+          </div>
+        </PopoverContent>
+      </Popover>
       
       {/* Dashboard Button */}
       <Link to={getDashboardLink()} title="Dashboard">

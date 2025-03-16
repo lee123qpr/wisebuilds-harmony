@@ -2,17 +2,12 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Briefcase } from 'lucide-react';
-import AnyOptionBadge from './AnyOptionBadge';
 
 interface WorkTypeBadgeProps {
   workType: string;
 }
 
 const WorkTypeBadge = ({ workType }: WorkTypeBadgeProps) => {
-  if (workType === 'any') {
-    return <AnyOptionBadge label="Work Type" />;
-  }
-
   const getWorkTypeStyles = () => {
     switch (workType) {
       case 'onsite':

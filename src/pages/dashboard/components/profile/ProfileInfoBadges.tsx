@@ -1,10 +1,8 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Briefcase, CheckCircle2, Award } from 'lucide-react';
+import { Calendar, Briefcase, CheckCircle2 } from 'lucide-react';
 import { useClientReviews } from '../../hooks/useClientReviews';
-import { useVerification } from '@/hooks/verification';
-import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
 import RatingStars from './RatingStars';
 
 interface ProfileInfoBadgesProps {
@@ -13,18 +11,15 @@ interface ProfileInfoBadgesProps {
   formattedMemberSince: string;
   jobsCompleted: number;
   userId: string;
-  idVerified: boolean;
 }
 
 const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
   emailVerified,
   formattedMemberSince,
   jobsCompleted,
-  userId,
-  idVerified
+  userId
 }) => {
   const { averageRating, reviewCount } = useClientReviews(userId);
-  const { verificationStatus } = useVerification();
   
   console.log('ProfileInfoBadges - Rating Data:', { averageRating, reviewCount, userId });
 
@@ -34,20 +29,11 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
         {emailVerified ? (
           <Badge variant="outline" className="flex items-center gap-1 bg-green-50 text-green-700 border-green-200">
             <CheckCircle2 className="h-3 w-3" />
-            Email Verified
+            Verified
           </Badge>
         ) : (
           <Badge variant="outline" className="flex items-center gap-1 bg-amber-50 text-amber-700 border-amber-200">
-            Email Verification Pending
-          </Badge>
-        )}
-        
-        <VerificationBadge status={verificationStatus} />
-        
-        {idVerified && (
-          <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
-            <Award className="h-3 w-3" />
-            ID Verified
+            Verification Pending
           </Badge>
         )}
         

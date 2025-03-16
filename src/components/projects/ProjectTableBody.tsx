@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { TableRow, TableCell, TableBody } from '@/components/ui/table';
 import ProjectStatusBadge from './ProjectStatusBadge';
@@ -6,7 +5,6 @@ import HiringStatusBadge from './HiringStatusBadge';
 import ProjectActions from './ProjectActions';
 import { format } from 'date-fns';
 import { Project } from './useProjects';
-import { formatBudget } from '@/utils/projectFormatters';
 
 type ProjectTableBodyProps = {
   projects: Project[];
@@ -28,6 +26,21 @@ const ProjectTableBody = ({ projects, isLoading, refreshProjects }: ProjectTable
   const formatRole = (role: string) => {
     // Replace underscores with spaces and capitalize each word
     return role
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
+  // Function to format budget
+  const formatBudget = (budget: string) => {
+    if (budget === 'under_1000') return 'Under £1,000';
+    if (budget === '1000_to_5000') return '£1,000 - £5,000';
+    if (budget === '5000_to_10000') return '£5,000 - £10,000';
+    if (budget === '10000_to_50000') return '£10,000 - £50,000';
+    if (budget === '50000_to_100000') return '£50,000 - £100,000';
+    if (budget === '100000_plus') return 'Over £100,000';
+    
+    return budget
       .split('_')
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
@@ -78,7 +91,6 @@ const ProjectTableBody = ({ projects, isLoading, refreshProjects }: ProjectTable
               projectId={project.id}
               hasDocuments={project.documents && project.documents.length > 0}
               refreshProjects={refreshProjects}
-              projectTitle={project.title}
             />
           </TableCell>
         </TableRow>

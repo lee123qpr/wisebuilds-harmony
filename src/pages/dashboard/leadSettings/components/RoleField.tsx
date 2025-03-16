@@ -11,8 +11,6 @@ interface RoleFieldProps {
 }
 
 export const RoleField: React.FC<RoleFieldProps> = ({ form }) => {
-  console.log('Role field value:', form.watch('role'));
-  
   return (
     <FormField
       control={form.control}
@@ -20,11 +18,7 @@ export const RoleField: React.FC<RoleFieldProps> = ({ form }) => {
       render={({ field }) => (
         <FormItem>
           <FormLabel>Role Required</FormLabel>
-          <Select 
-            onValueChange={field.onChange} 
-            value={field.value || undefined} 
-            defaultValue={field.value || undefined}
-          >
+          <Select onValueChange={field.onChange} defaultValue={field.value}>
             <FormControl>
               <SelectTrigger>
                 <SelectValue placeholder="Select required role" />

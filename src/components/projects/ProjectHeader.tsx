@@ -4,14 +4,13 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { PenSquare, ArrowLeft, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
-import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
 
 interface ProjectHeaderProps {
   projectId: string;
-  refreshProjects?: () => Promise<void>;
+  onDelete: () => Promise<void>;
 }
 
-const ProjectHeader = ({ projectId, refreshProjects }: ProjectHeaderProps) => {
+const ProjectHeader = ({ projectId, onDelete }: ProjectHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -27,31 +26,26 @@ const ProjectHeader = ({ projectId, refreshProjects }: ProjectHeaderProps) => {
           <PenSquare className="h-4 w-4 mr-2" />
           Edit
         </Button>
-        
-        <ProjectDeleteHandler projectId={projectId} refreshProjects={refreshProjects}>
-          {(handleDelete) => (
-            <AlertDialog>
-              <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
-                  Delete
-                </Button>
-              </AlertDialogTrigger>
-              <AlertDialogContent>
-                <AlertDialogHeader>
-                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-                  <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the project and all associated data.
-                  </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
-                </AlertDialogFooter>
-              </AlertDialogContent>
-            </AlertDialog>
-          )}
-        </ProjectDeleteHandler>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="destructive">
+              <Trash2 className="h-4 w-4 mr-2" />
+              Delete
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the project and all associated data.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction onClick={onDelete}>Delete</AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

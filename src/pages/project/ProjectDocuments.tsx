@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,7 +10,6 @@ import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectDocument } from '@/components/projects/useProjects';
-import { Json } from '@/integrations/supabase/types';
 
 const ProjectDocuments = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -44,18 +44,10 @@ const ProjectDocuments = () => {
     setIsSaving(true);
     
     try {
-      // Convert ProjectDocument[] to a plain object/array structure for Json compatibility
-      const documentsForJson = documents.map(doc => ({
-        id: doc.id,
-        name: doc.name,
-        url: doc.url,
-        type: doc.type,
-      }));
-      
       const { error } = await supabase
         .from('projects')
         .update({ 
-          documents: documentsForJson as Json,
+          documents: documents,
           updated_at: new Date().toISOString()
         })
         .eq('id', projectId);

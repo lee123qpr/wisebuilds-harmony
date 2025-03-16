@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import ProjectHeader from '@/components/projects/ProjectHeader';
 import ProjectDetails from '@/components/projects/ProjectDetails';
@@ -8,8 +8,7 @@ import ProjectStatus from '@/components/projects/ProjectStatus';
 import ProjectDocuments from '@/components/projects/ProjectDocuments';
 import ProjectNotFound from '@/components/projects/ProjectNotFound';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
-import { LeadPurchaseButton } from '@/components/projects/lead-purchase';
-import { useAuth } from '@/context/AuthContext';
+import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
 import { 
   ProjectHeaderSkeleton, 
   ProjectDetailsSkeleton, 
@@ -19,22 +18,7 @@ import {
 
 const ViewProject = () => {
   const { projectId } = useParams<{ projectId: string }>();
-  const navigate = useNavigate();
   const { project, loading } = useProjectDetails(projectId);
-  const { user } = useAuth();
-  const [refreshContactInfo, setRefreshContactInfo] = React.useState(false);
-  
-  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
-  const isBusiness = user?.user_metadata?.user_type === 'business';
-
-  const handlePurchaseSuccess = () => {
-    setRefreshContactInfo(prev => !prev);
-  };
-
-  const handleProjectDeleted = async () => {
-    // Navigate back to the dashboard after project deletion
-    navigate('/dashboard/business');
-  };
 
   if (!project && !loading) {
     return (
@@ -62,37 +46,18 @@ const ViewProject = () => {
           </>
         ) : (
           <>
-            {isBusiness && (
-              <ProjectHeader 
-                projectId={project!.id}
-                refreshProjects={handleProjectDeleted}
-              />
-            )}
-
-            {isFreelancer && !isBusiness && (
-              <div className="mb-4">
-                <h1 className="text-2xl font-bold">{project!.title}</h1>
-              </div>
-            )}
-
-            {isFreelancer && (
-              <div className="flex justify-end mb-4">
-                <LeadPurchaseButton 
-                  projectId={project!.id}
-                  projectTitle={project!.title}
-                  project={project}
-                  purchasesCount={project!.purchases_count || 0}
-                  onPurchaseSuccess={handlePurchaseSuccess}
+            <ProjectDeleteHandler projectId={project!.id}>
+              {(handleDelete) => (
+                <ProjectHeader 
+                  projectId={project!.id} 
+                  onDelete={handleDelete} 
                 />
-              </div>
-            )}
+              )}
+            </ProjectDeleteHandler>
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
-                <ProjectDetails 
-                  project={project!} 
-                  forceShowContactInfo={isFreelancer && project!.purchases_count > 0}
-                />
+                <ProjectDetails project={project!} />
               </div>
 
               <div className="space-y-6">
