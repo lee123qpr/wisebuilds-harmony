@@ -13,7 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const FreelancerDashboard = () => {
   const { user } = useAuth();
-  const { leadSettings, isLoadingSettings } = useFreelancerDashboard();
+  const { leadSettings, isLoadingSettings, refetchLeadSettings } = useFreelancerDashboard();
   const { creditBalance, isLoadingBalance } = useCredits();
   const { verificationStatus } = useVerification();
   const queryClient = useQueryClient();
@@ -25,8 +25,14 @@ const FreelancerDashboard = () => {
     if (user) {
       // Refresh applications data when dashboard loads
       queryClient.invalidateQueries({ queryKey: ['applications'] });
+      
+      // Explicitly refetch lead settings to ensure we have the latest data
+      queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+      if (refetchLeadSettings) {
+        refetchLeadSettings();
+      }
     }
-  }, [user, queryClient]);
+  }, [user, queryClient, refetchLeadSettings]);
 
   return (
     <MainLayout>
