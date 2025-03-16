@@ -19,6 +19,7 @@ export interface FreelancerInfo {
   jobs_completed?: number;
   rating?: number;
   reviews_count?: number;
+  email_verified?: boolean;
 }
 
 export interface Conversation {

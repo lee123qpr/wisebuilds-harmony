@@ -50,6 +50,7 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       profile_image: metaData.avatar_url || null,
       phone_number: metaData.phone_number || metaData.phone || null,
       email: userData.email || null,
+      email_verified: userData.email_confirmed || false,
       member_since: userData.user?.created_at || metaData.created_at || null,
       jobs_completed: metaData.jobs_completed || 0,
       rating,

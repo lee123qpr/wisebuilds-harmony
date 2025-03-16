@@ -84,6 +84,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
                   id: application.user_id,
                   email: email,
                   verified: verificationData || false,
+                  email_verified: userData?.email_confirmed || false,
                   first_name: firstName,
                   last_name: lastName,
                   display_name: displayName,

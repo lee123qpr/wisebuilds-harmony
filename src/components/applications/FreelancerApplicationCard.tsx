@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Phone, Mail, MapPin, Star, Calendar, CheckCircle2, Briefcase, Building } from 'lucide-react';
+import { MessageSquare, Phone, Mail, MapPin, Star, Calendar, CheckCircle2, Briefcase, CheckCircle } from 'lucide-react';
 import { FreelancerApplication } from '@/types/applications';
 import { format, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -149,12 +149,21 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
               <AvatarFallback>{getInitials(profile?.display_name)}</AvatarFallback>
             </Avatar>
             
-            {profile?.verified && (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
-                <CheckCircle2 className="h-3 w-3" />
-                Verified
-              </Badge>
-            )}
+            <div className="flex flex-col items-center gap-1">
+              {profile?.email_verified && (
+                <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
+                  <CheckCircle className="h-3 w-3" />
+                  Email Verified
+                </Badge>
+              )}
+              
+              {profile?.verified && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
+                  <CheckCircle2 className="h-3 w-3" />
+                  ID Verified
+                </Badge>
+              )}
+            </div>
           </div>
           
           <div className="flex-1 space-y-4">
