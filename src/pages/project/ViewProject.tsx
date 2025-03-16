@@ -58,14 +58,9 @@ const ViewProject = () => {
         ) : (
           <>
             {isBusiness && (
-              <ProjectDeleteHandler projectId={project!.id}>
-                {(handleDelete) => (
-                  <ProjectHeader 
-                    projectId={project!.id} 
-                    onDelete={handleDelete} 
-                  />
-                )}
-              </ProjectDeleteHandler>
+              <ProjectHeader 
+                projectId={project!.id} 
+              />
             )}
 
             {isFreelancer && !isBusiness && (

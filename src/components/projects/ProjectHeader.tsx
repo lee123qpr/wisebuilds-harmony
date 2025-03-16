@@ -8,9 +8,10 @@ import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler
 
 interface ProjectHeaderProps {
   projectId: string;
+  onDelete?: () => Promise<void>;
 }
 
-const ProjectHeader = ({ projectId }: ProjectHeaderProps) => {
+const ProjectHeader = ({ projectId, onDelete }: ProjectHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -45,7 +46,7 @@ const ProjectHeader = ({ projectId }: ProjectHeaderProps) => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+                  <AlertDialogAction onClick={onDelete || handleDelete}>Delete</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>
