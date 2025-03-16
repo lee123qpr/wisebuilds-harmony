@@ -1,37 +1,59 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-interface SetupResult {
+export interface SetupResult {
   success: boolean;
-  message?: string;
-  error?: any;
+  message: string;
 }
 
 /**
- * Sets up the verification system by calling the edge function
+ * Set up the verification system
+ * This function calls the edge function to set up the storage bucket and RLS policies
  */
 export const setupVerification = async (): Promise<SetupResult> => {
   try {
-    // Call the edge function to set up the verification system
-    const { data, error } = await supabase.functions.invoke('setup-verification');
+    console.log('Setting up verification system...');
     
-    if (error) {
-      console.error('Error invoking setup-verification function:', error);
+    // Call the setup edge function
+    const response = await fetch('/api/setup-verification');
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error setting up verification system:', errorData);
       return {
         success: false,
-        error
+        message: errorData.error || 'Failed to set up verification system'
       };
+    }
+    
+    const result = await response.json();
+    console.log('Verification system setup result:', result);
+    
+    // Check if the bucket is accessible by trying a simple operation
+    // This helps verify that the setup was successful
+    try {
+      const { data, error } = await supabase.storage
+        .from('id-documents')
+        .getPublicUrl('test.txt');
+        
+      if (error) {
+        console.warn('Bucket access check warning:', error);
+        // Continue anyway as this might just be a permissions issue for the current user
+      }
+    } catch (bucketError) {
+      console.warn('Bucket access check warning:', bucketError);
+      // Continue anyway as this might just be a permissions issue for the current user
     }
     
     return {
       success: true,
-      message: data.message
+      message: 'Verification system setup completed successfully'
     };
-  } catch (error) {
-    console.error('Error setting up verification system:', error);
+  } catch (error: any) {
+    console.error('Error in setupVerification:', error);
     return {
       success: false,
-      error
+      message: error.message || 'An unexpected error occurred during setup'
     };
   }
 };

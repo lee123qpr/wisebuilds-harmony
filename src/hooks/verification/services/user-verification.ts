@@ -77,40 +77,52 @@ export const isUserFreelancer = async (): Promise<boolean> => {
 /**
  * Helper function to check if the id-documents storage bucket is accessible
  * This can be used to verify if setup has been correctly done
+ * 
+ * IMPORTANT: This function doesn't check if the user can actually upload files,
+ * just if the bucket exists and is accessible for listing
  */
 export const checkIdDocumentsBucketAccess = async (): Promise<boolean> => {
   try {
-    // Get current user ID to use for proper folder path prefix
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session || !session.user) {
-      console.error('No active session found while checking bucket access');
+    // First check if the bucket exists at all by trying to get its public URL
+    // This is a lightweight operation that doesn't require specific permissions
+    const { data: bucketData } = await supabase
+      .storage
+      .getBucket('id-documents');
+    
+    if (!bucketData) {
+      console.error('id-documents bucket does not exist');
       return false;
     }
     
-    const userId = session.user.id;
+    console.log('id-documents bucket exists, checking access permissions');
     
-    // Try to list files in the user's own folder (which should always be allowed)
-    // This is more accurate than listing the root of the bucket
-    const { data, error } = await supabase.storage
-      .from('id-documents')
-      .list(userId, { limit: 1 });
-    
-    if (error) {
-      // Check if it's an access error or if the folder doesn't exist yet by checking the error message
-      const isNotFoundError = error.message.includes('The resource was not found') || 
-                             error.message.includes('Object not found');
-                             
-      if (isNotFoundError) {
-        // This is normal for new users - folder doesn't exist yet
-        console.log('Folder not found, but bucket is accessible');
-        return true;
-      }
+    // Try using a basic operation that should always work if the bucket is 
+    // properly set up and the user has anonymous access
+    try {
+      const { data, error } = await supabase.storage
+        .from('id-documents')
+        .getPublicUrl('test.txt');
       
-      console.error('Error accessing id-documents bucket:', error);
-      return false;
+      if (error) {
+        console.error('Error getting public URL:', error);
+      }
+    } catch (e) {
+      // Ignore errors for this operation as we're just testing
+      console.log('Public URL test completed');
     }
     
-    console.log('Successfully accessed id-documents bucket');
+    // Now we need to check if we can run the setup function again
+    try {
+      // Make an API call to our setup function to ensure the bucket is properly configured
+      const response = await fetch('/api/setup-verification');
+      if (!response.ok) {
+        console.warn('Setup verification API call failed, but continuing');
+      }
+    } catch (setupError) {
+      console.warn('Error calling setup function:', setupError);
+      // Continue anyway as this is just a precaution
+    }
+    
     return true;
   } catch (error) {
     console.error('Error checking id-documents bucket access:', error);

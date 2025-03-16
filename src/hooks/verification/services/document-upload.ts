@@ -34,32 +34,40 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     
     console.log('Uploading file to:', filePath);
     
-    // Check if we can access the bucket at all
+    // First check if the bucket exists
     try {
-      const { data: checkData, error: checkError } = await supabase.storage
-        .from('id-documents')
-        .list(userId, { limit: 1 });
+      const { data: bucketData, error: bucketError } = await supabase.storage
+        .getBucket('id-documents');
         
-      if (checkError) {
-        // Check if it's an access error by looking at the error message instead of status code
-        const isNotFoundError = checkError.message.includes('Object not found') || 
-                               checkError.message.includes('The resource was not found');
-        
-        if (!isNotFoundError) {
-          console.error('Error checking bucket access:', checkError);
-          return {
-            success: false,
-            error: checkError,
-            errorMessage: 'Cannot access document storage. Please try again later.'
-          };
-        }
+      if (bucketError || !bucketData) {
+        console.error('Error checking bucket existence:', bucketError || 'Bucket not found');
+        return {
+          success: false,
+          error: bucketError || new Error('Bucket not found'),
+          errorMessage: 'The document storage system is not properly configured. Please contact support.'
+        };
       }
-    } catch (checkErr) {
-      console.warn('Error during bucket access check:', checkErr);
-      // Continue anyway, the actual upload will tell us if there's a real problem
+    } catch (bucketErr) {
+      console.error('Error checking bucket:', bucketErr);
+      // Continue anyway, as we might still be able to upload
+    }
+    
+    // Make sure the user's folder exists by creating a placeholder if needed
+    try {
+      // Try to create a subfolder marker
+      await supabase.storage
+        .from('id-documents')
+        .upload(`${userId}/.folder`, new Blob([]), {
+          upsert: true
+        });
+      console.log('Ensured user folder exists');
+    } catch (folderErr) {
+      // Ignore folder creation errors, as they might be permission related
+      console.warn('Failed to create folder marker, continuing anyway:', folderErr);
     }
     
     // Upload file to storage
+    console.log('Attempting to upload file to', filePath);
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('id-documents')
       .upload(filePath, file, {
@@ -69,10 +77,24 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     
     if (uploadError) {
       console.error('Error uploading file:', uploadError);
+      
+      // Provide a clear error message based on error type
+      let errorMessage = 'Failed to upload document. Please try again.';
+      
+      if (uploadError.message.includes('permission') || 
+          uploadError.message.includes('policy') ||
+          uploadError.message.includes('access')) {
+        errorMessage = 'Permission denied when uploading document. Please ensure you are logged in and have the correct permissions.';
+      } else if (uploadError.message.includes('already exists')) {
+        errorMessage = 'A file with this name already exists. Please try again with a different file name.';
+      } else if (uploadError.message.includes('not found')) {
+        errorMessage = 'The document storage system could not be found. Please contact support.';
+      }
+      
       return {
         success: false,
         error: uploadError,
-        errorMessage: 'Failed to upload document. Please try again.'
+        errorMessage
       };
     }
     

@@ -16,19 +16,22 @@ export const useVerification = (): UseVerificationResult => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Fetch verification status
   const refreshVerificationStatus = async () => {
     if (!user) return null;
     
     setIsLoading(true);
+    setError(null);
     try {
       const data = await fetchVerificationStatus(user.id);
       setVerificationData(data);
       console.log('Refreshed verification status:', data);
       return data;
-    } catch (error) {
-      console.error('Error refreshing verification status:', error);
+    } catch (err: any) {
+      console.error('Error refreshing verification status:', err);
+      setError(err);
       return null;
     } finally {
       setIsLoading(false);
@@ -45,6 +48,7 @@ export const useVerification = (): UseVerificationResult => {
     }
     
     setIsUploading(true);
+    setError(null);
     try {
       console.log('Starting document upload for user:', user.id);
       const result = await uploadDocument(user.id, file);
@@ -61,11 +65,12 @@ export const useVerification = (): UseVerificationResult => {
       }
       
       return result;
-    } catch (error: any) {
-      console.error('Error uploading document:', error);
+    } catch (err: any) {
+      console.error('Error uploading document:', err);
+      setError(err);
       return {
         success: false,
-        errorMessage: error.message || 'An unexpected error occurred'
+        errorMessage: err.message || 'An unexpected error occurred'
       };
     } finally {
       setIsUploading(false);
@@ -79,6 +84,7 @@ export const useVerification = (): UseVerificationResult => {
     }
     
     setIsDeleting(true);
+    setError(null);
     try {
       console.log('Deleting document for user:', user.id);
       const result = await deleteDocument(user.id, verificationData.id_document_path);
@@ -94,9 +100,10 @@ export const useVerification = (): UseVerificationResult => {
       await refreshVerificationStatus();
       
       return true;
-    } catch (error: any) {
-      console.error('Error deleting document:', error);
-      throw error;
+    } catch (err: any) {
+      console.error('Error deleting document:', err);
+      setError(err);
+      throw err;
     } finally {
       setIsDeleting(false);
     }
@@ -120,6 +127,7 @@ export const useVerification = (): UseVerificationResult => {
     isLoading,
     isUploading,
     isDeleting,
+    error,
     uploadVerificationDocument: handleUploadVerificationDocument,
     deleteVerificationDocument: handleDeleteVerificationDocument,
     refreshVerificationStatus
