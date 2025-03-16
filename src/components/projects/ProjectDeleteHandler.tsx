@@ -31,6 +31,40 @@ export const ProjectDeleteHandler: React.FC<ProjectDeleteHandlerProps> = ({
 
       console.log('Deleting project with ID:', projectId);
 
+      // First check if the current user is the owner of the project
+      const { data: userData } = await supabase.auth.getUser();
+      const currentUserId = userData?.user?.id;
+      
+      if (!currentUserId) {
+        toast({
+          variant: 'destructive',
+          title: "Authentication error",
+          description: "You must be logged in to delete projects",
+        });
+        return;
+      }
+      
+      // Check project ownership
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .select('user_id')
+        .eq('id', projectId)
+        .single();
+        
+      if (projectError) {
+        console.error('Error checking project ownership:', projectError);
+        throw new Error("Couldn't verify project ownership");
+      }
+      
+      if (projectData.user_id !== currentUserId) {
+        toast({
+          variant: 'destructive',
+          title: "Permission denied",
+          description: "You can only delete projects that you created",
+        });
+        return;
+      }
+
       const { error } = await supabase
         .from('projects')
         .delete()

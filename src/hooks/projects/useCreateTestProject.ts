@@ -24,7 +24,7 @@ export const useCreateTestProject = () => {
     try {
       const testProject = {
         title: `Test ${roleType} Project`,
-        description: `This is a test project for a ${roleType} created automatically.`,
+        description: `This is a test project for a ${roleType} created by you for testing purposes.`,
         budget: '1000_to_5000',
         role: roleType,
         location: 'Tamworth, UK', // Match the location in lead settings
@@ -55,7 +55,7 @@ export const useCreateTestProject = () => {
       console.log('Test project created:', data);
       toast({
         title: "Test project created",
-        description: `A new ${roleType} project has been created`,
+        description: `A new ${roleType} project has been created. You can edit or delete it from your dashboard.`,
       });
       
       // Force refresh
