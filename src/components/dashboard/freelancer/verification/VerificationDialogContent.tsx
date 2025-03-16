@@ -11,7 +11,7 @@ import VerificationDialogHeader from './dialog/VerificationDialogHeader';
 import VerificationStatus from './dialog/VerificationStatus';
 import VerificationDialogFooter from './dialog/VerificationDialogFooter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Info } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface VerificationDialogContentProps {
@@ -26,11 +26,13 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({
   const { 
     verificationStatus, 
     verificationData,
-    isDeleting
+    isDeleting,
+    error: verificationError
   } = useVerification();
   
   const { setupComplete, isSettingUp, setupError } = useVerificationSetup();
   const [bucketAccessError, setBucketAccessError] = useState(false);
+  const [bucketChecked, setBucketChecked] = useState(false);
   const { toast } = useToast();
   
   const { 
@@ -57,9 +59,12 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({
   // Check if bucket is accessible
   useEffect(() => {
     const checkBucketAccess = async () => {
-      if (setupComplete) {
+      if (setupComplete && !bucketChecked) {
+        console.log('Checking bucket access...');
         try {
           const hasAccess = await checkIdDocumentsBucketAccess();
+          console.log('Bucket access check result:', hasAccess);
+          
           if (!hasAccess) {
             console.error('Failed to access storage bucket');
             setBucketAccessError(true);
@@ -72,9 +77,12 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({
               onBucketError();
             }
           }
+          
+          setBucketChecked(true);
         } catch (error) {
           console.error('Error checking bucket access:', error);
           setBucketAccessError(true);
+          setBucketChecked(true);
           toast({
             variant: 'destructive',
             title: 'Storage access error',
@@ -84,9 +92,12 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({
       }
     };
     
-    checkBucketAccess();
-  }, [setupComplete, onBucketError, toast]);
+    if (setupComplete && !bucketChecked) {
+      checkBucketAccess();
+    }
+  }, [setupComplete, onBucketError, toast, bucketChecked]);
 
+  // Display verification component even if bucket access fails
   return (
     <DialogContent className="sm:max-w-[425px]">
       <VerificationDialogHeader />
@@ -109,10 +120,27 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({
         </Alert>
       )}
       
+      {verificationError && !setupError && !bucketAccessError && (
+        <Alert variant="warning">
+          <Info className="h-4 w-4" />
+          <AlertDescription>
+            There was an issue loading your verification status. Some features may be limited.
+          </AlertDescription>
+        </Alert>
+      )}
+      
+      {isSettingUp && (
+        <div className="py-4">
+          <p className="text-center text-sm text-muted-foreground">
+            Setting up verification system...
+          </p>
+        </div>
+      )}
+      
       <VerificationStatus 
         verificationStatus={verificationStatus}
         verificationData={verificationData}
-        setupComplete={setupComplete}
+        setupComplete={setupComplete && !bucketAccessError}
         isUploading={isUploading}
         isDeleting={isDeleting}
         selectedFile={selectedFile}

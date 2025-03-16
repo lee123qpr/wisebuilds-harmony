@@ -64,7 +64,9 @@ export const setupVerification = async (): Promise<SetupResult> => {
         .from('id-documents')
         .getPublicUrl('test.txt');
         
-      console.log('Successfully generated public URL for test file');
+      if (data && data.publicUrl) {
+        console.log('Successfully generated public URL for test file');
+      }
     } catch (bucketError) {
       console.warn('Bucket access check warning:', bucketError);
       // Continue anyway as this might just be a permissions issue for the current user
