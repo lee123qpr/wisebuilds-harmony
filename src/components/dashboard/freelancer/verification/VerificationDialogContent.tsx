@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, X } from 'lucide-react';
 import {
   DialogContent,
   DialogDescription,
@@ -93,6 +93,11 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ o
     }
   };
 
+  // Remove selected file before submission
+  const handleRemoveSelectedFile = () => {
+    setSelectedFile(null);
+  };
+
   // Check if it's a new verification or rejected to allow resubmission
   const canSubmit = verificationStatus !== 'approved' && verificationStatus !== 'pending';
   // Document has been submitted but not approved yet, so can be deleted
@@ -132,8 +137,19 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ o
         )}
         
         {selectedFile && (
-          <div className="text-sm">
-            Selected file: <span className="font-medium">{selectedFile.name}</span>
+          <div className="text-sm border border-gray-200 p-3 rounded-md bg-gray-50 flex justify-between items-center">
+            <div className="truncate max-w-[250px]">
+              Selected file: <span className="font-medium">{selectedFile.name}</span>
+            </div>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              className="h-7 w-7 p-0" 
+              onClick={handleRemoveSelectedFile}
+              aria-label="Remove selected file"
+            >
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         )}
       </div>
