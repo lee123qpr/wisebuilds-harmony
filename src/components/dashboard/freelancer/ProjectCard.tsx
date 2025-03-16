@@ -1,63 +1,78 @@
 
 import React from 'react';
 import { Project } from '@/components/projects/useProjects';
-import { formatDateAgo } from '@/utils/projectFormatters';
-import { Badge } from '@/components/ui/badge';
-import { CalculatorIcon } from 'lucide-react';
+import { MapPin, Users, Calendar as CalendarIcon } from 'lucide-react';
+import { formatDateAgo, formatRole } from '@/utils/projectFormatters';
+import WorkTypeBadge from './badges/WorkTypeBadge';
+import DurationBadge from './badges/DurationBadge';
+import BudgetBadge from './badges/BudgetBadge';
+import HiringStatusBadge from './badges/HiringStatusBadge';
+import PurchaseLimitBar from '@/components/projects/PurchaseLimitBar';
 
 interface ProjectCardProps {
   project: Project;
   isSelected: boolean;
   onClick: () => void;
   isPurchased?: boolean;
-  isQuoted?: boolean;
 }
 
-const ProjectCard: React.FC<ProjectCardProps> = ({ 
-  project, 
-  isSelected, 
+const ProjectCard: React.FC<ProjectCardProps> = ({
+  project,
+  isSelected,
   onClick,
-  isPurchased = false,
-  isQuoted = false
+  isPurchased = false
 }) => {
-  return (
-    <div 
-      className={`p-4 cursor-pointer hover:bg-slate-50 ${isSelected ? 'bg-slate-100 border-l-4 border-l-primary' : ''}`}
-      onClick={onClick}
-    >
-      <div className="space-y-1">
-        <div className="flex justify-between items-start">
-          <h3 className="font-medium text-lg">{project.title}</h3>
-          <span className="text-xs text-gray-500">{formatDateAgo(project.created_at)}</span>
-        </div>
-        
-        <div className="flex flex-wrap gap-2 items-center">
-          <Badge variant="outline" className="bg-gray-50">{project.role}</Badge>
-          <Badge variant="outline" className="bg-gray-50">{project.location}</Badge>
-          <Badge variant="outline" className="bg-gray-50">{project.work_type}</Badge>
-          {isPurchased && (
-            <Badge className="bg-green-50 text-green-700 border-green-200">
-              Purchased
-            </Badge>
-          )}
-          {isQuoted && (
-            <Badge className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
-              <CalculatorIcon className="h-3 w-3" />
-              <span>Quote Sent</span>
-            </Badge>
-          )}
-        </div>
-        
-        <div className="text-sm">
-          <span className="font-medium">Budget:</span> {project.budget}
-        </div>
-        
-        <p className="text-sm text-gray-600 line-clamp-2">
-          {project.description}
-        </p>
+  // Format dates as "X days ago"
+  const postedDateAgo = formatDateAgo(project.created_at);
+  const purchasesCount = project.purchases_count || 0;
+  
+  return <div className={`p-3 cursor-pointer transition-all ${isSelected ? 'bg-primary/5 border-l-4 border-primary' : 'hover:bg-muted/50 border-l-4 border-transparent'}`} onClick={onClick}>
+      <div>
+        <h3 className="font-semibold text-lg truncate">{project.title}</h3>
       </div>
-    </div>
-  );
+      
+      {/* Purchase limit indicator - full width */}
+      <div className="mt-2 mb-2">
+        <PurchaseLimitBar purchasesCount={purchasesCount} isPurchased={isPurchased} />
+      </div>
+      
+      {/* Basic Information - No color (neutral gray) */}
+      <div className="space-y-2 mt-2">
+        <h4 className="text-xs uppercase font-semibold text-gray-500 tracking-wider mb-1">Project Details</h4>
+        
+        {/* Location */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
+            <MapPin className="h-3 w-3 text-gray-600" />
+          </span>
+          <span className="text-sm text-gray-600 font-medium">{project.location}</span>
+        </div>
+        
+        {/* Role */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
+            <Users className="h-3 w-3 text-gray-600" />
+          </span>
+          <span className="text-sm text-gray-600 font-medium">{formatRole(project.role)}</span>
+        </div>
+        
+        {/* Posted Date */}
+        <div className="flex items-center gap-2">
+          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
+            <CalendarIcon className="h-3 w-3 text-gray-600" />
+          </span>
+          <span className="text-sm text-gray-600 font-bold">Posted {postedDateAgo}</span>
+        </div>
+      </div>
+      
+      {/* Color-coded categories */}
+      <div className="grid grid-cols-2 gap-2 mt-3">
+        <WorkTypeBadge workType={project.work_type} />
+        <DurationBadge duration={project.duration} />
+        <BudgetBadge budget={project.budget} />
+        <HiringStatusBadge status={project.hiring_status || 'enquiring'} />
+      </div>
+    </div>;
 };
 
 export default ProjectCard;

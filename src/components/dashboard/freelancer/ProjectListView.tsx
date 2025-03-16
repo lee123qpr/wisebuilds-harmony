@@ -34,7 +34,6 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   const { toast } = useToast();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [purchasedProjects, setPurchasedProjects] = useState<Record<string, boolean>>({});
-  const [quotedProjects, setQuotedProjects] = useState<Record<string, boolean>>({});
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
   const queryClient = useQueryClient();
 
@@ -59,63 +58,36 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
     queryClient.invalidateQueries({ queryKey: ['applications'] });
   };
 
-  const handleQuoteSubmitted = () => {
-    // Update quotes status for the current project
-    if (selectedProject) {
-      setQuotedProjects(prev => ({
-        ...prev,
-        [selectedProject.id]: true
-      }));
-    }
-  };
-
   useEffect(() => {
-    const checkPurchasedAndQuotedProjects = async () => {
+    const checkPurchasedProjects = async () => {
       if (!user || !isFreelancer || projects.length === 0) return;
       
       try {
         const projectIds = projects.map(project => project.id);
         const purchasedStatus: Record<string, boolean> = {};
-        const quotedStatus: Record<string, boolean> = {};
         
-        // Check for purchased projects (applications)
         for (const projectId of projectIds) {
-          const { data: appData, error: appError } = await supabase.rpc('check_application_exists', {
+          const { data, error } = await supabase.rpc('check_application_exists', {
             p_project_id: projectId,
             p_user_id: user.id
           });
           
-          if (appError) {
-            console.error('Error checking application exists:', appError);
+          if (error) {
+            console.error('Error checking application exists:', error);
             continue;
           }
           
-          purchasedStatus[projectId] = appData === true;
-          
-          // If purchased, also check if quoted
-          if (appData === true) {
-            const { data: quoteData, error: quoteError } = await supabase.rpc('check_quote_exists', {
-              p_project_id: projectId,
-              p_freelancer_id: user.id
-            });
-            
-            if (quoteError) {
-              console.error('Error checking quote exists:', quoteError);
-              continue;
-            }
-            
-            quotedStatus[projectId] = quoteData === true;
-          }
+          purchasedStatus[projectId] = data === true;
+          console.log(`Project ${projectId} purchased status:`, data);
         }
         
         setPurchasedProjects(purchasedStatus);
-        setQuotedProjects(quotedStatus);
       } catch (err) {
-        console.error('Error checking purchased/quoted projects:', err);
+        console.error('Error checking purchased projects:', err);
       }
     };
     
-    checkPurchasedAndQuotedProjects();
+    checkPurchasedProjects();
   }, [projects, user, isFreelancer, refreshTrigger]);
 
   if (isLoading) {
@@ -137,7 +109,6 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
               isSelected={project.id === selectedProjectId}
               onClick={() => setSelectedProjectId(project.id)}
               isPurchased={purchasedProjects[project.id] || false}
-              isQuoted={quotedProjects[project.id] || false}
             />
           ))}
         </div>

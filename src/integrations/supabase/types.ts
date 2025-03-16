@@ -467,44 +467,6 @@ export type Database = {
         }
         Relationships: []
       }
-      quotes: {
-        Row: {
-          client_id: string
-          created_at: string
-          freelancer_id: string
-          id: string
-          project_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          freelancer_id: string
-          id?: string
-          project_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          freelancer_id?: string
-          id?: string
-          project_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quotes_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -522,13 +484,6 @@ export type Database = {
         Args: {
           p_project_id: string
           p_user_id: string
-        }
-        Returns: boolean
-      }
-      check_quote_exists: {
-        Args: {
-          p_project_id: string
-          p_freelancer_id: string
         }
         Returns: boolean
       }
