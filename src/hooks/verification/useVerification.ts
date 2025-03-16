@@ -20,7 +20,7 @@ export const useVerification = (): UseVerificationResult => {
 
   // Fetch verification status
   const refreshVerificationStatus = async () => {
-    if (!user) return;
+    if (!user) return null;
     
     setIsLoading(true);
     try {
