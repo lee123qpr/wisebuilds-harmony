@@ -7,7 +7,6 @@ import { Info, Plus } from 'lucide-react';
 import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
 import { useCreateTestProject } from '@/hooks/projects/useCreateTestProject';
 import { formatBudget, formatRole } from '@/utils/projectFormatters';
-import HiringStatusBadge from '../badges/HiringStatusBadge';
 
 const EmptyLeadsMessage: React.FC = () => {
   const navigate = useNavigate();
@@ -39,6 +38,22 @@ const EmptyLeadsMessage: React.FC = () => {
     return durationMap[duration] || duration;
   };
 
+  // Format hiring status for display
+  const formatHiringStatus = (status: string) => {
+    if (!status) return 'Any';
+    
+    const statusMap: Record<string, string> = {
+      'enquiring': 'Just Enquiring',
+      'ready': 'Ready to Hire',
+      'urgent': 'Urgent'
+    };
+    
+    return statusMap[status] || status
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -68,15 +83,8 @@ const EmptyLeadsMessage: React.FC = () => {
             {/* Duration filter */}
             <li><span className="font-medium">Duration:</span> {leadSettings?.duration ? formatDuration(leadSettings.duration) : 'Any'}</li>
             
-            {/* Hiring Status filter */}
-            <li className="flex items-center gap-2">
-              <span className="font-medium">Hiring Status:</span> 
-              {leadSettings?.hiring_status ? (
-                <span className="mt-1 inline-block">
-                  <HiringStatusBadge status={leadSettings.hiring_status} />
-                </span>
-              ) : 'Any'}
-            </li>
+            {/* Hiring Status filter - now using formatted text */}
+            <li><span className="font-medium">Hiring Status:</span> {leadSettings?.hiring_status ? formatHiringStatus(leadSettings.hiring_status) : 'Any'}</li>
             
             {/* Insurance Requirements filter */}
             <li><span className="font-medium">Insurance Required:</span> {leadSettings?.requires_insurance ? 'Yes' : 'Any'}</li>
