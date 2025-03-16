@@ -1,15 +1,15 @@
-import React from 'react';
+
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle, Shield, ShieldAlert, ShieldCheck, ShieldQuestion, Eye } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Eye, ArrowUpDown } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
-import { AdminUser } from '../../hooks/useUsers';
 import { TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
+import { AdminUser } from '../../hooks/useUsers';
 import { useToast } from '@/hooks/use-toast';
 
 interface FreelancersListProps {
@@ -21,59 +21,58 @@ interface FreelancersListProps {
 
 const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersListProps) => {
   const { toast } = useToast();
+  const [sortConfig, setSortConfig] = useState<{
+    key: 'created_at' | 'last_sign_in_at' | null;
+    direction: 'ascending' | 'descending';
+  }>({
+    key: null,
+    direction: 'descending'
+  });
   
   // Filter only freelancer users
   const freelancers = users.filter(user => 
     user.user_metadata?.user_type === 'freelancer'
   );
 
-  const getVerificationIcon = (status: string | null | undefined) => {
-    if (!status) return <ShieldQuestion className="h-4 w-4 text-gray-500" />;
-    
-    switch (status) {
-      case 'approved':
-        return <ShieldCheck className="h-4 w-4 text-green-500" />;
-      case 'pending':
-        return <Shield className="h-4 w-4 text-amber-500" />;
-      case 'rejected':
-        return <ShieldAlert className="h-4 w-4 text-red-500" />;
-      default:
-        return <ShieldQuestion className="h-4 w-4 text-gray-500" />;
-    }
-  };
-
-  const getVerificationText = (status: string | null | undefined) => {
-    if (!status) return 'Not Submitted';
-    
-    switch (status) {
-      case 'approved':
-        return 'Verified';
-      case 'pending':
-        return 'Pending';
-      case 'rejected':
-        return 'Rejected';
-      default:
-        return 'Not Submitted';
-    }
-  };
-
-  const getVerificationColor = (status: string | null | undefined) => {
-    if (!status) return 'bg-gray-100 text-gray-700';
-    
-    switch (status) {
-      case 'approved':
-        return 'bg-green-100 text-green-700';
-      case 'pending':
-        return 'bg-amber-100 text-amber-700';
-      case 'rejected':
-        return 'bg-red-100 text-red-700';
-      default:
-        return 'bg-gray-100 text-gray-700';
-    }
-  };
-
   const handleViewProfile = (userId: string) => {
     window.open(`/dashboard/freelancer/profile?id=${userId}`, '_blank');
+  };
+
+  const handleSort = (key: 'created_at' | 'last_sign_in_at') => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
+  const sortedFreelancers = React.useMemo(() => {
+    if (!sortConfig.key) return freelancers;
+    
+    return [...freelancers].sort((a, b) => {
+      // Handle null values for last_sign_in_at
+      if (sortConfig.key === 'last_sign_in_at') {
+        if (!a[sortConfig.key] && !b[sortConfig.key]) return 0;
+        if (!a[sortConfig.key]) return sortConfig.direction === 'ascending' ? 1 : -1;
+        if (!b[sortConfig.key]) return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      
+      const aValue = a[sortConfig.key] ? new Date(a[sortConfig.key]).getTime() : 0;
+      const bValue = b[sortConfig.key] ? new Date(b[sortConfig.key]).getTime() : 0;
+      
+      if (sortConfig.direction === 'ascending') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+  }, [freelancers, sortConfig]);
+
+  const getSortIndicator = (key: 'created_at' | 'last_sign_in_at') => {
+    if (sortConfig.key !== key) return '';
+    return sortConfig.direction === 'ascending' ? ' 🔼' : ' 🔽';
   };
 
   return (
@@ -81,7 +80,7 @@ const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersList
       <CardHeader className="flex flex-row items-center justify-between">
         <div>
           <CardTitle>Freelancer List</CardTitle>
-          <CardDescription>Manage freelancer accounts and permissions</CardDescription>
+          <CardDescription>Manage freelancer accounts</CardDescription>
         </div>
         <Button 
           variant="outline"
@@ -116,15 +115,32 @@ const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersList
               <TableRow>
                 <TableHead>User</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Last Login</TableHead>
-                <TableHead>Email Status</TableHead>
-                <TableHead>ID Verified</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort('created_at')}
+                >
+                  <div className="flex items-center">
+                    Created
+                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <span className="ml-1">{getSortIndicator('created_at')}</span>
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort('last_sign_in_at')}
+                >
+                  <div className="flex items-center">
+                    Last Login
+                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <span className="ml-1">{getSortIndicator('last_sign_in_at')}</span>
+                  </div>
+                </TableHead>
+                <TableHead>Verification</TableHead>
                 <TableHead>Profile</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {freelancers.map(user => (
+              {sortedFreelancers.map(user => (
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="flex items-center space-x-2">
@@ -147,21 +163,15 @@ const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersList
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center">
-                      {user.is_verified ? (
+                      {user.email_confirmed_at ? (
                         <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
                       ) : (
                         <XCircle className="h-4 w-4 text-red-500 mr-1" />
                       )}
                       <span>
-                        {user.is_verified ? 'Verified' : 'Unverified'}
+                        {user.email_confirmed_at ? 'Verified' : 'Unverified'}
                       </span>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={`flex items-center gap-1 ${getVerificationColor(user.verification_status)}`}>
-                      {getVerificationIcon(user.verification_status)}
-                      {getVerificationText(user.verification_status)}
-                    </Badge>
                   </TableCell>
                   <TableCell>
                     <Button 

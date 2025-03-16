@@ -1,9 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle, XCircle, Eye } from 'lucide-react';
+import { Loader2, CheckCircle, XCircle, Eye, ArrowUpDown } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
 import { format } from 'date-fns';
@@ -21,6 +21,13 @@ interface ClientsListProps {
 
 const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) => {
   const { toast } = useToast();
+  const [sortConfig, setSortConfig] = useState<{
+    key: 'created_at' | 'last_sign_in_at' | null;
+    direction: 'ascending' | 'descending';
+  }>({
+    key: null,
+    direction: 'descending'
+  });
   
   // Filter only business users
   const clients = users.filter(user => 
@@ -29,6 +36,43 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
 
   const handleViewProfile = (userId: string) => {
     window.open(`/dashboard/business/profile?id=${userId}`, '_blank');
+  };
+
+  const handleSort = (key: 'created_at' | 'last_sign_in_at') => {
+    let direction: 'ascending' | 'descending' = 'ascending';
+    
+    if (sortConfig.key === key && sortConfig.direction === 'ascending') {
+      direction = 'descending';
+    }
+    
+    setSortConfig({ key, direction });
+  };
+
+  const sortedClients = React.useMemo(() => {
+    if (!sortConfig.key) return clients;
+    
+    return [...clients].sort((a, b) => {
+      // Handle null values for last_sign_in_at
+      if (sortConfig.key === 'last_sign_in_at') {
+        if (!a[sortConfig.key] && !b[sortConfig.key]) return 0;
+        if (!a[sortConfig.key]) return sortConfig.direction === 'ascending' ? 1 : -1;
+        if (!b[sortConfig.key]) return sortConfig.direction === 'ascending' ? -1 : 1;
+      }
+      
+      const aValue = a[sortConfig.key] ? new Date(a[sortConfig.key]).getTime() : 0;
+      const bValue = b[sortConfig.key] ? new Date(b[sortConfig.key]).getTime() : 0;
+      
+      if (sortConfig.direction === 'ascending') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+  }, [clients, sortConfig]);
+
+  const getSortIndicator = (key: 'created_at' | 'last_sign_in_at') => {
+    if (sortConfig.key !== key) return '';
+    return sortConfig.direction === 'ascending' ? ' 🔼' : ' 🔽';
   };
 
   return (
@@ -71,14 +115,32 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
               <TableRow>
                 <TableHead>Company/User</TableHead>
                 <TableHead>Email</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead>Last Login</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort('created_at')}
+                >
+                  <div className="flex items-center">
+                    Created
+                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <span className="ml-1">{getSortIndicator('created_at')}</span>
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-muted/30"
+                  onClick={() => handleSort('last_sign_in_at')}
+                >
+                  <div className="flex items-center">
+                    Last Login
+                    <ArrowUpDown className="ml-1 h-4 w-4" />
+                    <span className="ml-1">{getSortIndicator('last_sign_in_at')}</span>
+                  </div>
+                </TableHead>
                 <TableHead>Email Status</TableHead>
                 <TableHead>Profile</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {clients.map(user => (
+              {sortedClients.map(user => (
                 <TableRow key={user.id}>
                   <TableCell>
                     <div className="flex items-center space-x-2">
@@ -101,13 +163,13 @@ const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) =
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center">
-                      {user.is_verified ? (
+                      {user.email_confirmed_at ? (
                         <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
                       ) : (
                         <XCircle className="h-4 w-4 text-red-500 mr-1" />
                       )}
                       <span>
-                        {user.is_verified ? 'Verified' : 'Unverified'}
+                        {user.email_confirmed_at ? 'Verified' : 'Unverified'}
                       </span>
                     </div>
                   </TableCell>
