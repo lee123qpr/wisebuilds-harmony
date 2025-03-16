@@ -6,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { Info, Plus } from 'lucide-react';
 import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
 import { useCreateTestProject } from '@/hooks/projects/useCreateTestProject';
+import { formatBudget, formatRole } from '@/utils/projectFormatters';
 
 const EmptyLeadsMessage: React.FC = () => {
   const navigate = useNavigate();
@@ -56,12 +57,12 @@ const EmptyLeadsMessage: React.FC = () => {
         <div className="mb-4 text-sm text-muted-foreground">
           <p className="font-medium mb-2">Your current filters:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><span className="font-medium">Role:</span> {leadSettings?.role || 'Not set'}</li>
+            <li><span className="font-medium">Role:</span> {formatRole(leadSettings?.role || 'Not set')}</li>
             <li><span className="font-medium">Location:</span> {leadSettings?.location || 'Not set'}</li>
             <li><span className="font-medium">Work Type:</span> {leadSettings?.work_type || 'Any'}</li>
             
             {/* Budget filter */}
-            <li><span className="font-medium">Budget:</span> {leadSettings?.budget || 'Any'}</li>
+            <li><span className="font-medium">Budget:</span> {leadSettings?.budget ? formatBudget(leadSettings.budget) : 'Any'}</li>
             
             {/* Duration filter */}
             <li><span className="font-medium">Duration:</span> {leadSettings?.duration ? formatDuration(leadSettings.duration) : 'Any'}</li>
