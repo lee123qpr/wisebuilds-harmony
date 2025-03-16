@@ -2,7 +2,11 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import { fetchVerificationStatus, uploadVerificationDocument } from './verificationService';
+import { 
+  fetchVerificationStatus, 
+  uploadVerificationDocument, 
+  deleteVerificationDocument 
+} from './verificationService';
 import type { VerificationData, UseVerificationResult } from './types';
 import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
 
@@ -12,6 +16,7 @@ export const useVerification = (): UseVerificationResult => {
   const [verificationData, setVerificationData] = useState<VerificationData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   // Fetch verification status
   const refreshVerificationStatus = async () => {
@@ -60,6 +65,40 @@ export const useVerification = (): UseVerificationResult => {
     }
   };
 
+  // Delete ID document
+  const handleDeleteVerificationDocument = async () => {
+    if (!user || !verificationData?.id_document_path) return false;
+    
+    setIsDeleting(true);
+    try {
+      const result = await deleteVerificationDocument(user.id, verificationData.id_document_path);
+      
+      if (!result.success) {
+        throw result.error || new Error('Delete failed');
+      }
+      
+      // Reset verification data
+      await refreshVerificationStatus();
+      
+      toast({
+        title: 'Document deleted',
+        description: 'Your ID document has been deleted and verification status reset.',
+      });
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error deleting document:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Delete failed',
+        description: error.message || 'Failed to delete document. Please try again.',
+      });
+      return false;
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   // Initialize
   useEffect(() => {
     if (user) {
@@ -73,7 +112,9 @@ export const useVerification = (): UseVerificationResult => {
     isVerified: verificationData?.verification_status === 'approved',
     isLoading,
     isUploading,
+    isDeleting,
     uploadVerificationDocument: handleUploadVerificationDocument,
+    deleteVerificationDocument: handleDeleteVerificationDocument,
     refreshVerificationStatus
   };
 };

@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, Upload, Loader2 } from 'lucide-react';
+import { ShieldCheck, Upload, Loader2, Trash2 } from 'lucide-react';
 import {
   Dialog,
   DialogContent,
@@ -10,7 +10,19 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
+  DialogClose,
 } from '@/components/ui/dialog';
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { useVerification } from '@/hooks/verification';
 import { setupVerificationSystem } from '@/hooks/verification/setupVerification';
 import { useToast } from '@/hooks/use-toast';
@@ -19,7 +31,16 @@ const VerificationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [setupComplete, setSetupComplete] = useState<boolean>(false);
-  const { uploadVerificationDocument, isUploading, verificationStatus, refreshVerificationStatus } = useVerification();
+  const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+  const { 
+    uploadVerificationDocument, 
+    deleteVerificationDocument,
+    isUploading, 
+    isDeleting,
+    verificationStatus, 
+    verificationData,
+    refreshVerificationStatus 
+  } = useVerification();
   const { toast } = useToast();
 
   // Run verification system setup on component mount
@@ -102,6 +123,14 @@ const VerificationDialog: React.FC = () => {
     }
   };
 
+  const handleDelete = async () => {
+    const result = await deleteVerificationDocument();
+    if (result) {
+      setConfirmDeleteOpen(false);
+      setOpen(false);
+    }
+  };
+
   const getButtonLabel = () => {
     switch (verificationStatus) {
       case 'approved':
@@ -115,7 +144,10 @@ const VerificationDialog: React.FC = () => {
     }
   };
 
-  const isDisabled = verificationStatus === 'approved' || verificationStatus === 'pending';
+  // Check if it's a new verification or rejected to allow resubmission
+  const canSubmit = verificationStatus !== 'approved' && verificationStatus !== 'pending';
+  // Document has been submitted but not approved yet, so can be deleted
+  const canDelete = verificationStatus === 'pending' || verificationStatus === 'rejected';
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -123,7 +155,7 @@ const VerificationDialog: React.FC = () => {
         <Button 
           variant={verificationStatus === 'approved' ? 'ghost' : 'outline'} 
           className="flex items-center gap-2"
-          disabled={isDisabled}
+          disabled={verificationStatus === 'approved'}
         >
           <ShieldCheck className="h-4 w-4" />
           {getButtonLabel()}
@@ -145,37 +177,82 @@ const VerificationDialog: React.FC = () => {
             Your document will be reviewed by our team. This process usually takes 1-2 business days.
           </p>
           
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <input
-              type="file"
-              id="id-document"
-              onChange={handleFileChange}
-              accept="image/jpeg,image/png,application/pdf"
-              className="hidden"
-              disabled={isUploading || !setupComplete}
-            />
-            <label
-              htmlFor="id-document"
-              className="flex flex-col items-center justify-center cursor-pointer"
-            >
-              {!setupComplete ? (
-                <Loader2 className="h-8 w-8 text-gray-400 mb-2 animate-spin" />
-              ) : (
-                <Upload className="h-8 w-8 text-gray-400 mb-2" />
-              )}
-              <p className="text-sm text-gray-600 font-medium">
-                {!setupComplete 
-                  ? 'Setting up verification system...' 
-                  : 'Click to upload your ID document'}
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                JPEG, PNG or PDF (max. 5MB)
-              </p>
-              <p className="text-xs text-orange-500 mt-1">
-                UK or Ireland documents only
-              </p>
-            </label>
-          </div>
+          {canSubmit && (
+            <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+              <input
+                type="file"
+                id="id-document"
+                onChange={handleFileChange}
+                accept="image/jpeg,image/png,application/pdf"
+                className="hidden"
+                disabled={isUploading || !setupComplete}
+              />
+              <label
+                htmlFor="id-document"
+                className="flex flex-col items-center justify-center cursor-pointer"
+              >
+                {!setupComplete ? (
+                  <Loader2 className="h-8 w-8 text-gray-400 mb-2 animate-spin" />
+                ) : (
+                  <Upload className="h-8 w-8 text-gray-400 mb-2" />
+                )}
+                <p className="text-sm text-gray-600 font-medium">
+                  {!setupComplete 
+                    ? 'Setting up verification system...' 
+                    : 'Click to upload your ID document'}
+                </p>
+                <p className="text-xs text-gray-500 mt-1">
+                  JPEG, PNG or PDF (max. 5MB)
+                </p>
+                <p className="text-xs text-orange-500 mt-1">
+                  UK or Ireland documents only
+                </p>
+              </label>
+            </div>
+          )}
+          
+          {canDelete && verificationData?.id_document_path && (
+            <div className="bg-green-50 p-4 rounded-md border border-green-100">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium">Document submitted</p>
+                  <p className="text-xs text-gray-500">
+                    Submitted on: {new Date(verificationData.submitted_at || '').toLocaleDateString()}
+                  </p>
+                </div>
+                <AlertDialog open={confirmDeleteOpen} onOpenChange={setConfirmDeleteOpen}>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="destructive" size="sm" disabled={isDeleting}>
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Delete
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Delete verification document?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        This will permanently delete your submitted document and reset your verification status. 
+                        You'll need to submit a new document for verification.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
+                      <AlertDialogAction onClick={handleDelete} disabled={isDeleting}>
+                        {isDeleting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Deleting...
+                          </>
+                        ) : (
+                          'Delete'
+                        )}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </div>
+            </div>
+          )}
           
           {selectedFile && (
             <div className="text-sm">
@@ -185,22 +262,24 @@ const VerificationDialog: React.FC = () => {
         </div>
         
         <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isUploading}>
+          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isUploading || isDeleting}>
             Cancel
           </Button>
-          <Button 
-            onClick={handleSubmit} 
-            disabled={!selectedFile || isUploading || !setupComplete}
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              'Submit for Verification'
-            )}
-          </Button>
+          {canSubmit && selectedFile && (
+            <Button 
+              onClick={handleSubmit} 
+              disabled={!selectedFile || isUploading || !setupComplete}
+            >
+              {isUploading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                'Submit for Verification'
+              )}
+            </Button>
+          )}
         </DialogFooter>
       </DialogContent>
     </Dialog>
