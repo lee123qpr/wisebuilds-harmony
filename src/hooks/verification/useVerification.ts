@@ -4,8 +4,8 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { 
   fetchVerificationStatus, 
-  uploadVerificationDocument, 
-  deleteVerificationDocument 
+  uploadVerificationDocument as uploadDocument, 
+  deleteVerificationDocument as deleteDocument 
 } from './verificationService';
 import type { VerificationData, UseVerificationResult } from './types';
 
@@ -42,7 +42,7 @@ export const useVerification = (): UseVerificationResult => {
     setIsUploading(true);
     try {
       console.log('Starting document upload for user:', user.id);
-      const result = await uploadVerificationDocument(user.id, file);
+      const result = await uploadDocument(user.id, file);
       
       if (!result.success) {
         console.error('Upload failed with result:', result);
@@ -71,7 +71,7 @@ export const useVerification = (): UseVerificationResult => {
     setIsDeleting(true);
     try {
       console.log('Deleting document for user:', user.id);
-      const result = await deleteVerificationDocument(user.id, verificationData.id_document_path);
+      const result = await deleteDocument(user.id, verificationData.id_document_path);
       
       if (!result.success) {
         console.error('Delete failed with result:', result);

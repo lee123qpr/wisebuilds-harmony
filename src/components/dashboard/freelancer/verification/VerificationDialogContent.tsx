@@ -29,14 +29,20 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ o
     handleFileSelection, 
     handleRemoveSelectedFile, 
     handleSubmit 
-  } = useDocumentUpload(onClose);
+  } = useDocumentUpload(() => {
+    // Success callback to close dialog after successful upload
+    setTimeout(() => onClose(), 1500);
+  });
   
   const { 
     confirmDeleteOpen, 
     handleOpenDeleteConfirmation, 
     handleCloseDeleteConfirmation, 
     handleDelete 
-  } = useDocumentDeletion(onClose);
+  } = useDocumentDeletion(() => {
+    // Success callback to close dialog after successful deletion
+    setTimeout(() => onClose(), 1500);
+  });
 
   return (
     <DialogContent className="sm:max-w-[425px]">

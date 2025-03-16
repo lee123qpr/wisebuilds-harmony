@@ -68,6 +68,10 @@ export const useDocumentUpload = (onUploadSuccess?: () => void) => {
         else if (errorObj.message?.includes('storage') || errorObj.statusCode === 400) {
           errorMessage = 'Storage error. Please ensure your file is below 5MB and in JPG, PNG, or PDF format.';
         }
+        // Check for user type errors
+        else if (errorObj.message?.includes('freelancer')) {
+          errorMessage = 'Only freelancers can upload verification documents. Please ensure your account is set up correctly.';
+        }
       }
       
       toast({
