@@ -49,10 +49,11 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
           freelancer_info: freelancerInfo,
           // Add client_info for compatibility with existing components
           client_info: {
-            contact_name: freelancerInfo.full_name || 'Unknown Freelancer',
-            company_name: freelancerInfo.business_name,
-            logo_url: freelancerInfo.profile_image,
-            email: freelancerInfo.email
+            id: conv.freelancer_id,
+            contact_name: freelancerInfo?.display_name || 'Unknown Freelancer',
+            company_name: null,
+            logo_url: freelancerInfo?.profile_image,
+            email: freelancerInfo?.email
           }
         };
       } else {
@@ -67,7 +68,7 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
       }
     }));
     
-    return formattedConversations;
+    return formattedConversations as Conversation[];
   } catch (e) {
     console.error('Error in fetchConversations:', e);
     return [];
