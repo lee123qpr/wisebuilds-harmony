@@ -4,6 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
+// Define ProjectDocument type
+export interface ProjectDocument {
+  id: string;
+  name: string;
+  url: string;
+  type?: string;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -25,7 +33,7 @@ export interface Project {
   client_company?: string;
   start_date: string;
   applications: number;
-  documents?: Array<any>;
+  documents?: ProjectDocument[];
   requires_site_visits: boolean;
   status: string;
   chat_count?: number; // Added for chat count
@@ -37,6 +45,7 @@ export interface Project {
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null); // Add error state
   const { user } = useAuth();
   const { toast } = useToast();
   const [searchQuery, setSearchQuery] = useState('');
@@ -52,6 +61,7 @@ export const useProjects = () => {
     
     try {
       setIsLoading(true);
+      setError(null); // Reset error state
       
       // Fetch projects
       const { data: projectsData, error } = await supabase
@@ -100,6 +110,7 @@ export const useProjects = () => {
       setProjects(projectsWithChatCounts);
     } catch (error: any) {
       console.error('Error fetching projects:', error);
+      setError(error.message || 'An unexpected error occurred');
       toast({
         title: 'Failed to load projects',
         description: error.message || 'An unexpected error occurred',
@@ -123,6 +134,7 @@ export const useProjects = () => {
     statusFilter,
     setStatusFilter,
     hiringFilter,
-    setHiringFilter
+    setHiringFilter,
+    error // Return the error state
   };
 };
