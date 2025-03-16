@@ -42,7 +42,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 // Transform skills from Json to string array if needed
                 const skills = Array.isArray(profileData.skills) 
                   ? profileData.skills 
-                  : (profileData.skills ? [profileData.skills.toString()] : []);
+                  : (profileData.skills ? [String(profileData.skills.toString())] : []);
                 
                 // If there's a profile, use that data
                 return {
