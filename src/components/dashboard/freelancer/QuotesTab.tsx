@@ -39,10 +39,32 @@ const QuotesTab: React.FC = () => {
       
       try {
         console.log('Fetching user applications...');
-        // Use custom RPC function to get applications
-        const { data: applicationData, error: appError } = await supabase.rpc('get_user_applications', {
-          user_id: user.id
-        });
+        
+        // Directly fetch applications and join with projects
+        const { data: applicationData, error: appError } = await supabase
+          .from('project_applications')
+          .select(`
+            id,
+            created_at,
+            project_id,
+            projects:project_id (
+              id,
+              title,
+              description,
+              budget,
+              location,
+              work_type,
+              duration,
+              role,
+              created_at,
+              status,
+              hiring_status,
+              requires_insurance,
+              requires_equipment,
+              requires_site_visits
+            )
+          `)
+          .eq('user_id', user.id);
         
         if (appError) {
           console.error('Error fetching applications:', appError);
@@ -56,9 +78,9 @@ const QuotesTab: React.FC = () => {
         
         console.log('Received application data:', applicationData);
         
-        // Get project details for each application
-        const applicationProjects = applicationData.map((app: any) => ({
-          ...app.project,
+        // Transform the data to match the ApplicationWithProject interface
+        const applicationProjects = applicationData.map((app) => ({
+          ...app.projects,
           application_id: app.id,
           application_created_at: app.created_at
         }));

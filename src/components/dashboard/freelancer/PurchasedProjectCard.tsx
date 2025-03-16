@@ -52,7 +52,7 @@ const PurchasedProjectCard: React.FC<PurchasedProjectCardProps> = ({
             Purchased {timeAgo}
           </Badge>
         </div>
-        <CardTitle className="line-clamp-2 leading-tight">{project.title}</CardTitle>
+        <CardTitle className="line-clamp-2 leading-tight text-lg">{project.title}</CardTitle>
       </CardHeader>
       <CardContent className="pb-2">
         <div className="grid grid-cols-1 gap-2 text-sm text-muted-foreground">
