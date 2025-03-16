@@ -36,5 +36,3 @@ verify_jwt = true
 [functions.get-admin-users]
 verify_jwt = true
 
-[functions.get-user-profile]
-verify_jwt = false

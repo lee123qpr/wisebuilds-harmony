@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Conversation, ClientInfo, FreelancerInfo } from '@/types/messaging';
+import { Conversation } from '@/types/messaging';
 import { getClientInfo } from './utils/getClientInfo';
 import { getFreelancerInfo } from './utils/getFreelancerInfo';
 
@@ -49,13 +49,10 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
           freelancer_info: freelancerInfo,
           // Add client_info for compatibility with existing components
           client_info: {
-            contact_name: freelancerInfo.full_name || 'Freelancer',
+            contact_name: freelancerInfo.full_name || 'Unknown Freelancer',
             company_name: freelancerInfo.business_name,
             logo_url: freelancerInfo.profile_image,
-            email: freelancerInfo.email,
-            phone_number: freelancerInfo.phone_number,
-            website: null,
-            company_address: null
+            email: freelancerInfo.email
           }
         };
       } else {

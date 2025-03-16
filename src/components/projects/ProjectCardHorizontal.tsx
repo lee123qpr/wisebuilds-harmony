@@ -20,21 +20,11 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   // Number of interested freelancers
   const interestedCount = project.applications || 0;
   
-  // Number of chats
+  // Number of chats (this is a placeholder as we don't have the actual chat count)
+  // In a real implementation, this would come from the project data
   const chatCount = project.chat_count || 0;
   
   const handleClick = () => {
-    navigate(`/project/${project.id}`);
-  };
-  
-  const handleInterestedClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the card click event from firing
-    navigate(`/project/${project.id}/applications`);
-  };
-  
-  const handleChatsClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the card click event from firing
-    // For now, just navigate to the project page
     navigate(`/project/${project.id}`);
   };
   
@@ -53,10 +43,7 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
           
           <div className="grid grid-cols-2 gap-4 mt-4">
             {/* Interested freelancers box */}
-            <div 
-              className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
-              onClick={handleInterestedClick}
-            >
+            <div className="border rounded-md p-4 flex items-center">
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3">
                 <span className="text-2xl font-bold text-primary">{interestedCount}</span>
               </div>
@@ -67,10 +54,7 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
             </div>
             
             {/* Chats box */}
-            <div 
-              className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
-              onClick={handleChatsClick}
-            >
+            <div className="border rounded-md p-4 flex items-center">
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3">
                 <span className="text-2xl font-bold text-primary">{chatCount}</span>
               </div>
