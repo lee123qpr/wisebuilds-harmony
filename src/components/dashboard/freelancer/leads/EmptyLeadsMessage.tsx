@@ -7,6 +7,7 @@ import { Info, Plus } from 'lucide-react';
 import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
 import { useCreateTestProject } from '@/hooks/projects/useCreateTestProject';
 import { formatBudget, formatRole } from '@/utils/projectFormatters';
+import HiringStatusBadge from '../badges/HiringStatusBadge';
 
 const EmptyLeadsMessage: React.FC = () => {
   const navigate = useNavigate();
@@ -68,7 +69,14 @@ const EmptyLeadsMessage: React.FC = () => {
             <li><span className="font-medium">Duration:</span> {leadSettings?.duration ? formatDuration(leadSettings.duration) : 'Any'}</li>
             
             {/* Hiring Status filter */}
-            <li><span className="font-medium">Hiring Status:</span> {leadSettings?.hiring_status || 'Any'}</li>
+            <li className="flex items-center gap-2">
+              <span className="font-medium">Hiring Status:</span> 
+              {leadSettings?.hiring_status ? (
+                <span className="mt-1 inline-block">
+                  <HiringStatusBadge status={leadSettings.hiring_status} />
+                </span>
+              ) : 'Any'}
+            </li>
             
             {/* Insurance Requirements filter */}
             <li><span className="font-medium">Insurance Required:</span> {leadSettings?.requires_insurance ? 'Yes' : 'Any'}</li>
