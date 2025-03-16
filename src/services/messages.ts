@@ -171,7 +171,7 @@ export const sendMessage = async (conversationId: string, message: string, attac
         sender_id: userId,
         message: messageText,
         is_read: false,
-        attachments: attachments.length > 0 ? attachments as unknown as Json : null
+        attachments: attachments.length > 0 ? (attachments as unknown as Json) : null
       });
     
     if (error) {

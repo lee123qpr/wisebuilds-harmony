@@ -75,11 +75,22 @@ const getAttachmentsLength = (attachments: MessageAttachment[] | Json | null | u
   return 0;
 };
 
-// Helper function to safely get attachments array
+// Helper function to safely get attachments array with proper type casting
 const getAttachmentsArray = (attachments: MessageAttachment[] | Json | null | undefined): MessageAttachment[] => {
   if (!attachments) return [];
-  if (Array.isArray(attachments)) return attachments;
-  return [];
+  if (!Array.isArray(attachments)) return [];
+  
+  // Type guard to check if the array items match MessageAttachment shape
+  return attachments.filter((item): item is MessageAttachment => {
+    return (
+      typeof item === 'object' && 
+      item !== null &&
+      'url' in item && 
+      'name' in item && 
+      'type' in item && 
+      'size' in item
+    );
+  });
 };
 
 const MessagesList: React.FC<MessagesListProps> = ({ messages, currentUserId }) => {
