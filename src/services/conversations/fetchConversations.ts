@@ -1,74 +1,56 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { Conversation } from '@/types/messaging';
-import { getClientInfo } from './utils/getClientInfo';
 import { getFreelancerInfo } from './utils/getFreelancerInfo';
+import { getClientInfo } from './utils/getClientInfo';
+import type { Json } from '@/integrations/supabase/types';
 
-/**
- * Fetches all conversations for a user
- * @param userId The ID of the current user
- * @param isBusinessClient Whether the current user is a business client
- */
-export const fetchConversations = async (userId: string, isBusinessClient: boolean = false): Promise<Conversation[]> => {
+export const fetchConversations = async (
+  userId: string, 
+  isBusinessClient: boolean = false
+): Promise<Conversation[]> => {
   try {
-    // Determine which field to filter by based on user type
-    const filterField = isBusinessClient ? 'client_id' : 'freelancer_id';
-    
-    // First fetch all conversations
-    const { data: conversationsData, error: conversationsError } = await supabase
+    const field = isBusinessClient ? 'client_id' : 'freelancer_id';
+    const { data, error } = await supabase
       .from('conversations')
       .select(`
-        id, 
-        client_id, 
-        freelancer_id, 
-        project_id, 
-        last_message_time,
-        projects:project_id (title)
+        *,
+        project_info:projects!inner(id, title)
       `)
-      .eq(filterField, userId)
+      .eq(field, userId)
       .order('last_message_time', { ascending: false });
     
-    if (conversationsError) {
-      console.error('Error fetching conversations:', conversationsError);
-      return [];
+    if (error) {
+      throw error;
     }
     
-    if (!conversationsData) {
-      return [];
-    }
-    
-    // Then fetch partner info separately for each conversation
-    const formattedConversations = await Promise.all(conversationsData.map(async (conv) => {
-      if (isBusinessClient) {
-        // For business clients, get freelancer info
-        const freelancerInfo = await getFreelancerInfo(conv.freelancer_id);
+    // Get details of conversation partners
+    const conversationsWithDetails = await Promise.all(
+      data.map(async (conversation) => {
+        // For clients, get freelancer info
+        // For freelancers, get client info
+        const partnerId = isBusinessClient ? conversation.freelancer_id : conversation.client_id;
         
-        return {
-          ...conv,
-          project_title: conv.projects?.title || 'Unknown Project',
-          freelancer_info: freelancerInfo,
-          // Add client_info for compatibility with existing components
-          client_info: {
-            id: conv.freelancer_id,
-            contact_name: freelancerInfo?.display_name || 'Unknown Freelancer',
-            company_name: null,
-            logo_url: freelancerInfo?.profile_image,
-            email: freelancerInfo?.email
-          }
-        };
-      } else {
-        // For freelancers, get client info (existing functionality)
-        const clientInfo = await getClientInfo(conv.client_id);
-        
-        return {
-          ...conv,
-          project_title: conv.projects?.title || 'Unknown Project',
-          client_info: clientInfo
-        };
-      }
-    }));
+        let partnerInfo;
+        if (isBusinessClient) {
+          partnerInfo = await getFreelancerInfo(partnerId);
+          return {
+            ...conversation,
+            freelancer_info: partnerInfo,
+            project_title: conversation.project_info?.title || 'Unnamed Project'
+          } as Conversation;
+        } else {
+          partnerInfo = await getClientInfo(partnerId);
+          return {
+            ...conversation,
+            client_info: partnerInfo,
+            project_title: conversation.project_info?.title || 'Unnamed Project'
+          } as Conversation;
+        }
+      })
+    );
     
-    return formattedConversations as Conversation[];
+    return conversationsWithDetails;
   } catch (e) {
     console.error('Error in fetchConversations:', e);
     return [];

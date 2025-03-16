@@ -6,6 +6,7 @@ import {
   Video, Archive, File, X 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import type { Json } from '@/integrations/supabase/types';
 
 interface MessagesListProps {
   messages: Message[];
@@ -67,6 +68,20 @@ const AttachmentPreview = ({ attachment }: { attachment: MessageAttachment }) =>
   );
 };
 
+// Helper function to safely get array length with type checking
+const getAttachmentsLength = (attachments: MessageAttachment[] | Json | null | undefined): number => {
+  if (!attachments) return 0;
+  if (Array.isArray(attachments)) return attachments.length;
+  return 0;
+};
+
+// Helper function to safely get attachments array
+const getAttachmentsArray = (attachments: MessageAttachment[] | Json | null | undefined): MessageAttachment[] => {
+  if (!attachments) return [];
+  if (Array.isArray(attachments)) return attachments;
+  return [];
+};
+
 const MessagesList: React.FC<MessagesListProps> = ({ messages, currentUserId }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -87,7 +102,7 @@ const MessagesList: React.FC<MessagesListProps> = ({ messages, currentUserId }) 
     <div className="space-y-3">
       {messages.map(message => {
         const isCurrentUser = message.sender_id === currentUserId;
-        const hasAttachments = message.attachments && message.attachments.length > 0;
+        const hasAttachments = getAttachmentsLength(message.attachments) > 0;
         
         return (
           <div 
@@ -110,10 +125,10 @@ const MessagesList: React.FC<MessagesListProps> = ({ messages, currentUserId }) 
                 <div className={`${message.message ? 'mt-2 pt-1 border-t border-opacity-10' : ''} space-y-1`}>
                   <div className="text-xs font-medium mb-0.5 opacity-70 flex items-center gap-1">
                     <Paperclip className="h-3 w-3" />
-                    {message.attachments.length === 1 ? '1 attachment' : `${message.attachments.length} attachments`}
+                    {getAttachmentsLength(message.attachments) === 1 ? '1 attachment' : `${getAttachmentsLength(message.attachments)} attachments`}
                   </div>
                   <div className="space-y-1">
-                    {message.attachments?.map((attachment, index) => (
+                    {getAttachmentsArray(message.attachments).map((attachment, index) => (
                       <AttachmentPreview key={index} attachment={attachment} />
                     ))}
                   </div>
