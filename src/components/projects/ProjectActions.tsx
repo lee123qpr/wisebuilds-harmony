@@ -66,7 +66,7 @@ const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects
         <PenSquare className="h-4 w-4" />
       </Button>
       
-      <ProjectDeleteHandler projectId={projectId}>
+      <ProjectDeleteHandler projectId={projectId} refreshProjects={refreshProjects}>
         {(handleDelete) => (
           <AlertDialog>
             <AlertDialogTrigger asChild>
