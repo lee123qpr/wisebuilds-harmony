@@ -26,6 +26,11 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
   onDelete,
   isDeleting,
 }) => {
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    await onDelete();
+  };
+
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
       <AlertDialogContent>
@@ -37,8 +42,13 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel>Cancel</AlertDialogCancel>
-          <AlertDialogAction onClick={onDelete} disabled={isDeleting}>
+          <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+          <Button 
+            variant="destructive" 
+            onClick={handleDelete} 
+            disabled={isDeleting}
+            className="w-24"
+          >
             {isDeleting ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -47,7 +57,7 @@ const DeleteConfirmationDialog: React.FC<DeleteConfirmationDialogProps> = ({
             ) : (
               'Delete'
             )}
-          </AlertDialogAction>
+          </Button>
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>

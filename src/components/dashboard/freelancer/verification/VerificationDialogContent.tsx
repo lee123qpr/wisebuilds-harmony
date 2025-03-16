@@ -127,6 +127,7 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ o
           <SubmittedDocumentInfo 
             verificationData={verificationData}
             isDeleting={isDeleting}
+            onDelete={() => setConfirmDeleteOpen(true)}
           />
         )}
         

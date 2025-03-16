@@ -2,7 +2,6 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { Trash2, HelpCircle } from 'lucide-react';
-import { AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { VerificationData } from '@/hooks/verification/types';
 import { 
   Tooltip, 
@@ -14,11 +13,13 @@ import {
 interface SubmittedDocumentInfoProps {
   verificationData: VerificationData;
   isDeleting: boolean;
+  onDelete: () => void;
 }
 
 const SubmittedDocumentInfo: React.FC<SubmittedDocumentInfoProps> = ({
   verificationData,
   isDeleting,
+  onDelete
 }) => {
   return (
     <div className="bg-green-50 p-4 rounded-md border border-green-100">
@@ -46,12 +47,15 @@ const SubmittedDocumentInfo: React.FC<SubmittedDocumentInfoProps> = ({
             </Tooltip>
           </TooltipProvider>
         </div>
-        <AlertDialogTrigger asChild>
-          <Button variant="destructive" size="sm" disabled={isDeleting}>
-            <Trash2 className="h-4 w-4 mr-1" />
-            Delete
-          </Button>
-        </AlertDialogTrigger>
+        <Button 
+          variant="destructive" 
+          size="sm" 
+          disabled={isDeleting}
+          onClick={onDelete}
+        >
+          <Trash2 className="h-4 w-4 mr-1" />
+          {isDeleting ? 'Deleting...' : 'Delete'}
+        </Button>
       </div>
     </div>
   );
