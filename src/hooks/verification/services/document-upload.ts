@@ -1,10 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { VerificationData } from '../types';
-import { mapStatusToVerificationStatus } from '../utils/status-utils';
 import { isUserFreelancer } from './user-verification';
+import { fetchVerificationStatus } from './verification-status';
+import type { VerificationData } from '../types';
 
-// Upload ID document
+// Upload verification document
 export const uploadVerificationDocument = async (userId: string, file: File): Promise<{
   success: boolean;
   filePath?: string;
@@ -22,14 +22,17 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       };
     }
     
-    // Create a unique file path
+    console.log('Starting document upload process for user:', userId);
+    
+    // Generate a safe file name with timestamp
+    const timestamp = new Date().getTime();
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
-    const filePath = `${userId}/${fileName}`;
+    const safeFileName = `${timestamp}.${fileExt}`;
+    const filePath = `${userId}/${safeFileName}`;
     
-    console.log('Attempting to upload file:', fileName);
+    console.log('Uploading file to:', filePath);
     
-    // Upload the file to the id-documents bucket
+    // Upload file to storage
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('id-documents')
       .upload(filePath, file, {
@@ -38,83 +41,121 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       });
     
     if (uploadError) {
-      console.error('Upload error:', uploadError);
+      console.error('Error uploading file:', uploadError);
       throw uploadError;
     }
     
-    // Get the file path
-    const path = uploadData?.path;
-    console.log('File uploaded successfully to:', path);
+    console.log('File uploaded successfully:', uploadData.path);
     
-    // Create or update the verification record
-    const verificationRecord = {
-      user_id: userId,
-      id_document_path: filePath,
-      verification_status: 'pending',
-      submitted_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
+    // Check if a verification record already exists
+    const existingVerification = await fetchVerificationStatus(userId);
     
-    try {
-      const { data: verificationData, error: insertError } = await supabase
-        .from('freelancer_verification')
-        .upsert(verificationRecord, {
-          onConflict: 'user_id'
-        })
-        .select();
-      
-      if (insertError) {
-        console.error('Create verification record error:', insertError);
-        
-        // If we get an error when inserting the record, try to delete the uploaded file
-        // to avoid orphaned files in storage
+    if (existingVerification) {
+      // If there's an existing document, remove it first
+      if (existingVerification.id_document_path) {
         try {
+          console.log('Removing previous document:', existingVerification.id_document_path);
+          
           await supabase.storage
             .from('id-documents')
-            .remove([filePath]);
-          console.log('Cleaned up uploaded file after insert error');
+            .remove([existingVerification.id_document_path]);
+            
+          console.log('Previous document removed successfully');
+        } catch (deleteError) {
+          console.error('Error removing previous document:', deleteError);
+          // Continue with the process even if deletion fails
+        }
+      }
+      
+      // Update existing record
+      const { data: updatedRecord, error: updateError } = await supabase
+        .from('freelancer_verification')
+        .update({
+          id_document_path: filePath,
+          verification_status: 'pending',
+          submitted_at: new Date().toISOString(),
+          verified_at: null,
+          admin_notes: null,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', existingVerification.id)
+        .select('*')
+        .single();
+      
+      if (updateError) {
+        console.error('Error updating verification record:', updateError);
+        
+        // Try to clean up the uploaded file if record update fails
+        try {
+          await supabase.storage.from('id-documents').remove([filePath]);
+          console.log('Cleaned up uploaded file after failed record update');
         } catch (cleanupError) {
-          console.error('Failed to clean up file after insert error:', cleanupError);
+          console.error('Error cleaning up file:', cleanupError);
+        }
+        
+        throw updateError;
+      }
+      
+      console.log('Verification record updated:', updatedRecord);
+      
+      return { 
+        success: true, 
+        filePath,
+        verificationData: {
+          id: updatedRecord.id,
+          user_id: updatedRecord.user_id,
+          verification_status: 'pending',
+          id_document_path: updatedRecord.id_document_path,
+          submitted_at: updatedRecord.submitted_at,
+          verified_at: updatedRecord.verified_at,
+          admin_notes: updatedRecord.admin_notes
+        }
+      };
+    } else {
+      // Create new record
+      const { data: newRecord, error: insertError } = await supabase
+        .from('freelancer_verification')
+        .insert({
+          user_id: userId,
+          id_document_path: filePath,
+          verification_status: 'pending',
+          submitted_at: new Date().toISOString()
+        })
+        .select('*')
+        .single();
+      
+      if (insertError) {
+        console.error('Error inserting verification record:', insertError);
+        
+        // Try to clean up the uploaded file if record creation fails
+        try {
+          await supabase.storage.from('id-documents').remove([filePath]);
+          console.log('Cleaned up uploaded file after failed record creation');
+        } catch (cleanupError) {
+          console.error('Error cleaning up file:', cleanupError);
         }
         
         throw insertError;
       }
       
-      if (!verificationData || verificationData.length === 0) {
-        throw new Error('No verification data returned');
-      }
+      console.log('New verification record created:', newRecord);
       
-      // Map the returned data to our expected format
-      const result: VerificationData = {
-        id: verificationData[0].id,
-        user_id: verificationData[0].user_id,
-        verification_status: mapStatusToVerificationStatus(verificationData[0].verification_status),
-        id_document_path: verificationData[0].id_document_path,
-        submitted_at: verificationData[0].submitted_at,
-        verified_at: verificationData[0].verified_at,
-        admin_notes: verificationData[0].admin_notes
+      return { 
+        success: true, 
+        filePath,
+        verificationData: {
+          id: newRecord.id,
+          user_id: newRecord.user_id,
+          verification_status: 'pending',
+          id_document_path: newRecord.id_document_path,
+          submitted_at: newRecord.submitted_at,
+          verified_at: newRecord.verified_at,
+          admin_notes: newRecord.admin_notes
+        }
       };
-      
-      return {
-        success: true,
-        filePath: path,
-        verificationData: result
-      };
-    } catch (dbError) {
-      // Clean up the uploaded file if database operation fails
-      try {
-        await supabase.storage
-          .from('id-documents')
-          .remove([filePath]);
-        console.log('Cleaned up uploaded file after database error');
-      } catch (cleanupError) {
-        console.error('Failed to clean up file after database error:', cleanupError);
-      }
-      
-      throw dbError;
     }
   } catch (error) {
-    console.error('Error uploading document:', error);
+    console.error('Error in uploadVerificationDocument:', error);
     return { success: false, error };
   }
 };

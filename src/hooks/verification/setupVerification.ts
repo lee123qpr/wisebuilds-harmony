@@ -1,26 +1,37 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
+interface SetupResult {
+  success: boolean;
+  message?: string;
+  error?: any;
+}
+
 /**
- * Sets up the verification system by calling a dedicated edge function
- * This includes creating storage buckets and setting up RLS policies
+ * Sets up the verification system by calling the edge function
  */
-export const setupVerificationSystem = async (): Promise<boolean> => {
+export const setupVerification = async (): Promise<SetupResult> => {
   try {
-    console.log('Setting up verification system...');
-    
-    // Call the setup-verification edge function
+    // Call the edge function to set up the verification system
     const { data, error } = await supabase.functions.invoke('setup-verification');
     
     if (error) {
-      console.error('Error setting up verification system:', error);
-      return false;
+      console.error('Error invoking setup-verification function:', error);
+      return {
+        success: false,
+        error
+      };
     }
     
-    console.log('Verification system setup successful:', data);
-    return true;
+    return {
+      success: true,
+      message: data.message
+    };
   } catch (error) {
     console.error('Error setting up verification system:', error);
-    return false;
+    return {
+      success: false,
+      error
+    };
   }
 };
