@@ -14,10 +14,12 @@ export const useLeadFiltering = (leadSettings: LeadSettings | null, projectLeads
       // Match by role (required)
       const roleMatches = lead.role === leadSettings.role;
       
-      // Match by location (required)
-      const locationMatches = lead.location === leadSettings.location || 
-                              lead.location.includes(leadSettings.location) || 
-                              leadSettings.location.includes(lead.location);
+      // Match by location (required) - if Any is set, all locations match
+      const locationMatches = 
+        leadSettings.location === 'Any' ? true : 
+        lead.location === leadSettings.location || 
+        lead.location.includes(leadSettings.location) || 
+        leadSettings.location.includes(lead.location);
       
       // Match by work type (if specified)
       const workTypeMatches = !leadSettings.work_type || 

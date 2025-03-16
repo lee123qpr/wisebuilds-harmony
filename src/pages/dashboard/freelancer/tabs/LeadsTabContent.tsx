@@ -76,7 +76,11 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
   
   return (
     <div className="space-y-4">
-      <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads || isRefreshing} />
+      <LeadsHeader 
+        onRefresh={handleRefresh} 
+        isLoading={isLoadingSettings || isLoadingLeads || isRefreshing}
+        location={leadSettings.location} 
+      />
       
       {filteredProjects.length === 0 && !isLoadingLeads && !isRefreshing ? (
         <EmptyLeadsMessage />

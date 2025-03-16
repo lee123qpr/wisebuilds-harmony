@@ -3,13 +3,15 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Briefcase, Filter } from 'lucide-react';
+import AnyOptionBadge from '../badges/AnyOptionBadge';
 
 interface LeadsHeaderProps {
   onRefresh: () => void;
   isLoading: boolean;
+  location?: string;
 }
 
-const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading }) => {
+const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading, location }) => {
   const navigate = useNavigate();
 
   const handleRefresh = (e: React.MouseEvent) => {
@@ -22,6 +24,11 @@ const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading }) => {
       <div className="flex items-center gap-2">
         <Briefcase className="h-5 w-5 text-primary" />
         <h2 className="text-2xl font-bold tracking-tight">My Leads</h2>
+        {location === 'Any' && (
+          <div className="ml-2">
+            <AnyOptionBadge label="Location" />
+          </div>
+        )}
       </div>
       
       <div className="flex gap-3">

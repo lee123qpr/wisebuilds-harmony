@@ -40,10 +40,12 @@ export const useProjectsWithFiltering = (applyLeadSettings: boolean = false, lea
             console.log('Filtering by role:', leadSettings.role);
           }
           
-          // Filter by location if specified
-          if (leadSettings.location && leadSettings.location !== 'any') {
+          // Filter by location if specified and not "Any"
+          if (leadSettings.location && leadSettings.location !== 'any' && leadSettings.location !== 'Any') {
             query = query.ilike('location', `%${leadSettings.location}%`);
             console.log('Filtering by location:', leadSettings.location);
+          } else if (leadSettings.location === 'Any') {
+            console.log('Location set to Any - including all locations');
           }
           
           // Filter by work type if specified
