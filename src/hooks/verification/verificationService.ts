@@ -76,81 +76,47 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const path = uploadData?.path;
     console.log('File uploaded successfully to:', path);
     
-    // Check if verification record exists
-    const { data: existingData, error: checkError } = await supabase
+    // Instead of checking first, use upsert functionality to either insert or update
+    // This avoids a separate query that might trigger permissions issues
+    const { data: upsertData, error: upsertError } = await supabase
       .from('freelancer_verification')
-      .select('id')
-      .eq('user_id', userId)
-      .single();
-      
-    if (checkError && checkError.code !== 'PGRST116') {
-      console.error('Error checking verification record:', checkError);
-      throw checkError;
-    }
-    
-    let resultData;
-    
-    if (!existingData) {
-      console.log('Creating new verification record...');
-      // Create new verification record
-      const { data, error } = await supabase
-        .from('freelancer_verification')
-        .insert({
+      .upsert(
+        {
           user_id: userId,
           id_document_path: filePath,
           verification_status: 'pending',
-          submitted_at: new Date().toISOString()
-        })
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Insert verification record error:', error);
-        throw error;
-      }
-      
-      resultData = data;
-    } else {
-      console.log('Updating existing verification record...');
-      // Update existing verification record
-      const { data, error } = await supabase
-        .from('freelancer_verification')
-        .update({
-          id_document_path: filePath,
-          verification_status: 'pending',
-          submitted_at: new Date().toISOString()
-        })
-        .eq('user_id', userId)
-        .select()
-        .single();
-      
-      if (error) {
-        console.error('Update verification record error:', error);
-        throw error;
-      }
-      
-      resultData = data;
+          submitted_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        },
+        { onConflict: 'user_id', returning: 'representation' }
+      )
+      .select()
+      .single();
+    
+    if (upsertError) {
+      console.error('Upsert verification record error:', upsertError);
+      throw upsertError;
     }
     
-    if (resultData) {
-      const verificationData: VerificationData = {
-        id: resultData.id,
-        user_id: resultData.user_id,
-        verification_status: mapStatusToVerificationStatus(resultData.verification_status),
-        id_document_path: resultData.id_document_path,
-        submitted_at: resultData.submitted_at,
-        verified_at: resultData.verified_at,
-        admin_notes: resultData.admin_notes
-      };
-      
-      return {
-        success: true,
-        filePath: path,
-        verificationData
-      };
+    if (!upsertData) {
+      throw new Error('No verification data returned after upsert');
     }
     
-    return { success: false, error: 'No verification data returned' };
+    const verificationData: VerificationData = {
+      id: upsertData.id,
+      user_id: upsertData.user_id,
+      verification_status: mapStatusToVerificationStatus(upsertData.verification_status),
+      id_document_path: upsertData.id_document_path,
+      submitted_at: upsertData.submitted_at,
+      verified_at: upsertData.verified_at,
+      admin_notes: upsertData.admin_notes
+    };
+    
+    return {
+      success: true,
+      filePath: path,
+      verificationData
+    };
   } catch (error) {
     console.error('Error uploading document:', error);
     return { success: false, error };
