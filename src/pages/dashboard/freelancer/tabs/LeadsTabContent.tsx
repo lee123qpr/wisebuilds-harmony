@@ -7,6 +7,7 @@ import LeadsHeader from '@/components/dashboard/freelancer/leads/LeadsHeader';
 import EmptyLeadsMessage from '@/components/dashboard/freelancer/leads/EmptyLeadsMessage';
 import ProjectListView from '@/components/dashboard/freelancer/ProjectListView';
 import { useLeadFiltering } from '@/components/dashboard/freelancer/leads/useLeadFiltering';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface LeadsTabContentProps {
   isLoadingSettings: boolean;
@@ -17,17 +18,17 @@ interface LeadsTabContentProps {
 
 const LeadsTabContent: React.FC<LeadsTabContentProps> = ({ 
   isLoadingSettings, 
-  isLoadingLeads,
+  isLoadingLeads = false,
   leadSettings, 
   projectLeads 
 }) => {
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
-    projectLeads.length > 0 ? projectLeads[0].id : null
-  );
-
   // Use our custom hook for lead filtering
   const { filteredLeads } = useLeadFiltering(leadSettings, projectLeads);
   
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    filteredLeads.length > 0 ? filteredLeads[0].id : null
+  );
+
   // Find the selected project
   const selectedProject = filteredLeads.find(
     project => project.id === selectedProjectId
@@ -45,30 +46,23 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads} />
       
       {isLoadingLeads ? (
-        <div className="flex justify-center py-8">
-          <div className="animate-pulse flex space-x-4">
-            <div className="flex-1 space-y-4 py-1">
-              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
-              <div className="space-y-2">
-                <div className="h-4 bg-gray-200 rounded"></div>
-                <div className="h-4 bg-gray-200 rounded w-5/6"></div>
-              </div>
-            </div>
-          </div>
+        <div className="space-y-4 p-6">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-64 w-full" />
         </div>
       ) : filteredLeads.length === 0 ? (
         <EmptyLeadsMessage />
       ) : (
         <ProjectListView
-          projects={filteredLeads as any} // Fixed: Use type assertion for now
-          isLoading={isLoadingLeads || false}
+          projects={filteredLeads as any}
+          isLoading={isLoadingLeads}
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
-          selectedProject={selectedProject as any} // Fixed: Use type assertion for now
+          selectedProject={selectedProject as any}
           showContactInfo={true}
         />
       )}

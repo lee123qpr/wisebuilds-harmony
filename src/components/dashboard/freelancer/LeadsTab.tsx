@@ -47,11 +47,11 @@ const LeadsTab: React.FC<LeadsTabProps> = ({
   }
   
   return (
-    <div className="space-y-4">
+    <div className="space-y-0">
       <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads} />
       
       {isLoadingLeads ? (
-        <div className="space-y-4">
+        <div className="space-y-4 p-6">
           <Skeleton className="h-12 w-full" />
           <Skeleton className="h-64 w-full" />
         </div>
@@ -59,11 +59,11 @@ const LeadsTab: React.FC<LeadsTabProps> = ({
         <EmptyLeadsMessage />
       ) : (
         <ProjectListView
-          projects={filteredLeads as any} // Fixed: Use type assertion for now
+          projects={filteredLeads as any}
           isLoading={isLoadingLeads}
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
-          selectedProject={selectedProject as any} // Fixed: Use type assertion for now
+          selectedProject={selectedProject as any}
           showContactInfo={true}
         />
       )}
