@@ -29,5 +29,4 @@ export interface ProjectLead {
   status: string;
   updated_at: string;
   user_id: string;
-  purchases_count: number; // Added missing property
 }

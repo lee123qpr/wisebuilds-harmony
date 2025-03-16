@@ -13,16 +13,16 @@ interface LeadsTabContentProps {
 
 const LeadsTabContent: React.FC<LeadsTabContentProps> = ({ 
   isLoadingSettings, 
-  isLoadingLeads = false,
+  isLoadingLeads,
   leadSettings, 
   projectLeads 
 }) => {
   return (
-    <LeadsTab
+    <LeadsTab 
       isLoadingSettings={isLoadingSettings}
       isLoadingLeads={isLoadingLeads}
-      leadSettings={leadSettings}
-      projectLeads={projectLeads}
+      leadSettings={leadSettings} 
+      projectLeads={projectLeads} 
     />
   );
 };
