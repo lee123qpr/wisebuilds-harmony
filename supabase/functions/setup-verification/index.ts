@@ -104,38 +104,42 @@ serve(async (req) => {
 
     // Create the freelancer_verification table if it doesn't exist
     try {
-      console.log('Checking if freelancer_verification table exists...');
-      const { error } = await supabaseAdmin.rpc('does_table_exist', { table_name: 'freelancer_verification' });
+      console.log('Setting up row level security policies...');
       
-      if (error) {
-        console.log('Creating freelancer_verification table...');
-        const createTableQuery = `
-          CREATE TABLE IF NOT EXISTS public.freelancer_verification (
-            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-            user_id UUID REFERENCES auth.users(id) NOT NULL,
-            verification_status TEXT NOT NULL DEFAULT 'pending',
-            id_document_path TEXT,
-            submitted_at TIMESTAMP WITH TIME ZONE,
-            verified_at TIMESTAMP WITH TIME ZONE,
-            admin_notes TEXT,
-            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
-            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
-          );
-        `;
+      // Make sure RLS is enabled
+      await supabaseAdmin.rpc('exec_sql', { 
+        sql: `ALTER TABLE public.freelancer_verification ENABLE ROW LEVEL SECURITY;` 
+      });
+      
+      // Try to create policies - this might fail if they already exist, which is fine
+      const policies = [
+        `CREATE POLICY IF NOT EXISTS "Users can insert their own verification records" 
+         ON public.freelancer_verification FOR INSERT WITH CHECK (auth.uid() = user_id);`,
         
-        const { error: createTableError } = await supabaseAdmin.rpc('exec_sql', { sql: createTableQuery });
+        `CREATE POLICY IF NOT EXISTS "Users can view their own verification records" 
+         ON public.freelancer_verification FOR SELECT USING (auth.uid() = user_id);`,
         
-        if (createTableError) {
-          console.error('Error creating table:', createTableError);
-        } else {
-          console.log('Table created successfully');
+        `CREATE POLICY IF NOT EXISTS "Users can update their own verification records" 
+         ON public.freelancer_verification FOR UPDATE USING (auth.uid() = user_id);`,
+        
+        `CREATE POLICY IF NOT EXISTS "Service role can access all verification records" 
+         ON public.freelancer_verification FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');`
+      ];
+      
+      // Apply each policy
+      for (const policySQL of policies) {
+        try {
+          await supabaseAdmin.rpc('exec_sql', { sql: policySQL });
+          console.log('Applied policy successfully');
+        } catch (error) {
+          console.log('Policy may already exist:', error);
+          // Continue with next policy
         }
-      } else {
-        console.log('Table already exists');
       }
-    } catch (tableError) {
-      console.error('Table operation error:', tableError);
-      // Continue execution as this might fail if table exists or RPC isn't available
+      
+    } catch (policyError) {
+      console.error('Policy setup error:', policyError);
+      // Continue execution as this might fail if policies exist
     }
 
     // Return success

@@ -76,8 +76,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const path = uploadData?.path;
     console.log('File uploaded successfully to:', path);
     
-    // Instead of checking first, use upsert functionality to either insert or update
-    // This avoids a separate query that might trigger permissions issues
+    // Use upsert with proper options and handle response as array
     const { data: upsertData, error: upsertError } = await supabase
       .from('freelancer_verification')
       .upsert({
