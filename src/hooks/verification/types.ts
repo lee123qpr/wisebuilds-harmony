@@ -18,7 +18,7 @@ export interface UseVerificationResult {
   verificationData: VerificationData | null;
   isLoading: boolean;
   error: Error | null;
-  submitVerification: (file: File) => Promise<void>;
+  submitVerification: (file: File) => Promise<string | null>;
   status: 'idle' | 'loading' | 'success' | 'error';
   isSubmitting: boolean;
   // Add the missing properties
