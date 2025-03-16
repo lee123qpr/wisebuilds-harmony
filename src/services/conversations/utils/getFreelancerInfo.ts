@@ -56,8 +56,8 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
                     `${safeString(metaData.first_name || '')} ${safeString(metaData.last_name || '')}`.trim() : 'Freelancer',
       profile_image: metaData && typeof metaData === 'object' && 'avatar_url' in metaData ? safeString(metaData.avatar_url) : null,
       phone_number: metaData && typeof metaData === 'object' ? 
-                    ('phone_number' in metaData && metaData.phone_number) || 
-                    ('phone' in metaData && metaData.phone) || null : null,
+                    ('phone_number' in metaData ? safeString(metaData.phone_number) : 
+                    ('phone' in metaData ? safeString(metaData.phone) : null)) : null,
       email: userData.email || null,
       email_verified: userData.email_confirmed || false,
       member_since: userData && userData.user && userData.user.created_at ? safeString(userData.user.created_at) : 
