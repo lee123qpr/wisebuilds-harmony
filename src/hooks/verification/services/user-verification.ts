@@ -99,16 +99,15 @@ export const checkIdDocumentsBucketAccess = async (): Promise<boolean> => {
     // Try using a basic operation that should always work if the bucket is 
     // properly set up and the user has anonymous access
     try {
-      const { data, error } = await supabase.storage
+      // getPublicUrl doesn't return an error property, so we need to handle this differently
+      const { data } = await supabase.storage
         .from('id-documents')
         .getPublicUrl('test.txt');
       
-      if (error) {
-        console.error('Error getting public URL:', error);
-      }
+      console.log('Public URL test completed');
     } catch (e) {
       // Ignore errors for this operation as we're just testing
-      console.log('Public URL test completed');
+      console.log('Error in public URL test, but continuing:', e);
     }
     
     // Now we need to check if we can run the setup function again

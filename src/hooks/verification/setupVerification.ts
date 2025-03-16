@@ -32,14 +32,12 @@ export const setupVerification = async (): Promise<SetupResult> => {
     // Check if the bucket is accessible by trying a simple operation
     // This helps verify that the setup was successful
     try {
-      const { data, error } = await supabase.storage
+      // getPublicUrl doesn't return an error property, it only returns data
+      const { data } = await supabase.storage
         .from('id-documents')
         .getPublicUrl('test.txt');
         
-      if (error) {
-        console.warn('Bucket access check warning:', error);
-        // Continue anyway as this might just be a permissions issue for the current user
-      }
+      console.log('Successfully generated public URL for test file');
     } catch (bucketError) {
       console.warn('Bucket access check warning:', bucketError);
       // Continue anyway as this might just be a permissions issue for the current user
