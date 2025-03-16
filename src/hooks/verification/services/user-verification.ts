@@ -14,7 +14,7 @@ export const isUserFreelancer = async (): Promise<boolean> => {
     }
     
     // As a fallback, check if there's a client_profiles record for this user
-    // If there is no client_profiles record but the user exists, then they are likely a freelancer
+    // If there is a client_profiles record, the user is not a freelancer
     const { data: clientProfile, error: clientError } = await supabase
       .from('client_profiles')
       .select('id')
@@ -22,19 +22,7 @@ export const isUserFreelancer = async (): Promise<boolean> => {
       .single();
     
     if (clientError && clientError.code === 'PGRST116') {
-      // No client profile found, check if user has verification records
-      const { data: verificationData, error: verificationError } = await supabase
-        .from('freelancer_verification')
-        .select('id')
-        .eq('user_id', session.user.id)
-        .maybeSingle();
-        
-      if (!verificationError && verificationData) {
-        return true;
-      }
-      
-      // As a last resort, consider user without client profile to be a freelancer
-      // This is a simplification - in a production app, you might check other tables
+      // No client profile found, this could be a freelancer
       return true;
     }
     

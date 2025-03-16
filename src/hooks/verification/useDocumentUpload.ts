@@ -44,8 +44,8 @@ export const useDocumentUpload = (onSuccess?: () => void) => {
       
       const result = await uploadVerificationDocument(selectedFile);
       
-      // Check if result is not a boolean (indicating it's the response object)
-      if (typeof result === 'object' && !result.success) {
+      // Check if result is not successful
+      if (!result.success) {
         const errorMessage = result.errorMessage || 'Upload failed. Please try again.';
         console.error('Upload failed with result:', result);
         toast({
