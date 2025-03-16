@@ -1,12 +1,11 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import EmptyStateCard from './EmptyStateCard';
 import { Project } from '@/components/projects/useProjects';
-import ProjectListView from './ProjectListView';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
 import PurchasedProjectCard from './PurchasedProjectCard';
@@ -25,7 +24,6 @@ interface ApplicationWithProject extends Project {
 const QuotesTab: React.FC = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   
   const {
     data: applications,
@@ -97,17 +95,6 @@ const QuotesTab: React.FC = () => {
     refetchOnWindowFocus: true
   });
   
-  // Find the selected project from applications
-  const selectedProject = applications?.find(app => app.id === selectedProjectId) || null;
-  
-  // Set first project as selected when data loads
-  useEffect(() => {
-    if (applications?.length && !selectedProjectId) {
-      setSelectedProjectId(applications[0].id);
-      console.log('Setting initial selected project:', applications[0].id);
-    }
-  }, [applications, selectedProjectId]);
-  
   // Force refresh when tab becomes visible
   useEffect(() => {
     refetch();
@@ -138,29 +125,26 @@ const QuotesTab: React.FC = () => {
       <Alert className="mb-4 bg-blue-50 border-blue-200">
         <Info className="h-4 w-4 text-blue-600 mr-2" />
         <AlertDescription className="text-blue-800">
-          You've purchased these leads and can now access their full project details and contact information. Select a project to view all available details.
+          You've purchased these leads and can now access their full project details and contact information. Use the action buttons to view details, message clients, or create quotes.
         </AlertDescription>
       </Alert>
       
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-        {applications?.map((project) => (
-          <PurchasedProjectCard 
-            key={project.id}
-            project={project}
-            isSelected={project.id === selectedProjectId}
-            onClick={() => setSelectedProjectId(project.id)}
-          />
-        ))}
+      <div className="space-y-4">
+        {isLoading ? (
+          <div className="space-y-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-32 bg-gray-100 animate-pulse rounded-lg"></div>
+            ))}
+          </div>
+        ) : (
+          applications?.map((project) => (
+            <PurchasedProjectCard 
+              key={project.id}
+              project={project}
+            />
+          ))
+        )}
       </div>
-      
-      <ProjectListView
-        projects={applications || []}
-        isLoading={isLoading}
-        selectedProjectId={selectedProjectId}
-        setSelectedProjectId={setSelectedProjectId}
-        selectedProject={selectedProject}
-        showContactInfo={true}
-      />
     </div>
   );
 };
