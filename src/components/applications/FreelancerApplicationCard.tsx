@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { createConversation } from '@/services/conversations';
 
 interface FreelancerApplicationCardProps {
   application: FreelancerApplication;
@@ -32,7 +33,16 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
 
   const handleStartChat = async () => {
     try {
-      // Check if conversation exists
+      // Get current user (client) ID
+      const { data: userData, error: userError } = await supabase.auth.getUser();
+      if (userError) throw userError;
+      
+      const clientId = userData.user?.id;
+      if (!clientId) {
+        throw new Error('Not authenticated');
+      }
+      
+      // Check if a conversation exists between this client and freelancer for this project
       const { data: existingConversations, error: checkError } = await supabase
         .from('conversations')
         .select('id')
@@ -46,33 +56,24 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
       if (existingConversations && existingConversations.length > 0) {
         // Conversation exists, use its ID
         conversationId = existingConversations[0].id;
-      } else {
-        // Create new conversation
-        const { data: userData } = await supabase.auth.getUser();
-        const clientId = userData.user?.id;
         
-        if (!clientId) {
-          throw new Error('Not authenticated');
+        // Navigate to existing conversation
+        navigate(`/messages/${conversationId}`);
+      } else {
+        // Create new conversation using the service
+        if (!profile?.id) {
+          throw new Error('Freelancer profile not found');
         }
         
-        const { data: newConversation, error: createError } = await supabase
-          .from('conversations')
-          .insert({
-            project_id: projectId,
-            client_id: clientId,
-            freelancer_id: profile?.id,
-          })
-          .select()
-          .single();
-          
-        if (createError) throw createError;
+        const newConversation = await createConversation(profile.id, clientId, projectId);
         
-        conversationId = newConversation.id;
+        if (!newConversation) {
+          throw new Error('Failed to create conversation');
+        }
+        
+        // Navigate to the new conversation
+        navigate(`/messages/${newConversation.id}`);
       }
-      
-      // Navigate to chat
-      navigate(`/messages/${conversationId}`);
-      
     } catch (error: any) {
       console.error('Error starting chat:', error);
       toast({
