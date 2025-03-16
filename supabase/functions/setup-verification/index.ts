@@ -64,12 +64,12 @@ serve(async (req) => {
       await supabaseAdmin.storage.from('id-documents').deletePolicy();
       console.log('Deleted existing policies');
       
-      // Create policy for users to upload their own documents
+      // Create policy for users to upload their own documents with folder path structure
       await supabaseAdmin.storage.from('id-documents').createPolicy('User Upload Policy', {
         name: 'User Upload Policy',
         definition: {
           type: 'INSERT',
-          match: { prefix: '{{auth.uid}}_' },
+          match: { prefix: '{{auth.uid}}/' },
           roles: ['authenticated'],
         }
       });
@@ -80,7 +80,7 @@ serve(async (req) => {
         name: 'User Read Policy',
         definition: {
           type: 'SELECT',
-          match: { prefix: '{{auth.uid}}_' },
+          match: { prefix: '{{auth.uid}}/' },
           roles: ['authenticated'],
         }
       });

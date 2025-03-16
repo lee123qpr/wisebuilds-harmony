@@ -52,10 +52,10 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
   error?: any;
 }> => {
   try {
-    // Create a unique file path
+    // Create a unique file path (WITHOUT user ID prefix in filename - it's already in the policy)
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}_${Date.now()}.${fileExt}`;
-    const filePath = fileName;
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
     
     console.log('Attempting to upload file:', fileName);
     
@@ -97,7 +97,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         .from('freelancer_verification')
         .insert({
           user_id: userId,
-          id_document_path: path,
+          id_document_path: filePath,
           verification_status: 'pending',
           submitted_at: new Date().toISOString()
         })
@@ -116,7 +116,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       const { data, error } = await supabase
         .from('freelancer_verification')
         .update({
-          id_document_path: path,
+          id_document_path: filePath,
           verification_status: 'pending',
           submitted_at: new Date().toISOString()
         })

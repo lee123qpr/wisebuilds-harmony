@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, Upload, Loader2 } from 'lucide-react';
 import {
@@ -12,13 +12,34 @@ import {
   DialogTrigger,
 } from '@/components/ui/dialog';
 import { useVerification } from '@/hooks/verification';
+import { setupVerificationSystem } from '@/hooks/verification/setupVerification';
 import { useToast } from '@/hooks/use-toast';
 
 const VerificationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [setupComplete, setSetupComplete] = useState<boolean>(false);
   const { uploadVerificationDocument, isUploading, verificationStatus, refreshVerificationStatus } = useVerification();
   const { toast } = useToast();
+
+  // Run verification system setup on component mount
+  useEffect(() => {
+    if (open && !setupComplete) {
+      const runSetup = async () => {
+        const success = await setupVerificationSystem();
+        setSetupComplete(success);
+        if (!success) {
+          toast({
+            variant: 'destructive',
+            title: 'Setup Error',
+            description: 'There was a problem setting up the verification system. Please try again later.',
+          });
+        }
+      };
+      
+      runSetup();
+    }
+  }, [open, setupComplete, toast]);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -55,6 +76,15 @@ const VerificationDialog: React.FC = () => {
         variant: 'destructive',
         title: 'No file selected',
         description: 'Please select a file to upload.',
+      });
+      return;
+    }
+
+    if (!setupComplete) {
+      toast({
+        variant: 'destructive',
+        title: 'System not ready',
+        description: 'Verification system is still setting up. Please try again in a moment.',
       });
       return;
     }
@@ -122,15 +152,21 @@ const VerificationDialog: React.FC = () => {
               onChange={handleFileChange}
               accept="image/jpeg,image/png,application/pdf"
               className="hidden"
-              disabled={isUploading}
+              disabled={isUploading || !setupComplete}
             />
             <label
               htmlFor="id-document"
               className="flex flex-col items-center justify-center cursor-pointer"
             >
-              <Upload className="h-8 w-8 text-gray-400 mb-2" />
+              {!setupComplete ? (
+                <Loader2 className="h-8 w-8 text-gray-400 mb-2 animate-spin" />
+              ) : (
+                <Upload className="h-8 w-8 text-gray-400 mb-2" />
+              )}
               <p className="text-sm text-gray-600 font-medium">
-                Click to upload your ID document
+                {!setupComplete 
+                  ? 'Setting up verification system...' 
+                  : 'Click to upload your ID document'}
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 JPEG, PNG or PDF (max. 5MB)
@@ -152,7 +188,10 @@ const VerificationDialog: React.FC = () => {
           <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isUploading}>
             Cancel
           </Button>
-          <Button onClick={handleSubmit} disabled={!selectedFile || isUploading}>
+          <Button 
+            onClick={handleSubmit} 
+            disabled={!selectedFile || isUploading || !setupComplete}
+          >
             {isUploading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
