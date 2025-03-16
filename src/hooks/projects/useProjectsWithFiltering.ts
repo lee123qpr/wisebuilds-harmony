@@ -86,7 +86,7 @@ export const useProjectsWithFiltering = (applyLeadSettings: boolean = false, lea
           created_at: project.created_at,
           location: project.location,
           work_type: project.work_type,
-          tags: project.tags || [], // Default empty array for tags if not present
+          tags: [], // Default empty array for tags since it doesn't exist in the projects table
           duration: project.duration,
           hiring_status: project.hiring_status,
           requires_equipment: project.requires_equipment || false,
