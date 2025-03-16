@@ -16,16 +16,28 @@ export const createFreelancerProfile = async (userId: string, freelancerData: Fr
       throw checkError;
     }
     
+    // Extract first and last name from fullName if available
+    let firstName = freelancerData.firstName;
+    let lastName = freelancerData.lastName;
+    
+    if (freelancerData.fullName && (!firstName || !lastName)) {
+      const nameParts = freelancerData.fullName.split(' ');
+      firstName = firstName || nameParts[0] || '';
+      lastName = lastName || (nameParts.length > 1 ? nameParts.slice(1).join(' ') : '');
+    }
+    
     if (existingProfile) {
       console.log('Profile already exists, updating instead');
       // Update existing profile
       const { error: updateError } = await supabase
         .from('freelancer_profiles')
         .update({
-          first_name: freelancerData.firstName,
-          last_name: freelancerData.lastName,
-          display_name: `${freelancerData.firstName} ${freelancerData.lastName}`,
+          first_name: firstName,
+          last_name: lastName,
+          display_name: firstName && lastName ? `${firstName} ${lastName}` : freelancerData.fullName || '',
           email: freelancerData.email,
+          location: freelancerData.location || null,
+          job_title: freelancerData.profession || null,
           updated_at: new Date().toISOString()
         })
         .eq('id', userId);
@@ -43,10 +55,12 @@ export const createFreelancerProfile = async (userId: string, freelancerData: Fr
       .from('freelancer_profiles')
       .insert({
         id: userId,
-        first_name: freelancerData.firstName,
-        last_name: freelancerData.lastName,
-        display_name: `${freelancerData.firstName} ${freelancerData.lastName}`,
+        first_name: firstName,
+        last_name: lastName,
+        display_name: firstName && lastName ? `${firstName} ${lastName}` : freelancerData.fullName || '',
         email: freelancerData.email,
+        location: freelancerData.location || null,
+        job_title: freelancerData.profession || null,
         member_since: new Date().toISOString(),
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()

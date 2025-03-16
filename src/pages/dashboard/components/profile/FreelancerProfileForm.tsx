@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
-import { freelancerProfileSchema } from './freelancerSchema';
+import { freelancerProfileSchema, FreelancerProfileData } from './freelancerSchema';
 import * as z from 'zod';
 import FreelancerBasicInfoFields from './form/FreelancerBasicInfoFields';
 import FreelancerContactFields from './form/FreelancerContactFields';
@@ -12,9 +12,18 @@ import FreelancerPreviousWorkField from './form/FreelancerPreviousWorkField';
 type FreelancerProfileFormProps = {
   form: UseFormReturn<z.infer<typeof freelancerProfileSchema>>;
   disabled?: boolean;
+  initialValues?: FreelancerProfileData;
+  isLoading?: boolean;
+  onSubmitForm?: (values: FreelancerProfileData) => Promise<boolean>;
 };
 
-const FreelancerProfileForm: React.FC<FreelancerProfileFormProps> = ({ form, disabled = false }) => {
+const FreelancerProfileForm: React.FC<FreelancerProfileFormProps> = ({ 
+  form, 
+  disabled = false,
+  initialValues,
+  isLoading,
+  onSubmitForm
+}) => {
   return (
     <div className="space-y-8">
       <div className="space-y-4">

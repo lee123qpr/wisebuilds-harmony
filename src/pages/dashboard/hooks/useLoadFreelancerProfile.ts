@@ -60,13 +60,13 @@ export const useLoadFreelancerProfile = () => {
         
         // Process skills, qualifications and accreditations
         const skillsData = profileData?.skills || [];
-        const skills = Array.isArray(skillsData) ? skillsData : [];
+        const skills = Array.isArray(skillsData) ? skillsData.map(s => String(s)) : [];
         
         const qualificationsData = profileData?.qualifications || [];
-        const qualifications = Array.isArray(qualificationsData) ? qualificationsData : [];
+        const qualifications = Array.isArray(qualificationsData) ? qualificationsData.map(q => String(q)) : [];
         
         const accreditationsData = profileData?.accreditations || [];
-        const accreditations = Array.isArray(accreditationsData) ? accreditationsData : [];
+        const accreditations = Array.isArray(accreditationsData) ? accreditationsData.map(a => String(a)) : [];
         
         // Combine data, prioritizing the profile data from the database
         const fullProfile: FreelancerProfileData = {

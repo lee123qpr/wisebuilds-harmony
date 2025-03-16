@@ -1,3 +1,4 @@
+
 import { z } from 'zod';
 
 export const businessSchema = z.object({
@@ -41,4 +42,7 @@ export interface FreelancerSignupValues {
   password: string;
   confirmPassword: string;
   acceptTerms: boolean;
+  fullName?: string;
+  profession?: string;
+  location?: string;
 }

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -107,7 +108,24 @@ const ProjectApplications = () => {
             {applications.map((application) => (
               <FreelancerApplicationCard
                 key={application.id}
-                application={application}
+                application={{
+                  id: application.id,
+                  user_id: application.userId,
+                  project_id: application.projectId,
+                  message: application.message,
+                  created_at: application.createdAt,
+                  freelancer_profile: {
+                    id: application.userId,
+                    first_name: application.firstName || undefined,
+                    last_name: application.lastName || undefined,
+                    display_name: application.displayName || undefined,
+                    email: application.email || undefined,
+                    phone_number: application.phoneNumber || undefined,
+                    job_title: application.jobTitle || undefined,
+                    location: application.location || undefined,
+                    profile_photo: application.profilePhoto || undefined
+                  }
+                }}
                 projectId={projectId || ''}
               />
             ))}

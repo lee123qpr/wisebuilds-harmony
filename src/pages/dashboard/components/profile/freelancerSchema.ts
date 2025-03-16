@@ -1,3 +1,4 @@
+
 import * as z from 'zod';
 import { UploadedFile } from '@/components/projects/file-upload/types';
 
@@ -111,4 +112,9 @@ export type FreelancerProfileData = {
   previous_work: any[] | null;
   previous_employers: any[] | null;
   profile_photo: string | null;
+  id_verified?: boolean;
+  member_since?: string | null;
+  jobs_completed?: number;
 };
+
+export type FreelancerProfileFormValues = z.infer<typeof freelancerProfileSchema>;
