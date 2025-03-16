@@ -5,7 +5,7 @@ export interface MessageAttachment {
   url: string;
   type: string;
   size: number;
-  path?: string; // Include path property
+  path?: string; // Path property included
 }
 
 export interface Message {

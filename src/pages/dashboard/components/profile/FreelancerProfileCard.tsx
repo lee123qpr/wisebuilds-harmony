@@ -115,9 +115,6 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
                   size="sm"
                   reviewCount={reviewsCount}
                 />
-                <span className="text-sm text-muted-foreground">
-                  ({reviewsCount} {reviewsCount === 1 ? 'review' : 'reviews'})
-                </span>
               </div>
             )}
 
