@@ -1,5 +1,6 @@
 
 import * as z from 'zod';
+import { UploadedFile } from '@/components/projects/file-upload/types';
 
 export const freelancerProfileSchema = z.object({
   fullName: z
@@ -10,6 +11,17 @@ export const freelancerProfileSchema = z.object({
     .string()
     .min(2, { message: 'Profession must be at least 2 characters long' })
     .max(100, { message: 'Profession cannot exceed 100 characters' }),
+  previousEmployers: z
+    .array(
+      z.object({
+        employerName: z.string().min(2, { message: 'Employer name must be at least 2 characters long' }),
+        startDate: z.date(),
+        endDate: z.date().nullable().optional(),
+        current: z.boolean().default(false),
+        position: z.string().min(2, { message: 'Position must be at least 2 characters long' }),
+      })
+    )
+    .default([]),
   location: z
     .string()
     .min(2, { message: 'Location must be at least 2 characters long' })
@@ -45,11 +57,35 @@ export const freelancerProfileSchema = z.object({
     .or(z.literal('')),
   skills: z
     .array(z.string())
-    .optional()
-    .or(z.literal([])),
+    .max(6, { message: 'You can select up to 6 skills' })
+    .default([]),
   experience: z
     .string()
     .max(50, { message: 'Experience cannot exceed 50 characters' })
     .optional()
     .or(z.literal('')),
+  qualifications: z
+    .array(z.string())
+    .default([]),
+  accreditations: z
+    .array(z.string())
+    .default([]),
+  indemnityInsurance: z
+    .object({
+      hasInsurance: z.boolean().default(false),
+      coverLevel: z.string().optional().or(z.literal('')),
+    })
+    .default({ hasInsurance: false, coverLevel: '' }),
+  previousWork: z
+    .array(
+      z.object({
+        name: z.string(),
+        url: z.string(),
+        type: z.string(),
+        size: z.number(),
+        path: z.string(),
+      })
+    )
+    .default([]),
+  idVerified: z.boolean().default(false),
 });

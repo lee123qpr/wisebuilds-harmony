@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { freelancerProfileSchema } from '../components/profile/freelancerSchema';
+import { UploadedFile } from '@/components/projects/file-upload/types';
 
 type FreelancerProfileFormValues = z.infer<typeof freelancerProfileSchema>;
 
@@ -43,10 +44,33 @@ export const useLoadFreelancerProfile = ({
         // Extract user metadata for values
         const userMetadata = user.user_metadata || {};
         
+        // Convert dates to Date objects for previousEmployers
+        let previousEmployers = userMetadata.previous_employers || [];
+        if (previousEmployers.length > 0) {
+          previousEmployers = previousEmployers.map((employer: any) => ({
+            ...employer,
+            startDate: employer.startDate ? new Date(employer.startDate) : new Date(),
+            endDate: employer.endDate ? new Date(employer.endDate) : null
+          }));
+        }
+        
+        // Handle previous work files
+        let previousWork: UploadedFile[] = [];
+        if (userMetadata.previous_work && Array.isArray(userMetadata.previous_work)) {
+          previousWork = userMetadata.previous_work.map((work: any) => ({
+            name: work.name || '',
+            url: work.url || '',
+            type: work.type || '',
+            size: work.size || 0,
+            path: work.path || ''
+          }));
+        }
+        
         // Populate form with existing data from user metadata
         form.reset({
           fullName: userMetadata.full_name || '',
           profession: userMetadata.profession || '',
+          previousEmployers: previousEmployers,
           location: userMetadata.location || '',
           bio: userMetadata.bio || '',
           phoneNumber: userMetadata.phone_number || userMetadata.phone || '',
@@ -55,6 +79,14 @@ export const useLoadFreelancerProfile = ({
           availability: userMetadata.availability || '',
           skills: userMetadata.skills || [],
           experience: userMetadata.experience || '',
+          qualifications: userMetadata.qualifications || [],
+          accreditations: userMetadata.accreditations || [],
+          indemnityInsurance: {
+            hasInsurance: userMetadata.indemnity_insurance?.hasInsurance || false,
+            coverLevel: userMetadata.indemnity_insurance?.coverLevel || '',
+          },
+          previousWork: previousWork,
+          idVerified: userMetadata.id_verified || false,
         });
         
         setProfileImage(userMetadata.profile_image_url || null);

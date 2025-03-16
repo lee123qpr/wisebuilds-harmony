@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Briefcase, CheckCircle2 } from 'lucide-react';
+import { Calendar, Briefcase, CheckCircle2, Award } from 'lucide-react';
 import { useClientReviews } from '../../hooks/useClientReviews';
 import { useVerification } from '@/hooks/verification';
 import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
@@ -13,13 +13,15 @@ interface ProfileInfoBadgesProps {
   formattedMemberSince: string;
   jobsCompleted: number;
   userId: string;
+  idVerified: boolean;
 }
 
 const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
   emailVerified,
   formattedMemberSince,
   jobsCompleted,
-  userId
+  userId,
+  idVerified
 }) => {
   const { averageRating, reviewCount } = useClientReviews(userId);
   const { verificationStatus } = useVerification();
@@ -41,6 +43,13 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
         )}
         
         <VerificationBadge status={verificationStatus} />
+        
+        {idVerified && (
+          <Badge variant="outline" className="flex items-center gap-1 bg-blue-50 text-blue-700 border-blue-200">
+            <Award className="h-3 w-3" />
+            ID Verified
+          </Badge>
+        )}
         
         {averageRating !== null && (
           <div className="ml-auto">

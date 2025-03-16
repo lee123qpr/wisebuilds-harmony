@@ -11,6 +11,7 @@ export const useFreelancerProfile = (user: User | null) => {
   const [memberSince, setMemberSince] = useState<string | null>(null);
   const [emailVerified, setEmailVerified] = useState<boolean>(false);
   const [jobsCompleted, setJobsCompleted] = useState<number>(0);
+  const [idVerified, setIdVerified] = useState<boolean>(false);
   
   const { form, isLoading, setIsLoading } = useFreelancerProfileForm();
   
@@ -37,6 +38,8 @@ export const useFreelancerProfile = (user: User | null) => {
     saveProfile,
     memberSince,
     emailVerified,
-    jobsCompleted
+    jobsCompleted,
+    idVerified,
+    setIdVerified
   };
 };
