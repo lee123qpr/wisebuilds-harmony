@@ -80,13 +80,31 @@ export const isUserFreelancer = async (): Promise<boolean> => {
  */
 export const checkIdDocumentsBucketAccess = async (): Promise<boolean> => {
   try {
-    // Try to list files in the bucket (with a limit of 1)
-    // This will fail if the bucket doesn't exist or user doesn't have access
+    // Get current user ID to use for proper folder path prefix
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || !session.user) {
+      console.error('No active session found while checking bucket access');
+      return false;
+    }
+    
+    const userId = session.user.id;
+    
+    // Try to list files in the user's own folder (which should always be allowed)
+    // This is more accurate than listing the root of the bucket
     const { data, error } = await supabase.storage
       .from('id-documents')
-      .list(undefined, { limit: 1 });
+      .list(userId, { limit: 1 });
     
     if (error) {
+      // Check if it's an access error or if the folder doesn't exist yet
+      if (error.message.includes('The resource was not found') || 
+          error.message.includes('Object not found') ||
+          (error.status === 404)) {
+        // This is normal for new users - folder doesn't exist yet
+        console.log('Folder not found, but bucket is accessible');
+        return true;
+      }
+      
       console.error('Error accessing id-documents bucket:', error);
       return false;
     }

@@ -19,8 +19,8 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       console.error('Only freelancers can upload verification documents');
       return { 
         success: false, 
-        error: new Error('Only freelancers can manage verification documents'), 
-        errorMessage: 'Permission denied. Please ensure you are logged in as a freelancer.'
+        error: new Error('Only freelancers can upload verification documents'), 
+        errorMessage: 'Permission denied. Please ensure you are registered as a freelancer.'
       };
     }
     
@@ -33,6 +33,25 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const filePath = `${userId}/${safeFileName}`;
     
     console.log('Uploading file to:', filePath);
+    
+    // Check if we can access the bucket at all
+    try {
+      const { data: checkData, error: checkError } = await supabase.storage
+        .from('id-documents')
+        .list(userId, { limit: 1 });
+        
+      if (checkError && !checkError.message.includes('Object not found') && checkError.status !== 404) {
+        console.error('Error checking bucket access:', checkError);
+        return {
+          success: false,
+          error: checkError,
+          errorMessage: 'Cannot access document storage. Please try again later.'
+        };
+      }
+    } catch (checkErr) {
+      console.warn('Error during bucket access check:', checkErr);
+      // Continue anyway, the actual upload will tell us if there's a real problem
+    }
     
     // Upload file to storage
     const { data: uploadData, error: uploadError } = await supabase.storage
