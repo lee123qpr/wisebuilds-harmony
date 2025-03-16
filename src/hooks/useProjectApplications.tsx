@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { FreelancerApplication } from '@/types/applications';
 import { useToast } from '@/hooks/use-toast';
+import { Json } from '@/integrations/supabase/types';
 
 export const useProjectApplications = (projectId: string | undefined) => {
   const [applications, setApplications] = useState<FreelancerApplication[]>([]);
@@ -38,6 +39,11 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 .single();
 
               if (!profileError && profileData) {
+                // Transform skills from Json to string array if needed
+                const skills = Array.isArray(profileData.skills) 
+                  ? profileData.skills 
+                  : (profileData.skills ? [profileData.skills.toString()] : []);
+                
                 // If there's a profile, use that data
                 return {
                   ...application,
@@ -45,6 +51,8 @@ export const useProjectApplications = (projectId: string | undefined) => {
                     ...profileData,
                     // Ensure id is set correctly
                     id: application.user_id,
+                    // Ensure skills is a string array
+                    skills: skills,
                     // Additional properties expected by the UI
                     display_name: profileData.display_name || 
                       (profileData.first_name && profileData.last_name ? 
@@ -90,17 +98,27 @@ export const useProjectApplications = (projectId: string | undefined) => {
                   display_name: displayName,
                   profile_photo: userData?.user_metadata?.avatar_url,
                   phone_number: userData?.user_metadata?.phone_number,
-                  job_title: userData?.user_metadata?.job_title || 'Freelancer'
+                  job_title: userData?.user_metadata?.job_title || 'Freelancer',
+                  // Ensure skills is a string array for consistency
+                  skills: []
                 }
               };
             } catch (err) {
               console.error('Error processing application:', err);
-              return application;
+              return {
+                ...application,
+                freelancer_profile: {
+                  id: application.user_id,
+                  display_name: 'Freelancer',
+                  skills: []
+                }
+              };
             }
           })
         );
         
-        setApplications(applicationsWithProfiles);
+        // Type assertion to ensure compatibility with FreelancerApplication[]
+        setApplications(applicationsWithProfiles as FreelancerApplication[]);
       } catch (error: any) {
         console.error('Error fetching applications:', error);
         setError(error.message || 'Failed to load applications');

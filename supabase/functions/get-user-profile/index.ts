@@ -53,14 +53,38 @@ serve(async (req) => {
       
     if (profileData && !profileError) {
       console.log('Found profile data in freelancer_profiles');
+      
+      // Ensure skills is properly formatted
+      const skills = profileData.skills 
+        ? (Array.isArray(profileData.skills) ? profileData.skills : [String(profileData.skills)])
+        : [];
+      
+      // Return both user data and profile data
+      return new Response(
+        JSON.stringify({
+          email: user.user.email,
+          user_metadata: user.user.user_metadata,
+          profile_data: {
+            ...profileData,
+            skills: skills
+          }
+        }),
+        {
+          headers: {
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          },
+          status: 200,
+        }
+      )
     }
 
-    // Return the user email, metadata and profile data if available
+    // Return the user email and metadata if no profile data found
     return new Response(
       JSON.stringify({
         email: user.user.email,
         user_metadata: user.user.user_metadata,
-        profile_data: profileData || null
+        profile_data: null
       }),
       {
         headers: {

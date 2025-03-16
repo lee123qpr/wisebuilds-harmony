@@ -37,7 +37,7 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
     
     // If no profile data, get data from auth using the edge function
     const { data: userData, error: userError } = await supabase.functions.invoke(
-      'get-user-email',
+      'get-user-profile',
       {
         body: { userId: freelancerId }
       }
