@@ -1,73 +1,38 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { FreelancerInfo } from '@/types/messaging';
+
+export interface FreelancerInfo {
+  id: string;
+  display_name: string | null;
+  profile_image: string | null;
+  job_title: string | null;
+  location: string | null;
+  email: string | null;
+}
 
 export const getFreelancerInfo = async (freelancerId: string): Promise<FreelancerInfo | null> => {
   try {
-    // Get freelancer profile data
-    const { data: freelancerData, error: freelancerError } = await supabase
+    const { data, error } = await supabase
       .from('freelancer_profiles')
-      .select('*')
+      .select('id, display_name, profile_photo, job_title, location, email')
       .eq('id', freelancerId)
       .single();
     
-    if (freelancerError) {
-      console.error('Error fetching freelancer profile:', freelancerError);
+    if (error || !data) {
+      console.error('Error fetching freelancer info:', error);
       return null;
     }
     
-    // Get user data including email from edge function
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/get-user-profile`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
-      },
-      body: JSON.stringify({ userId: freelancerId })
-    });
-    
-    let userData = { email: null, email_confirmed: false, user_metadata: {}, user: { created_at: null } };
-    
-    if (response.ok) {
-      userData = await response.json();
-    } else {
-      console.error('Error fetching user email:', await response.text());
-    }
-    
-    // Extract required data and handle potential undefined values
-    const metaData = freelancerData || {};
-    
-    let rating = 0;
-    if (metaData && typeof metaData === 'object' && 'rating' in metaData && metaData.rating !== null) {
-      rating = typeof metaData.rating === 'string' ? parseFloat(metaData.rating) : Number(metaData.rating) || 0;
-    }
-    
-    // Build FreelancerInfo object with safe property access
     return {
-      id: freelancerId,
-      display_name: metaData && typeof metaData === 'object' && 'display_name' in metaData ? 
-                    String(metaData.display_name || '') : 
-                    metaData && typeof metaData === 'object' && 'first_name' in metaData && 'last_name' in metaData ? 
-                    `${String(metaData.first_name || '')} ${String(metaData.last_name || '')}`.trim() : 'Freelancer',
-      profile_image: metaData && typeof metaData === 'object' && 'profile_photo' in metaData ? 
-                    (metaData.profile_photo ? String(metaData.profile_photo) : null) : null,
-      phone_number: metaData && typeof metaData === 'object' ? 
-                    ('phone_number' in metaData && metaData.phone_number ? String(metaData.phone_number) : 
-                    'phone' in metaData && metaData.phone ? String(metaData.phone) : null) : null,
-      email: userData.email || null,
-      email_verified: userData.email_confirmed || false,
-      member_since: userData && userData.user && userData.user.created_at ? 
-                   String(userData.user.created_at) : 
-                   metaData && typeof metaData === 'object' && 'member_since' in metaData ? 
-                   String(metaData.member_since || '') : null,
-      jobs_completed: metaData && typeof metaData === 'object' && 'jobs_completed' in metaData ? 
-                      Number(metaData.jobs_completed) || 0 : 0,
-      rating,
-      reviews_count: metaData && typeof metaData === 'object' && 'reviews_count' in metaData ? 
-                     Number(metaData.reviews_count) || 0 : 0
+      id: data.id,
+      display_name: data.display_name,
+      profile_image: data.profile_photo,
+      job_title: data.job_title,
+      location: data.location,
+      email: data.email
     };
-  } catch (error) {
-    console.error('Error getting freelancer info:', error);
+  } catch (e) {
+    console.error('Exception in getFreelancerInfo:', e);
     return null;
   }
 };

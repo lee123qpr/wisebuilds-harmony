@@ -1,85 +1,40 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { ClientInfo } from '@/types/messaging';
+
+export interface ClientInfo {
+  id: string;
+  contact_name: string | null;
+  company_name: string | null;
+  logo_url: string | null;
+  email: string | null;
+  phone_number: string | null;
+  location: string | null;
+}
 
 export const getClientInfo = async (clientId: string): Promise<ClientInfo | null> => {
   try {
-    // Get client profile data
-    const { data: clientData, error: clientError } = await supabase
+    const { data, error } = await supabase
       .from('client_profiles')
-      .select('*')
+      .select('id, contact_name, company_name, logo_url, email, phone_number, company_address')
       .eq('id', clientId)
       .single();
     
-    if (clientError && clientError.code !== 'PGRST116') {
-      console.error('Error fetching client profile:', clientError);
+    if (error || !data) {
+      console.error('Error fetching client info:', error);
       return null;
     }
     
-    // Get user data including email from edge function
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/get-user-profile`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
-      },
-      body: JSON.stringify({ userId: clientId })
-    });
-    
-    let userData = { email: null, email_confirmed: false };
-    
-    if (response.ok) {
-      userData = await response.json();
-    } else {
-      console.error('Error fetching user email:', await response.text());
-    }
-    
-    // Extract required data
-    if (clientData) {
-      return {
-        id: clientId,
-        company_name: clientData.company_name,
-        contact_name: clientData.contact_name,
-        logo_url: clientData.logo_url,
-        email: clientData.email || userData.email,
-        phone_number: clientData.phone_number,
-        location: clientData.company_address
-      };
-    }
-    
-    // If no client data but we have user email, return basic info
-    if (userData.email) {
-      return {
-        id: clientId,
-        contact_name: 'Client',
-        company_name: null,
-        logo_url: null,
-        email: userData.email,
-        phone_number: null,
-        location: null
-      };
-    }
-    
-    // No client data and no user email
     return {
-      id: clientId,
-      contact_name: 'Unknown Client',
-      company_name: null,
-      logo_url: null,
-      email: null,
-      phone_number: null,
-      location: null
+      id: data.id,
+      contact_name: data.contact_name,
+      company_name: data.company_name,
+      logo_url: data.logo_url,
+      email: data.email,
+      phone_number: data.phone_number,
+      location: data.company_address
     };
-  } catch (error) {
-    console.error('Error getting client info:', error);
-    return {
-      id: clientId,
-      contact_name: 'Unknown Client',
-      company_name: null,
-      logo_url: null,
-      email: null,
-      phone_number: null,
-      location: null
-    };
+  } catch (e) {
+    console.error('Exception in getClientInfo:', e);
+    return null;
   }
 };
