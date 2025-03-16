@@ -106,7 +106,19 @@ declare module '@/integrations/supabase/types' {
             }
           ];
         };
-      } & Database['public']['Tables'];
+        client_profiles: {
+          Row: Database['public']['Tables']['client_profiles']['Row'] & {
+            email: string | null;
+          };
+          Insert: Database['public']['Tables']['client_profiles']['Insert'] & {
+            email?: string | null;
+          };
+          Update: Database['public']['Tables']['client_profiles']['Update'] & {
+            email?: string | null;
+          };
+          Relationships: Database['public']['Tables']['client_profiles']['Relationships'];
+        };
+      } & Omit<Database['public']['Tables'], 'client_profiles'>;
       Views: Database['public']['Views'];
       Functions: Database['public']['Functions'];
       Enums: Database['public']['Enums'];
