@@ -102,7 +102,80 @@ serve(async (req) => {
       // We continue even if policy creation fails as policies might already exist
     }
 
-    // Create the freelancer_verification table if it doesn't exist
+    // Create the verification RPC function
+    try {
+      console.log('Setting up verification RPC function...');
+      
+      // Create a helper function to safely create/update verification records
+      const createRpcFunction = `
+      CREATE OR REPLACE FUNCTION public.create_verification_record(
+        p_user_id UUID,
+        p_document_path TEXT
+      ) RETURNS public.freelancer_verification LANGUAGE plpgsql SECURITY DEFINER AS $$
+      DECLARE
+        result public.freelancer_verification;
+      BEGIN
+        -- Insert or update the verification record
+        INSERT INTO public.freelancer_verification (
+          user_id, 
+          id_document_path, 
+          verification_status, 
+          submitted_at, 
+          updated_at
+        ) VALUES (
+          p_user_id, 
+          p_document_path, 
+          'pending', 
+          NOW(), 
+          NOW()
+        ) 
+        ON CONFLICT (user_id) DO UPDATE SET
+          id_document_path = p_document_path,
+          verification_status = 'pending',
+          submitted_at = NOW(),
+          updated_at = NOW()
+        RETURNING * INTO result;
+        
+        RETURN result;
+      END;
+      $$;
+      `;
+      
+      await supabaseAdmin.rpc('exec_sql', { sql: createRpcFunction });
+      console.log('Created RPC function successfully');
+      
+    } catch (rpcError) {
+      console.error('RPC function setup error:', rpcError);
+      // Continue execution as this might fail if function exists
+    }
+
+    // Make sure that the table has a unique constraint on user_id
+    try {
+      console.log('Ensuring user_id constraint exists...');
+      
+      const alterTableSQL = `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_constraint 
+          WHERE conname = 'freelancer_verification_user_id_key' 
+          AND conrelid = 'public.freelancer_verification'::regclass
+        ) THEN
+          ALTER TABLE public.freelancer_verification ADD CONSTRAINT freelancer_verification_user_id_key UNIQUE (user_id);
+        END IF;
+      END
+      $$;
+      `;
+      
+      await supabaseAdmin.rpc('exec_sql', { sql: alterTableSQL });
+      console.log('User ID constraint ensured');
+      
+    } catch (constraintError) {
+      console.error('Constraint setup error:', constraintError);
+      // Continue execution
+    }
+
+    // Make sure RLS is properly set up
     try {
       console.log('Setting up row level security policies...');
       

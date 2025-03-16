@@ -76,45 +76,36 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const path = uploadData?.path;
     console.log('File uploaded successfully to:', path);
     
-    // Use upsert with proper options and handle response as array
-    const { data: upsertData, error: upsertError } = await supabase
-      .from('freelancer_verification')
-      .upsert({
-        user_id: userId,
-        id_document_path: filePath,
-        verification_status: 'pending',
-        submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, { 
-        onConflict: 'user_id'
-      })
-      .select();
+    // Create the verification record - use RPC instead of direct access to users table
+    const { data: verificationData, error: insertError } = await supabase.rpc('create_verification_record', {
+      p_user_id: userId,
+      p_document_path: filePath
+    });
     
-    if (upsertError) {
-      console.error('Upsert verification record error:', upsertError);
-      throw upsertError;
+    if (insertError) {
+      console.error('Create verification record error:', insertError);
+      throw insertError;
     }
     
-    if (!upsertData || upsertData.length === 0) {
-      throw new Error('No verification data returned after upsert');
+    if (!verificationData) {
+      throw new Error('No verification data returned');
     }
     
-    const recordData = upsertData[0];
-    
-    const verificationData: VerificationData = {
-      id: recordData.id,
-      user_id: recordData.user_id,
-      verification_status: mapStatusToVerificationStatus(recordData.verification_status),
-      id_document_path: recordData.id_document_path,
-      submitted_at: recordData.submitted_at,
-      verified_at: recordData.verified_at,
-      admin_notes: recordData.admin_notes
+    // Map the returned data to our expected format
+    const result: VerificationData = {
+      id: verificationData.id,
+      user_id: verificationData.user_id,
+      verification_status: mapStatusToVerificationStatus(verificationData.verification_status),
+      id_document_path: verificationData.id_document_path,
+      submitted_at: verificationData.submitted_at,
+      verified_at: verificationData.verified_at,
+      admin_notes: verificationData.admin_notes
     };
     
     return {
       success: true,
       filePath: path,
-      verificationData
+      verificationData: result
     };
   } catch (error) {
     console.error('Error uploading document:', error);
