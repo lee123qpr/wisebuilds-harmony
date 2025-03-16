@@ -7,9 +7,7 @@ import LeadSettingsAlert from './leads/LeadSettingsAlert';
 import { useLeadFiltering } from './leads/useLeadFiltering';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertTriangle, Info, Briefcase } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { RefreshCw, Briefcase } from 'lucide-react';
 
 interface LeadsTabProps {
   isLoadingSettings: boolean;
@@ -59,37 +57,14 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, pr
         </div>
       </div>
       
-      {filteredLeads.length === 0 ? (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center space-x-3">
-              <div className="rounded-full bg-primary/10 p-2">
-                <Info className="h-5 w-5 text-primary" />
-              </div>
-              <div>
-                <CardTitle>No Leads Found</CardTitle>
-                <CardDescription>
-                  There are currently no leads matching your settings.
-                </CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="pt-0">
-            <Button onClick={handleRefresh} className="mt-4 flex items-center">
-              <RefreshCw className="mr-2 h-4 w-4" /> Check for New Leads
-            </Button>
-          </CardContent>
-        </Card>
-      ) : (
-        <ProjectListView 
-          projects={filteredLeads as unknown as Project[]}
-          isLoading={isLoadingSettings}
-          selectedProjectId={selectedProjectId}
-          setSelectedProjectId={setSelectedProjectId}
-          selectedProject={selectedProject as unknown as Project}
-          showContactInfo={true}
-        />
-      )}
+      <ProjectListView 
+        projects={filteredLeads as unknown as Project[]}
+        isLoading={isLoadingSettings}
+        selectedProjectId={selectedProjectId}
+        setSelectedProjectId={setSelectedProjectId}
+        selectedProject={selectedProject as unknown as Project}
+        showContactInfo={true}
+      />
     </div>
   );
 };
