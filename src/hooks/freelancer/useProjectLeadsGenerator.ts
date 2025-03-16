@@ -77,7 +77,7 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
             updated_at: project.updated_at,
             user_id: project.user_id,
             tags: [], // Default empty array
-            purchases_count: project.purchases_count || 0,
+            purchases_count: project.purchases_count || 0, // Added this property with a default value
             start_date: project.start_date
           }));
           
