@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Routes } from "react-router-dom";
 
 // Route Groups
@@ -8,7 +9,7 @@ import BusinessRoutes from "./BusinessRoutes";
 import AdminRoutes from "./AdminRoutes";
 import PublicRoutes from "./PublicRoutes";
 
-const AppRoutes = () => {
+const AppRoutes: React.FC = () => {
   return (
     <Routes>
       {/* Auth Routes */}

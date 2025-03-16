@@ -1,3 +1,4 @@
+
 # Welcome to your Lovable project
 
 ## Project info
@@ -52,13 +53,64 @@ npm run dev
 
 ## What technologies are used for this project?
 
-This project is built with .
+This project is built with:
 
 - Vite
 - TypeScript
 - React
 - shadcn-ui
 - Tailwind CSS
+
+## Routing Structure
+
+The application uses a modular routing approach with React Router v6, organizing routes by user type and feature:
+
+### Route Organization
+
+- **Auth Routes** (`/src/routes/AuthRoutes.tsx`): Login, signup, and password recovery
+- **Freelancer Routes** (`/src/routes/FreelancerRoutes.tsx`): Dashboard, profile, lead settings, credits
+- **Business Routes** (`/src/routes/BusinessRoutes.tsx`): Dashboard, profile, project management
+- **Admin Routes** (`/src/routes/AdminRoutes.tsx`): Admin dashboard and management features
+- **Public Routes** (`/src/routes/PublicRoutes.tsx`): Landing page, info pages, and catch-all routes
+
+### Protected Routes
+
+Many routes are wrapped with `<ProtectedRoute>` components that:
+- Check if users are authenticated
+- Verify user types have the correct permissions
+- Redirect unauthorized users
+
+### Route Structure
+
+```
+/
+├── auth/
+│   ├── login
+│   ├── signup
+│   └── forgot-password
+├── dashboard/
+│   ├── freelancer/
+│   │   ├── (main dashboard)
+│   │   ├── profile
+│   │   ├── lead-settings
+│   │   └── credits/
+│   │       ├── (main credits)
+│   │       └── success
+│   ├── business/
+│   │   ├── (main dashboard)
+│   │   └── profile
+│   └── admin/
+│       └── (admin dashboard)
+├── project/
+│   ├── :projectId
+│   ├── :projectId/edit
+│   ├── :projectId/documents
+│   └── :projectId/applications
+├── marketplace/
+│   ├── (marketplace index)
+│   └── :projectId
+└── (other public pages)
+```
 
 ## How can I deploy this project?
 

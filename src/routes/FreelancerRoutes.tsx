@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -6,12 +7,13 @@ import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import FreelancerDashboard from "@/pages/dashboard/FreelancerDashboard";
 import LeadSettings from "@/pages/dashboard/leadSettings";
 import FreelancerProfile from "@/pages/dashboard/FreelancerProfile";
+import ViewProject from "@/pages/project/ViewProject";
 
 // Credits Pages
 import CreditsPage from "@/pages/dashboard/freelancer/credits/CreditsPage";
 import SuccessPage from "@/pages/dashboard/freelancer/credits/SuccessPage";
 
-const FreelancerRoutes = () => {
+const FreelancerRoutes: React.FC = () => {
   return (
     <>
       <Route 
@@ -82,5 +84,4 @@ const FreelancerRoutes = () => {
   );
 };
 
-import ViewProject from "@/pages/project/ViewProject";
 export default FreelancerRoutes;

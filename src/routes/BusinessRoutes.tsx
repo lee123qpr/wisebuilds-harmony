@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 
@@ -12,7 +13,7 @@ import EditProject from "@/pages/project/EditProject";
 import ProjectDocuments from "@/pages/project/ProjectDocuments";
 import ProjectApplications from "@/pages/project/ProjectApplications";
 
-const BusinessRoutes = () => {
+const BusinessRoutes: React.FC = () => {
   return (
     <>
       <Route 

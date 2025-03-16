@@ -1,11 +1,12 @@
 
+import React from 'react';
 import { Route } from "react-router-dom";
 
 // Pages
 import Index from "@/pages/Index";
 import NotFound from "@/pages/NotFound";
 
-const PublicRoutes = () => {
+const PublicRoutes: React.FC = () => {
   return (
     <>
       <Route path="/" element={<Index />} />
