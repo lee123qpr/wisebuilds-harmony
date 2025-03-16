@@ -49,7 +49,7 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
           project_title: conv.projects?.title || 'Unknown Project',
           freelancer_info: freelancerInfo,
           client_info: {
-            id: userId, // Include the required id field
+            id: userId,
             contact_name: freelancerInfo?.display_name || 'Unknown Freelancer',
             company_name: null,
             logo_url: freelancerInfo?.profile_image,

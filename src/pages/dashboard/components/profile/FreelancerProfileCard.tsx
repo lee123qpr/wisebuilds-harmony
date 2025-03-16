@@ -110,7 +110,11 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
             {/* Show rating if available */}
             {rating > 0 && (
               <div className="flex items-center gap-2 mb-2">
-                <RatingStars rating={rating} size="sm" />
+                <RatingStars 
+                  rating={rating} 
+                  size="sm"
+                  reviewCount={reviewsCount}
+                />
                 <span className="text-sm text-muted-foreground">
                   ({reviewsCount} {reviewsCount === 1 ? 'review' : 'reviews'})
                 </span>

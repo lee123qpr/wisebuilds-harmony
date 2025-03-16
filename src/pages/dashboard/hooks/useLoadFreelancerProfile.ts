@@ -18,6 +18,8 @@ interface UseLoadFreelancerProfileProps {
   setEmailVerified: (verified: boolean) => void;
   setJobsCompleted: (count: number) => void;
   setIsLoading: (loading: boolean) => void;
+  setRating: (rating: number) => void;
+  setReviewsCount: (count: number) => void;
 }
 
 export const useLoadFreelancerProfile = ({
@@ -27,7 +29,9 @@ export const useLoadFreelancerProfile = ({
   setMemberSince,
   setEmailVerified,
   setJobsCompleted,
-  setIsLoading
+  setIsLoading,
+  setRating,
+  setReviewsCount
 }: UseLoadFreelancerProfileProps) => {
   const { toast } = useToast();
 
@@ -99,6 +103,10 @@ export const useLoadFreelancerProfile = ({
         
         // Jobs completed would come from the database in a real app
         setJobsCompleted(userMetadata.jobs_completed || 0);
+        
+        // Set rating and reviewsCount
+        setRating(userMetadata.rating || 0);
+        setReviewsCount(userMetadata.reviews_count || 0);
       } catch (error) {
         console.error('Error fetching profile:', error);
         toast({
@@ -112,5 +120,5 @@ export const useLoadFreelancerProfile = ({
     }
     
     getProfileData();
-  }, [user, form, toast, setProfileImage, setMemberSince, setEmailVerified, setJobsCompleted, setIsLoading]);
+  }, [user, form, toast, setProfileImage, setMemberSince, setEmailVerified, setJobsCompleted, setIsLoading, setRating, setReviewsCount]);
 };

@@ -45,20 +45,26 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
     // Build FreelancerInfo object with safe property access
     return {
       id: freelancerId,
-      display_name: metaData && typeof metaData === 'object' && 'display_name' in metaData ? String(metaData.display_name) : 
+      display_name: metaData && typeof metaData === 'object' && 'display_name' in metaData ? 
+                    String(metaData.display_name || '') : 
                     metaData && typeof metaData === 'object' && 'first_name' in metaData && 'last_name' in metaData ? 
                     `${String(metaData.first_name || '')} ${String(metaData.last_name || '')}`.trim() : 'Freelancer',
-      profile_image: metaData && typeof metaData === 'object' && 'avatar_url' in metaData ? String(metaData.avatar_url) : null,
+      profile_image: metaData && typeof metaData === 'object' && 'avatar_url' in metaData ? 
+                    (metaData.avatar_url ? String(metaData.avatar_url) : null) : null,
       phone_number: metaData && typeof metaData === 'object' ? 
-                    ('phone_number' in metaData && metaData.phone_number) || 
-                    ('phone' in metaData && metaData.phone) || null : null,
+                    ('phone_number' in metaData && metaData.phone_number ? String(metaData.phone_number) : 
+                    'phone' in metaData && metaData.phone ? String(metaData.phone) : null) : null,
       email: userData.email || null,
       email_verified: userData.email_confirmed || false,
-      member_since: userData && userData.user && userData.user.created_at ? String(userData.user.created_at) : 
-                   metaData && typeof metaData === 'object' && 'created_at' in metaData ? String(metaData.created_at) : null,
-      jobs_completed: metaData && typeof metaData === 'object' && 'jobs_completed' in metaData ? Number(metaData.jobs_completed) || 0 : 0,
+      member_since: userData && userData.user && userData.user.created_at ? 
+                   String(userData.user.created_at) : 
+                   metaData && typeof metaData === 'object' && 'created_at' in metaData ? 
+                   String(metaData.created_at || '') : null,
+      jobs_completed: metaData && typeof metaData === 'object' && 'jobs_completed' in metaData ? 
+                      Number(metaData.jobs_completed) || 0 : 0,
       rating,
-      reviews_count: metaData && typeof metaData === 'object' && 'reviews_count' in metaData ? Number(metaData.reviews_count) || 0 : 0
+      reviews_count: metaData && typeof metaData === 'object' && 'reviews_count' in metaData ? 
+                     Number(metaData.reviews_count) || 0 : 0
     };
   } catch (error) {
     console.error('Error getting freelancer info:', error);
