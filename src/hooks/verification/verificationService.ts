@@ -16,7 +16,7 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
   try {
     console.log('Fetching verification status for user:', userId);
     
-    // Query the freelancer_verification table directly instead of joining with users
+    // Query the freelancer_verification table directly
     const { data, error } = await supabase
       .from('freelancer_verification')
       .select('*')
@@ -31,7 +31,6 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       }
       
       console.error('Error fetching verification status:', error);
-      // Don't throw the error, just return null to prevent the component from crashing
       return null;
     }
     
@@ -88,17 +87,19 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const path = uploadData?.path;
     console.log('File uploaded successfully to:', path);
     
-    // Create or update the verification record
+    // Create or update the verification record without trying to join with users table
+    const verificationRecord = {
+      user_id: userId,
+      id_document_path: filePath,
+      verification_status: 'pending',
+      submitted_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    
     const { data: verificationData, error: insertError } = await supabase
       .from('freelancer_verification')
-      .upsert({
-        user_id: userId,
-        id_document_path: filePath,
-        verification_status: 'pending',
-        submitted_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      }, { 
-        onConflict: 'user_id' // Specify the conflicting column
+      .upsert(verificationRecord, {
+        onConflict: 'user_id'
       })
       .select()
       .single();

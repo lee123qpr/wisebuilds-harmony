@@ -121,29 +121,38 @@ serve(async (req) => {
       const enableRlsSql = `ALTER TABLE public.freelancer_verification ENABLE ROW LEVEL SECURITY;`;
       await supabaseAdmin.rpc('exec_sql', { sql: enableRlsSql }).catch(e => console.log('RLS already enabled'));
       
-      // Try to create policies - individually to avoid errors if some already exist
+      // Define the RLS policies to create
       const policies = [
-        `DROP POLICY IF EXISTS "Users can insert their own verification records" 
-         ON public.freelancer_verification;`,
+        // Drop existing policies first
+        `DROP POLICY IF EXISTS "Users can insert their own verification records" ON public.freelancer_verification;`,
+        `DROP POLICY IF EXISTS "Users can view their own verification records" ON public.freelancer_verification;`,
+        `DROP POLICY IF EXISTS "Users can update their own verification records" ON public.freelancer_verification;`,
+        `DROP POLICY IF EXISTS "Users can delete their own verification records" ON public.freelancer_verification;`,
+        `DROP POLICY IF EXISTS "Service role can access all verification records" ON public.freelancer_verification;`,
+        `DROP POLICY IF EXISTS "Admin users can view all verification records" ON public.freelancer_verification;`,
         
+        // Create new policies
         `CREATE POLICY "Users can insert their own verification records" 
          ON public.freelancer_verification FOR INSERT WITH CHECK (auth.uid() = user_id);`,
-        
-        `DROP POLICY IF EXISTS "Users can view their own verification records" 
-         ON public.freelancer_verification;`,
         
         `CREATE POLICY "Users can view their own verification records" 
          ON public.freelancer_verification FOR SELECT USING (auth.uid() = user_id);`,
         
-        `DROP POLICY IF EXISTS "Users can update their own verification records" 
-         ON public.freelancer_verification;`,
-        
         `CREATE POLICY "Users can update their own verification records" 
          ON public.freelancer_verification FOR UPDATE USING (auth.uid() = user_id);`,
         
-        `DROP POLICY IF EXISTS "Service role can access all verification records" 
-         ON public.freelancer_verification;`,
-         
+        `CREATE POLICY "Users can delete their own verification records" 
+         ON public.freelancer_verification FOR DELETE USING (auth.uid() = user_id);`,
+        
+        `CREATE POLICY "Admin users can view all verification records" 
+         ON public.freelancer_verification FOR ALL USING (
+           auth.jwt() ->> 'user_type' = 'admin' OR
+           auth.uid() IN (
+             SELECT id FROM auth.users
+             WHERE raw_user_meta_data ->> 'user_type' = 'admin'
+           )
+         );`,
+        
         `CREATE POLICY "Service role can access all verification records" 
          ON public.freelancer_verification FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');`
       ];
