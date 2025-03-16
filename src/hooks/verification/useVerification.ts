@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -106,6 +105,10 @@ export const useVerification = (): UseVerificationResult => {
   useEffect(() => {
     if (user) {
       refreshVerificationStatus();
+    } else {
+      // If no user, reset the state
+      setVerificationData(null);
+      setIsLoading(false);
     }
   }, [user]);
 

@@ -16,6 +16,7 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
   try {
     console.log('Fetching verification status for user:', userId);
     
+    // Query the freelancer_verification table directly instead of joining with users
     const { data, error } = await supabase
       .from('freelancer_verification')
       .select('*')
@@ -30,7 +31,8 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       }
       
       console.error('Error fetching verification status:', error);
-      throw error;
+      // Don't throw the error, just return null to prevent the component from crashing
+      return null;
     }
     
     console.log('Verification data found:', data);

@@ -17,7 +17,7 @@ import {
 
 const VerificationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const { verificationStatus } = useVerification();
+  const { verificationStatus, isLoading } = useVerification();
 
   const getButtonLabel = () => {
     switch (verificationStatus) {
@@ -45,6 +45,11 @@ const VerificationDialog: React.FC = () => {
     }
   };
 
+  // Handle button click to open dialog
+  const handleOpenDialog = () => {
+    setOpen(true);
+  };
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -54,10 +59,11 @@ const VerificationDialog: React.FC = () => {
               <Button 
                 variant={verificationStatus === 'approved' ? 'ghost' : 'outline'} 
                 className="flex items-center gap-2"
-                disabled={verificationStatus === 'approved'}
+                disabled={verificationStatus === 'approved' || isLoading}
+                onClick={handleOpenDialog}
               >
                 <ShieldCheck className="h-4 w-4" />
-                {getButtonLabel()}
+                {isLoading ? 'Loading...' : getButtonLabel()}
                 {verificationStatus !== 'approved' && 
                   <HelpCircle className="h-3 w-3 ml-1 text-muted-foreground" />
                 }
