@@ -99,8 +99,35 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
     fetchNotifications();
 
+    // Set up real-time subscription for new notifications
+    // This would be implemented with Supabase realtime in a production app
+    const mockInterval = setInterval(() => {
+      // Randomly add a new notification (1 in 10 chance) for demo purposes
+      if (Math.random() < 0.1) {
+        const types: NotificationType[] = ['message', 'lead', 'hired', 'project_complete', 'review', 'verification_status', 'payment'];
+        const randomType = types[Math.floor(Math.random() * types.length)];
+        
+        const newNotification: Notification = {
+          id: `mock-${Date.now()}`,
+          type: randomType,
+          title: getNotificationTitle(randomType),
+          description: getNotificationDescription(randomType),
+          read: false,
+          created_at: new Date().toISOString(),
+        };
+        
+        setNotifications(prev => [newNotification, ...prev]);
+        
+        // Show a toast for the new notification
+        toast({
+          title: newNotification.title,
+          description: newNotification.description,
+        });
+      }
+    }, 30000); // Check every 30 seconds
+
     return () => {
-      // No need to clean up interval anymore
+      clearInterval(mockInterval);
     };
   }, [user, toast]);
 

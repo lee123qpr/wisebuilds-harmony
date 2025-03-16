@@ -4,10 +4,9 @@ import { format } from 'date-fns';
 import { TableRow, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, XCircle, Eye } from 'lucide-react';
+import { CheckCircle, XCircle, Eye, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdminUser } from '../../hooks/useUsers';
-import { useToast } from '@/hooks/use-toast';
 
 interface UserRowProps {
   user: AdminUser;
@@ -15,26 +14,59 @@ interface UserRowProps {
 }
 
 const UserRow = ({ user, getUserTypeColor }: UserRowProps) => {
-  const { toast } = useToast();
-
   const handleViewProfile = () => {
-    // Get user type
+    // Open in new tab according to user type
     const userType = user.user_metadata?.user_type;
+    let profileUrl = '';
     
-    // Determine which route to use based on user type
     if (userType === 'freelancer') {
-      // For freelancers, use the existing /dashboard/freelancer/profile route
-      window.open(`/dashboard/freelancer/profile?id=${user.id}`, '_blank');
+      profileUrl = `/dashboard/freelancer/profile/${user.id}`;
     } else if (userType === 'business') {
-      // For businesses, use the existing /dashboard/business/profile route
-      window.open(`/dashboard/business/profile?id=${user.id}`, '_blank');
+      profileUrl = `/dashboard/client/profile/${user.id}`;
     } else {
-      // For admins or unknown types, show a toast notification
-      toast({
-        title: "Profile not available",
-        description: `Profile view for ${userType || 'unknown'} users is not currently available.`,
-        variant: "default"
-      });
+      // For admin or unknown types, just show basic profile
+      profileUrl = `/dashboard/profile/${user.id}`;
+    }
+    
+    window.open(profileUrl, '_blank');
+  };
+
+  // Determine ID verification status for freelancers
+  const renderIdVerificationStatus = () => {
+    if (user.user_metadata?.user_type !== 'freelancer') {
+      return <span className="text-gray-400">N/A</span>;
+    }
+
+    const status = user.verification_status || 'unknown';
+    
+    if (status === 'approved') {
+      return (
+        <div className="flex items-center">
+          <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
+          <span>Verified</span>
+        </div>
+      );
+    } else if (status === 'pending') {
+      return (
+        <div className="flex items-center">
+          <AlertTriangle className="h-4 w-4 text-amber-500 mr-1" />
+          <span>Pending</span>
+        </div>
+      );
+    } else if (status === 'rejected') {
+      return (
+        <div className="flex items-center">
+          <XCircle className="h-4 w-4 text-red-500 mr-1" />
+          <span>Rejected</span>
+        </div>
+      );
+    } else {
+      return (
+        <div className="flex items-center">
+          <XCircle className="h-4 w-4 text-gray-500 mr-1" />
+          <span>Not Verified</span>
+        </div>
+      );
     }
   };
 
@@ -66,16 +98,21 @@ const UserRow = ({ user, getUserTypeColor }: UserRowProps) => {
       </TableCell>
       <TableCell>
         <div className="flex items-center">
-          {user.email_confirmed_at ? (
+          {user.is_verified ? (
             <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
           ) : (
             <XCircle className="h-4 w-4 text-red-500 mr-1" />
           )}
           <span>
-            {user.email_confirmed_at ? 'Verified' : 'Unverified'}
+            {user.is_verified ? 'Verified' : 'Unverified'}
           </span>
         </div>
       </TableCell>
+      {user.user_metadata?.user_type === 'freelancer' && (
+        <TableCell>
+          {renderIdVerificationStatus()}
+        </TableCell>
+      )}
       <TableCell>
         <Button 
           variant="ghost" 

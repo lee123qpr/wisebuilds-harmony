@@ -1,70 +1,46 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { FreelancerInfo } from '@/types/messaging';
-import type { Json } from '@/integrations/supabase/types';
 
-export const getFreelancerInfo = async (freelancerId: string): Promise<FreelancerInfo> => {
+/**
+ * Gets freelancer information from auth user data
+ */
+export const getFreelancerInfo = async (freelancerId: string) => {
+  // We don't have a freelancer_profiles table, so we'll get data directly from auth
   try {
-    // First, try to get data from freelancer_profiles
-    const { data: profileData, error: profileError } = await supabase
-      .from('freelancer_profiles')
-      .select('*')
-      .eq('id', freelancerId)
-      .maybeSingle();
-    
-    // If no profile found, get basic user data from auth
-    if (!profileData && freelancerId) {
-      try {
-        const { data: userData, error: userError } = await supabase.functions.invoke('get-user-email', {
-          body: { userId: freelancerId }
-        });
-        
-        if (userError || !userData) {
-          return {
-            id: freelancerId,
-            display_name: 'Unknown Freelancer',
-            email: null
-          };
-        }
-        
-        return {
-          id: freelancerId,
-          display_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Freelancer'),
-          email: userData.email || null,
-          member_since: userData.created_at
-        };
-      } catch (error) {
-        console.error('Error calling edge function:', error);
-        return {
-          id: freelancerId,
-          display_name: 'Unknown Freelancer',
-          email: null
-        };
+    const { data: userData, error: userError } = await supabase.functions.invoke(
+      'get-user-email',
+      {
+        body: { userId: freelancerId }
       }
+    );
+    
+    if (userError || !userData) {
+      console.error('Error fetching user data from edge function:', userError);
+      return {
+        full_name: 'Unknown Freelancer',
+        business_name: null,
+        profile_image: null,
+        email: null
+      };
     }
     
-    // If profile found, format and return
+    // Return user data
     return {
-      id: freelancerId,
-      display_name: profileData?.display_name || 
-        (profileData?.first_name && profileData?.last_name ? 
-          `${profileData.first_name} ${profileData.last_name}` : 'Unknown Freelancer'),
-      first_name: profileData?.first_name,
-      last_name: profileData?.last_name,
-      profile_photo: profileData?.profile_photo || null,
-      email: profileData?.email || null,
-      phone_number: profileData?.phone_number || null,
-      member_since: profileData?.member_since || null,
-      jobs_completed: profileData?.jobs_completed || 0,
-      rating: profileData?.rating || null,
-      reviews_count: profileData?.reviews_count || 0,
-      email_verified: profileData?.id_verified || false
+      full_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Freelancer'),
+      business_name: null,
+      profile_image: null,
+      phone_number: null,
+      email: userData.email || null
     };
   } catch (error) {
-    console.error('Error getting freelancer info:', error);
+    console.error('Error calling edge function:', error);
+    
+    // No data available
     return {
-      id: freelancerId,
-      display_name: 'Unknown Freelancer'
+      full_name: 'Unknown Freelancer',
+      business_name: null,
+      profile_image: null,
+      email: null
     };
   }
 };

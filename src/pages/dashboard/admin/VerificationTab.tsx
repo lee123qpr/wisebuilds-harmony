@@ -16,8 +16,7 @@ const VerificationTab = () => {
     setAdminNotes,
     isUpdating,
     viewDocument,
-    updateVerificationStatus,
-    refreshVerifications
+    updateVerificationStatus
   } = useVerifications();
 
   return (

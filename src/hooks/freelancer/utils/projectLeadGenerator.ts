@@ -37,8 +37,7 @@ export const generateProjectLeads = (settings: LeadSettings): ProjectLead[] => {
       requires_site_visits: false,
       status: 'active',
       updated_at: new Date().toISOString(),
-      user_id: 'client123',
-      purchases_count: 0
+      user_id: 'client123'
     },
     {
       id: '2',
@@ -66,8 +65,7 @@ export const generateProjectLeads = (settings: LeadSettings): ProjectLead[] => {
       requires_site_visits: true,
       status: 'active',
       updated_at: new Date().toISOString(),
-      user_id: 'client456',
-      purchases_count: 2
+      user_id: 'client456'
     },
     {
       id: '3',
@@ -95,8 +93,7 @@ export const generateProjectLeads = (settings: LeadSettings): ProjectLead[] => {
       requires_site_visits: false,
       status: 'active',
       updated_at: new Date().toISOString(),
-      user_id: 'client789',
-      purchases_count: 3
+      user_id: 'client789'
     },
     {
       id: '4',
@@ -124,8 +121,7 @@ export const generateProjectLeads = (settings: LeadSettings): ProjectLead[] => {
       requires_site_visits: true,
       status: 'active',
       updated_at: new Date().toISOString(),
-      user_id: 'client101',
-      purchases_count: 1
+      user_id: 'client101'
     },
     {
       id: '5',
@@ -153,8 +149,7 @@ export const generateProjectLeads = (settings: LeadSettings): ProjectLead[] => {
       requires_site_visits: false,
       status: 'active',
       updated_at: new Date().toISOString(),
-      user_id: 'client202',
-      purchases_count: 0
+      user_id: 'client202'
     }
   ];
 };

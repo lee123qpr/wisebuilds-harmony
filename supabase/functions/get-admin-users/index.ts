@@ -58,45 +58,22 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Make sure users data exists and has the expected structure
-    if (!users || !users.users || !Array.isArray(users.users)) {
-      console.error('Invalid user data structure received from Supabase')
-      return new Response(
-        JSON.stringify({ error: 'Invalid user data received from server' }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
-    }
-
-    // In Supabase Auth, when users are soft-deleted they're moved to a "deleted" status
-    // The proper way to check for deleted users is by looking at the 'banned_until' field
-    // and determining if the user has been soft-deleted
-    const activeUsers = [];
-    const deletedUsers = [];
+    // Add some debugging info
+    console.log(`Total users from Supabase: ${users.users.length}`);
+    console.log(`Users with deleted_at not null: ${users.users.filter(user => user.deleted_at !== null).length}`);
     
-    users.users.forEach(user => {
-      // Log a sample user to see the structure
-      if (activeUsers.length === 0 && deletedUsers.length === 0) {
-        console.log('Sample user structure:', JSON.stringify(user, null, 2));
-      }
-      
-      // Supabase doesn't use 'deleted_at' in the Auth API
-      // Instead, it marks deleted users with a special banned status
-      // Check if user has been deleted by looking at their properties
-      const isDeleted = user.banned_until === 'infinity';
-      
-      if (isDeleted) {
-        deletedUsers.push(user);
-      } else {
-        activeUsers.push(user);
-      }
-    });
+    // Get active users (not deleted)
+    const activeUsers = users.users.filter(user => user.deleted_at === null);
+    console.log(`Active users (deleted_at is null): ${activeUsers.length}`);
     
-    console.log(`Found ${activeUsers.length} active users and ${deletedUsers.length} deleted users`);
-
+    // Count deleted users
+    const deletedUsersCount = users.users.filter(user => user.deleted_at !== null).length;
+    
+    // Return only active users (not deleted)
     return new Response(
       JSON.stringify({ 
         users: activeUsers,
-        deletedUsers: deletedUsers 
+        deletedUsersCount: deletedUsersCount 
       }),
       { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

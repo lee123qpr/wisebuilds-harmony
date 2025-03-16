@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useImageUpload } from '../../hooks/useImageUpload';
 import FreelancerAvatar from './FreelancerAvatar';
 import ProfileInfoBadges from './ProfileInfoBadges';
-import RatingStars from './RatingStars';
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;

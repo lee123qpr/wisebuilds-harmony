@@ -1,18 +1,14 @@
 
-import React, { useState } from 'react';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Input } from '@/components/ui/input';
-import { useProjects } from '@/components/projects/useProjects';
-import ProjectFilters from '@/components/projects/ProjectFilters';
-import NewProjectDialog from '@/components/projects/NewProjectDialog';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
-import ProjectCardHorizontal from './ProjectCardHorizontal';
+import React from 'react';
+import { Table, TableCaption, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import ProjectFilters from './ProjectFilters';
+import ProjectTableBody from './ProjectTableBody';
+import { useProjects } from './useProjects';
 
 const ProjectsTable = () => {
-  const { 
-    projects, 
-    isLoading, 
+  const {
+    projects,
+    isLoading,
     refreshProjects,
     searchQuery,
     setSearchQuery,
@@ -22,69 +18,37 @@ const ProjectsTable = () => {
     setHiringFilter
   } = useProjects();
 
-  // Filter projects based on search query and filters
-  const filteredProjects = projects.filter(project => {
-    const matchesSearch = project.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          project.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesStatus = statusFilter === 'all' || project.status === statusFilter;
-    
-    const matchesHiring = hiringFilter === 'all' || project.hiring_status === hiringFilter;
-    
-    return matchesSearch && matchesStatus && matchesHiring;
-  });
-
-  if (isLoading) {
-    return (
-      <div>
-        <div className="flex justify-between mb-4">
-          <Skeleton className="h-10 w-64" />
-          <Skeleton className="h-10 w-32" />
-        </div>
-        {[...Array(3)].map((_, i) => (
-          <Skeleton key={i} className="h-40 w-full mb-4" />
-        ))}
-      </div>
-    );
-  }
-
   return (
-    <div>
-      <div className="mb-6 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="w-full sm:w-auto">
-            <Input
-              placeholder="Search projects..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full"
-            />
-          </div>
-          <div className="flex gap-2 w-full sm:w-auto justify-end">
-            <ProjectFilters 
-              searchQuery={searchQuery}
-              statusFilter={statusFilter}
-              hiringFilter={hiringFilter}
-              onSearchChange={setSearchQuery}
-              onStatusChange={setStatusFilter}
-              onHiringChange={setHiringFilter}
-            />
-            <NewProjectDialog />
-          </div>
-        </div>
-      </div>
-      
-      {filteredProjects.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          No projects found. Try adjusting your search or filters.
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {filteredProjects.map((project) => (
-            <ProjectCardHorizontal key={project.id} project={project} />
-          ))}
-        </div>
-      )}
+    <div className="space-y-4">
+      <ProjectFilters
+        searchQuery={searchQuery}
+        statusFilter={statusFilter}
+        hiringFilter={hiringFilter}
+        onSearchChange={setSearchQuery}
+        onStatusChange={setStatusFilter}
+        onHiringChange={setHiringFilter}
+      />
+
+      <Table>
+        <TableCaption>A list of your posted projects</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Title</TableHead>
+            <TableHead>Posted Date</TableHead>
+            <TableHead>Role</TableHead>
+            <TableHead>Budget</TableHead>
+            <TableHead>Status</TableHead>
+            <TableHead>Hiring Status</TableHead>
+            <TableHead>Applications</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
+          </TableRow>
+        </TableHeader>
+        <ProjectTableBody 
+          projects={projects} 
+          isLoading={isLoading} 
+          refreshProjects={refreshProjects}
+        />
+      </Table>
     </div>
   );
 };

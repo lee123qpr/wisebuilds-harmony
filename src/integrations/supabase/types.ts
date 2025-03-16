@@ -19,7 +19,6 @@ export type Database = {
           company_type: string | null
           contact_name: string | null
           created_at: string
-          email: string | null
           email_verified: boolean | null
           employee_size: string | null
           id: string
@@ -39,7 +38,6 @@ export type Database = {
           company_type?: string | null
           contact_name?: string | null
           created_at?: string
-          email?: string | null
           email_verified?: boolean | null
           employee_size?: string | null
           id: string
@@ -59,7 +57,6 @@ export type Database = {
           company_type?: string | null
           contact_name?: string | null
           created_at?: string
-          email?: string | null
           email_verified?: boolean | null
           employee_size?: string | null
           id?: string
@@ -226,96 +223,6 @@ export type Database = {
           id?: string
           updated_at?: string
           user_id?: string
-        }
-        Relationships: []
-      }
-      freelancer_profiles: {
-        Row: {
-          accreditations: Json | null
-          availability: string | null
-          bio: string | null
-          created_at: string | null
-          display_name: string | null
-          email: string | null
-          experience: string | null
-          first_name: string | null
-          hourly_rate: string | null
-          id: string
-          id_verified: boolean | null
-          indemnity_insurance: Json | null
-          job_title: string | null
-          jobs_completed: number | null
-          last_name: string | null
-          location: string | null
-          member_since: string | null
-          phone_number: string | null
-          previous_employers: Json | null
-          previous_work: Json | null
-          profile_photo: string | null
-          qualifications: Json | null
-          rating: number | null
-          reviews_count: number | null
-          skills: Json | null
-          updated_at: string | null
-          website: string | null
-        }
-        Insert: {
-          accreditations?: Json | null
-          availability?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          email?: string | null
-          experience?: string | null
-          first_name?: string | null
-          hourly_rate?: string | null
-          id: string
-          id_verified?: boolean | null
-          indemnity_insurance?: Json | null
-          job_title?: string | null
-          jobs_completed?: number | null
-          last_name?: string | null
-          location?: string | null
-          member_since?: string | null
-          phone_number?: string | null
-          previous_employers?: Json | null
-          previous_work?: Json | null
-          profile_photo?: string | null
-          qualifications?: Json | null
-          rating?: number | null
-          reviews_count?: number | null
-          skills?: Json | null
-          updated_at?: string | null
-          website?: string | null
-        }
-        Update: {
-          accreditations?: Json | null
-          availability?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          email?: string | null
-          experience?: string | null
-          first_name?: string | null
-          hourly_rate?: string | null
-          id?: string
-          id_verified?: boolean | null
-          indemnity_insurance?: Json | null
-          job_title?: string | null
-          jobs_completed?: number | null
-          last_name?: string | null
-          location?: string | null
-          member_since?: string | null
-          phone_number?: string | null
-          previous_employers?: Json | null
-          previous_work?: Json | null
-          profile_photo?: string | null
-          qualifications?: Json | null
-          rating?: number | null
-          reviews_count?: number | null
-          skills?: Json | null
-          updated_at?: string | null
-          website?: string | null
         }
         Relationships: []
       }
@@ -560,44 +467,6 @@ export type Database = {
         }
         Relationships: []
       }
-      quotes: {
-        Row: {
-          client_id: string
-          created_at: string
-          freelancer_id: string
-          id: string
-          project_id: string
-          status: string
-          updated_at: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          freelancer_id: string
-          id?: string
-          project_id: string
-          status?: string
-          updated_at?: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          freelancer_id?: string
-          id?: string
-          project_id?: string
-          status?: string
-          updated_at?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quotes_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       [_ in never]: never
@@ -615,13 +484,6 @@ export type Database = {
         Args: {
           p_project_id: string
           p_user_id: string
-        }
-        Returns: boolean
-      }
-      check_quote_exists: {
-        Args: {
-          p_project_id: string
-          p_freelancer_id: string
         }
         Returns: boolean
       }

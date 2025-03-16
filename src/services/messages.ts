@@ -1,15 +1,14 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getCurrentUserId } from './conversations';
 import { Message, MessageAttachment } from '@/types/messaging';
-import type { Json } from '@/integrations/supabase/types';
 
 // Fetch messages for a conversation
 export const fetchMessages = async (conversationId: string) => {
   try {
-    const { data, error } = await supabase
-      .from('messages')
+    // We need to use type assertion because messages table isn't in the Supabase type definition
+    const { data, error } = await (supabase
+      .from('messages') as any)
       .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
@@ -24,18 +23,7 @@ export const fetchMessages = async (conversationId: string) => {
       return [];
     }
     
-    // Transform attachments from Json to MessageAttachment[] if needed
-    const messagesWithFormattedAttachments = data?.map(msg => {
-      if (msg.attachments && typeof msg.attachments !== 'string') {
-        return {
-          ...msg,
-          attachments: Array.isArray(msg.attachments) ? msg.attachments : []
-        };
-      }
-      return msg;
-    }) || [];
-    
-    return messagesWithFormattedAttachments;
+    return data || [];
   } catch (e) {
     console.error('Error in fetchMessages:', e);
     toast({
@@ -52,8 +40,8 @@ export const markMessagesAsRead = async (messageIds: string[]) => {
   if (messageIds.length === 0) return;
   
   try {
-    const { error } = await supabase
-      .from('messages')
+    const { error } = await (supabase
+      .from('messages') as any)
       .update({ is_read: true })
       .in('id', messageIds);
     
@@ -124,7 +112,8 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
       name: file.name,
       size: file.size,
       type: file.type,
-      url: publicUrl
+      url: publicUrl,
+      path: filePath
     };
   } catch (e) {
     console.error('Unexpected error during file upload:', e);
@@ -163,15 +152,15 @@ export const sendMessage = async (conversationId: string, message: string, attac
       }
     }
     
-    // Send the message - convert MessageAttachment[] to Json for database
-    const { error } = await supabase
-      .from('messages')
+    // Send the message
+    const { error } = await (supabase
+      .from('messages') as any)
       .insert({
         conversation_id: conversationId,
         sender_id: userId,
         message: messageText,
         is_read: false,
-        attachments: attachments.length > 0 ? (attachments as unknown as Json) : null
+        attachments: attachments.length > 0 ? attachments : null
       });
     
     if (error) {

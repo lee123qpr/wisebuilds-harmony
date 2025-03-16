@@ -14,18 +14,6 @@ interface ChatAreaProps {
 
 const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
-  
-  // Get current user ID
-  useEffect(() => {
-    const getUserId = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.user.id) {
-        setCurrentUserId(data.session.user.id);
-      }
-    };
-    getUserId();
-  }, []);
-
   const { 
     messages, 
     newMessage, 
@@ -38,7 +26,18 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
     attachments,
     isUploading,
     uploadProgress
-  } = useMessages(selectedConversation?.id, currentUserId);
+  } = useMessages(selectedConversation);
+
+  // Get current user ID
+  useEffect(() => {
+    const getUserId = async () => {
+      const { data } = await supabase.auth.getSession();
+      if (data.session?.user.id) {
+        setCurrentUserId(data.session.user.id);
+      }
+    };
+    getUserId();
+  }, []);
 
   if (!selectedConversation) {
     return (
