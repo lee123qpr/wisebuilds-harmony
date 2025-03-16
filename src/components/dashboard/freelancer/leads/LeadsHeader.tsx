@@ -39,7 +39,7 @@ const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading, locatio
           className="flex items-center h-9"
         >
           <Filter className="mr-2 h-4 w-4" />
-          Update Filters
+          Update Lead Settings
         </Button>
         <Button 
           onClick={handleRefresh} 

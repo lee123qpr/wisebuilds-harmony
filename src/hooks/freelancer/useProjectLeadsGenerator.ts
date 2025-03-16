@@ -29,7 +29,7 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         }
         
         // Filter by location if specified
-        if (leadSettings.location && leadSettings.location !== 'Any') {
+        if (leadSettings.location) {
           query = query.ilike('location', `%${leadSettings.location}%`);
         }
         

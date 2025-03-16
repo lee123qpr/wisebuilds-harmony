@@ -1,46 +1,67 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { FreelancerInfo } from '@/types/messaging';
 
-/**
- * Gets freelancer information from auth user data
- */
-export const getFreelancerInfo = async (freelancerId: string) => {
-  // We don't have a freelancer_profiles table, so we'll get data directly from auth
+export const getFreelancerInfo = async (freelancerId: string): Promise<FreelancerInfo | null> => {
   try {
-    const { data: userData, error: userError } = await supabase.functions.invoke(
-      'get-user-email',
-      {
-        body: { userId: freelancerId }
-      }
-    );
+    // Get freelancer profile data
+    const { data: freelancerData, error: freelancerError } = await supabase
+      .from('freelancer_profiles')
+      .select('*')
+      .eq('id', freelancerId)
+      .single();
     
-    if (userError || !userData) {
-      console.error('Error fetching user data from edge function:', userError);
-      return {
-        full_name: 'Unknown Freelancer',
-        business_name: null,
-        profile_image: null,
-        email: null
-      };
+    if (freelancerError) {
+      console.error('Error fetching freelancer profile:', freelancerError);
+      return null;
     }
     
-    // Return user data
+    // Get user data including email from edge function
+    const response = await fetch(`${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/get-user-profile`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
+      },
+      body: JSON.stringify({ userId: freelancerId })
+    });
+    
+    let userData = { email: null, email_confirmed: false, user_metadata: {}, user: { created_at: null } };
+    
+    if (response.ok) {
+      userData = await response.json();
+    } else {
+      console.error('Error fetching user email:', await response.text());
+    }
+    
+    // Extract required data and handle potential undefined values
+    const metaData = freelancerData || {};
+    
+    let rating = 0;
+    if (metaData && typeof metaData === 'object' && 'rating' in metaData && metaData.rating !== null) {
+      rating = typeof metaData.rating === 'string' ? parseFloat(metaData.rating) : Number(metaData.rating) || 0;
+    }
+    
+    // Build FreelancerInfo object with safe property access
     return {
-      full_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Freelancer'),
-      business_name: null,
-      profile_image: null,
-      phone_number: null,
-      email: userData.email || null
+      id: freelancerId,
+      display_name: metaData && typeof metaData === 'object' && 'display_name' in metaData ? String(metaData.display_name) : 
+                    metaData && typeof metaData === 'object' && 'first_name' in metaData && 'last_name' in metaData ? 
+                    `${String(metaData.first_name || '')} ${String(metaData.last_name || '')}`.trim() : 'Freelancer',
+      profile_image: metaData && typeof metaData === 'object' && 'avatar_url' in metaData ? String(metaData.avatar_url) : null,
+      phone_number: metaData && typeof metaData === 'object' ? 
+                    ('phone_number' in metaData && metaData.phone_number) || 
+                    ('phone' in metaData && metaData.phone) || null : null,
+      email: userData.email || null,
+      email_verified: userData.email_confirmed || false,
+      member_since: userData && userData.user && userData.user.created_at ? String(userData.user.created_at) : 
+                   metaData && typeof metaData === 'object' && 'created_at' in metaData ? String(metaData.created_at) : null,
+      jobs_completed: metaData && typeof metaData === 'object' && 'jobs_completed' in metaData ? Number(metaData.jobs_completed) || 0 : 0,
+      rating,
+      reviews_count: metaData && typeof metaData === 'object' && 'reviews_count' in metaData ? Number(metaData.reviews_count) || 0 : 0
     };
   } catch (error) {
-    console.error('Error calling edge function:', error);
-    
-    // No data available
-    return {
-      full_name: 'Unknown Freelancer',
-      business_name: null,
-      profile_image: null,
-      email: null
-    };
+    console.error('Error getting freelancer info:', error);
+    return null;
   }
 };

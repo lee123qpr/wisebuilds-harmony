@@ -41,7 +41,7 @@ export const usePurchaseCredits = () => {
       } else {
         throw new Error('No checkout URL returned');
       }
-    } catch (error: any) {
+    } catch (error) {
       console.error('Error creating checkout session:', error);
       toast({
         title: 'Checkout Error',
