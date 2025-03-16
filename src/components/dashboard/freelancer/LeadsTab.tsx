@@ -1,13 +1,15 @@
 
 import React from 'react';
-import { Project } from '@/components/projects/useProjects';
 import { ProjectLead } from '@/types/projects';
-import ProjectListView from './ProjectListView';
 import LeadSettingsAlert from './leads/LeadSettingsAlert';
 import { useLeadFiltering } from './leads/useLeadFiltering';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
-import { Button } from '@/components/ui/button';
-import { RefreshCw, Briefcase } from 'lucide-react';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import EmptyLeadsMessage from './leads/EmptyLeadsMessage';
+import LeadsHeader from './leads/LeadsHeader';
+import { isUserFreelancer } from '@/hooks/verification/services/user-verification';
+import { Badge } from '@/components/ui/badge';
+import { formatDateAgo } from '@/utils/projectFormatters';
 
 interface LeadsTabProps {
   isLoadingSettings: boolean;
@@ -24,10 +26,7 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, pr
   
   // Use our custom hook for lead filtering
   const { 
-    filteredLeads, 
-    selectedProject, 
-    selectedProjectId, 
-    setSelectedProjectId 
+    filteredLeads
   } = useLeadFiltering(leadSettings, projectLeads);
   
   // If loading or no settings, show alert
@@ -37,34 +36,48 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, pr
   
   return (
     <div className="space-y-4">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <Briefcase className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold tracking-tight">My Leads</h2>
-        </div>
-        
-        <div className="flex gap-3">
-          <Button 
-            onClick={handleRefresh} 
-            size="sm" 
-            variant="outline" 
-            className="flex items-center"
-            disabled={isLoadingSettings}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoadingSettings ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-        </div>
-      </div>
+      <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings} />
       
-      <ProjectListView 
-        projects={filteredLeads as unknown as Project[]}
-        isLoading={isLoadingSettings}
-        selectedProjectId={selectedProjectId}
-        setSelectedProjectId={setSelectedProjectId}
-        selectedProject={selectedProject as unknown as Project}
-        showContactInfo={true}
-      />
+      {filteredLeads.length === 0 ? (
+        <EmptyLeadsMessage />
+      ) : (
+        <div className="bg-white rounded-lg border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Project Title</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Work Type</TableHead>
+                <TableHead>Budget</TableHead>
+                <TableHead>Posted</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredLeads.map((lead) => (
+                <TableRow key={lead.id}>
+                  <TableCell className="font-medium">{lead.title}</TableCell>
+                  <TableCell>{lead.location}</TableCell>
+                  <TableCell>{lead.work_type}</TableCell>
+                  <TableCell>{lead.budget}</TableCell>
+                  <TableCell>{formatDateAgo(lead.created_at)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                      {lead.hiring_status || 'Open'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <a href={`/projects/${lead.id}`} className="text-primary hover:underline">
+                      View Details
+                    </a>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </div>
   );
 };
