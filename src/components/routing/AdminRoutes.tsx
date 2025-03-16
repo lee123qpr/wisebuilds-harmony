@@ -3,7 +3,7 @@ import { Route } from "react-router-dom";
 import ProtectedRoute from "../auth/ProtectedRoute";
 import AdminDashboard from "../../pages/dashboard/AdminDashboard";
 
-const AdminRoutes = () => {
+export const AdminRoutes = () => {
   return (
     <Route 
       path="/dashboard/admin" 

@@ -8,7 +8,7 @@ import ProjectDocuments from "../../pages/project/ProjectDocuments";
 import ProjectApplications from "../../pages/project/ProjectApplications";
 import ClientProfile from "../../pages/dashboard/ClientProfile";
 
-const BusinessRoutes = () => {
+export const BusinessRoutes = () => {
   return (
     <>
       <Route 

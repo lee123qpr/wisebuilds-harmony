@@ -7,7 +7,7 @@ import CreditsPage from "../../pages/dashboard/freelancer/credits/CreditsPage";
 import SuccessPage from "../../pages/dashboard/freelancer/credits/SuccessPage";
 import FreelancerProfile from "../../pages/dashboard/FreelancerProfile";
 
-const FreelancerRoutes = () => {
+export const FreelancerRoutes = () => {
   return (
     <>
       <Route 
