@@ -43,19 +43,16 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
         // For business clients, get freelancer info
         const freelancerInfo = await getFreelancerInfo(conv.freelancer_id);
         
-        // Create proper client_info structure that matches ClientInfo interface
         return {
           ...conv,
           project_title: conv.projects?.title || 'Unknown Project',
           freelancer_info: freelancerInfo,
+          // Add client_info for compatibility with existing components
           client_info: {
-            id: userId, 
-            contact_name: freelancerInfo?.display_name || 'Unknown Freelancer',
-            company_name: null,
-            logo_url: freelancerInfo?.profile_image,
-            email: freelancerInfo?.email,
-            phone_number: null,
-            location: null
+            contact_name: freelancerInfo.full_name || 'Unknown Freelancer',
+            company_name: freelancerInfo.business_name,
+            logo_url: freelancerInfo.profile_image,
+            email: freelancerInfo.email
           }
         };
       } else {
@@ -70,7 +67,7 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
       }
     }));
     
-    return formattedConversations as Conversation[];
+    return formattedConversations;
   } catch (e) {
     console.error('Error in fetchConversations:', e);
     return [];

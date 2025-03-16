@@ -37,14 +37,12 @@ export const createConversation = async (freelancerId: string, clientId: string,
         
         if (userError || !userData) {
           clientInfo = {
-            id: clientId,
             contact_name: 'Unknown Client',
             company_name: null,
             email: null
           };
         } else {
           clientInfo = {
-            id: clientId,
             contact_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Client'),
             company_name: null,
             email: userData.email || null
@@ -53,7 +51,6 @@ export const createConversation = async (freelancerId: string, clientId: string,
       } catch (error) {
         console.error('Error calling edge function:', error);
         clientInfo = {
-          id: clientId,
           contact_name: 'Unknown Client',
           company_name: null,
           email: null
@@ -61,7 +58,6 @@ export const createConversation = async (freelancerId: string, clientId: string,
       }
     } else {
       clientInfo = {
-        id: clientId,
         contact_name: clientData.contact_name || 'Unknown Client',
         company_name: clientData.company_name,
         email: null

@@ -26,9 +26,7 @@ const FreelancerProfile = () => {
     memberSince,
     emailVerified,
     jobsCompleted,
-    idVerified,
-    rating,
-    reviewsCount
+    idVerified
   } = useFreelancerProfile(user);
 
   if (isLoading) {
@@ -65,8 +63,6 @@ const FreelancerProfile = () => {
               emailVerified={emailVerified}
               jobsCompleted={jobsCompleted}
               idVerified={idVerified}
-              rating={rating}
-              reviewsCount={reviewsCount}
             />
           </div>
 

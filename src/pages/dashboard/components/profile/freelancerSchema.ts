@@ -88,11 +88,4 @@ export const freelancerProfileSchema = z.object({
     )
     .default([]),
   idVerified: z.boolean().default(false),
-  // Additional fields for type checking
-  profile_photo: z.string().optional().nullable(),
-  member_since: z.string().optional().nullable(),
-  email_verified: z.boolean().optional(),
-  jobs_completed: z.number().optional(),
-  rating: z.number().optional(),
-  reviews_count: z.number().optional(),
 });

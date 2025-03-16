@@ -40,6 +40,9 @@ export const useProjectApplications = (projectId: string | undefined) => {
               
               if (userError) throw userError;
               
+              // Since there's no freelancer_profiles table, we'll get basic info from user metadata
+              // and add additional info if needed in the future
+              
               // Get verification status
               const { data: verificationData, error: verificationError } = await supabase
                 .rpc('is_user_verified', { user_id: application.user_id });
@@ -48,54 +51,21 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 console.error('Error checking verification status:', verificationError);
               }
               
-              // Extract user metadata
-              const userMetadata = userData?.user_metadata || {};
-              const email = userData?.email || '';
-              const firstName = userMetadata.first_name || userMetadata.firstname || '';
-              const lastName = userMetadata.last_name || userMetadata.lastname || '';
-              const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
-              const displayName = firstName && lastName 
-                ? `${firstName} ${lastName}` 
-                : userMetadata.full_name || 'Anonymous Freelancer';
-              const jobTitle = userMetadata.job_title || userMetadata.profession || '';
-              const location = userMetadata.location || '';
-              
-              // Get any reviews for this user
-              const { data: reviews, error: reviewsError } = await supabase
-                .from('client_reviews')
-                .select('rating')
-                .eq('reviewer_id', application.user_id);
-              
-              if (reviewsError) {
-                console.error('Error fetching reviews:', reviewsError);
-              }
-              
-              // Calculate average rating
-              let rating = null;
-              if (reviews && reviews.length > 0) {
-                const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-                rating = sum / reviews.length;
-              }
-              
               // Combine all data
               return {
                 ...application,
                 freelancer_profile: {
                   id: application.user_id,
-                  email: email,
+                  email: userData?.email,
                   verified: verificationData || false,
-                  email_verified: userData?.email_confirmed || false,
-                  first_name: firstName,
-                  last_name: lastName,
-                  display_name: displayName,
-                  phone_number: phoneNumber,
-                  job_title: jobTitle,
-                  location: location,
-                  profile_photo: userMetadata.avatar_url,
-                  rating: rating,
-                  reviews_count: reviews?.length || 0,
-                  member_since: userData?.user?.created_at || userMetadata.created_at,
-                  jobs_completed: userMetadata.jobs_completed || 0
+                  // Get name from user_metadata if available
+                  first_name: userData?.user_metadata?.first_name,
+                  last_name: userData?.user_metadata?.last_name,
+                  display_name: 
+                    (userData?.user_metadata?.first_name && userData?.user_metadata?.last_name) ? 
+                    `${userData.user_metadata.first_name} ${userData.user_metadata.last_name}` : 
+                    'Anonymous Freelancer',
+                  phone_number: userData?.user_metadata?.phone_number,
                 }
               };
             } catch (err) {

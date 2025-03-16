@@ -5,7 +5,6 @@ import { Card, CardContent } from '@/components/ui/card';
 import { useImageUpload } from '../../hooks/useImageUpload';
 import FreelancerAvatar from './FreelancerAvatar';
 import ProfileInfoBadges from './ProfileInfoBadges';
-import RatingStars from './RatingStars';
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;
@@ -19,8 +18,6 @@ interface FreelancerProfileCardProps {
   emailVerified: boolean;
   jobsCompleted: number;
   idVerified?: boolean;
-  rating?: number;
-  reviewsCount?: number;
 }
 
 const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
@@ -34,11 +31,9 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   memberSince,
   emailVerified,
   jobsCompleted,
-  idVerified = false,
-  rating = 0,
-  reviewsCount = 0
+  idVerified = false
 }) => {
-  console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted, rating, reviewsCount });
+  console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted });
   
   // Use our custom hook for image upload
   const {
@@ -106,17 +101,6 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
               <h2 className="text-xl font-semibold truncate">{fullName || 'Your Name'}</h2>
               <p className="text-sm text-muted-foreground">{profession || 'Your Profession'}</p>
             </div>
-
-            {/* Show rating if available */}
-            {rating > 0 && (
-              <div className="flex items-center gap-2 mb-2">
-                <RatingStars 
-                  rating={rating} 
-                  size="sm"
-                  reviewCount={reviewsCount}
-                />
-              </div>
-            )}
 
             <ProfileInfoBadges
               emailVerified={emailVerified}

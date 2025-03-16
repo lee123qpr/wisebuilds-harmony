@@ -24,11 +24,8 @@ export interface FreelancerProfile {
   rating?: number;
   reviews_count?: number;
   verified?: boolean;
-  email_verified?: boolean;
   hourly_rate?: string;
   day_rate?: string;
   email?: string;
   phone_number?: string;
-  member_since?: string;
-  jobs_completed?: number;
 }

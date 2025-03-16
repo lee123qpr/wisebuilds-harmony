@@ -12,8 +12,6 @@ export const useFreelancerProfile = (user: User | null) => {
   const [emailVerified, setEmailVerified] = useState<boolean>(false);
   const [jobsCompleted, setJobsCompleted] = useState<number>(0);
   const [idVerified, setIdVerified] = useState<boolean>(false);
-  const [rating, setRating] = useState<number>(0);
-  const [reviewsCount, setReviewsCount] = useState<number>(0);
   
   const { form, isLoading, setIsLoading } = useFreelancerProfileForm();
   
@@ -26,9 +24,7 @@ export const useFreelancerProfile = (user: User | null) => {
     setMemberSince,
     setEmailVerified,
     setJobsCompleted,
-    setIsLoading,
-    setRating,
-    setReviewsCount
+    setIsLoading
   });
 
   return {
@@ -44,8 +40,6 @@ export const useFreelancerProfile = (user: User | null) => {
     emailVerified,
     jobsCompleted,
     idVerified,
-    setIdVerified,
-    rating,
-    reviewsCount
+    setIdVerified
   };
 };

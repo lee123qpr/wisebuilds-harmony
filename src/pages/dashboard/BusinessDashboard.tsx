@@ -1,26 +1,16 @@
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
-import { useSearchParams } from 'react-router-dom';
+import { MessageSquare, ClipboardList } from 'lucide-react';
 import NewProjectDialog from '@/components/projects/NewProjectDialog';
 import ProjectsTable from '@/components/projects/ProjectsTable';
 import BusinessMessagesTab from '@/components/dashboard/business/MessagesTab';
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
-  const [searchParams] = useSearchParams();
-  const tabParam = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState('projects');
-  
-  // Set the active tab based on URL parameters
-  useEffect(() => {
-    if (tabParam && ['projects', 'applications', 'contracts', 'messages'].includes(tabParam)) {
-      setActiveTab(tabParam);
-    }
-  }, [tabParam]);
   
   // Extract user information
   const fullName = user?.user_metadata?.full_name || 'Business Client';
@@ -33,7 +23,7 @@ const BusinessDashboard = () => {
           <p className="text-muted-foreground">Your business dashboard</p>
         </div>
 
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+        <Tabs defaultValue="projects" className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="projects">My Projects</TabsTrigger>
             <TabsTrigger value="applications">Applications</TabsTrigger>

@@ -1,38 +1,46 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-export interface FreelancerInfo {
-  id: string;
-  display_name: string | null;
-  profile_image: string | null;
-  job_title: string | null;
-  location: string | null;
-  email: string | null;
-}
-
-export const getFreelancerInfo = async (freelancerId: string): Promise<FreelancerInfo | null> => {
+/**
+ * Gets freelancer information from auth user data
+ */
+export const getFreelancerInfo = async (freelancerId: string) => {
+  // We don't have a freelancer_profiles table, so we'll get data directly from auth
   try {
-    const { data, error } = await supabase
-      .from('freelancer_profiles')
-      .select('id, display_name, profile_photo, job_title, location, email')
-      .eq('id', freelancerId)
-      .single();
+    const { data: userData, error: userError } = await supabase.functions.invoke(
+      'get-user-email',
+      {
+        body: { userId: freelancerId }
+      }
+    );
     
-    if (error || !data) {
-      console.error('Error fetching freelancer info:', error);
-      return null;
+    if (userError || !userData) {
+      console.error('Error fetching user data from edge function:', userError);
+      return {
+        full_name: 'Unknown Freelancer',
+        business_name: null,
+        profile_image: null,
+        email: null
+      };
     }
     
+    // Return user data
     return {
-      id: data.id,
-      display_name: data.display_name,
-      profile_image: data.profile_photo,
-      job_title: data.job_title,
-      location: data.location,
-      email: data.email
+      full_name: userData.full_name || (userData.email ? userData.email.split('@')[0] : 'Unknown Freelancer'),
+      business_name: null,
+      profile_image: null,
+      phone_number: null,
+      email: userData.email || null
     };
-  } catch (e) {
-    console.error('Exception in getFreelancerInfo:', e);
-    return null;
+  } catch (error) {
+    console.error('Error calling edge function:', error);
+    
+    // No data available
+    return {
+      full_name: 'Unknown Freelancer',
+      business_name: null,
+      profile_image: null,
+      email: null
+    };
   }
 };

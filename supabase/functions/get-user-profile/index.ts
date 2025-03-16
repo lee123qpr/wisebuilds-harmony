@@ -41,13 +41,11 @@ serve(async (req) => {
       throw new Error('User not found')
     }
 
-    // Return the user email, email confirmation status, and metadata
+    // Return the user email and metadata
     return new Response(
       JSON.stringify({
         email: user.user.email,
-        email_confirmed: user.user.email_confirmed_at !== null,
-        user_metadata: user.user.user_metadata,
-        user: user.user
+        user_metadata: user.user.user_metadata
       }),
       {
         headers: {

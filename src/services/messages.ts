@@ -113,7 +113,7 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
       size: file.size,
       type: file.type,
       url: publicUrl,
-      path: filePath // This is now valid since we updated the MessageAttachment interface
+      path: filePath
     };
   } catch (e) {
     console.error('Unexpected error during file upload:', e);

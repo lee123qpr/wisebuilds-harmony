@@ -1,6 +1,12 @@
-
-import { ClientInfo } from '@/services/conversations/utils/getClientInfo';
-import { FreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
+export interface ClientInfo {
+  contact_name: string | null;
+  email: string | null;
+  company_name: string | null;
+  logo_url?: string | null;
+  phone_number?: string | null;
+  website?: string | null;
+  company_address?: string | null;
+}
 
 export interface Conversation {
   id: string;
@@ -8,19 +14,8 @@ export interface Conversation {
   freelancer_id: string;
   project_id: string;
   last_message_time: string;
-  project_title?: string;
-  client_info?: ClientInfo;
-  freelancer_info?: FreelancerInfo;
-}
-
-export interface Message {
-  id: string;
-  conversation_id: string;
-  sender_id: string;
-  message: string;
-  is_read: boolean;
-  created_at: string;
-  attachments?: MessageAttachment[];
+  project_title: string;
+  client_info: ClientInfo | null;
 }
 
 export interface MessageAttachment {
@@ -29,9 +24,15 @@ export interface MessageAttachment {
   size: number;
   type: string;
   url: string;
-  path?: string;
+  path: string;
 }
 
-// Re-export the ClientInfo and FreelancerInfo interfaces to make them available
-export { ClientInfo } from '@/services/conversations/utils/getClientInfo';
-export { FreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  message: string;
+  created_at: string;
+  is_read: boolean;
+  attachments?: MessageAttachment[];
+}
