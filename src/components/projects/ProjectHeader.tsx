@@ -8,10 +8,10 @@ import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler
 
 interface ProjectHeaderProps {
   projectId: string;
-  onDelete?: () => Promise<void>;
+  refreshProjects?: () => Promise<void>;
 }
 
-const ProjectHeader = ({ projectId, onDelete }: ProjectHeaderProps) => {
+const ProjectHeader = ({ projectId, refreshProjects }: ProjectHeaderProps) => {
   const navigate = useNavigate();
 
   return (
@@ -28,7 +28,7 @@ const ProjectHeader = ({ projectId, onDelete }: ProjectHeaderProps) => {
           Edit
         </Button>
         
-        <ProjectDeleteHandler projectId={projectId}>
+        <ProjectDeleteHandler projectId={projectId} refreshProjects={refreshProjects}>
           {(handleDelete) => (
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -46,7 +46,7 @@ const ProjectHeader = ({ projectId, onDelete }: ProjectHeaderProps) => {
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={onDelete || handleDelete}>Delete</AlertDialogAction>
+                  <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
             </AlertDialog>

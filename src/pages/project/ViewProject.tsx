@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import ProjectHeader from '@/components/projects/ProjectHeader';
 import ProjectDetails from '@/components/projects/ProjectDetails';
@@ -8,7 +8,6 @@ import ProjectStatus from '@/components/projects/ProjectStatus';
 import ProjectDocuments from '@/components/projects/ProjectDocuments';
 import ProjectNotFound from '@/components/projects/ProjectNotFound';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
-import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
 import { LeadPurchaseButton } from '@/components/projects/lead-purchase';
 import { useAuth } from '@/context/AuthContext';
 import { 
@@ -20,6 +19,7 @@ import {
 
 const ViewProject = () => {
   const { projectId } = useParams<{ projectId: string }>();
+  const navigate = useNavigate();
   const { project, loading } = useProjectDetails(projectId);
   const { user } = useAuth();
   const [refreshContactInfo, setRefreshContactInfo] = React.useState(false);
@@ -29,6 +29,11 @@ const ViewProject = () => {
 
   const handlePurchaseSuccess = () => {
     setRefreshContactInfo(prev => !prev);
+  };
+
+  const handleProjectDeleted = async () => {
+    // Navigate back to the dashboard after project deletion
+    navigate('/dashboard/business');
   };
 
   if (!project && !loading) {
@@ -59,7 +64,8 @@ const ViewProject = () => {
           <>
             {isBusiness && (
               <ProjectHeader 
-                projectId={project!.id} 
+                projectId={project!.id}
+                refreshProjects={handleProjectDeleted}
               />
             )}
 

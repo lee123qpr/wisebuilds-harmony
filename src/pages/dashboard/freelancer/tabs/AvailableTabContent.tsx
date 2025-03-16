@@ -8,10 +8,9 @@ import { RefreshCw, AlertTriangle, Info, Briefcase } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useState, useEffect } from 'react';
 import { ProjectLead } from '@/types/projects';
-import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
 
 const AvailableTabContent: React.FC = () => {
-  // Use our new hook with filtering disabled (false)
+  // Use our hook with filtering disabled (false)
   const { projectLeads: projects, isLoading, refreshProjects } = useProjectsWithFiltering(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
@@ -29,9 +28,9 @@ const AvailableTabContent: React.FC = () => {
   }, [projects, selectedProjectId]);
 
   // Handle refresh
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     console.log('Refreshing projects...');
-    refreshProjects();
+    await refreshProjects();
   };
 
   if (error) {
