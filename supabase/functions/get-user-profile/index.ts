@@ -55,9 +55,12 @@ serve(async (req) => {
       console.log('Found profile data in freelancer_profiles');
       
       // Ensure skills is properly formatted
-      const skills = profileData.skills 
-        ? (Array.isArray(profileData.skills) ? profileData.skills : [String(profileData.skills)])
-        : [];
+      let skills = [];
+      if (profileData.skills) {
+        skills = Array.isArray(profileData.skills) 
+          ? profileData.skills 
+          : (typeof profileData.skills === 'string' ? [profileData.skills] : []);
+      }
       
       // Return both user data and profile data
       return new Response(

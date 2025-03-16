@@ -1,13 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-
-export interface FreelancerInfo {
-  full_name: string;
-  business_name: string | null;
-  profile_image: string | null;
-  phone_number: string | null;
-  email: string | null;
-}
+import { FreelancerInfo } from '@/types/messaging';
 
 /**
  * Gets freelancer information from auth user data

@@ -42,7 +42,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 // Transform skills from Json to string array if needed
                 const skills = Array.isArray(profileData.skills) 
                   ? profileData.skills 
-                  : (profileData.skills ? [String(profileData.skills.toString())] : []);
+                  : (profileData.skills ? (typeof profileData.skills === 'string' ? [profileData.skills] : []) : []);
                 
                 // If there's a profile, use that data
                 return {
@@ -52,13 +52,13 @@ export const useProjectApplications = (projectId: string | undefined) => {
                     // Ensure id is set correctly
                     id: application.user_id,
                     // Ensure skills is a string array
-                    skills: skills,
+                    skills: skills as string[],
                     // Additional properties expected by the UI
                     display_name: profileData.display_name || 
                       (profileData.first_name && profileData.last_name ? 
                         `${profileData.first_name} ${profileData.last_name}` : 'Freelancer'),
                   }
-                };
+                } as FreelancerApplication;
               }
               
               // Get user data via edge function (since we can't access auth.users directly)
@@ -100,9 +100,9 @@ export const useProjectApplications = (projectId: string | undefined) => {
                   phone_number: userData?.user_metadata?.phone_number,
                   job_title: userData?.user_metadata?.job_title || 'Freelancer',
                   // Ensure skills is a string array for consistency
-                  skills: []
+                  skills: [] as string[]
                 }
-              };
+              } as FreelancerApplication;
             } catch (err) {
               console.error('Error processing application:', err);
               return {
@@ -110,15 +110,15 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 freelancer_profile: {
                   id: application.user_id,
                   display_name: 'Freelancer',
-                  skills: []
+                  skills: [] as string[]
                 }
-              };
+              } as FreelancerApplication;
             }
           })
         );
         
-        // Type assertion to ensure compatibility with FreelancerApplication[]
-        setApplications(applicationsWithProfiles as FreelancerApplication[]);
+        // Set applications with the correct type assertion
+        setApplications(applicationsWithProfiles);
       } catch (error: any) {
         console.error('Error fetching applications:', error);
         setError(error.message || 'Failed to load applications');
