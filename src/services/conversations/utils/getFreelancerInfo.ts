@@ -34,26 +34,31 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       console.error('Error fetching user email:', await response.text());
     }
     
-    // Extract required data
+    // Extract required data and handle potential undefined values
     const metaData = freelancerData || {};
     
     let rating = 0;
-    if (metaData.rating) {
+    if (metaData && typeof metaData === 'object' && 'rating' in metaData && metaData.rating !== null) {
       rating = typeof metaData.rating === 'string' ? parseFloat(metaData.rating) : metaData.rating;
     }
     
-    // Build FreelancerInfo object
+    // Build FreelancerInfo object with safe property access
     return {
       id: freelancerId,
-      display_name: metaData.display_name || `${metaData.first_name || ''} ${metaData.last_name || ''}`.trim() || 'Freelancer',
-      profile_image: metaData.avatar_url || null,
-      phone_number: metaData.phone_number || metaData.phone || null,
+      display_name: metaData && typeof metaData === 'object' && 'display_name' in metaData ? metaData.display_name : 
+                    metaData && typeof metaData === 'object' && 'first_name' in metaData && 'last_name' in metaData ? 
+                    `${metaData.first_name || ''} ${metaData.last_name || ''}`.trim() : 'Freelancer',
+      profile_image: metaData && typeof metaData === 'object' && 'avatar_url' in metaData ? metaData.avatar_url : null,
+      phone_number: metaData && typeof metaData === 'object' ? 
+                    ('phone_number' in metaData && metaData.phone_number) || 
+                    ('phone' in metaData && metaData.phone) || null : null,
       email: userData.email || null,
       email_verified: userData.email_confirmed || false,
-      member_since: userData.user?.created_at || metaData.created_at || null,
-      jobs_completed: metaData.jobs_completed || 0,
+      member_since: userData && 'user' in userData && userData.user?.created_at ? userData.user.created_at : 
+                   metaData && typeof metaData === 'object' && 'created_at' in metaData ? metaData.created_at : null,
+      jobs_completed: metaData && typeof metaData === 'object' && 'jobs_completed' in metaData ? metaData.jobs_completed : 0,
       rating,
-      reviews_count: metaData.reviews_count || 0
+      reviews_count: metaData && typeof metaData === 'object' && 'reviews_count' in metaData ? metaData.reviews_count : 0
     };
   } catch (error) {
     console.error('Error getting freelancer info:', error);

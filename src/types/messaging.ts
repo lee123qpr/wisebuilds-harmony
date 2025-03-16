@@ -1,4 +1,12 @@
 
+export interface MessageAttachment {
+  id?: string;
+  name: string;
+  url: string;
+  type: string;
+  size: number;
+}
+
 export interface Message {
   id: string;
   message: string;
@@ -6,6 +14,7 @@ export interface Message {
   sender_id: string;
   is_read: boolean;
   conversation_id: string;
+  attachments?: MessageAttachment[];
 }
 
 export interface ClientInfo {
@@ -40,6 +49,7 @@ export interface Conversation {
   freelancer_info?: FreelancerInfo;
   client_info?: ClientInfo;
   project_info?: ProjectInfo;
+  project_title?: string; // Adding this to fix the error
   unread_count?: number;
 }
 
