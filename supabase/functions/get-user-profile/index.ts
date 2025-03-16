@@ -57,9 +57,20 @@ serve(async (req) => {
       // Ensure skills is properly formatted
       let skills = [];
       if (profileData.skills) {
-        skills = Array.isArray(profileData.skills) 
-          ? profileData.skills 
-          : (typeof profileData.skills === 'string' ? [profileData.skills] : []);
+        if (Array.isArray(profileData.skills)) {
+          skills = profileData.skills;
+        } else if (typeof profileData.skills === 'string') {
+          skills = [profileData.skills];
+        } else if (typeof profileData.skills === 'object') {
+          // Handle case where skills might be a JSON object
+          try {
+            const parsedSkills = JSON.parse(JSON.stringify(profileData.skills));
+            skills = Array.isArray(parsedSkills) ? parsedSkills : [];
+          } catch (e) {
+            console.error('Error parsing skills:', e);
+            skills = [];
+          }
+        }
       }
       
       // Return both user data and profile data

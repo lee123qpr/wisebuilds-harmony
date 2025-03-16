@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { FreelancerApplication } from '@/types/applications';
 import { useToast } from '@/hooks/use-toast';
-import { Json } from '@/integrations/supabase/types';
 
 export const useProjectApplications = (projectId: string | undefined) => {
   const [applications, setApplications] = useState<FreelancerApplication[]>([]);
@@ -39,10 +38,24 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 .single();
 
               if (!profileError && profileData) {
-                // Transform skills from Json to string array if needed
-                const skills = Array.isArray(profileData.skills) 
-                  ? profileData.skills 
-                  : (profileData.skills ? (typeof profileData.skills === 'string' ? [profileData.skills] : []) : []);
+                // Ensure skills is properly handled as a string array
+                let skills: string[] = [];
+                
+                if (profileData.skills) {
+                  if (Array.isArray(profileData.skills)) {
+                    skills = profileData.skills as string[];
+                  } else if (typeof profileData.skills === 'string') {
+                    skills = [profileData.skills];
+                  } else {
+                    // Try to handle if it's a JSON object
+                    try {
+                      const skillsData = JSON.parse(JSON.stringify(profileData.skills));
+                      skills = Array.isArray(skillsData) ? skillsData : [];
+                    } catch {
+                      skills = [];
+                    }
+                  }
+                }
                 
                 // If there's a profile, use that data
                 return {
@@ -52,7 +65,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
                     // Ensure id is set correctly
                     id: application.user_id,
                     // Ensure skills is a string array
-                    skills: skills as string[],
+                    skills: skills,
                     // Additional properties expected by the UI
                     display_name: profileData.display_name || 
                       (profileData.first_name && profileData.last_name ? 
