@@ -8,6 +8,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { BusinessFormValues } from './types';
 import BusinessSignupForm from './components/BusinessSignupForm';
+import { createBusinessProfile } from './services/businessProfileService';
 
 const BusinessSignup = () => {
   const { toast } = useToast();
@@ -38,6 +39,11 @@ const BusinessSignup = () => {
       
       if (error) {
         throw error;
+      }
+      
+      // Create client profile record with the same information
+      if (authData?.user) {
+        await createBusinessProfile(authData.user.id, data);
       }
       
       toast({

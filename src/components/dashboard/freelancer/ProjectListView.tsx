@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
 import LeadPurchaseButton from '@/components/projects/LeadPurchaseButton';
@@ -10,6 +10,7 @@ import ProjectCard from './ProjectCard';
 import ProjectDetailPlaceholder from './ProjectDetailPlaceholder';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ProjectListViewProps {
   projects: Project[];
@@ -31,6 +32,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   const { user } = useAuth();
   const { toast } = useToast();
   const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [purchasedProjects, setPurchasedProjects] = useState<Record<string, boolean>>({});
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
 
   const handlePurchaseSuccess = () => {
@@ -39,7 +41,47 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       description: 'You can now view the client contact information',
     });
     setRefreshTrigger(prev => prev + 1);
+    // Update purchased status for the current project
+    if (selectedProject) {
+      setPurchasedProjects(prev => ({
+        ...prev,
+        [selectedProject.id]: true
+      }));
+    }
   };
+
+  // Check which projects have been purchased
+  useEffect(() => {
+    const checkPurchasedProjects = async () => {
+      if (!user || !isFreelancer || projects.length === 0) return;
+      
+      try {
+        const projectIds = projects.map(project => project.id);
+        const purchasedStatus: Record<string, boolean> = {};
+        
+        // Check each project individually
+        for (const projectId of projectIds) {
+          const { data, error } = await supabase.rpc('check_application_exists', {
+            p_project_id: projectId,
+            p_user_id: user.id
+          });
+          
+          if (error) {
+            console.error('Error checking application exists:', error);
+            continue;
+          }
+          
+          purchasedStatus[projectId] = data === true;
+        }
+        
+        setPurchasedProjects(purchasedStatus);
+      } catch (err) {
+        console.error('Error checking purchased projects:', err);
+      }
+    };
+    
+    checkPurchasedProjects();
+  }, [projects, user, isFreelancer, refreshTrigger]);
 
   if (isLoading) {
     return <ProjectListSkeleton />;
@@ -59,6 +101,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
               project={project}
               isSelected={project.id === selectedProjectId}
               onClick={() => setSelectedProjectId(project.id)}
+              isPurchased={purchasedProjects[project.id] || false}
             />
           ))}
         </div>
@@ -69,11 +112,12 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       <ResizablePanel defaultSize={60}>
         {selectedProject ? (
           <div className="p-6 h-[700px] overflow-auto">
-            {isFreelancer && !showContactInfo && (
+            {isFreelancer && !showContactInfo && !purchasedProjects[selectedProject.id] && (
               <div className="flex justify-end mb-4">
                 <LeadPurchaseButton 
                   projectId={selectedProject.id}
                   projectTitle={selectedProject.title}
+                  purchasesCount={selectedProject.purchases_count || 0}
                   onPurchaseSuccess={handlePurchaseSuccess}
                 />
               </div>
@@ -81,7 +125,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
             <ProjectDetails 
               project={selectedProject}
               refreshTrigger={refreshTrigger}
-              forceShowContactInfo={showContactInfo}
+              forceShowContactInfo={showContactInfo || purchasedProjects[selectedProject.id] || false}
             />
           </div>
         ) : (

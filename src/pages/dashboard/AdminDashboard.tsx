@@ -3,7 +3,8 @@ import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import MainLayout from '@/components/layout/MainLayout';
-import { Users, Briefcase, BarChart4, Shield } from 'lucide-react';
+import { Users, Briefcase, BarChart4, Shield, UserCheck } from 'lucide-react';
+import VerificationTab from './admin/VerificationTab';
 
 const AdminDashboard = () => {
   return (
@@ -18,6 +19,7 @@ const AdminDashboard = () => {
           <TabsList className="mb-6">
             <TabsTrigger value="users">Users</TabsTrigger>
             <TabsTrigger value="projects">Projects</TabsTrigger>
+            <TabsTrigger value="verifications">Verifications</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="moderation">Moderation</TabsTrigger>
           </TabsList>
@@ -69,6 +71,10 @@ const AdminDashboard = () => {
                 <p className="text-center py-8 text-muted-foreground">There are no projects in the system yet.</p>
               </CardContent>
             </Card>
+          </TabsContent>
+          
+          <TabsContent value="verifications" className="space-y-4">
+            <VerificationTab />
           </TabsContent>
           
           <TabsContent value="analytics" className="space-y-4">

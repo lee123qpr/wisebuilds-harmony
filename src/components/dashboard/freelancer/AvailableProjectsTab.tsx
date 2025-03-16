@@ -7,7 +7,6 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertTriangle, Info, Briefcase, Filter } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { supabase } from '@/integrations/supabase/client';
 
 const AvailableProjectsTab: React.FC = () => {
   const { user } = useAuth();

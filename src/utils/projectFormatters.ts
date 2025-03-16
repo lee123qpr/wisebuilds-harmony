@@ -1,11 +1,22 @@
 
-import { format } from 'date-fns';
+import { format, formatDistanceToNow } from 'date-fns';
 
 // Format date string to readable format
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Not specified';
   try {
     return format(new Date(dateString), 'dd MMM yyyy');
+  } catch (error) {
+    return dateString;
+  }
+};
+
+// Format date as "X days ago"
+export const formatDateAgo = (dateString: string | null) => {
+  if (!dateString) return 'not specified';
+  try {
+    const date = new Date(dateString);
+    return formatDistanceToNow(date, { addSuffix: true });
   } catch (error) {
     return dateString;
   }

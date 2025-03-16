@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -14,6 +13,7 @@ export type ProjectDocument = {
 
 export type Project = Tables<'projects'> & {
   documents: ProjectDocument[];
+  purchases_count?: number;
 };
 
 export const useProjects = () => {
