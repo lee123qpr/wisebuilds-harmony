@@ -40,13 +40,19 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         .from('id-documents')
         .list(userId, { limit: 1 });
         
-      if (checkError && !checkError.message.includes('Object not found') && checkError.status !== 404) {
-        console.error('Error checking bucket access:', checkError);
-        return {
-          success: false,
-          error: checkError,
-          errorMessage: 'Cannot access document storage. Please try again later.'
-        };
+      if (checkError) {
+        // Check if it's an access error by looking at the error message instead of status code
+        const isNotFoundError = checkError.message.includes('Object not found') || 
+                               checkError.message.includes('The resource was not found');
+        
+        if (!isNotFoundError) {
+          console.error('Error checking bucket access:', checkError);
+          return {
+            success: false,
+            error: checkError,
+            errorMessage: 'Cannot access document storage. Please try again later.'
+          };
+        }
       }
     } catch (checkErr) {
       console.warn('Error during bucket access check:', checkErr);

@@ -96,10 +96,11 @@ export const checkIdDocumentsBucketAccess = async (): Promise<boolean> => {
       .list(userId, { limit: 1 });
     
     if (error) {
-      // Check if it's an access error or if the folder doesn't exist yet
-      if (error.message.includes('The resource was not found') || 
-          error.message.includes('Object not found') ||
-          (error.status === 404)) {
+      // Check if it's an access error or if the folder doesn't exist yet by checking the error message
+      const isNotFoundError = error.message.includes('The resource was not found') || 
+                             error.message.includes('Object not found');
+                             
+      if (isNotFoundError) {
         // This is normal for new users - folder doesn't exist yet
         console.log('Folder not found, but bucket is accessible');
         return true;
