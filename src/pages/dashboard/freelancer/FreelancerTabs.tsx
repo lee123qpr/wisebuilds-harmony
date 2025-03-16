@@ -1,7 +1,6 @@
 
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useSearchParams } from 'react-router-dom';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
 import QuotesTabContent from './tabs/QuotesTabContent';
@@ -18,15 +17,8 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
   isLoadingSettings, 
   leadSettings 
 }) => {
-  const [searchParams] = useSearchParams();
-  const tabFromParams = searchParams.get('tab');
-  
-  // Get the active tab from URL params, localStorage, or default to 'available'
+  // Get the active tab from localStorage or default to 'available'
   const getInitialTab = () => {
-    if (tabFromParams) {
-      return tabFromParams;
-    }
-    
     if (typeof window !== 'undefined') {
       const savedTab = localStorage.getItem('freelancer-active-tab');
       return savedTab || 'available';
@@ -35,13 +27,6 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
   };
   
   const [activeTab, setActiveTab] = useState(getInitialTab);
-  
-  // Update active tab when URL params change
-  useEffect(() => {
-    if (tabFromParams) {
-      setActiveTab(tabFromParams);
-    }
-  }, [tabFromParams]);
   
   // Save the active tab to localStorage whenever it changes
   useEffect(() => {
