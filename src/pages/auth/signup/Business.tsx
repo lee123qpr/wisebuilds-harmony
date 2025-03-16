@@ -43,7 +43,12 @@ const BusinessSignup = () => {
       
       // Create client profile record with the same information
       if (authData?.user) {
-        await createBusinessProfile(authData.user.id, data);
+        const result = await createBusinessProfile(authData.user.id, data);
+        if (!result.success) {
+          console.error('Profile creation warning:', result.error);
+          // We don't throw an error here to not block the signup process
+          // but we do log it for troubleshooting
+        }
       }
       
       toast({

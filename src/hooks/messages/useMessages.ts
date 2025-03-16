@@ -16,7 +16,6 @@ export const useMessages = (selectedConversation: Conversation | null) => {
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
 
-  // Get and store the current user ID
   useEffect(() => {
     const getCurrentUser = async () => {
       const { data } = await supabase.auth.getSession();
@@ -26,7 +25,6 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     getCurrentUser();
   }, []);
 
-  // Fetch messages when the conversation changes
   useEffect(() => {
     if (!selectedConversation) {
       setMessages([]);
@@ -37,7 +35,6 @@ export const useMessages = (selectedConversation: Conversation | null) => {
       const fetchedMessages = await fetchMessages(selectedConversation.id);
       setMessages(fetchedMessages);
 
-      // Mark unread messages as read
       const unreadMessageIds = fetchedMessages
         .filter((msg: Message) => !msg.is_read && msg.sender_id !== currentUserId)
         .map((msg: Message) => msg.id);
@@ -49,7 +46,6 @@ export const useMessages = (selectedConversation: Conversation | null) => {
 
     getMessages();
 
-    // Set up real-time subscription to messages
     const messagesSubscription = supabase
       .channel(`messages:${selectedConversation.id}`)
       .on('postgres_changes', 
@@ -63,7 +59,6 @@ export const useMessages = (selectedConversation: Conversation | null) => {
           const newMsg = payload.new as Message;
           setMessages(prev => [...prev, newMsg]);
           
-          // Mark as read if it's not from the current user
           if (newMsg.sender_id !== currentUserId && currentUserId) {
             markMessagesAsRead([newMsg.id]);
           }
@@ -76,16 +71,16 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     };
   }, [selectedConversation, currentUserId]);
 
-  // Function to handle file selection
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return;
     
-    // Check file sizes - limit to 10MB per file
+    const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
+    
     const validFiles = Array.from(files).filter(file => {
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > MAX_FILE_SIZE) {
         toast({
           title: "File too large",
-          description: `${file.name} exceeds the 10MB size limit`,
+          description: `${file.name} exceeds the 30MB size limit. For larger files, consider using WeTransfer or similar services.`,
           variant: "destructive"
         });
         return false;
@@ -96,12 +91,10 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     setAttachments(prev => [...prev, ...validFiles]);
   }, [toast]);
 
-  // Function to remove an attachment
   const removeAttachment = useCallback((index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
   }, []);
 
-  // Function to handle sending a message
   const handleSendMessage = useCallback(async () => {
     if (!selectedConversation || (!newMessage.trim() && attachments.length === 0)) return;
     
@@ -110,21 +103,17 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     try {
       let uploadedAttachments: MessageAttachment[] = [];
       
-      // First upload any attachments
       if (attachments.length > 0) {
         setIsUploading(true);
         setUploadProgress({});
         
-        // Upload each attachment
         for (const [index, file] of attachments.entries()) {
-          // Update progress for this file
           setUploadProgress(prev => ({
             ...prev,
             [index]: 0
           }));
           
           try {
-            // Upload the file
             const attachment = await uploadMessageAttachment(file);
             if (attachment) {
               uploadedAttachments.push(attachment);
@@ -133,7 +122,6 @@ export const useMessages = (selectedConversation: Conversation | null) => {
                 [index]: 100
               }));
             } else {
-              // Handle failed upload
               toast({
                 title: "Upload failed",
                 description: `Failed to upload ${file.name}`,
@@ -141,22 +129,21 @@ export const useMessages = (selectedConversation: Conversation | null) => {
               });
               setUploadProgress(prev => ({
                 ...prev,
-                [index]: -1 // -1 indicates error
+                [index]: -1
               }));
             }
           } catch (error) {
             console.error(`Error uploading file ${file.name}:`, error);
             setUploadProgress(prev => ({
               ...prev,
-              [index]: -1
-            }));
+                [index]: -1
+              }));
           }
         }
         
         setIsUploading(false);
       }
       
-      // Then send the message with attachments
       const success = await sendMessage(
         selectedConversation.id, 
         newMessage.trim(),
@@ -168,7 +155,6 @@ export const useMessages = (selectedConversation: Conversation | null) => {
         setAttachments([]);
         setUploadProgress({});
         
-        // Update the conversation's last message time
         await updateConversationTime(selectedConversation.id);
       }
     } catch (error) {
@@ -183,13 +169,12 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     }
   }, [selectedConversation, newMessage, attachments, toast]);
 
-  // Handle Enter key press to send message
   const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && !isSending && newMessage.trim()) {
+    if (e.key === 'Enter' && !e.shiftKey && !isSending) {
       e.preventDefault();
       handleSendMessage();
     }
-  }, [handleSendMessage, isSending, newMessage]);
+  }, [handleSendMessage, isSending]);
 
   return {
     messages,

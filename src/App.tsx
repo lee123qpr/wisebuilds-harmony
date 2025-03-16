@@ -20,6 +20,7 @@ import ProjectApplications from "./pages/project/ProjectApplications";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import LeadSettings from "./pages/dashboard/leadSettings";
 import ClientProfile from "./pages/dashboard/ClientProfile";
+import FreelancerProfile from "./pages/dashboard/FreelancerProfile";
 import CreditsPage from "./pages/dashboard/freelancer/credits/CreditsPage";
 import SuccessPage from "./pages/dashboard/freelancer/credits/SuccessPage";
 
@@ -148,12 +149,21 @@ const App = () => (
               } 
             />
             
-            {/* Client profile route */}
+            {/* Profile routes */}
             <Route 
               path="/dashboard/business/profile" 
               element={
                 <ProtectedRoute allowedUserTypes={['business']}>
                   <ClientProfile />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/dashboard/freelancer/profile" 
+              element={
+                <ProtectedRoute allowedUserTypes={['freelancer']}>
+                  <FreelancerProfile />
                 </ProtectedRoute>
               } 
             />
@@ -164,6 +174,15 @@ const App = () => (
               element={
                 <ProtectedRoute allowedUserTypes={['business']}>
                   <Navigate to="/dashboard/business/profile" replace />
+                </ProtectedRoute>
+              } 
+            />
+            
+            <Route 
+              path="/dashboard/freelancer/account" 
+              element={
+                <ProtectedRoute allowedUserTypes={['freelancer']}>
+                  <Navigate to="/dashboard/freelancer/profile" replace />
                 </ProtectedRoute>
               } 
             />

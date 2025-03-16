@@ -13,6 +13,8 @@ import { signupSchema, SignupFormValues } from '../types';
 import AccountTypeSelector from './AccountTypeSelector';
 import UserInfoFields from './UserInfoFields';
 import PasswordFields from './PasswordFields';
+import { createBusinessProfile } from '../services/businessProfileService';
+import { createFreelancerProfile } from '../services/freelancerProfileService';
 
 type SignupFormProps = {
   onSuccess?: () => void;
@@ -38,35 +40,6 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
   });
 
   const userType = form.watch('userType');
-
-  // Create profile record for the business user
-  const createBusinessProfile = async (userId: string, userData: SignupFormValues) => {
-    try {
-      const { error } = await supabase
-        .from('client_profiles')
-        .insert({
-          id: userId,
-          contact_name: userData.fullName,
-          phone_number: userData.phoneNumber,
-          member_since: new Date().toISOString(),
-        });
-      
-      if (error) throw error;
-      
-    } catch (error) {
-      console.error('Error creating client profile:', error);
-      // We don't want to block registration if profile creation fails
-      // but we should log it for troubleshooting
-    }
-  };
-  
-  // Create profile record for freelancer (this would be expanded in a real implementation)
-  const createFreelancerProfile = async (userId: string, userData: SignupFormValues) => {
-    // In a real implementation, you'd create a freelancer_profiles table
-    // and insert the initial profile data here
-    // This is a placeholder for the concept
-    console.log('Would create freelancer profile for:', userId);
-  };
 
   const onSubmit = async (data: SignupFormValues) => {
     setIsLoading(true);
@@ -96,9 +69,27 @@ const SignupForm = ({ onSuccess }: SignupFormProps) => {
       // Create appropriate profile record based on user type
       if (authData?.user) {
         if (data.userType === 'business') {
-          await createBusinessProfile(authData.user.id, data);
+          // Create business profile with appropriate data
+          await createBusinessProfile(authData.user.id, {
+            companyName: '',
+            contactName: data.fullName,
+            email: data.email,
+            phone: data.phoneNumber,
+            companyAddress: '',
+            companyDescription: '',
+            password: '', // Not storing password in profile
+            confirmPassword: '', // Not storing password in profile
+          });
         } else {
-          await createFreelancerProfile(authData.user.id, data);
+          // Create freelancer profile with appropriate data
+          await createFreelancerProfile(authData.user.id, {
+            fullName: data.fullName,
+            email: data.email,
+            profession: '',
+            location: '',
+            password: '', // Not storing password in profile
+            confirmPassword: '', // Not storing password in profile
+          });
         }
       }
       

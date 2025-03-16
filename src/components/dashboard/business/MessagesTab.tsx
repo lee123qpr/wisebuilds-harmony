@@ -22,7 +22,7 @@ const BusinessMessagesTab: React.FC = () => {
   
   if (isLoading) {
     return (
-      <div className="grid grid-cols-3 gap-4 h-[calc(100vh-240px)]">
+      <div className="grid grid-cols-3 gap-4 h-[calc(100vh-180px)]">
         <div className="col-span-1 border rounded-md p-4">
           <Skeleton className="h-10 w-full mb-4" />
           <Skeleton className="h-16 w-full mb-2" />
@@ -52,9 +52,9 @@ const BusinessMessagesTab: React.FC = () => {
   }
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-240px)]">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-180px)]">
       {/* Conversations list */}
-      <div className="md:col-span-1 h-full">
+      <div className="md:col-span-1 h-full overflow-hidden border rounded-md">
         <ConversationsList
           conversations={conversations}
           selectedConversation={selectedConversation}

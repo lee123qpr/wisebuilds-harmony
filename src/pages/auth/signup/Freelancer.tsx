@@ -27,6 +27,7 @@ const FreelancerSignup = () => {
             full_name: data.fullName,
             profession: data.profession,
             location: data.location,
+            email: data.email,
             user_type: 'freelancer'
           }
         }
@@ -37,7 +38,11 @@ const FreelancerSignup = () => {
       }
       
       if (authData?.user) {
-        await createFreelancerProfile(authData.user.id, data);
+        const result = await createFreelancerProfile(authData.user.id, data);
+        if (!result.success) {
+          console.error('Profile creation warning:', result.error);
+          // We don't throw here to not block signup, but we log for troubleshooting
+        }
       }
       
       toast({
