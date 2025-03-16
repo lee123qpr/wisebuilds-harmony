@@ -80,7 +80,26 @@ export const useLoadFreelancerProfile = ({
             setMemberSince(profileData.member_since);
           }
           
-          setEmailVerified(profileData.email_verified || false);
+          // Use a separate API call to get email verification status
+          try {
+            const response = await fetch(`${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/get-user-profile`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
+              },
+              body: JSON.stringify({ userId: user.id })
+            });
+            
+            if (response.ok) {
+              const userData = await response.json();
+              setEmailVerified(userData.email_confirmed || false);
+            }
+          } catch (error) {
+            console.error('Error fetching email verification status:', error);
+            setEmailVerified(false);
+          }
+          
           setJobsCompleted(profileData.jobs_completed || 0);
           
           if (profileData.rating !== null && profileData.rating !== undefined) {
