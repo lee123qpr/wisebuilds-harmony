@@ -52,7 +52,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
   error?: any;
 }> => {
   try {
-    // Create a unique file path (WITHOUT user ID prefix in filename - it's already in the policy)
+    // Create a unique file path
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;
     const filePath = `${userId}/${fileName}`;
@@ -76,8 +76,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const path = uploadData?.path;
     console.log('File uploaded successfully to:', path);
     
-    // Create the verification record with a direct database insertion
-    // instead of using RPC which wasn't created successfully
+    // Create or update the verification record
     const { data: verificationData, error: insertError } = await supabase
       .from('freelancer_verification')
       .upsert({
@@ -86,10 +85,9 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         verification_status: 'pending',
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
-      }, { 
-        onConflict: 'user_id',
-        returning: 'representation'
-      });
+      })
+      .select()
+      .single();
     
     if (insertError) {
       console.error('Create verification record error:', insertError);
