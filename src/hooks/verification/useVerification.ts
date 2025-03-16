@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import { fetchVerificationStatus, uploadVerificationDocument, mapStatusToVerificationStatus } from './verificationService';
+import { fetchVerificationStatus, uploadVerificationDocument } from './verificationService';
 import type { VerificationData, UseVerificationResult, VerificationStatus } from './types';
 
 export const useVerification = (): UseVerificationResult => {
