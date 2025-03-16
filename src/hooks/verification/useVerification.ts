@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -25,8 +26,11 @@ export const useVerification = (): UseVerificationResult => {
     try {
       const data = await fetchVerificationStatus(user.id);
       setVerificationData(data);
+      console.log('Refreshed verification status:', data);
+      return data;
     } catch (error) {
       console.error('Error refreshing verification status:', error);
+      return null;
     } finally {
       setIsLoading(false);
     }
@@ -38,30 +42,24 @@ export const useVerification = (): UseVerificationResult => {
     
     setIsUploading(true);
     try {
+      console.log('Starting document upload for user:', user.id);
       const result = await uploadVerificationDocument(user.id, file);
       
       if (!result.success) {
+        console.error('Upload failed with result:', result);
         throw result.error || new Error('Upload failed');
       }
+      
+      console.log('Upload successful:', result);
       
       if (result.verificationData) {
         setVerificationData(result.verificationData);
       }
       
-      toast({
-        title: 'Document uploaded',
-        description: 'Your ID document has been submitted for verification.',
-      });
-      
-      return result.filePath || null;
+      return result.filePath || true;
     } catch (error: any) {
       console.error('Error uploading document:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Upload failed',
-        description: error.message || 'Failed to upload document. Please try again.',
-      });
-      return null;
+      throw error;
     } finally {
       setIsUploading(false);
     }
@@ -73,29 +71,23 @@ export const useVerification = (): UseVerificationResult => {
     
     setIsDeleting(true);
     try {
+      console.log('Deleting document for user:', user.id);
       const result = await deleteVerificationDocument(user.id, verificationData.id_document_path);
       
       if (!result.success) {
+        console.error('Delete failed with result:', result);
         throw result.error || new Error('Delete failed');
       }
+      
+      console.log('Delete successful:', result);
       
       // Reset verification data
       await refreshVerificationStatus();
       
-      toast({
-        title: 'Document deleted',
-        description: 'Your ID document has been deleted and verification status reset.',
-      });
-      
       return true;
     } catch (error: any) {
       console.error('Error deleting document:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Delete failed',
-        description: error.message || 'Failed to delete document. Please try again.',
-      });
-      return false;
+      throw error;
     } finally {
       setIsDeleting(false);
     }

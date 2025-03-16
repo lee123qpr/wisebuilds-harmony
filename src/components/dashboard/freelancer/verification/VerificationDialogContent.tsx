@@ -73,23 +73,51 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ o
     }
 
     console.log('Submitting file for verification:', selectedFile.name);
-    const result = await uploadVerificationDocument(selectedFile);
-    console.log('Upload result:', result);
-    
-    if (result) {
-      setSelectedFile(null);
-      onClose();
+    try {
+      const result = await uploadVerificationDocument(selectedFile);
+      console.log('Upload result:', result);
       
-      // Refresh verification status after upload
-      await refreshVerificationStatus();
+      if (result) {
+        setSelectedFile(null);
+        toast({
+          title: 'Document uploaded',
+          description: 'Your ID document has been submitted for verification.',
+        });
+        
+        // Refresh verification status after upload
+        await refreshVerificationStatus();
+        
+        // Close the dialog after successful upload
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error during document upload:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Upload failed',
+        description: 'An error occurred while uploading your document. Please try again.',
+      });
     }
   };
 
   const handleDelete = async () => {
-    const result = await deleteVerificationDocument();
-    if (result) {
-      setConfirmDeleteOpen(false);
-      onClose();
+    try {
+      const result = await deleteVerificationDocument();
+      if (result) {
+        setConfirmDeleteOpen(false);
+        toast({
+          title: 'Document deleted',
+          description: 'Your ID document has been deleted successfully.',
+        });
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error during document deletion:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Delete failed',
+        description: 'An error occurred while deleting your document. Please try again.',
+      });
     }
   };
 
