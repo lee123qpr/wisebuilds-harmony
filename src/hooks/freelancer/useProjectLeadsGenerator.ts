@@ -51,11 +51,32 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         
         // Parse the data to match the ProjectLead type
         const leads = data ? data.map(project => ({
-          ...project,
-          tags: project.tags || [],
-          documents: Array.isArray(project.documents) 
-            ? project.documents 
-            : (project.documents ? JSON.parse(String(project.documents)) : [])
+          id: project.id,
+          title: project.title,
+          description: project.description,
+          budget: project.budget,
+          role: project.role,
+          created_at: project.created_at,
+          location: project.location,
+          work_type: project.work_type,
+          tags: [], // Default empty array for tags if not present
+          duration: project.duration,
+          hiring_status: project.hiring_status,
+          requires_equipment: project.requires_equipment || false,
+          requires_security_check: false, // Default values for missing properties
+          requires_insurance: project.requires_insurance || false,
+          requires_qualifications: false, // Default value
+          published: true, // Default value
+          client_id: project.user_id, // Assuming user_id is client_id
+          client_name: '', // Default empty string
+          client_company: '', // Default empty string
+          start_date: project.start_date || '',
+          applications: project.applications || 0,
+          documents: project.documents || null,
+          requires_site_visits: project.requires_site_visits || false,
+          status: project.status,
+          updated_at: project.updated_at || project.created_at,
+          user_id: project.user_id
         })) as ProjectLead[] : [];
         
         setProjectLeads(leads);
