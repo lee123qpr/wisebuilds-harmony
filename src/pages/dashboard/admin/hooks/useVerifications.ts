@@ -38,45 +38,30 @@ export const useVerifications = () => {
         return;
       }
       
-      // For each verification, fetch the user email and name separately
+      // For each verification, fetch the user email and name from auth.users
       const enhancedData: Verification[] = await Promise.all(
         data.map(async (item) => {
           try {
             console.log('Fetching user data for:', item.user_id);
-            // Get user data
-            const { data: userData, error: userError } = await supabase
-              .from('user_profiles')  // Try a profiles table first
-              .select('email, full_name')
-              .eq('user_id', item.user_id)
-              .single();
             
-            if (userError || !userData) {
-              console.log('No profile found, fetching from auth.users');
-              // Fallback to auth.users table
-              const { data: authData } = await supabase.auth.admin.getUserById(
-                item.user_id
-              );
-              
-              if (!authData?.user) {
-                console.error('User not found:', item.user_id);
-                return {
-                  ...item,
-                  user_email: 'Unknown',
-                  user_full_name: 'Unknown'
-                };
-              }
-              
+            // Get user data from auth admin API
+            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(
+              item.user_id
+            );
+            
+            if (userError || !userData?.user) {
+              console.error('Error fetching user data:', userError);
               return {
                 ...item,
-                user_email: authData.user.email || 'Unknown',
-                user_full_name: authData.user.user_metadata?.full_name || 'Unknown'
+                user_email: 'Unknown',
+                user_full_name: 'Unknown'
               };
             }
             
             return {
               ...item,
-              user_email: userData.email || 'Unknown',
-              user_full_name: userData.full_name || 'Unknown'
+              user_email: userData.user.email || 'Unknown',
+              user_full_name: userData.user.user_metadata?.full_name || 'Unknown'
             };
           } catch (error) {
             console.error('Error fetching user data:', error);
