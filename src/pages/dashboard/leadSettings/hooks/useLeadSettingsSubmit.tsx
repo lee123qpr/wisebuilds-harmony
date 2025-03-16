@@ -1,4 +1,5 @@
 
+import React from 'react';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -6,13 +7,14 @@ import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import { LeadSettingsFormValues } from '../schema';
 
-export const useLeadSettingsMutation = (existingSettings: any) => {
+export const useLeadSettingsSubmit = (existingSettings: any) => {
   const { user } = useAuth();
   const { toast } = useToast();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   
-  const mutation = useMutation({
+  // Save settings mutation
+  const saveSettingsMutation = useMutation({
     mutationFn: async (values: LeadSettingsFormValues) => {
       if (!user) throw new Error('User not authenticated');
       
@@ -101,8 +103,13 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
     }
   });
 
+  const handleSubmit = (values: LeadSettingsFormValues) => {
+    console.log('Form submitted with values:', values);
+    saveSettingsMutation.mutate(values);
+  };
+
   return {
-    mutate: mutation.mutate,
-    isPending: mutation.isPending
+    handleSubmit,
+    isSubmitting: saveSettingsMutation.isPending
   };
 };

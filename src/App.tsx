@@ -20,6 +20,8 @@ import ProjectApplications from "./pages/project/ProjectApplications";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
 import LeadSettings from "./pages/dashboard/leadSettings";
 import ClientProfile from "./pages/dashboard/ClientProfile";
+import CreditsPage from "./pages/dashboard/freelancer/credits/CreditsPage";
+import SuccessPage from "./pages/dashboard/freelancer/credits/SuccessPage";
 
 const queryClient = new QueryClient();
 
@@ -60,6 +62,24 @@ const App = () => (
               element={
                 <ProtectedRoute allowedUserTypes={['admin']}>
                   <AdminDashboard />
+                </ProtectedRoute>
+              } 
+            />
+            
+            {/* Credits Routes */}
+            <Route 
+              path="/dashboard/freelancer/credits" 
+              element={
+                <ProtectedRoute allowedUserTypes={['freelancer']}>
+                  <CreditsPage />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/freelancer/credits/success" 
+              element={
+                <ProtectedRoute allowedUserTypes={['freelancer']}>
+                  <SuccessPage />
                 </ProtectedRoute>
               } 
             />

@@ -6,6 +6,8 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import DashboardHeader from '@/components/dashboard/freelancer/DashboardHeader';
 import FreelancerTabs from '@/pages/dashboard/freelancer/FreelancerTabs';
+import CreditBalanceCard from '@/components/dashboard/freelancer/credits/CreditBalanceCard';
+import { useCredits } from '@/hooks/useCredits';
 
 interface LeadSettings {
   id: string;
@@ -31,6 +33,7 @@ interface ProjectLead {
 const FreelancerDashboard = () => {
   const { user } = useAuth();
   const [projectLeads, setProjectLeads] = useState<ProjectLead[]>([]);
+  const { creditBalance, isLoadingBalance } = useCredits();
   
   // Extract user information
   const fullName = user?.user_metadata?.full_name || 'Freelancer';
@@ -95,6 +98,15 @@ const FreelancerDashboard = () => {
           fullName={fullName} 
           hasLeadSettings={!!leadSettings} 
         />
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
+          <div className="md:col-span-1">
+            <CreditBalanceCard 
+              creditBalance={creditBalance} 
+              isLoading={isLoadingBalance} 
+            />
+          </div>
+        </div>
         
         <FreelancerTabs 
           isLoadingSettings={isLoadingSettings}

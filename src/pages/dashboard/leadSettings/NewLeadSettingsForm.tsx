@@ -2,38 +2,20 @@
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Progress } from '@/components/ui/progress';
 import LeadSettingsFields from './LeadSettingsFields';
 import NotificationSettings from './NotificationSettings';
-import { useLeadSettingsForm } from './hooks/useLeadSettingsForm';
-import { useLeadSettingsMutation } from './hooks/useLeadSettingsMutation';
 import { FormActions } from './components/FormActions';
-import { LeadSettingsFormValues } from './schema';
-import { useToast } from '@/hooks/use-toast';
-import { Progress } from '@/components/ui/progress';
+import { useLeadSettingsSubmit } from './hooks/useLeadSettingsSubmit';
+import { useLeadSettingsForm } from './hooks/useLeadSettingsForm';
 
-const LeadSettingsForm = () => {
+const NewLeadSettingsForm = () => {
   const { form, leadSettings, isLoading } = useLeadSettingsForm();
-  const { mutate, isPending } = useLeadSettingsMutation(leadSettings);
-  const { toast } = useToast();
-
-  const onSubmit = (values: LeadSettingsFormValues) => {
-    console.log('Form submitted with values:', values);
-    
-    try {
-      mutate(values);
-    } catch (error) {
-      console.error('Error in submit handler:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'An unexpected error occurred',
-      });
-    }
-  };
+  const { handleSubmit, isSubmitting } = useLeadSettingsSubmit(leadSettings);
 
   // Debug output
   React.useEffect(() => {
-    console.log('Form state in LeadSettingsForm:', {
+    console.log('Form state in NewLeadSettingsForm:', {
       isLoading,
       leadSettings,
       formValues: form.getValues(),
@@ -51,7 +33,7 @@ const LeadSettingsForm = () => {
         </CardDescription>
       </CardHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-8">
           <CardContent className="space-y-6">
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-8 space-y-4">
@@ -66,7 +48,7 @@ const LeadSettingsForm = () => {
             )}
           </CardContent>
           <FormActions 
-            isSubmitting={isPending} 
+            isSubmitting={isSubmitting} 
             isLoading={isLoading} 
           />
         </form>
@@ -75,4 +57,4 @@ const LeadSettingsForm = () => {
   );
 };
 
-export default LeadSettingsForm;
+export default NewLeadSettingsForm;

@@ -1,12 +1,15 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
+import LeadPurchaseButton from '@/components/projects/LeadPurchaseButton';
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from '@/components/ui/resizable';
 import ProjectListSkeleton from './ProjectListSkeleton';
 import EmptyProjectState from './EmptyProjectState';
 import ProjectCard from './ProjectCard';
 import ProjectDetailPlaceholder from './ProjectDetailPlaceholder';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 
 interface ProjectListViewProps {
   projects: Project[];
@@ -23,6 +26,19 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   setSelectedProjectId,
   selectedProject
 }) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+
+  const handlePurchaseSuccess = () => {
+    toast({
+      title: 'Lead purchased',
+      description: 'You can now view the client contact information',
+    });
+    setRefreshTrigger(prev => prev + 1);
+  };
+
   if (isLoading) {
     return <ProjectListSkeleton />;
   }
@@ -51,7 +67,19 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       <ResizablePanel defaultSize={60}>
         {selectedProject ? (
           <div className="p-6 h-[700px] overflow-auto">
-            <ProjectDetails project={selectedProject} />
+            {isFreelancer && (
+              <div className="flex justify-end mb-4">
+                <LeadPurchaseButton 
+                  projectId={selectedProject.id}
+                  projectTitle={selectedProject.title}
+                  onPurchaseSuccess={handlePurchaseSuccess}
+                />
+              </div>
+            )}
+            <ProjectDetails 
+              project={selectedProject}
+              refreshTrigger={refreshTrigger} 
+            />
           </div>
         ) : (
           <ProjectDetailPlaceholder />

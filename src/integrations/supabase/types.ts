@@ -104,6 +104,93 @@ export type Database = {
           },
         ]
       }
+      credit_plans: {
+        Row: {
+          created_at: string
+          credits: number
+          discount_percentage: number
+          id: string
+          is_active: boolean
+          name: string
+          price: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credits: number
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          name: string
+          price: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          discount_percentage?: number
+          id?: string
+          is_active?: boolean
+          name?: string
+          price?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string
+          credits_purchased: number
+          id: string
+          status: string
+          stripe_payment_id: string | null
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          credits_purchased: number
+          id?: string
+          status?: string
+          stripe_payment_id?: string | null
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          credits_purchased?: number
+          id?: string
+          status?: string
+          stripe_payment_id?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      freelancer_credits: {
+        Row: {
+          created_at: string
+          credit_balance: number
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          credit_balance?: number
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          credit_balance?: number
+          id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       lead_settings: {
         Row: {
           budget: string | null
@@ -163,6 +250,41 @@ export type Database = {
           work_type?: string | null
         }
         Relationships: []
+      }
+      project_applications: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string | null
+          project_id: string
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          project_id: string
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string | null
+          project_id?: string
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_applications_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       projects: {
         Row: {
@@ -235,7 +357,35 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      apply_to_project: {
+        Args: {
+          project_id: string
+          message?: string
+          credits_to_use?: number
+        }
+        Returns: Json
+      }
+      check_application_exists: {
+        Args: {
+          p_project_id: string
+          p_user_id: string
+        }
+        Returns: boolean
+      }
+      get_user_applications: {
+        Args: {
+          user_id: string
+        }
+        Returns: Json[]
+      }
+      get_user_email: {
+        Args: {
+          user_id: string
+        }
+        Returns: {
+          email: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never

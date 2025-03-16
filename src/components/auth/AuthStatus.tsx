@@ -3,19 +3,22 @@ import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
-import { Loader2, LogOut, User, LayoutDashboard, Bell } from 'lucide-react';
+import { Loader2, LogOut, User, LayoutDashboard, Bell, Coins } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { 
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { useCredits } from '@/hooks/useCredits';
 
 const AuthStatus = () => {
   const { user, isLoading, signOut } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
   const [hasNotifications] = useState(false);
+  const { creditBalance, isLoadingBalance } = useCredits();
+  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
 
   const handleSignOut = async () => {
     try {
@@ -117,6 +120,48 @@ const AuthStatus = () => {
           </div>
         </PopoverContent>
       </Popover>
+      
+      {/* Credits Button - Only shown for freelancers */}
+      {isFreelancer && (
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button 
+              variant="ghost" 
+              size="sm" 
+              title="Credits" 
+              onClick={() => navigate('/dashboard/freelancer/credits')}
+              className="flex items-center gap-1.5"
+            >
+              <Coins className="h-4 w-4 text-yellow-500" />
+              {isLoadingBalance ? (
+                <span className="h-4 w-8 bg-gray-200 animate-pulse rounded text-xs"></span>
+              ) : (
+                <span className="text-xs font-medium">{creditBalance || 0}</span>
+              )}
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-60 p-4">
+            <div className="space-y-2">
+              <h4 className="font-medium leading-none mb-2">Credit Balance</h4>
+              {isLoadingBalance ? (
+                <div className="h-6 w-16 bg-gray-200 animate-pulse rounded"></div>
+              ) : (
+                <div className="flex items-baseline">
+                  <span className="text-xl font-bold">{creditBalance || 0}</span>
+                  <span className="ml-2 text-sm text-muted-foreground">credits</span>
+                </div>
+              )}
+              <Button 
+                className="w-full mt-2" 
+                size="sm"
+                onClick={() => navigate('/dashboard/freelancer/credits')}
+              >
+                Buy More Credits
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+      )}
       
       {/* Dashboard Button */}
       <Link to={getDashboardLink()} title="Dashboard">
