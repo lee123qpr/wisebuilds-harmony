@@ -64,8 +64,15 @@ export const useUsers = () => {
         throw new Error(response.error.message || 'Failed to fetch users');
       }
       
-      const userData = response.data?.users || [];
-      const deletedUsers = response.data?.deletedUsers || [];
+      console.log('Response from get-admin-users:', response.data);
+      
+      // Verify the structure of the data and handle it properly
+      if (!response.data?.users || !Array.isArray(response.data.users)) {
+        throw new Error('Invalid user data received from server');
+      }
+      
+      const userData = response.data.users || [];
+      const deletedUsers = response.data.deletedUsers || [];
       
       // Fetch freelancer verification statuses
       const { data: verificationData, error: verificationError } = await supabase
@@ -96,6 +103,7 @@ export const useUsers = () => {
         banned_until: user.banned_until
       }));
       
+      console.log('Formatted users:', formattedUsers);
       setUsers(formattedUsers);
       
       // Calculate metrics for user statistics
@@ -138,6 +146,14 @@ export const useUsers = () => {
       });
       // Set empty array to handle error gracefully
       setUsers([]);
+      setUserCounts({
+        total: 0,
+        freelancers: 0,
+        businesses: 0,
+        admins: 0,
+        activeUsers: 0,
+        deletedAccounts: 0
+      });
     } finally {
       setIsLoading(false);
     }
