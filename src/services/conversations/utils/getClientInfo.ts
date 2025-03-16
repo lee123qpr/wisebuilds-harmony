@@ -2,84 +2,62 @@
 import { supabase } from '@/integrations/supabase/client';
 import { ClientInfo } from '@/types/messaging';
 
-export const getClientInfo = async (clientId: string): Promise<ClientInfo | null> => {
+export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   try {
-    // Get client profile data
-    const { data: clientData, error: clientError } = await supabase
+    // First, try to get data from client_profiles
+    const { data: profileData, error: profileError } = await supabase
       .from('client_profiles')
       .select('*')
       .eq('id', clientId)
-      .single();
+      .maybeSingle();
     
-    if (clientError && clientError.code !== 'PGRST116') {
-      console.error('Error fetching client profile:', clientError);
-      return null;
+    // If no profile found, get basic user data
+    if (!profileData && clientId) {
+      try {
+        const { data: userData, error: userError } = await supabase.functions.invoke('get-user-email', {
+          body: { userId: clientId }
+        });
+        
+        if (userError || !userData) {
+          return {
+            id: clientId,
+            company_name: 'Unknown Client',
+            contact_name: null
+          };
+        }
+        
+        return {
+          id: clientId,
+          company_name: userData.full_name || 'Unknown Client',
+          contact_name: userData.full_name || null,
+          email: userData.email || null
+        };
+      } catch (error) {
+        console.error('Error calling edge function:', error);
+        return {
+          id: clientId,
+          company_name: 'Unknown Client',
+          contact_name: null
+        };
+      }
     }
     
-    // Get user data including email from edge function
-    const response = await fetch(`${import.meta.env.VITE_SUPABASE_FUNCTIONS_URL}/get-user-profile`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
-      },
-      body: JSON.stringify({ userId: clientId })
-    });
-    
-    let userData = { email: null, email_confirmed: false };
-    
-    if (response.ok) {
-      userData = await response.json();
-    } else {
-      console.error('Error fetching user email:', await response.text());
-    }
-    
-    // Extract required data
-    if (clientData) {
-      return {
-        id: clientId,
-        company_name: clientData.company_name,
-        contact_name: clientData.contact_name,
-        logo_url: clientData.logo_url,
-        email: clientData.email || userData.email,
-        phone_number: clientData.phone_number,
-        location: clientData.company_address
-      };
-    }
-    
-    // If no client data but we have user email, return basic info
-    if (userData.email) {
-      return {
-        id: clientId,
-        contact_name: 'Client',
-        company_name: null,
-        logo_url: null,
-        email: userData.email,
-        phone_number: null,
-        location: null
-      };
-    }
-    
-    // No client data and no user email
+    // If profile found, format and return
     return {
       id: clientId,
-      contact_name: 'Unknown Client',
-      company_name: null,
-      logo_url: null,
-      email: null,
-      phone_number: null,
-      location: null
+      company_name: profileData?.company_name || 'Unknown Client',
+      contact_name: profileData?.contact_name || null,
+      logo_url: profileData?.logo_url || null,
+      email: profileData?.email || null,
+      phone_number: profileData?.phone_number || null,
+      location: profileData?.company_address || null
     };
   } catch (error) {
     console.error('Error getting client info:', error);
     return {
       id: clientId,
-      contact_name: 'Unknown Client',
-      company_name: null,
-      logo_url: null,
-      email: null,
-      phone_number: null,
-      location: null
+      company_name: 'Unknown Client',
+      contact_name: null
     };
   }
 };
