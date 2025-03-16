@@ -34,15 +34,3 @@ export const signupSchema = z.object({
 });
 
 export type SignupFormValues = z.infer<typeof signupSchema>;
-
-export interface FreelancerSignupValues {
-  firstName: string;
-  lastName: string;
-  email: string;
-  password: string;
-  confirmPassword: string;
-  acceptTerms: boolean;
-  fullName?: string;
-  profession?: string;
-  location?: string;
-}

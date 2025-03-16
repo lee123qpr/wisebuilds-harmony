@@ -1,126 +1,83 @@
-
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { FreelancerProfileData } from '@/pages/dashboard/components/profile/freelancerSchema';
+import { supabase } from '@/integrations/supabase/client';
+import { User } from '@supabase/supabase-js';
+import { z } from 'zod';
+import { freelancerProfileSchema } from '../components/profile/freelancerSchema';
+import { UploadedFile } from '@/components/projects/file-upload/types';
 
-export const useSaveFreelancerProfile = () => {
-  const { user } = useAuth();
+type FreelancerProfileFormValues = z.infer<typeof freelancerProfileSchema>;
+
+export const useSaveFreelancerProfile = (user: User | null, profileImage: string | null) => {
   const { toast } = useToast();
   const [isSaving, setIsSaving] = useState(false);
-  const [error, setError] = useState<Error | null>(null);
 
-  const saveProfile = async (profileData: FreelancerProfileData): Promise<boolean> => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'You must be logged in to save your profile',
-        variant: 'destructive',
-      });
-      return false;
-    }
-
+  const saveProfile = async (values: FreelancerProfileFormValues) => {
+    if (!user) return;
+    
     setIsSaving(true);
     try {
-      console.log('Saving freelancer profile:', profileData);
+      console.log('Saving profile with values:', values);
       
-      // Check if profile exists
-      const { data: existingProfile, error: checkError } = await supabase
-        .from('freelancer_profiles')
-        .select('id')
-        .eq('id', user.id)
-        .maybeSingle();
+      // Prepare website URL (ensure it has https:// if not empty)
+      const websiteUrl = values.website ? 
+        (values.website.match(/^https?:\/\//) ? values.website : `https://${values.website}`) : 
+        values.website;
       
-      if (checkError) {
-        console.error('Error checking existing profile:', checkError);
-        throw checkError;
-      }
+      // Ensure previousWork has all required fields
+      const previousWork = (values.previousWork || []).map((work: UploadedFile) => ({
+        name: work.name,
+        url: work.url,
+        type: work.type,
+        size: work.size,
+        path: work.path || '' // Ensure path is included, even if empty
+      }));
       
-      const profileUpdate = {
-        first_name: profileData.first_name,
-        last_name: profileData.last_name,
-        display_name: profileData.display_name,
-        job_title: profileData.job_title,
-        location: profileData.location,
-        bio: profileData.bio,
-        email: profileData.email,
-        phone_number: profileData.phone_number,
-        website: profileData.website,
-        hourly_rate: profileData.hourly_rate,
-        availability: profileData.availability,
-        skills: profileData.skills,
-        experience: profileData.experience,
-        qualifications: profileData.qualifications,
-        accreditations: profileData.accreditations,
-        indemnity_insurance: profileData.has_indemnity_insurance ? profileData.indemnity_insurance : null,
-        previous_work: profileData.previous_work || [],
-        previous_employers: profileData.previous_employers || [],
-        profile_photo: profileData.profile_photo,
-        updated_at: new Date().toISOString()
-      };
-      
-      let result;
-      
-      if (existingProfile) {
-        // Update existing profile
-        result = await supabase
-          .from('freelancer_profiles')
-          .update(profileUpdate)
-          .eq('id', user.id);
-      } else {
-        // Create new profile
-        result = await supabase
-          .from('freelancer_profiles')
-          .insert({
-            id: user.id,
-            ...profileUpdate,
-            created_at: new Date().toISOString(),
-            member_since: new Date().toISOString()
-          });
-      }
-      
-      if (result.error) {
-        console.error('Error saving freelancer profile:', result.error);
-        throw result.error;
-      }
-      
-      // Update user metadata for non-sensitive info
-      const { error: metadataError } = await supabase.auth.updateUser({
+      // Update user metadata to keep it in sync
+      const { error: updateUserError } = await supabase.auth.updateUser({
         data: {
-          firstName: profileData.first_name,
-          lastName: profileData.last_name,
-          displayName: profileData.display_name,
-          profileComplete: true
+          full_name: values.fullName,
+          profession: values.profession,
+          previous_employers: values.previousEmployers,
+          location: values.location,
+          bio: values.bio,
+          phone_number: values.phoneNumber,
+          website: websiteUrl,
+          profile_image_url: profileImage,
+          hourly_rate: values.hourlyRate,
+          availability: values.availability,
+          skills: values.skills,
+          experience: values.experience,
+          qualifications: values.qualifications,
+          accreditations: values.accreditations,
+          indemnity_insurance: values.indemnityInsurance,
+          previous_work: previousWork,
+          id_verified: values.idVerified,
         }
       });
       
-      if (metadataError) {
-        console.error('Error updating user metadata:', metadataError);
-        // Don't fail the entire save operation if only metadata update fails
+      if (updateUserError) {
+        throw updateUserError;
       }
       
       toast({
-        title: 'Profile saved',
-        description: 'Your profile has been updated successfully',
+        title: 'Profile Updated',
+        description: 'Your profile has been successfully updated.',
       });
-      
-      return true;
-    } catch (err) {
-      console.error('Error saving freelancer profile:', err);
-      setError(err instanceof Error ? err : new Error('Unknown error occurred'));
-      
+    } catch (error) {
+      console.error('Error saving profile:', error);
       toast({
-        title: 'Failed to save profile',
-        description: 'There was an error saving your profile. Please try again.',
         variant: 'destructive',
+        title: 'Error',
+        description: 'Failed to save profile information. Please try again.',
       });
-      
-      return false;
     } finally {
       setIsSaving(false);
     }
   };
 
-  return { saveProfile, isSaving, error };
+  return {
+    isSaving,
+    saveProfile
+  };
 };

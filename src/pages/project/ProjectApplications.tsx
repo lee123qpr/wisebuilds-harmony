@@ -17,6 +17,7 @@ const ProjectApplications = () => {
   const { project, loading: projectLoading } = useProjectDetails(projectId);
   const { applications, isLoading, error } = useProjectApplications(projectId);
 
+  // Loading skeleton for application cards
   const ApplicationCardSkeleton = () => (
     <Card className="mb-6">
       <CardContent className="p-6">
@@ -74,7 +75,7 @@ const ProjectApplications = () => {
         ) : error ? (
           <Card>
             <CardContent className="p-6">
-              <p className="text-center text-red-500">Error loading applications: {error.message}</p>
+              <p className="text-center text-red-500">Error loading applications: {error}</p>
             </CardContent>
           </Card>
         ) : applications.length === 0 ? (
@@ -108,24 +109,7 @@ const ProjectApplications = () => {
             {applications.map((application) => (
               <FreelancerApplicationCard
                 key={application.id}
-                application={{
-                  id: application.id,
-                  user_id: application.userId,
-                  project_id: application.projectId,
-                  message: application.message,
-                  created_at: application.createdAt,
-                  freelancer_profile: {
-                    id: application.userId,
-                    first_name: application.firstName || undefined,
-                    last_name: application.lastName || undefined,
-                    display_name: application.displayName || undefined,
-                    email: application.email || undefined,
-                    phone_number: application.phoneNumber || undefined,
-                    job_title: application.jobTitle || undefined,
-                    location: application.location || undefined,
-                    profile_photo: application.profilePhoto || undefined
-                  }
-                }}
+                application={application}
                 projectId={projectId || ''}
               />
             ))}

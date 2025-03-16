@@ -1,4 +1,3 @@
-
 export interface ClientInfo {
   contact_name: string | null;
   email: string | null;
@@ -36,16 +35,4 @@ export interface Message {
   created_at: string;
   is_read: boolean;
   attachments?: MessageAttachment[];
-}
-
-export interface FreelancerInfo {
-  name: string;
-  profile_photo: string | null;
-  phone_number?: string | null;
-  email?: string | null;
-  id: string;
-  // Add properties used in fetchConversations.ts
-  full_name?: string | null;
-  business_name?: string | null;
-  profile_image?: string | null;
 }

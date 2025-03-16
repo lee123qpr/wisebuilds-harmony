@@ -1,97 +1,94 @@
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/context/AuthContext';
+import { FreelancerApplication } from '@/types/applications';
 import { useToast } from '@/hooks/use-toast';
-import { ProjectApplication } from '@/types/applications';
 
-export const useProjectApplications = (projectId: string) => {
-  const { user } = useAuth();
-  const { toast } = useToast();
-  const [applications, setApplications] = useState<ProjectApplication[]>([]);
+export const useProjectApplications = (projectId: string | undefined) => {
+  const [applications, setApplications] = useState<FreelancerApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
+    if (!projectId) return;
+    
     const fetchApplications = async () => {
-      if (!projectId) return;
-      
-      setIsLoading(true);
       try {
-        // Fetch applications for this project
-        const { data: appData, error: appError } = await supabase
+        setIsLoading(true);
+        setError(null);
+        
+        // Fetch all applications for the project
+        const { data: applicationsData, error: applicationsError } = await supabase
           .from('project_applications')
-          .select('*, user_id')
+          .select('*')
           .eq('project_id', projectId);
         
-        if (appError) throw appError;
+        if (applicationsError) throw applicationsError;
         
-        if (!appData || appData.length === 0) {
-          setApplications([]);
-          setIsLoading(false);
-          return;
-        }
-        
-        // For each application, fetch the freelancer profile information
+        // Get freelancer info for each application
         const applicationsWithProfiles = await Promise.all(
-          appData.map(async (app) => {
+          applicationsData.map(async (application) => {
             try {
-              // Fetch freelancer profile
-              const { data: freelancerData, error: profileError } = await supabase
-                .from('freelancer_profiles')
-                .select('*')
-                .eq('id', app.user_id)
-                .maybeSingle();
-                
-              if (profileError) throw profileError;
+              // Get user data via edge function (since we can't access auth.users directly)
+              const { data: userData, error: userError } = await supabase.functions.invoke(
+                'get-user-profile',
+                {
+                  body: { userId: application.user_id }
+                }
+              );
               
-              const freelancerProfile = freelancerData || {};
+              if (userError) throw userError;
               
-              // Build the application object
+              // Get verification status
+              const { data: verificationData, error: verificationError } = await supabase
+                .rpc('is_user_verified', { user_id: application.user_id });
+              
+              if (verificationError) {
+                console.error('Error checking verification status:', verificationError);
+              }
+              
+              // Extract user metadata
+              const userMetadata = userData?.user_metadata || {};
+              const firstName = userMetadata.first_name || userMetadata.firstname || '';
+              const lastName = userMetadata.last_name || userMetadata.lastname || '';
+              const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
+              const displayName = firstName && lastName 
+                ? `${firstName} ${lastName}` 
+                : userMetadata.full_name || 'Anonymous Freelancer';
+              const jobTitle = userMetadata.job_title || userMetadata.profession || '';
+              const location = userMetadata.location || '';
+              
+              // Combine all data
               return {
-                id: app.id,
-                projectId: app.project_id,
-                userId: app.user_id,
-                message: app.message || '',
-                createdAt: app.created_at,
-                email: freelancerProfile.email || null,
-                firstName: freelancerProfile.first_name || null,
-                lastName: freelancerProfile.last_name || null,
-                displayName: freelancerProfile.display_name || null,
-                phoneNumber: freelancerProfile.phone_number || null,
-                jobTitle: freelancerProfile.job_title || null,
-                location: freelancerProfile.location || null,
-                profilePhoto: freelancerProfile.profile_photo || null,
+                ...application,
+                freelancer_profile: {
+                  id: application.user_id,
+                  email: userData?.email,
+                  verified: verificationData || false,
+                  first_name: firstName,
+                  last_name: lastName,
+                  display_name: displayName,
+                  phone_number: phoneNumber,
+                  job_title: jobTitle,
+                  location: location,
+                  profile_photo: userMetadata.avatar_url,
+                }
               };
-            } catch (error) {
-              console.error('Error fetching profile for application:', error);
-              // Return partial application data if profile fetch fails
-              return {
-                id: app.id,
-                projectId: app.project_id,
-                userId: app.user_id,
-                message: app.message || '',
-                createdAt: app.created_at,
-                email: null,
-                firstName: null,
-                lastName: null,
-                displayName: null,
-                phoneNumber: null,
-                jobTitle: null,
-                location: null,
-                profilePhoto: null,
-              };
+            } catch (err) {
+              console.error('Error processing application:', err);
+              return application;
             }
           })
         );
         
         setApplications(applicationsWithProfiles);
-      } catch (err) {
-        console.error('Error fetching applications:', err);
-        setError(err instanceof Error ? err : new Error('Unknown error occurred'));
+      } catch (error: any) {
+        console.error('Error fetching applications:', error);
+        setError(error.message || 'Failed to load applications');
         toast({
-          title: 'Error fetching applications',
-          description: 'Could not load applications. Please try again later.',
+          title: 'Error loading applications',
+          description: error.message || 'Something went wrong.',
           variant: 'destructive',
         });
       } finally {
@@ -101,6 +98,6 @@ export const useProjectApplications = (projectId: string) => {
     
     fetchApplications();
   }, [projectId, toast]);
-  
+
   return { applications, isLoading, error };
 };

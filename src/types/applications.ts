@@ -29,19 +29,3 @@ export interface FreelancerProfile {
   email?: string;
   phone_number?: string;
 }
-
-export interface ProjectApplication {
-  id: string;
-  projectId: string;
-  userId: string;
-  message: string;
-  createdAt: string;
-  email: string | null;
-  firstName: string | null;
-  lastName: string | null;
-  displayName: string | null;
-  phoneNumber: string | null;
-  jobTitle: string | null;
-  location: string | null;
-  profilePhoto: string | null;
-}

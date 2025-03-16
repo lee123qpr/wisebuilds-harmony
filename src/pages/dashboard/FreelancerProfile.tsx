@@ -1,173 +1,99 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
+import MainLayout from '@/components/layout/MainLayout';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Loader2 } from 'lucide-react';
 import { useFreelancerProfile } from './hooks/useFreelancerProfile';
-import FreelancerProfileForm from './components/profile/FreelancerProfileForm';
-import { Skeleton } from '@/components/ui/skeleton';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { freelancerProfileSchema, FreelancerProfileFormValues } from './components/profile/freelancerSchema';
-import { Button } from '@/components/ui/button';
-import { Loader2, Save } from 'lucide-react';
+import FreelancerProfileCard from './components/profile/FreelancerProfileCard';
+import FreelancerProfileInfoTab from './components/profile/FreelancerProfileInfoTab';
+import ReviewsTab from './components/profile/ReviewsTab';
+import AccountSettingsTab from './components/account/AccountSettingsTab';
 
 const FreelancerProfile = () => {
   const { user } = useAuth();
-  const { profile, isLoadingProfile, saveProfile, isSaving } = useFreelancerProfile();
+  console.log('FreelancerProfile - Auth user:', user);
+  
+  const {
+    form,
+    isLoading,
+    isSaving,
+    profileImage,
+    uploadingImage,
+    setUploadingImage,
+    setProfileImage,
+    saveProfile,
+    memberSince,
+    emailVerified,
+    jobsCompleted,
+    idVerified
+  } = useFreelancerProfile(user);
 
-  const form = useForm<FreelancerProfileFormValues>({
-    resolver: zodResolver(freelancerProfileSchema),
-    defaultValues: {
-      fullName: '',
-      profession: '',
-      location: '',
-      bio: '',
-      phoneNumber: '',
-      website: '',
-      hourlyRate: '',
-      availability: '',
-      skills: [],
-      experience: '',
-      qualifications: [],
-      accreditations: [],
-      indemnityInsurance: { hasInsurance: false, coverLevel: '' },
-      previousWork: [],
-      previousEmployers: [],
-      idVerified: false
-    }
-  });
-
-  // When profile is loaded, set form values
-  React.useEffect(() => {
-    if (profile) {
-      form.reset({
-        fullName: `${profile.first_name} ${profile.last_name}`.trim(),
-        profession: profile.job_title || '',
-        location: profile.location || '',
-        bio: profile.bio || '',
-        phoneNumber: profile.phone_number || '',
-        website: profile.website || '',
-        hourlyRate: profile.hourly_rate || '',
-        availability: profile.availability || '',
-        skills: profile.skills || [],
-        experience: profile.experience || '',
-        qualifications: profile.qualifications || [],
-        accreditations: profile.accreditations || [],
-        indemnityInsurance: { 
-          hasInsurance: profile.has_indemnity_insurance || false, 
-          coverLevel: profile.indemnity_insurance?.coverLevel || ''
-        },
-        previousWork: profile.previous_work || [],
-        previousEmployers: profile.previous_employers || [],
-        idVerified: profile.id_verified || false
-      });
-    }
-  }, [profile, form]);
-
-  const handleSubmit = async (values: FreelancerProfileFormValues) => {
-    // Split fullName into first and last name
-    const nameParts = values.fullName.split(' ');
-    const firstName = nameParts[0];
-    const lastName = nameParts.length > 1 ? nameParts.slice(1).join(' ') : '';
-    
-    // Transform form values to profile data format
-    const profileData = {
-      first_name: firstName,
-      last_name: lastName,
-      display_name: values.fullName,
-      job_title: values.profession,
-      location: values.location,
-      bio: values.bio,
-      email: profile?.email || null,
-      phone_number: values.phoneNumber,
-      website: values.website,
-      hourly_rate: values.hourlyRate,
-      availability: values.availability,
-      skills: values.skills,
-      experience: values.experience,
-      qualifications: values.qualifications,
-      accreditations: values.accreditations,
-      has_indemnity_insurance: values.indemnityInsurance.hasInsurance,
-      indemnity_insurance: values.indemnityInsurance.hasInsurance ? values.indemnityInsurance : null,
-      previous_work: values.previousWork,
-      previous_employers: values.previousEmployers,
-      profile_photo: profile?.profile_photo || null,
-      member_since: profile?.member_since || null,
-      jobs_completed: profile?.jobs_completed || 0,
-      id_verified: values.idVerified
-    };
-    
-    await saveProfile(profileData);
-  };
-
-  if (!user) {
+  if (isLoading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Freelancer Profile</CardTitle>
-          <CardDescription>You must be logged in to view your profile.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p>Please log in to continue.</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (isLoadingProfile) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>
-            <Skeleton className="h-6 w-80 mb-2" />
-          </CardTitle>
-          <CardDescription>
-            <Skeleton className="h-4 w-64" />
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-          <div className="space-y-2">
-            <Skeleton className="h-5 w-40" />
-            <Skeleton className="h-8 w-full" />
-          </div>
-        </CardContent>
-      </Card>
+      <MainLayout>
+        <div className="container py-8 flex items-center justify-center">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </MainLayout>
     );
   }
 
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <div>
-          <CardTitle>Freelancer Profile</CardTitle>
-          <CardDescription>Update your profile information here.</CardDescription>
-        </div>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={form.handleSubmit(handleSubmit)}>
-          <FreelancerProfileForm form={form} />
-          <div className="mt-6 flex justify-end">
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
-                </>
-              ) : (
-                <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Profile
-                </>
-              )}
-            </Button>
+    <MainLayout>
+      <div className="container py-8">
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">Freelancer Profile</h1>
+            <p className="text-muted-foreground">Manage your professional information, reviews, and account settings</p>
           </div>
-        </form>
-      </CardContent>
-    </Card>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <div className="lg:col-span-1">
+            <FreelancerProfileCard
+              profileImage={profileImage}
+              uploadingImage={uploadingImage}
+              setUploadingImage={setUploadingImage}
+              setProfileImage={setProfileImage}
+              fullName={form.watch('fullName')}
+              profession={form.watch('profession')}
+              userId={user?.id || ''}
+              memberSince={memberSince}
+              emailVerified={emailVerified}
+              jobsCompleted={jobsCompleted}
+              idVerified={idVerified}
+            />
+          </div>
+
+          <div className="lg:col-span-2">
+            <Tabs defaultValue="profile" className="w-full">
+              <TabsList className="mb-6">
+                <TabsTrigger value="profile">Profile Information</TabsTrigger>
+                <TabsTrigger value="reviews">Reviews</TabsTrigger>
+                <TabsTrigger value="account">Account Settings</TabsTrigger>
+              </TabsList>
+              
+              <TabsContent value="profile">
+                <FreelancerProfileInfoTab
+                  form={form}
+                  isSaving={isSaving}
+                  onSubmit={saveProfile}
+                />
+              </TabsContent>
+              
+              <TabsContent value="reviews">
+                <ReviewsTab userId={user?.id || ''} />
+              </TabsContent>
+              
+              <TabsContent value="account">
+                <AccountSettingsTab />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
   );
 };
 
