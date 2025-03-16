@@ -19,6 +19,31 @@ export interface Message {
   attachments: MessageAttachment[] | Json | null;
 }
 
+export interface ClientInfo {
+  id: string;
+  company_name: string | null;
+  contact_name: string | null;
+  logo_url?: string | null;
+  email?: string | null;
+  phone_number?: string | null;
+  location?: string | null;
+}
+
+export interface FreelancerInfo {
+  id: string;
+  display_name: string;
+  first_name?: string;
+  last_name?: string;
+  profile_photo?: string | null;
+  email?: string | null;
+  phone_number?: string | null;
+  member_since?: string | null;
+  jobs_completed?: number;
+  rating?: number | null;
+  reviews_count?: number;
+  email_verified?: boolean;
+}
+
 export interface Conversation {
   id: string;
   client_id: string;
@@ -27,13 +52,6 @@ export interface Conversation {
   created_at: string;
   last_message_time: string;
   project_title?: string;
-  client_info?: {
-    company_name: string;
-    logo_url?: string;
-  };
-  freelancer_info?: {
-    first_name: string;
-    last_name: string;
-    profile_photo?: string;
-  };
+  client_info?: ClientInfo;
+  freelancer_info?: FreelancerInfo;
 }

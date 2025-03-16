@@ -49,7 +49,9 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       display_name: profileData?.display_name || 
         (profileData?.first_name && profileData?.last_name ? 
           `${profileData.first_name} ${profileData.last_name}` : 'Unknown Freelancer'),
-      profile_image: profileData?.profile_photo || null,
+      first_name: profileData?.first_name,
+      last_name: profileData?.last_name,
+      profile_photo: profileData?.profile_photo || null,
       email: profileData?.email || null,
       phone_number: profileData?.phone_number || null,
       member_since: profileData?.member_since || null,

@@ -1,58 +1,59 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/components/ui/use-toast';
 import { Conversation } from '@/types/messaging';
-import { getFreelancerInfo } from './utils/getFreelancerInfo';
 import { getClientInfo } from './utils/getClientInfo';
-import type { Json } from '@/integrations/supabase/types';
+import { getFreelancerInfo } from './utils/getFreelancerInfo';
 
-export const fetchConversations = async (
-  userId: string, 
-  isBusinessClient: boolean = false
-): Promise<Conversation[]> => {
+export const fetchConversations = async (userId: string, isBusinessClient: boolean = false): Promise<Conversation[]> => {
   try {
     const field = isBusinessClient ? 'client_id' : 'freelancer_id';
+    
+    // Fetch all conversations for the user
     const { data, error } = await supabase
       .from('conversations')
       .select(`
         *,
-        project_info:projects!inner(id, title)
+        projects(title)
       `)
       .eq(field, userId)
       .order('last_message_time', { ascending: false });
     
     if (error) {
-      throw error;
+      console.error('Error fetching conversations:', error);
+      toast({
+        title: "Failed to load conversations",
+        description: error.message,
+        variant: "destructive"
+      });
+      return [];
     }
     
-    // Get details of conversation partners
-    const conversationsWithDetails = await Promise.all(
-      data.map(async (conversation) => {
-        // For clients, get freelancer info
-        // For freelancers, get client info
-        const partnerId = isBusinessClient ? conversation.freelancer_id : conversation.client_id;
-        
-        let partnerInfo;
-        if (isBusinessClient) {
-          partnerInfo = await getFreelancerInfo(partnerId);
-          return {
-            ...conversation,
-            freelancer_info: partnerInfo,
-            project_title: conversation.project_info?.title || 'Unnamed Project'
-          } as Conversation;
-        } else {
-          partnerInfo = await getClientInfo(partnerId);
-          return {
-            ...conversation,
-            client_info: partnerInfo,
-            project_title: conversation.project_info?.title || 'Unnamed Project'
-          } as Conversation;
-        }
-      })
-    );
+    // Process the conversations to include more information
+    const processed = await Promise.all(data.map(async conversation => {
+      const partnerId = isBusinessClient ? conversation.freelancer_id : conversation.client_id;
+      
+      // Get partner info (client or freelancer)
+      const partnerInfo = isBusinessClient
+        ? await getFreelancerInfo(partnerId)
+        : await getClientInfo(partnerId);
+      
+      // Construct the conversation with additional info
+      return {
+        ...conversation,
+        project_title: conversation.projects?.title,
+        [isBusinessClient ? 'freelancer_info' : 'client_info']: partnerInfo
+      };
+    }));
     
-    return conversationsWithDetails;
+    return processed as Conversation[];
   } catch (e) {
     console.error('Error in fetchConversations:', e);
+    toast({
+      title: "Failed to load conversations",
+      description: "An unexpected error occurred",
+      variant: "destructive"
+    });
     return [];
   }
 };
