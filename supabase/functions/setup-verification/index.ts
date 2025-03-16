@@ -86,6 +86,17 @@ serve(async (req) => {
       });
       console.log('Created read policy');
 
+      // Create policy for users to delete their own documents
+      await supabaseAdmin.storage.from('id-documents').createPolicy('User Delete Policy', {
+        name: 'User Delete Policy',
+        definition: {
+          type: 'DELETE',
+          match: { prefix: '{{auth.uid}}/' },
+          roles: ['authenticated'],
+        }
+      });
+      console.log('Created delete policy');
+
       // Create policy for admins to read all documents
       await supabaseAdmin.storage.from('id-documents').createPolicy('Admin Read Policy', {
         name: 'Admin Read Policy',
@@ -102,99 +113,48 @@ serve(async (req) => {
       // We continue even if policy creation fails as policies might already exist
     }
 
-    // Make sure that the table has a unique constraint on user_id
-    try {
-      console.log('Ensuring user_id constraint exists...');
-      
-      // Check if the constraint exists first
-      const constraintCheckSql = `
-      SELECT EXISTS (
-        SELECT 1 FROM pg_constraint 
-        WHERE conname = 'freelancer_verification_user_id_key' 
-        AND conrelid = 'public.freelancer_verification'::regclass
-      ) as exists_flag;
-      `;
-      
-      const { data: constraintCheck, error: constraintCheckError } = await supabaseAdmin.rpc('exec_sql', { 
-        sql: constraintCheckSql 
-      });
-      
-      if (constraintCheckError) {
-        console.error('Error checking constraint:', constraintCheckError);
-      } else {
-        // If the constraint doesn't exist, add it
-        if (!constraintCheck || !constraintCheck[0]?.exists_flag) {
-          const alterTableSQL = `
-          ALTER TABLE public.freelancer_verification ADD CONSTRAINT freelancer_verification_user_id_key UNIQUE (user_id);
-          `;
-          
-          const { error: alterError } = await supabaseAdmin.rpc('exec_sql', { sql: alterTableSQL });
-          
-          if (alterError) {
-            console.error('Error adding constraint:', alterError);
-          } else {
-            console.log('Added unique constraint on user_id');
-          }
-        } else {
-          console.log('User ID constraint already exists');
-        }
-      }
-    } catch (constraintError) {
-      console.error('Constraint setup error:', constraintError);
-      // Continue execution
-    }
-
-    // Make sure RLS is properly set up
+    // Make sure RLS is properly set up for the freelancer_verification table
     try {
       console.log('Setting up row level security policies...');
       
       // Make sure RLS is enabled
       const enableRlsSql = `ALTER TABLE public.freelancer_verification ENABLE ROW LEVEL SECURITY;`;
-      await supabaseAdmin.rpc('exec_sql', { sql: enableRlsSql });
+      await supabaseAdmin.rpc('exec_sql', { sql: enableRlsSql }).catch(e => console.log('RLS already enabled'));
       
       // Try to create policies - individually to avoid errors if some already exist
       const policies = [
+        `DROP POLICY IF EXISTS "Users can insert their own verification records" 
+         ON public.freelancer_verification;`,
+        
         `CREATE POLICY "Users can insert their own verification records" 
          ON public.freelancer_verification FOR INSERT WITH CHECK (auth.uid() = user_id);`,
+        
+        `DROP POLICY IF EXISTS "Users can view their own verification records" 
+         ON public.freelancer_verification;`,
         
         `CREATE POLICY "Users can view their own verification records" 
          ON public.freelancer_verification FOR SELECT USING (auth.uid() = user_id);`,
         
+        `DROP POLICY IF EXISTS "Users can update their own verification records" 
+         ON public.freelancer_verification;`,
+        
         `CREATE POLICY "Users can update their own verification records" 
          ON public.freelancer_verification FOR UPDATE USING (auth.uid() = user_id);`,
         
+        `DROP POLICY IF EXISTS "Service role can access all verification records" 
+         ON public.freelancer_verification;`,
+         
         `CREATE POLICY "Service role can access all verification records" 
          ON public.freelancer_verification FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');`
       ];
       
-      // Apply each policy individually
+      // Apply each policy
       for (const policySQL of policies) {
         try {
-          // Check if policy exists first
-          const policyName = policySQL.match(/CREATE POLICY "([^"]+)"/)?.[1];
-          
-          if (policyName) {
-            const checkPolicySql = `
-            SELECT EXISTS (
-              SELECT 1 FROM pg_policies 
-              WHERE policyname = '${policyName}' 
-              AND tablename = 'freelancer_verification'
-            ) as exists_flag;
-            `;
-            
-            const { data: policyCheck, error: policyCheckError } = await supabaseAdmin.rpc('exec_sql', { 
-              sql: checkPolicySql 
-            });
-            
-            if (!policyCheckError && (!policyCheck || !policyCheck[0]?.exists_flag)) {
-              await supabaseAdmin.rpc('exec_sql', { sql: policySQL });
-              console.log(`Created policy: ${policyName}`);
-            } else {
-              console.log(`Policy already exists: ${policyName}`);
-            }
-          }
+          await supabaseAdmin.rpc('exec_sql', { sql: policySQL });
+          console.log(`Applied policy SQL: ${policySQL.substring(0, 50)}...`);
         } catch (error) {
-          console.log('Policy may already exist:', error);
+          console.log('Policy operation error (may already exist):', error);
           // Continue with next policy
         }
       }

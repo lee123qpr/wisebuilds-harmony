@@ -97,12 +97,26 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         verification_status: 'pending',
         submitted_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
+      }, { 
+        onConflict: 'user_id' // Specify the conflicting column
       })
       .select()
       .single();
     
     if (insertError) {
       console.error('Create verification record error:', insertError);
+      
+      // If we get an error when inserting the record, try to delete the uploaded file
+      // to avoid orphaned files in storage
+      try {
+        await supabase.storage
+          .from('id-documents')
+          .remove([filePath]);
+        console.log('Cleaned up uploaded file after insert error');
+      } catch (cleanupError) {
+        console.error('Failed to clean up file after insert error:', cleanupError);
+      }
+      
       throw insertError;
     }
     
