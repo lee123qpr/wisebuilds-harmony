@@ -9,6 +9,7 @@ import { Project } from '@/components/projects/useProjects';
 import ProjectListView from './ProjectListView';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';
+import PurchasedProjectCard from './PurchasedProjectCard';
 
 interface Application {
   id: string;
@@ -118,6 +119,17 @@ const QuotesTab: React.FC = () => {
           You've purchased these leads and can now access their full project details and contact information. Select a project to view all available details.
         </AlertDescription>
       </Alert>
+      
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+        {applications?.map((project) => (
+          <PurchasedProjectCard 
+            key={project.id}
+            project={project}
+            isSelected={project.id === selectedProjectId}
+            onClick={() => setSelectedProjectId(project.id)}
+          />
+        ))}
+      </div>
       
       <ProjectListView
         projects={applications || []}
