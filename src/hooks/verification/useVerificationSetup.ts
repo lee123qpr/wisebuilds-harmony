@@ -1,42 +1,27 @@
 
 import { useState, useEffect } from 'react';
-import { setupVerification } from './setupVerification';
+import { useToast } from '@/hooks/use-toast';
+import { setupVerificationSystem } from './setupVerification';
 
 export const useVerificationSetup = () => {
-  const [setupComplete, setSetupComplete] = useState(false);
-  const [isSettingUp, setIsSettingUp] = useState(true);
-  const [setupError, setSetupError] = useState<string | null>(null);
+  const [setupComplete, setSetupComplete] = useState<boolean>(false);
+  const { toast } = useToast();
 
   useEffect(() => {
     const runSetup = async () => {
-      setIsSettingUp(true);
-      setSetupError(null);
-      
-      try {
-        const result = await setupVerification();
-        console.log('Verification system setup result:', result);
-        
-        if (!result.success) {
-          setSetupError(result.message || 'Failed to set up verification system');
-        } else {
-          setSetupComplete(true);
-        }
-      } catch (error: any) {
-        console.error('Error setting up verification system:', error);
-        setSetupError(error.message || 'Unexpected error during verification setup');
-      } finally {
-        setIsSettingUp(false);
+      const success = await setupVerificationSystem();
+      setSetupComplete(success);
+      if (!success) {
+        toast({
+          variant: 'destructive',
+          title: 'Setup Error',
+          description: 'There was a problem setting up the verification system. Please try again later.',
+        });
       }
     };
-
+    
     runSetup();
-  }, []);
+  }, [toast]);
 
-  return { 
-    setupComplete,
-    isSettingUp,
-    setupError
-  };
+  return { setupComplete };
 };
-
-export default useVerificationSetup;

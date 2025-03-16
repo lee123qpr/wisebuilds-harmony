@@ -1,16 +1,15 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { isUserFreelancer } from './user-verification';
-import { fetchVerificationStatus } from './verification-status';
 import type { VerificationData } from '../types';
+import { mapStatusToVerificationStatus } from '../utils/status-utils';
+import { isUserFreelancer } from './user-verification';
 
-// Upload verification document
+// Upload ID document
 export const uploadVerificationDocument = async (userId: string, file: File): Promise<{
   success: boolean;
   filePath?: string;
   verificationData?: VerificationData;
   error?: any;
-  errorMessage?: string;
 }> => {
   try {
     // Check if user is a freelancer first
@@ -19,55 +18,18 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       console.error('Only freelancers can upload verification documents');
       return { 
         success: false, 
-        error: new Error('Only freelancers can upload verification documents'), 
-        errorMessage: 'Permission denied. Please ensure you are registered as a freelancer.'
+        error: new Error('Only freelancers can upload verification documents') 
       };
     }
     
-    console.log('Starting document upload process for user:', userId);
-    
-    // Generate a safe file name with timestamp
-    const timestamp = new Date().getTime();
+    // Create a unique file path
     const fileExt = file.name.split('.').pop();
-    const safeFileName = `${timestamp}.${fileExt}`;
-    const filePath = `${userId}/${safeFileName}`;
+    const fileName = `${Date.now()}.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
     
-    console.log('Uploading file to:', filePath);
+    console.log('Attempting to upload file:', fileName);
     
-    // First check if the bucket exists
-    try {
-      const { data: bucketData, error: bucketError } = await supabase.storage
-        .getBucket('id-documents');
-        
-      if (bucketError || !bucketData) {
-        console.error('Error checking bucket existence:', bucketError || 'Bucket not found');
-        return {
-          success: false,
-          error: bucketError || new Error('Bucket not found'),
-          errorMessage: 'The document storage system is not properly configured. Please contact support.'
-        };
-      }
-    } catch (bucketErr) {
-      console.error('Error checking bucket:', bucketErr);
-      // Continue anyway, as we might still be able to upload
-    }
-    
-    // Make sure the user's folder exists by creating a placeholder if needed
-    try {
-      // Try to create a subfolder marker
-      await supabase.storage
-        .from('id-documents')
-        .upload(`${userId}/.folder`, new Blob([]), {
-          upsert: true
-        });
-      console.log('Ensured user folder exists');
-    } catch (folderErr) {
-      // Ignore folder creation errors, as they might be permission related
-      console.warn('Failed to create folder marker, continuing anyway:', folderErr);
-    }
-    
-    // Upload file to storage
-    console.log('Attempting to upload file to', filePath);
+    // Upload the file to the id-documents bucket
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('id-documents')
       .upload(filePath, file, {
@@ -76,102 +38,84 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       });
     
     if (uploadError) {
-      console.error('Error uploading file:', uploadError);
-      
-      // Provide a clear error message based on error type
-      let errorMessage = 'Failed to upload document. Please try again.';
-      
-      if (uploadError.message.includes('permission') || 
-          uploadError.message.includes('policy') ||
-          uploadError.message.includes('access')) {
-        errorMessage = 'Permission denied when uploading document. Please ensure you are logged in and have the correct permissions.';
-      } else if (uploadError.message.includes('already exists')) {
-        errorMessage = 'A file with this name already exists. Please try again with a different file name.';
-      } else if (uploadError.message.includes('not found')) {
-        errorMessage = 'The document storage system could not be found. Please contact support.';
-      }
-      
-      return {
-        success: false,
-        error: uploadError,
-        errorMessage
-      };
+      console.error('Upload error:', uploadError);
+      throw uploadError;
     }
     
-    console.log('File uploaded successfully:', uploadData.path);
+    // Get the file path
+    const path = uploadData?.path;
+    console.log('File uploaded successfully to:', path);
+    
+    // Create or update the verification record without trying to join with users table
+    const verificationRecord = {
+      user_id: userId,
+      id_document_path: filePath,
+      verification_status: 'pending',
+      submitted_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
     
     try {
-      // Create new record directly without checking existing (simplifies flow)
-      const { data: newRecord, error: insertError } = await supabase
+      const { data: verificationData, error: insertError } = await supabase
         .from('freelancer_verification')
-        .insert({
-          user_id: userId,
-          id_document_path: filePath,
-          verification_status: 'pending',
-          submitted_at: new Date().toISOString()
+        .upsert(verificationRecord, {
+          onConflict: 'user_id'
         })
-        .select('*')
+        .select()
         .single();
       
       if (insertError) {
-        console.error('Error inserting verification record:', insertError);
+        console.error('Create verification record error:', insertError);
         
-        // Try to clean up the uploaded file if record creation fails
+        // If we get an error when inserting the record, try to delete the uploaded file
+        // to avoid orphaned files in storage
         try {
-          await supabase.storage.from('id-documents').remove([filePath]);
-          console.log('Cleaned up uploaded file after failed record creation');
+          await supabase.storage
+            .from('id-documents')
+            .remove([filePath]);
+          console.log('Cleaned up uploaded file after insert error');
         } catch (cleanupError) {
-          console.error('Error cleaning up file:', cleanupError);
+          console.error('Failed to clean up file after insert error:', cleanupError);
         }
         
-        // Provide more detailed error message based on error type
-        let errorMessage = 'Failed to create verification record. Please try again.';
-        
-        if (insertError.code === '42501') {
-          errorMessage = 'Permission denied. Please ensure you are logged in as a freelancer.';
-        } else if (insertError.code === '23505') {
-          errorMessage = 'You already have a verification record. Please try deleting your existing document first.';
-        }
-        
-        return {
-          success: false,
-          error: insertError,
-          errorMessage
-        };
+        throw insertError;
       }
       
-      console.log('New verification record created:', newRecord);
+      if (!verificationData) {
+        throw new Error('No verification data returned');
+      }
       
-      return { 
-        success: true, 
-        filePath,
-        verificationData: {
-          id: newRecord.id,
-          user_id: newRecord.user_id,
-          verification_status: 'pending',
-          id_document_path: newRecord.id_document_path,
-          submitted_at: newRecord.submitted_at,
-          verified_at: newRecord.verified_at,
-          admin_notes: newRecord.admin_notes
-        }
+      // Map the returned data to our expected format
+      const result: VerificationData = {
+        id: verificationData.id,
+        user_id: verificationData.user_id,
+        verification_status: mapStatusToVerificationStatus(verificationData.verification_status),
+        id_document_path: verificationData.id_document_path,
+        submitted_at: verificationData.submitted_at,
+        verified_at: verificationData.verified_at,
+        admin_notes: verificationData.admin_notes
+      };
+      
+      return {
+        success: true,
+        filePath: path,
+        verificationData: result
       };
     } catch (dbError) {
-      // If database operation fails, clean up the uploaded file
+      // Clean up the uploaded file if database operation fails
       try {
-        await supabase.storage.from('id-documents').remove([filePath]);
+        await supabase.storage
+          .from('id-documents')
+          .remove([filePath]);
         console.log('Cleaned up uploaded file after database error');
       } catch (cleanupError) {
-        console.error('Error cleaning up file:', cleanupError);
+        console.error('Failed to clean up file after database error:', cleanupError);
       }
       
       throw dbError;
     }
   } catch (error) {
-    console.error('Error in uploadVerificationDocument:', error);
-    return { 
-      success: false, 
-      error,
-      errorMessage: 'An unexpected error occurred. Please try again later.'
-    };
+    console.error('Error uploading document:', error);
+    return { success: false, error };
   }
 };

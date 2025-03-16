@@ -2,22 +2,35 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { VerificationData } from '../types';
 import { mapStatusToVerificationStatus } from '../utils/status-utils';
+import { isUserFreelancer } from './user-verification';
 
 // Fetch verification status
 export const fetchVerificationStatus = async (userId: string): Promise<VerificationData | null> => {
   try {
     console.log('Fetching verification status for user:', userId);
     
+    // Check if user is a freelancer first
+    const isFreelancer = await isUserFreelancer();
+    if (!isFreelancer) {
+      console.log('User is not a freelancer, verification not applicable');
+      return null;
+    }
+    
     // Query the freelancer_verification table directly
     const { data, error } = await supabase
       .from('freelancer_verification')
       .select('*')
       .eq('user_id', userId)
-      .maybeSingle();
+      .single();
     
     if (error) {
+      // If record not found, don't treat as an error
+      if (error.code === 'PGRST116') {
+        console.log('No verification record found for user');
+        return null;
+      }
+      
       console.error('Error fetching verification status:', error);
-      // Don't throw the error, just log it and return null
       return null;
     }
     

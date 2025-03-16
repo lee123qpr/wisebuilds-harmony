@@ -1,29 +1,23 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, HelpCircle, AlertCircle } from 'lucide-react';
+import { ShieldCheck, HelpCircle } from 'lucide-react';
 import {
   Dialog,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import VerificationDialogContent from './verification/VerificationDialogContent';
 import { useVerification } from '@/hooks/verification';
-import { useAuth } from '@/context/AuthContext';
 import { 
   Tooltip, 
   TooltipContent, 
   TooltipProvider, 
   TooltipTrigger 
 } from '@/components/ui/tooltip';
-import { useToast } from '@/hooks/use-toast';
 
 const VerificationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const { verificationStatus, isLoading } = useVerification();
-  const { isFreelancer, user } = useAuth();
-  const { toast } = useToast();
-  const [bucketError, setBucketError] = useState(false);
 
   const getButtonLabel = () => {
     switch (verificationStatus) {
@@ -53,24 +47,6 @@ const VerificationDialog: React.FC = () => {
 
   // Handle button click to open dialog
   const handleOpenDialog = () => {
-    if (!user) {
-      toast({
-        variant: 'destructive',
-        title: 'Authentication Required',
-        description: 'You must be logged in to verify your identity.'
-      });
-      return;
-    }
-    
-    if (!isFreelancer) {
-      toast({
-        variant: 'destructive',
-        title: 'Freelancers Only',
-        description: 'Only freelancer accounts can verify their identity.'
-      });
-      return;
-    }
-    
     setOpen(true);
   };
 
@@ -99,22 +75,7 @@ const VerificationDialog: React.FC = () => {
           </Tooltip>
         </TooltipProvider>
       </DialogTrigger>
-      
-      {bucketError && (
-        <Alert variant="destructive" className="mt-2">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
-            There was an error accessing the verification system. Please try again later.
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {open && (
-        <VerificationDialogContent 
-          onClose={() => setOpen(false)} 
-          onBucketError={() => setBucketError(true)}
-        />
-      )}
+      {open && <VerificationDialogContent onClose={() => setOpen(false)} />}
     </Dialog>
   );
 };
