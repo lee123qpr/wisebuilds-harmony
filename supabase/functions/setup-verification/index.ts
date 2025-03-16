@@ -102,74 +102,43 @@ serve(async (req) => {
       // We continue even if policy creation fails as policies might already exist
     }
 
-    // Create the verification RPC function
-    try {
-      console.log('Setting up verification RPC function...');
-      
-      // Create a helper function to safely create/update verification records
-      const createRpcFunction = `
-      CREATE OR REPLACE FUNCTION public.create_verification_record(
-        p_user_id UUID,
-        p_document_path TEXT
-      ) RETURNS public.freelancer_verification LANGUAGE plpgsql SECURITY DEFINER AS $$
-      DECLARE
-        result public.freelancer_verification;
-      BEGIN
-        -- Insert or update the verification record
-        INSERT INTO public.freelancer_verification (
-          user_id, 
-          id_document_path, 
-          verification_status, 
-          submitted_at, 
-          updated_at
-        ) VALUES (
-          p_user_id, 
-          p_document_path, 
-          'pending', 
-          NOW(), 
-          NOW()
-        ) 
-        ON CONFLICT (user_id) DO UPDATE SET
-          id_document_path = p_document_path,
-          verification_status = 'pending',
-          submitted_at = NOW(),
-          updated_at = NOW()
-        RETURNING * INTO result;
-        
-        RETURN result;
-      END;
-      $$;
-      `;
-      
-      await supabaseAdmin.rpc('exec_sql', { sql: createRpcFunction });
-      console.log('Created RPC function successfully');
-      
-    } catch (rpcError) {
-      console.error('RPC function setup error:', rpcError);
-      // Continue execution as this might fail if function exists
-    }
-
     // Make sure that the table has a unique constraint on user_id
     try {
       console.log('Ensuring user_id constraint exists...');
       
-      const alterTableSQL = `
-      DO $$
-      BEGIN
-        IF NOT EXISTS (
-          SELECT 1 FROM pg_constraint 
-          WHERE conname = 'freelancer_verification_user_id_key' 
-          AND conrelid = 'public.freelancer_verification'::regclass
-        ) THEN
-          ALTER TABLE public.freelancer_verification ADD CONSTRAINT freelancer_verification_user_id_key UNIQUE (user_id);
-        END IF;
-      END
-      $$;
+      // Check if the constraint exists first
+      const constraintCheckSql = `
+      SELECT EXISTS (
+        SELECT 1 FROM pg_constraint 
+        WHERE conname = 'freelancer_verification_user_id_key' 
+        AND conrelid = 'public.freelancer_verification'::regclass
+      ) as exists_flag;
       `;
       
-      await supabaseAdmin.rpc('exec_sql', { sql: alterTableSQL });
-      console.log('User ID constraint ensured');
+      const { data: constraintCheck, error: constraintCheckError } = await supabaseAdmin.rpc('exec_sql', { 
+        sql: constraintCheckSql 
+      });
       
+      if (constraintCheckError) {
+        console.error('Error checking constraint:', constraintCheckError);
+      } else {
+        // If the constraint doesn't exist, add it
+        if (!constraintCheck || !constraintCheck[0]?.exists_flag) {
+          const alterTableSQL = `
+          ALTER TABLE public.freelancer_verification ADD CONSTRAINT freelancer_verification_user_id_key UNIQUE (user_id);
+          `;
+          
+          const { error: alterError } = await supabaseAdmin.rpc('exec_sql', { sql: alterTableSQL });
+          
+          if (alterError) {
+            console.error('Error adding constraint:', alterError);
+          } else {
+            console.log('Added unique constraint on user_id');
+          }
+        } else {
+          console.log('User ID constraint already exists');
+        }
+      }
     } catch (constraintError) {
       console.error('Constraint setup error:', constraintError);
       // Continue execution
@@ -180,30 +149,50 @@ serve(async (req) => {
       console.log('Setting up row level security policies...');
       
       // Make sure RLS is enabled
-      await supabaseAdmin.rpc('exec_sql', { 
-        sql: `ALTER TABLE public.freelancer_verification ENABLE ROW LEVEL SECURITY;` 
-      });
+      const enableRlsSql = `ALTER TABLE public.freelancer_verification ENABLE ROW LEVEL SECURITY;`;
+      await supabaseAdmin.rpc('exec_sql', { sql: enableRlsSql });
       
-      // Try to create policies - this might fail if they already exist, which is fine
+      // Try to create policies - individually to avoid errors if some already exist
       const policies = [
-        `CREATE POLICY IF NOT EXISTS "Users can insert their own verification records" 
+        `CREATE POLICY "Users can insert their own verification records" 
          ON public.freelancer_verification FOR INSERT WITH CHECK (auth.uid() = user_id);`,
         
-        `CREATE POLICY IF NOT EXISTS "Users can view their own verification records" 
+        `CREATE POLICY "Users can view their own verification records" 
          ON public.freelancer_verification FOR SELECT USING (auth.uid() = user_id);`,
         
-        `CREATE POLICY IF NOT EXISTS "Users can update their own verification records" 
+        `CREATE POLICY "Users can update their own verification records" 
          ON public.freelancer_verification FOR UPDATE USING (auth.uid() = user_id);`,
         
-        `CREATE POLICY IF NOT EXISTS "Service role can access all verification records" 
+        `CREATE POLICY "Service role can access all verification records" 
          ON public.freelancer_verification FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');`
       ];
       
-      // Apply each policy
+      // Apply each policy individually
       for (const policySQL of policies) {
         try {
-          await supabaseAdmin.rpc('exec_sql', { sql: policySQL });
-          console.log('Applied policy successfully');
+          // Check if policy exists first
+          const policyName = policySQL.match(/CREATE POLICY "([^"]+)"/)?.[1];
+          
+          if (policyName) {
+            const checkPolicySql = `
+            SELECT EXISTS (
+              SELECT 1 FROM pg_policies 
+              WHERE policyname = '${policyName}' 
+              AND tablename = 'freelancer_verification'
+            ) as exists_flag;
+            `;
+            
+            const { data: policyCheck, error: policyCheckError } = await supabaseAdmin.rpc('exec_sql', { 
+              sql: checkPolicySql 
+            });
+            
+            if (!policyCheckError && (!policyCheck || !policyCheck[0]?.exists_flag)) {
+              await supabaseAdmin.rpc('exec_sql', { sql: policySQL });
+              console.log(`Created policy: ${policyName}`);
+            } else {
+              console.log(`Policy already exists: ${policyName}`);
+            }
+          }
         } catch (error) {
           console.log('Policy may already exist:', error);
           // Continue with next policy

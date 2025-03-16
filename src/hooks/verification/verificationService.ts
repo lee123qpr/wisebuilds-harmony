@@ -76,11 +76,20 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const path = uploadData?.path;
     console.log('File uploaded successfully to:', path);
     
-    // Create the verification record - use RPC instead of direct access to users table
-    const { data: verificationData, error: insertError } = await supabase.rpc('create_verification_record', {
-      p_user_id: userId,
-      p_document_path: filePath
-    });
+    // Create the verification record with a direct database insertion
+    // instead of using RPC which wasn't created successfully
+    const { data: verificationData, error: insertError } = await supabase
+      .from('freelancer_verification')
+      .upsert({
+        user_id: userId,
+        id_document_path: filePath,
+        verification_status: 'pending',
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { 
+        onConflict: 'user_id',
+        returning: 'representation'
+      });
     
     if (insertError) {
       console.error('Create verification record error:', insertError);
