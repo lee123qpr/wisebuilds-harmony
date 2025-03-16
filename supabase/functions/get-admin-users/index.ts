@@ -58,7 +58,17 @@ Deno.serve(async (req) => {
       )
     }
 
+    // Make sure users data exists and has the expected structure
+    if (!users || !users.users || !Array.isArray(users.users)) {
+      console.error('Invalid user data structure received from Supabase')
+      return new Response(
+        JSON.stringify({ error: 'Invalid user data received from server' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     // Separate active and deleted users
+    // deleted_at is null for active users
     const activeUsers = users.users.filter(user => user.deleted_at === null);
     const deletedUsers = users.users.filter(user => user.deleted_at !== null);
     
