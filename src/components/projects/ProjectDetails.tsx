@@ -1,17 +1,18 @@
-
 import React, { useState, useEffect } from 'react';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Separator } from '@/components/ui/separator';
+import { useNavigate } from 'react-router-dom';
 import { Project } from '@/components/projects/useProjects';
+import ProjectHeader from './ProjectHeader';
 import ProjectDescription from './ProjectDescription';
 import ProjectMetadata from './ProjectMetadata';
 import ProjectRequirements from './ProjectRequirements';
-import { useAuth } from '@/context/AuthContext';
+import ProjectDocuments from './ProjectDocuments';
+import ProjectActions from './ProjectActions';
 import ClientContactInfo from './ClientContactInfo';
-import { supabase } from '@/integrations/supabase/client';
-import { Badge } from '@/components/ui/badge';
-import { Check } from 'lucide-react';
-import PurchaseLimitBar from './PurchaseLimitBar';
+import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { useContactInfo } from '@/hooks/leads/useContactInfo';
+import { useCheckPurchaseStatus } from '@/hooks/leads/useCheckPurchaseStatus';
+import SubmitQuoteButton from './SubmitQuoteButton';
 
 interface ProjectDetailsProps {
   project: Project;
@@ -19,95 +20,100 @@ interface ProjectDetailsProps {
   forceShowContactInfo?: boolean;
 }
 
-const ProjectDetails = ({ project, refreshTrigger = 0, forceShowContactInfo = false }: ProjectDetailsProps) => {
-  const [hasBeenPurchased, setHasBeenPurchased] = useState(false);
+const ProjectDetails: React.FC<ProjectDetailsProps> = ({ 
+  project, 
+  refreshTrigger,
+  forceShowContactInfo = false
+}) => {
+  const navigate = useNavigate();
   const { user } = useAuth();
+  const { toast } = useToast();
+  const [contactInfo, setContactInfo] = useState(null);
+  const [isLoadingContactInfo, setIsLoadingContactInfo] = useState(false);
+  const [isPurchased, setIsPurchased] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const isBusiness = user?.user_metadata?.user_type === 'business';
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
-  const purchasesCount = project.purchases_count || 0;
-  const purchaseLimit = 5;
+  const isOwner = user?.id === project.user_id;
 
-  // Check if the user has already applied to this project
+  const { 
+    contactInfo: fetchedContactInfo, 
+    isLoading: loadingContactInfo 
+  } = useContactInfo(project.user_id);
+  
+  const { 
+    isPurchased: leadIsPurchased, 
+    isLoading: loadingPurchaseStatus 
+  } = useCheckPurchaseStatus(project.id);
+
   useEffect(() => {
-    const checkIfApplicationExists = async () => {
-      if (!user || !isFreelancer) return;
-      
-      try {
-        const { data, error } = await supabase.rpc('check_application_exists', {
-          p_project_id: project.id,
-          p_user_id: user.id
-        });
-        
-        if (error) {
-          console.error('Error checking application exists:', error);
-          return;
-        }
-        
-        setHasBeenPurchased(data === true);
-      } catch (err) {
-        console.error('Error in check_application_exists:', err);
-      }
-    };
-    
-    checkIfApplicationExists();
-  }, [project.id, user, isFreelancer, refreshTrigger]);
+    if (fetchedContactInfo) {
+      setContactInfo(fetchedContactInfo);
+    }
+    setIsLoadingContactInfo(loadingContactInfo);
+  }, [fetchedContactInfo, loadingContactInfo]);
 
-  const shouldShowContactInfo = forceShowContactInfo || hasBeenPurchased;
+  useEffect(() => {
+    setIsPurchased(leadIsPurchased);
+    setIsLoading(loadingPurchaseStatus);
+  }, [leadIsPurchased, loadingPurchaseStatus]);
+
+  const handleEdit = () => {
+    navigate(`/project/${project.id}/edit`);
+  };
+
+  const handleDelete = () => {
+    // Implement delete logic here
+    toast({
+      title: 'Project deleted',
+      description: 'Your project has been deleted successfully.',
+    });
+  };
 
   return (
-    <Card>
-      <CardHeader>
-        <div className="mb-4">
-          <h2 className="text-2xl font-bold">Project Details</h2>
-          <p className="text-muted-foreground">All information about this project</p>
+    <div className="space-y-6">
+      <ProjectHeader project={project} />
+      
+      {/* Add Quote button for freelancers who have purchased */}
+      {isFreelancer && isPurchased && project.status === 'active' && (
+        <div className="flex justify-end mb-4">
+          <SubmitQuoteButton 
+            projectId={project.id}
+            projectTitle={project.title}
+            isPurchased={isPurchased}
+          />
         </div>
-        <div className="flex justify-between items-start">
-          <CardTitle>{project.title}</CardTitle>
-          
-          {hasBeenPurchased && (
-            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
-              <Check className="h-3 w-3" />
-              Purchased
-            </Badge>
-          )}
-        </div>
-        
-        {isFreelancer && (
-          <div className="mt-4">
-            <PurchaseLimitBar purchasesCount={purchasesCount} limit={purchaseLimit} />
-          </div>
-        )}
-      </CardHeader>
-      <CardContent className="space-y-6">
-        {shouldShowContactInfo && (
-          <>
-            <ClientContactInfo projectId={project.id} />
-            <Separator />
-          </>
-        )}
-        
-        <ProjectDescription description={project.description} />
-        
-        <Separator />
-        
-        <ProjectMetadata
-          created_at={project.created_at}
-          start_date={project.start_date}
-          role={project.role}
-          budget={project.budget}
-          duration={project.duration}
-          location={project.location}
-          work_type={project.work_type}
+      )}
+      
+      <ProjectDescription description={project.description} />
+      
+      {/* Show contact info if purchased or force show */}
+      {(isPurchased || forceShowContactInfo) && !isLoading && (
+        <ClientContactInfo 
+          clientId={project.user_id} 
+          contactInfo={contactInfo} 
+          isLoading={isLoadingContactInfo}
         />
-        
-        <Separator />
-        
-        <ProjectRequirements
-          requires_insurance={project.requires_insurance}
-          requires_equipment={project.requires_equipment}
-          requires_site_visits={project.requires_site_visits}
+      )}
+      
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ProjectMetadata project={project} />
+        <ProjectRequirements project={project} />
+      </div>
+      
+      {project.documents && project.documents.length > 0 && (
+        <ProjectDocuments documents={project.documents} />
+      )}
+      
+      {/* Project actions for authorized users */}
+      {isBusiness && isOwner && (
+        <ProjectActions 
+          project={project} 
+          onEdit={handleEdit} 
+          onDelete={handleDelete} 
         />
-      </CardContent>
-    </Card>
+      )}
+    </div>
   );
 };
 
