@@ -1,7 +1,4 @@
 
-import { Json } from "@/integrations/supabase/types";
-
-// Shared interface for project leads
 export interface ProjectLead {
   id: string;
   title: string;
@@ -29,4 +26,5 @@ export interface ProjectLead {
   status: string;
   updated_at: string;
   user_id: string;
+  purchases_count: number; // Add this missing property
 }

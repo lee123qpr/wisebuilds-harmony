@@ -79,7 +79,8 @@ export const useProjectsWithFiltering = (applyLeadSettings: boolean = false, lea
           requires_site_visits: project.requires_site_visits || false,
           status: project.status,
           updated_at: project.updated_at || project.created_at,
-          user_id: project.user_id
+          user_id: project.user_id,
+          purchases_count: project.purchases_count || 0 // Add this to match the ProjectLead interface
         })) as ProjectLead[] : [];
         
         setProjectLeads(leads);
