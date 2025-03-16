@@ -1,38 +1,28 @@
 
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
 import { Verification } from '../types';
+import { fetchAllVerifications, getUserInfoForVerification, updateVerification } from '../services/verificationService';
+import { useDocumentPreview } from './useDocumentPreview';
 
 export const useVerifications = () => {
   const [verifications, setVerifications] = useState<Verification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
+  const { documentUrl, loadDocumentUrl } = useDocumentPreview();
 
   // Fetch all verification requests
   const fetchVerifications = async () => {
     setIsLoading(true);
     try {
-      console.log('Fetching verification requests...');
+      // Get basic verification records
+      const verificationRecords = await fetchAllVerifications();
       
-      // Get verifications with user information
-      const { data, error } = await supabase
-        .from('freelancer_verification')
-        .select('*');
-
-      if (error) {
-        console.error('Error fetching verification data:', error);
-        throw error;
-      }
-      
-      console.log('Found verification records:', data?.length || 0);
-      
-      if (!data || data.length === 0) {
+      if (verificationRecords.length === 0) {
         setVerifications([]);
         setIsLoading(false);
         return;
@@ -40,37 +30,12 @@ export const useVerifications = () => {
       
       // For each verification, fetch the user email and name from auth.users
       const enhancedData: Verification[] = await Promise.all(
-        data.map(async (item) => {
-          try {
-            console.log('Fetching user data for:', item.user_id);
-            
-            // Get user data from auth admin API
-            const { data: userData, error: userError } = await supabase.auth.admin.getUserById(
-              item.user_id
-            );
-            
-            if (userError || !userData?.user) {
-              console.error('Error fetching user data:', userError);
-              return {
-                ...item,
-                user_email: 'Unknown',
-                user_full_name: 'Unknown'
-              };
-            }
-            
-            return {
-              ...item,
-              user_email: userData.user.email || 'Unknown',
-              user_full_name: userData.user.user_metadata?.full_name || 'Unknown'
-            };
-          } catch (error) {
-            console.error('Error fetching user data:', error);
-            return {
-              ...item,
-              user_email: 'Error fetching',
-              user_full_name: 'Unknown'
-            };
-          }
+        verificationRecords.map(async (item) => {
+          const userInfo = await getUserInfoForVerification(item.user_id);
+          return {
+            ...item,
+            ...userInfo
+          };
         })
       );
       
@@ -99,32 +64,7 @@ export const useVerifications = () => {
     setAdminNotes(verification.admin_notes || '');
     
     // Get document URL if there's a path
-    if (verification.id_document_path) {
-      try {
-        console.log('Getting signed URL for:', verification.id_document_path);
-        const { data, error } = await supabase.storage
-          .from('id-documents')
-          .createSignedUrl(verification.id_document_path, 60); // 1 minute expiry
-        
-        if (error) {
-          console.error('Error creating signed URL:', error);
-          throw error;
-        }
-        
-        console.log('Signed URL created:', data.signedUrl);
-        setDocumentUrl(data.signedUrl);
-      } catch (error) {
-        console.error('Error getting document URL:', error);
-        setDocumentUrl(null);
-        toast({
-          variant: 'destructive',
-          title: 'Error',
-          description: 'Failed to load document. It may have been deleted or is no longer accessible.'
-        });
-      }
-    } else {
-      setDocumentUrl(null);
-    }
+    await loadDocumentUrl(verification.id_document_path);
     
     setDialogOpen(true);
   };
@@ -135,24 +75,7 @@ export const useVerifications = () => {
     
     setIsUpdating(true);
     try {
-      console.log('Updating verification status to:', status);
-      const { error } = await supabase
-        .from('freelancer_verification')
-        .update({
-          verification_status: status,
-          admin_notes: adminNotes,
-          verified_at: new Date().toISOString(),
-          // In a real app, you'd get the current admin user ID
-          verified_by: (await supabase.auth.getSession()).data.session?.user.id
-        })
-        .eq('id', selectedVerification.id);
-      
-      if (error) {
-        console.error('Error updating verification status:', error);
-        throw error;
-      }
-      
-      console.log('Verification status updated successfully');
+      await updateVerification(selectedVerification.id, status, adminNotes);
       
       // Update local state
       setVerifications(prev => 
