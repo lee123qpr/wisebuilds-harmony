@@ -18,7 +18,12 @@ export const useFreelancerDashboard = () => {
   } = useQuery({
     queryKey: ['leadSettings', user?.id],
     queryFn: async () => {
-      if (!user) return null;
+      if (!user) {
+        console.log('No user found, skipping lead settings fetch');
+        return null;
+      }
+      
+      console.log('Fetching lead settings for user:', user.id);
       
       const { data, error } = await supabase
         .from('lead_settings')
@@ -32,16 +37,28 @@ export const useFreelancerDashboard = () => {
       }
       
       console.log('Fetched lead settings in useFreelancerDashboard:', data);
+      
+      if (!data) {
+        console.log('No lead settings found for user');
+      }
+      
       return data as LeadSettings | null;
     },
     enabled: !!user,
     staleTime: 30000 // Consider data fresh for 30 seconds
   });
 
+  // Function to manually refresh lead settings
+  const forceRefreshLeadSettings = () => {
+    console.log('Manually refreshing lead settings...');
+    queryClient.invalidateQueries({ queryKey: ['leadSettings', user?.id] });
+    return refetchLeadSettings();
+  };
+
   return {
     leadSettings,
     isLoadingSettings,
     error,
-    refetchLeadSettings
+    refetchLeadSettings: forceRefreshLeadSettings
   };
 };
