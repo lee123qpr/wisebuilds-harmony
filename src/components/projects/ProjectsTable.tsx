@@ -90,10 +90,12 @@ const ProjectsTable = () => {
             />
           </div>
           <ProjectFilters 
-            statusFilter={statusFilter} 
-            setStatusFilter={setStatusFilter}
+            searchQuery={searchQuery}
+            statusFilter={statusFilter}
             hiringFilter={hiringFilter}
-            setHiringFilter={setHiringFilter}
+            onSearchChange={setSearchQuery}
+            onStatusChange={setStatusFilter}
+            onHiringChange={setHiringFilter}
           />
         </div>
       </div>
