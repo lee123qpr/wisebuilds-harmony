@@ -1,92 +1,70 @@
 
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { useVerification } from './useVerification';
 
-export const useDocumentUpload = (onUploadSuccess?: () => void) => {
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { 
-    uploadVerificationDocument, 
-    isUploading,
-    refreshVerificationStatus
-  } = useVerification();
+export const useDocumentUpload = () => {
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const { user } = useAuth();
+  const { uploadVerificationDocument, refreshVerificationStatus } = useVerification();
 
-  const handleFileSelection = (file: File) => {
-    setSelectedFile(file);
-  };
-
-  const handleRemoveSelectedFile = () => {
-    setSelectedFile(null);
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedFile) {
+  const handleSubmit = async (file: File) => {
+    if (!user) {
       toast({
         variant: 'destructive',
-        title: 'No file selected',
-        description: 'Please select a file to upload.',
+        title: 'Authentication Error',
+        description: 'You must be logged in to upload documents.',
       });
-      return;
+      return false;
     }
 
-    console.log('Submitting file for verification:', selectedFile.name);
+    setIsUploading(true);
     try {
-      const result = await uploadVerificationDocument(selectedFile);
-      console.log('Upload result:', result);
+      console.log('Uploading document for user:', user.id);
       
-      if (result) {
-        setSelectedFile(null);
+      const result = await uploadVerificationDocument(file);
+      
+      if (!result.success) {
+        const errorMessage = result.errorMessage || 'Upload failed. Please try again.';
+        console.error('Upload failed with result:', result);
         toast({
-          title: 'Document uploaded',
-          description: 'Your ID document has been submitted for verification.',
+          variant: 'destructive',
+          title: 'Upload failed',
+          description: errorMessage,
         });
-        
-        // Refresh verification status after upload
-        await refreshVerificationStatus();
-        
-        // Call the success callback if provided
-        if (onUploadSuccess) {
-          onUploadSuccess();
-        }
+        return false;
       }
-    } catch (error) {
-      console.error('Error during document upload:', error);
       
-      // Determine the error message to show
-      let errorMessage = 'An error occurred while uploading your document. Please try again.';
+      console.log('Document uploaded successfully');
       
-      // Check for specific error types
-      if (typeof error === 'object' && error !== null) {
-        const errorObj = error as any;
-        
-        // Check for permission errors
-        if (errorObj.message?.includes('permission denied')) {
-          errorMessage = 'Permission denied. Please ensure you are logged in as a freelancer.';
-        }
-        // Check for storage errors
-        else if (errorObj.message?.includes('storage') || errorObj.statusCode === 400) {
-          errorMessage = 'Storage error. Please ensure your file is below 5MB and in JPG, PNG, or PDF format.';
-        }
-        // Check for user type errors
-        else if (errorObj.message?.includes('freelancer')) {
-          errorMessage = 'Only freelancers can upload verification documents. Please ensure your account is set up correctly.';
-        }
-      }
+      // Refresh the verification status
+      await refreshVerificationStatus();
       
       toast({
-        variant: 'destructive',
-        title: 'Upload failed',
-        description: errorMessage,
+        title: 'Document Uploaded',
+        description: 'Your document was uploaded successfully and is pending review.',
       });
+      
+      return true;
+    } catch (error: any) {
+      console.error('Error during document upload:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Upload Error',
+        description: error.message || 'Failed to upload document. Please try again.',
+      });
+      return false;
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return {
-    selectedFile,
     isUploading,
-    handleFileSelection,
-    handleRemoveSelectedFile,
     handleSubmit
   };
 };
+
+export default useDocumentUpload;

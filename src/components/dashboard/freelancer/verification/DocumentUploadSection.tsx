@@ -75,6 +75,9 @@ const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
         <p className="text-xs text-orange-500 mt-1">
           UK or Ireland documents only
         </p>
+        <p className="text-xs text-gray-500 mt-1">
+          You must be registered as a freelancer to upload documents
+        </p>
       </label>
     </div>
   );

@@ -10,6 +10,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
   filePath?: string;
   verificationData?: VerificationData;
   error?: any;
+  errorMessage?: string;
 }> => {
   try {
     // Check if user is a freelancer first
@@ -18,7 +19,8 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       console.error('Only freelancers can upload verification documents');
       return { 
         success: false, 
-        error: new Error('Only freelancers can upload verification documents') 
+        error: new Error('Only freelancers can upload verification documents'),
+        errorMessage: 'Permission denied. Please ensure you are logged in as a freelancer.'
       };
     }
     
@@ -42,7 +44,11 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     
     if (uploadError) {
       console.error('Error uploading file:', uploadError);
-      throw uploadError;
+      return {
+        success: false,
+        error: uploadError,
+        errorMessage: 'Failed to upload document. Please try again.'
+      };
     }
     
     console.log('File uploaded successfully:', uploadData.path);
@@ -93,7 +99,11 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
           console.error('Error cleaning up file:', cleanupError);
         }
         
-        throw updateError;
+        return {
+          success: false,
+          error: updateError,
+          errorMessage: 'Failed to update verification record. Please try again.'
+        };
       }
       
       console.log('Verification record updated:', updatedRecord);
@@ -135,7 +145,11 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
           console.error('Error cleaning up file:', cleanupError);
         }
         
-        throw insertError;
+        return {
+          success: false,
+          error: insertError,
+          errorMessage: 'Failed to create verification record. Please try again.'
+        };
       }
       
       console.log('New verification record created:', newRecord);
@@ -156,6 +170,10 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     }
   } catch (error) {
     console.error('Error in uploadVerificationDocument:', error);
-    return { success: false, error };
+    return { 
+      success: false, 
+      error,
+      errorMessage: 'An unexpected error occurred. Please try again later.'
+    };
   }
 };
