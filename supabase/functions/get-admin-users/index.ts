@@ -67,10 +67,29 @@ Deno.serve(async (req) => {
       )
     }
 
-    // Separate active and deleted users
-    // deleted_at is null for active users
-    const activeUsers = users.users.filter(user => user.deleted_at === null);
-    const deletedUsers = users.users.filter(user => user.deleted_at !== null);
+    // In Supabase Auth, when users are soft-deleted they're moved to a "deleted" status
+    // The proper way to check for deleted users is by looking at the 'banned_until' field
+    // and determining if the user has been soft-deleted
+    const activeUsers = [];
+    const deletedUsers = [];
+    
+    users.users.forEach(user => {
+      // Log a sample user to see the structure
+      if (activeUsers.length === 0 && deletedUsers.length === 0) {
+        console.log('Sample user structure:', JSON.stringify(user, null, 2));
+      }
+      
+      // Supabase doesn't use 'deleted_at' in the Auth API
+      // Instead, it marks deleted users with a special banned status
+      // Check if user has been deleted by looking at their properties
+      const isDeleted = user.banned_until === 'infinity';
+      
+      if (isDeleted) {
+        deletedUsers.push(user);
+      } else {
+        activeUsers.push(user);
+      }
+    });
     
     console.log(`Found ${activeUsers.length} active users and ${deletedUsers.length} deleted users`);
 

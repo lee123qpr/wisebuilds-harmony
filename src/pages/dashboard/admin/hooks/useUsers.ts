@@ -67,12 +67,13 @@ export const useUsers = () => {
       console.log('Response from get-admin-users:', response.data);
       
       // Verify the structure of the data and handle it properly
-      if (!response.data?.users || !Array.isArray(response.data.users)) {
-        throw new Error('Invalid user data received from server');
+      if (!response.data || typeof response.data !== 'object') {
+        throw new Error('Invalid response format received from server');
       }
       
-      const userData = response.data.users || [];
-      const deletedUsers = response.data.deletedUsers || [];
+      // Extract users and deletedUsers, ensuring they're arrays (even if empty)
+      const userData = Array.isArray(response.data.users) ? response.data.users : [];
+      const deletedUsers = Array.isArray(response.data.deletedUsers) ? response.data.deletedUsers : [];
       
       // Fetch freelancer verification statuses
       const { data: verificationData, error: verificationError } = await supabase
