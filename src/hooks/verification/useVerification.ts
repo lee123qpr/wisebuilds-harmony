@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
-import { fetchVerificationStatus, uploadVerificationDocument } from './verificationService';
+import { fetchVerificationStatus, uploadVerificationDocument, mapStatusToVerificationStatus } from './verificationService';
 import type { VerificationData, UseVerificationResult, VerificationStatus } from './types';
 
 export const useVerification = (): UseVerificationResult => {
@@ -76,10 +76,13 @@ export const useVerification = (): UseVerificationResult => {
     }
   }, [user]);
 
+  const verificationStatus: VerificationStatus = verificationData?.verification_status || 'not_submitted';
+  const isVerified = verificationData?.verification_status === 'approved';
+
   return {
     verificationData,
-    verificationStatus: verificationData?.verification_status || 'not_submitted',
-    isVerified: verificationData?.verification_status === 'approved',
+    verificationStatus,
+    isVerified,
     isLoading,
     isUploading,
     error,
