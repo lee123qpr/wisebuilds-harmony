@@ -97,7 +97,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         .insert({
           user_id: userId,
           id_document_path: filePath,
-          verification_status: 'pending',
+          verification_status: 'pending' as 'pending' | 'approved' | 'rejected',
           submitted_at: new Date().toISOString()
         })
         .select()
@@ -116,7 +116,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         .from('freelancer_verification')
         .update({
           id_document_path: filePath,
-          verification_status: 'pending',
+          verification_status: 'pending' as 'pending' | 'approved' | 'rejected',
           submitted_at: new Date().toISOString()
         })
         .eq('user_id', userId)
