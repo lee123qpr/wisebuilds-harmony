@@ -54,12 +54,15 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
   try {
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}/id-document-${Date.now()}.${fileExt}`;
+    const fileName = `${userId}_${Date.now()}.${fileExt}`;
+    const filePath = fileName;
+    
+    console.log('Attempting to upload file:', fileName);
     
     // Upload the file to the id-documents bucket
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from('id-documents')
-      .upload(fileName, file, {
+      .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
       });
@@ -70,8 +73,8 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     }
     
     // Get the file path
-    const filePath = uploadData?.path;
-    console.log('File uploaded successfully to:', filePath);
+    const path = uploadData?.path;
+    console.log('File uploaded successfully to:', path);
     
     // Check if verification record exists
     const { data: existingData, error: checkError } = await supabase
@@ -94,7 +97,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         .from('freelancer_verification')
         .insert({
           user_id: userId,
-          id_document_path: filePath,
+          id_document_path: path,
           verification_status: 'pending',
           submitted_at: new Date().toISOString()
         })
@@ -113,7 +116,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       const { data, error } = await supabase
         .from('freelancer_verification')
         .update({
-          id_document_path: filePath,
+          id_document_path: path,
           verification_status: 'pending',
           submitted_at: new Date().toISOString()
         })
@@ -142,7 +145,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       
       return {
         success: true,
-        filePath,
+        filePath: path,
         verificationData
       };
     }

@@ -59,13 +59,13 @@ const UserRow = ({ user, getUserTypeColor }: UserRowProps) => {
       </TableCell>
       <TableCell>
         <div className="flex items-center">
-          {user.is_verified ? (
+          {user.email_confirmed_at ? (
             <CheckCircle className="h-4 w-4 text-green-500 mr-1" />
           ) : (
             <XCircle className="h-4 w-4 text-red-500 mr-1" />
           )}
           <span>
-            {user.is_verified ? 'Verified' : 'Unverified'}
+            {user.email_confirmed_at ? 'Verified' : 'Unverified'}
           </span>
         </div>
       </TableCell>

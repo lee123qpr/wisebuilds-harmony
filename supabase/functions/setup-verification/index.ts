@@ -15,6 +15,8 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Setting up verification system...');
+    
     // Create a Supabase client with the Admin key
     const supabaseAdmin = createClient(
       // Supabase API URL - env var exported by default.
@@ -26,18 +28,22 @@ serve(async (req) => {
 
     // Create the ID documents bucket if it doesn't exist
     try {
+      console.log('Checking if id-documents bucket exists...');
       const { data: bucketData, error: bucketError } = await supabaseAdmin.storage.getBucket('id-documents');
       
       if (bucketError || !bucketData) {
         console.log('Creating id-documents bucket...');
         const { error: createBucketError } = await supabaseAdmin.storage.createBucket('id-documents', {
-          public: false, // Make sure it's private
+          public: false, // Make sure it's private for security
         });
         
         if (createBucketError) {
           console.error('Error creating bucket:', createBucketError);
           throw createBucketError;
         }
+        console.log('Bucket created successfully');
+      } else {
+        console.log('Bucket already exists');
       }
     } catch (bucketError) {
       console.error('Bucket operation error:', bucketError);
@@ -52,42 +58,84 @@ serve(async (req) => {
 
     // Set up storage policies for the id-documents bucket
     try {
+      console.log('Setting up storage policies...');
+      
       // Remove existing policies to avoid conflicts
       await supabaseAdmin.storage.from('id-documents').deletePolicy();
+      console.log('Deleted existing policies');
       
       // Create policy for users to upload their own documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy({
+      await supabaseAdmin.storage.from('id-documents').createPolicy('User Upload Policy', {
         name: 'User Upload Policy',
         definition: {
           type: 'INSERT',
-          match: { prefix: "{{auth.uid}}/" },
+          match: { prefix: '{{auth.uid}}_' },
           roles: ['authenticated'],
         }
       });
+      console.log('Created upload policy');
 
       // Create policy for users to read their own documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy({
+      await supabaseAdmin.storage.from('id-documents').createPolicy('User Read Policy', {
         name: 'User Read Policy',
         definition: {
           type: 'SELECT',
-          match: { prefix: "{{auth.uid}}/" },
+          match: { prefix: '{{auth.uid}}_' },
           roles: ['authenticated'],
         }
       });
+      console.log('Created read policy');
 
-      // Create policy for service_role to read all documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy({
+      // Create policy for admins to read all documents
+      await supabaseAdmin.storage.from('id-documents').createPolicy('Admin Read Policy', {
         name: 'Admin Read Policy',
         definition: {
           type: 'SELECT',
-          match: { prefix: "*" },
+          match: { prefix: '*' },
           roles: ['service_role'],
         }
       });
+      console.log('Created admin policy');
 
     } catch (policyError) {
       console.log('Policy setup error (may already exist):', policyError);
       // We continue even if policy creation fails as policies might already exist
+    }
+
+    // Create the freelancer_verification table if it doesn't exist
+    try {
+      console.log('Checking if freelancer_verification table exists...');
+      const { error } = await supabaseAdmin.rpc('does_table_exist', { table_name: 'freelancer_verification' });
+      
+      if (error) {
+        console.log('Creating freelancer_verification table...');
+        const createTableQuery = `
+          CREATE TABLE IF NOT EXISTS public.freelancer_verification (
+            id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+            user_id UUID REFERENCES auth.users(id) NOT NULL,
+            verification_status TEXT NOT NULL DEFAULT 'pending',
+            id_document_path TEXT,
+            submitted_at TIMESTAMP WITH TIME ZONE,
+            verified_at TIMESTAMP WITH TIME ZONE,
+            admin_notes TEXT,
+            created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+            updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+          );
+        `;
+        
+        const { error: createTableError } = await supabaseAdmin.rpc('exec_sql', { sql: createTableQuery });
+        
+        if (createTableError) {
+          console.error('Error creating table:', createTableError);
+        } else {
+          console.log('Table created successfully');
+        }
+      } else {
+        console.log('Table already exists');
+      }
+    } catch (tableError) {
+      console.error('Table operation error:', tableError);
+      // Continue execution as this might fail if table exists or RPC isn't available
     }
 
     // Return success

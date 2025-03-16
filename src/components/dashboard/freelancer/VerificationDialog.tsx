@@ -17,7 +17,7 @@ import { useToast } from '@/hooks/use-toast';
 const VerificationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { uploadVerificationDocument, isUploading, verificationStatus } = useVerification();
+  const { uploadVerificationDocument, isUploading, verificationStatus, refreshVerificationStatus } = useVerification();
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -59,10 +59,16 @@ const VerificationDialog: React.FC = () => {
       return;
     }
 
+    console.log('Submitting file for verification:', selectedFile.name);
     const result = await uploadVerificationDocument(selectedFile);
+    console.log('Upload result:', result);
+    
     if (result) {
       setSelectedFile(null);
       setOpen(false);
+      
+      // Refresh verification status after upload
+      await refreshVerificationStatus();
     }
   };
 
