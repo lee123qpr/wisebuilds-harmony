@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Phone, Mail, MapPin, Star, Calendar, CheckCircle2 } from 'lucide-react';
+import { MessageSquare, Phone, Mail, MapPin, Star, Calendar, CheckCircle2, Briefcase } from 'lucide-react';
 import { FreelancerApplication } from '@/types/applications';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -26,7 +26,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
   const applicationDate = format(new Date(application.created_at), 'dd MMM yyyy');
   
   const getInitials = (name?: string) => {
-    if (!name) return 'FP';
+    if (!name) return 'AF';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
@@ -111,6 +111,13 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
                   <div className="flex items-center text-sm text-muted-foreground">
                     <MapPin className="h-4 w-4 mr-1" />
                     {profile.location}
+                  </div>
+                )}
+                
+                {profile?.job_title && !profile?.location && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Briefcase className="h-4 w-4 mr-1" />
+                    {profile.job_title}
                   </div>
                 )}
                 
