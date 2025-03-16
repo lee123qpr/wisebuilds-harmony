@@ -27,7 +27,7 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
   return (
     <Tabs defaultValue="available" value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid grid-cols-5 mb-8">
-        <TabsTrigger value="available">Available</TabsTrigger>
+        <TabsTrigger value="available">Available Projects</TabsTrigger>
         <TabsTrigger value="leads">My Leads</TabsTrigger>
         <TabsTrigger value="applications">Applications</TabsTrigger>
         <TabsTrigger value="active">Active Jobs</TabsTrigger>
