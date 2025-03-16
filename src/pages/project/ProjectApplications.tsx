@@ -98,7 +98,7 @@ const ProjectApplications = () => {
           <div className="space-y-6">
             <div className="bg-blue-50 border border-blue-100 rounded-md p-4 mb-6">
               <h3 className="text-blue-700 font-medium mb-1">
-                Structural Engineers who want to work with you
+                {project?.role ? `${project.role}s who want to work with you` : 'Professionals who want to work with you'}
               </h3>
               <p className="text-blue-600 text-sm">
                 These matches can be contacted right away and are most likely to get your project done!
