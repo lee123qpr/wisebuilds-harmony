@@ -1,7 +1,6 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ProjectLead } from '@/types/projects';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
 import ApplicationsTabContent from './tabs/ApplicationsTabContent';
@@ -11,16 +10,12 @@ import MessagesTabContent from './tabs/MessagesTabContent';
 
 interface FreelancerTabsProps {
   isLoadingSettings: boolean;
-  isLoadingLeads?: boolean;
   leadSettings: LeadSettings | null;
-  projectLeads: ProjectLead[];
 }
 
 const FreelancerTabs: React.FC<FreelancerTabsProps> = ({ 
   isLoadingSettings, 
-  isLoadingLeads,
-  leadSettings, 
-  projectLeads 
+  leadSettings 
 }) => {
   const [activeTab, setActiveTab] = useState('available');
   
@@ -41,9 +36,7 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       <TabsContent value="leads" className="pt-2">
         <LeadsTabContent 
           isLoadingSettings={isLoadingSettings}
-          isLoadingLeads={isLoadingLeads}
           leadSettings={leadSettings}
-          projectLeads={projectLeads}
         />
       </TabsContent>
       

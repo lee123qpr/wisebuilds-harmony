@@ -13,7 +13,7 @@ import { useQueryClient } from '@tanstack/react-query';
 
 const FreelancerDashboard = () => {
   const { user } = useAuth();
-  const { leadSettings, isLoadingSettings, isLoadingLeads, projectLeads } = useFreelancerDashboard();
+  const { leadSettings, isLoadingSettings } = useFreelancerDashboard();
   const { creditBalance, isLoadingBalance } = useCredits();
   const { verificationStatus } = useVerification();
   const queryClient = useQueryClient();
@@ -47,9 +47,7 @@ const FreelancerDashboard = () => {
         
         <FreelancerTabs 
           isLoadingSettings={isLoadingSettings}
-          isLoadingLeads={isLoadingLeads}
           leadSettings={leadSettings}
-          projectLeads={projectLeads}
         />
       </div>
     </MainLayout>
