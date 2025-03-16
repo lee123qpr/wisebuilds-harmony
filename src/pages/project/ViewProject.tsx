@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -24,6 +25,7 @@ const ViewProject = () => {
   const [refreshContactInfo, setRefreshContactInfo] = React.useState(false);
   
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+  const isBusiness = user?.user_metadata?.user_type === 'business';
 
   const handlePurchaseSuccess = () => {
     setRefreshContactInfo(prev => !prev);
@@ -55,14 +57,22 @@ const ViewProject = () => {
           </>
         ) : (
           <>
-            <ProjectDeleteHandler projectId={project!.id}>
-              {(handleDelete) => (
-                <ProjectHeader 
-                  projectId={project!.id} 
-                  onDelete={handleDelete} 
-                />
-              )}
-            </ProjectDeleteHandler>
+            {isBusiness && (
+              <ProjectDeleteHandler projectId={project!.id}>
+                {(handleDelete) => (
+                  <ProjectHeader 
+                    projectId={project!.id} 
+                    onDelete={handleDelete} 
+                  />
+                )}
+              </ProjectDeleteHandler>
+            )}
+
+            {isFreelancer && !isBusiness && (
+              <div className="mb-4">
+                <h1 className="text-2xl font-bold">{project!.title}</h1>
+              </div>
+            )}
 
             {isFreelancer && (
               <div className="flex justify-end mb-4">
@@ -78,7 +88,10 @@ const ViewProject = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="md:col-span-2">
-                <ProjectDetails project={project!} />
+                <ProjectDetails 
+                  project={project!} 
+                  forceShowContactInfo={isFreelancer && project!.purchases_count > 0}
+                />
               </div>
 
               <div className="space-y-6">

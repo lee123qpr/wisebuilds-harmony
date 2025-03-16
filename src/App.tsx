@@ -121,8 +121,15 @@ const App = () => (
               />
               
               {/* Marketplace Routes */}
+              <Route 
+                path="/marketplace/:projectId" 
+                element={
+                  <ProtectedRoute allowedUserTypes={['freelancer']}>
+                    <ViewProject />
+                  </ProtectedRoute>
+                } 
+              />
               <Route path="/marketplace" element={<NotFound />} />
-              <Route path="/marketplace/:projectId" element={<NotFound />} />
               
               {/* Messages Routes */}
               <Route path="/messages" element={<NotFound />} />

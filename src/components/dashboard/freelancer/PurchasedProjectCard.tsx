@@ -40,7 +40,7 @@ const PurchasedProjectCard: React.FC<PurchasedProjectCardProps> = ({ project }) 
   };
 
   const handleViewDetails = () => {
-    navigate(`/project/${project.id}`);
+    navigate(`/marketplace/${project.id}`);
   };
 
   const handleMessage = () => {
