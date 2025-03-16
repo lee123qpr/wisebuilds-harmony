@@ -46,7 +46,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const path = uploadData?.path;
     console.log('File uploaded successfully to:', path);
     
-    // Create or update the verification record without trying to join with users table
+    // Create or update the verification record
     const verificationRecord = {
       user_id: userId,
       id_document_path: filePath,
@@ -61,8 +61,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         .upsert(verificationRecord, {
           onConflict: 'user_id'
         })
-        .select()
-        .single();
+        .select();
       
       if (insertError) {
         console.error('Create verification record error:', insertError);
@@ -81,19 +80,19 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         throw insertError;
       }
       
-      if (!verificationData) {
+      if (!verificationData || verificationData.length === 0) {
         throw new Error('No verification data returned');
       }
       
       // Map the returned data to our expected format
       const result: VerificationData = {
-        id: verificationData.id,
-        user_id: verificationData.user_id,
-        verification_status: mapStatusToVerificationStatus(verificationData.verification_status),
-        id_document_path: verificationData.id_document_path,
-        submitted_at: verificationData.submitted_at,
-        verified_at: verificationData.verified_at,
-        admin_notes: verificationData.admin_notes
+        id: verificationData[0].id,
+        user_id: verificationData[0].user_id,
+        verification_status: mapStatusToVerificationStatus(verificationData[0].verification_status),
+        id_document_path: verificationData[0].id_document_path,
+        submitted_at: verificationData[0].submitted_at,
+        verified_at: verificationData[0].verified_at,
+        admin_notes: verificationData[0].admin_notes
       };
       
       return {

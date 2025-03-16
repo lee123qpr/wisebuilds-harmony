@@ -52,10 +52,28 @@ export const useDocumentUpload = (onUploadSuccess?: () => void) => {
       }
     } catch (error) {
       console.error('Error during document upload:', error);
+      
+      // Determine the error message to show
+      let errorMessage = 'An error occurred while uploading your document. Please try again.';
+      
+      // Check for specific error types
+      if (typeof error === 'object' && error !== null) {
+        const errorObj = error as any;
+        
+        // Check for permission errors
+        if (errorObj.message?.includes('permission denied')) {
+          errorMessage = 'Permission denied. Please ensure you are logged in as a freelancer.';
+        }
+        // Check for storage errors
+        else if (errorObj.message?.includes('storage') || errorObj.statusCode === 400) {
+          errorMessage = 'Storage error. Please ensure your file is below 5MB and in JPG, PNG, or PDF format.';
+        }
+      }
+      
       toast({
         variant: 'destructive',
         title: 'Upload failed',
-        description: 'An error occurred while uploading your document. Please try again.',
+        description: errorMessage,
       });
     }
   };

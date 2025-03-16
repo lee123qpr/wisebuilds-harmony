@@ -7,6 +7,7 @@ export const isUserFreelancer = async (): Promise<boolean> => {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return false;
     
+    // Check user metadata for user_type
     return user.user_metadata?.user_type === 'freelancer';
   } catch (error) {
     console.error('Error checking user type:', error);

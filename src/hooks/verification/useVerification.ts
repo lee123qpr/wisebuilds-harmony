@@ -8,7 +8,6 @@ import {
   deleteVerificationDocument 
 } from './verificationService';
 import type { VerificationData, UseVerificationResult } from './types';
-import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
 
 export const useVerification = (): UseVerificationResult => {
   const { user } = useAuth();

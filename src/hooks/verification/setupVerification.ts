@@ -1,11 +1,15 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
+/**
+ * Sets up the verification system by calling a dedicated edge function
+ * This includes creating storage buckets and setting up RLS policies
+ */
 export const setupVerificationSystem = async (): Promise<boolean> => {
   try {
     console.log('Setting up verification system...');
     
+    // Call the setup-verification edge function
     const { data, error } = await supabase.functions.invoke('setup-verification');
     
     if (error) {
@@ -13,40 +17,10 @@ export const setupVerificationSystem = async (): Promise<boolean> => {
       return false;
     }
     
-    console.log('Verification system setup response:', data);
+    console.log('Verification system setup successful:', data);
     return true;
   } catch (error) {
-    console.error('Error invoking setup function:', error);
+    console.error('Error setting up verification system:', error);
     return false;
   }
-};
-
-export const useSetupVerification = () => {
-  const { toast } = useToast();
-  
-  const setup = async () => {
-    toast({
-      title: 'Setting up verification system...',
-      description: 'Please wait...',
-    });
-    
-    const success = await setupVerificationSystem();
-    
-    if (success) {
-      toast({
-        title: 'Setup complete',
-        description: 'Verification system is ready to use.',
-      });
-    } else {
-      toast({
-        variant: 'destructive',
-        title: 'Setup failed',
-        description: 'Could not setup verification system. Please try again.',
-      });
-    }
-    
-    return success;
-  };
-  
-  return { setup };
 };
