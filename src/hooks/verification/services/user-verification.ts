@@ -13,28 +13,29 @@ export const isUserFreelancer = async (): Promise<boolean> => {
       return true;
     }
     
-    // As a fallback, check if there's a client_profiles record for this user
+    // Check if there's a freelancer_credits record which only exists for freelancers
+    const { data: freelancerCredits, error: creditsError } = await supabase
+      .from('freelancer_credits')
+      .select('credit_balance')
+      .eq('user_id', session.user.id)
+      .single();
+      
+    if (freelancerCredits) {
+      return true;
+    }
+    
+    // As a fallback, check if there's a client_profiles record
     // If there is a client_profiles record, the user is not a freelancer
     const { data: clientProfile, error: clientError } = await supabase
       .from('client_profiles')
       .select('id')
       .eq('id', session.user.id)
-      .single();
+      .maybeSingle();
     
-    if (clientError && clientError.code === 'PGRST116') {
-      // No client profile found, this could be a freelancer
-      // We should check for credit balance which is only for freelancers
-      const { data: freelancerCredits } = await supabase
-        .from('freelancer_credits')
-        .select('credit_balance')
-        .eq('user_id', session.user.id)
-        .single();
-        
-      return !!freelancerCredits; // If credits exist, user is a freelancer
-    }
+    // If no client profile exists, we need more verification
+    // For now, we'll default to false unless explicitly identified as a freelancer above
+    return !clientProfile && session.user.user_metadata?.user_type !== 'business';
     
-    // If client profile exists, user is not a freelancer
-    return !clientProfile;
   } catch (error) {
     console.error('Error checking user type:', error);
     return false;

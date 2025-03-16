@@ -9,6 +9,9 @@ type AuthContextType = {
   isLoading: boolean;
   signOut: () => Promise<void>;
   userType: string | null;
+  isFreelancer: boolean;
+  isBusiness: boolean;
+  isAdmin: boolean;
 };
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -18,6 +21,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userType, setUserType] = useState<string | null>(null);
+  
+  // Derived state for clearer user role checks
+  const isFreelancer = userType === 'freelancer';
+  const isBusiness = userType === 'business';
+  const isAdmin = userType === 'admin';
 
   useEffect(() => {
     // Get initial session
@@ -81,6 +89,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     isLoading,
     signOut,
     userType,
+    isFreelancer,
+    isBusiness,
+    isAdmin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

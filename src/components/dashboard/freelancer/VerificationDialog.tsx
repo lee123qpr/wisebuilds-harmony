@@ -20,7 +20,7 @@ import { useToast } from '@/hooks/use-toast';
 const VerificationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const { verificationStatus, isLoading } = useVerification();
-  const { userType } = useAuth();
+  const { isFreelancer } = useAuth();
   const { toast } = useToast();
 
   const getButtonLabel = () => {
@@ -51,7 +51,7 @@ const VerificationDialog: React.FC = () => {
 
   // Handle button click to open dialog
   const handleOpenDialog = () => {
-    if (userType !== 'freelancer') {
+    if (!isFreelancer) {
       toast({
         variant: 'destructive',
         title: 'Freelancers Only',

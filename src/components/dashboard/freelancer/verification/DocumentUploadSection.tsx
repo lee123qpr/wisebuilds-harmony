@@ -17,8 +17,7 @@ const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
   onFileSelected,
 }) => {
   const { toast } = useToast();
-  const { userType } = useAuth();
-  const isFreelancer = userType === 'freelancer';
+  const { isFreelancer, userType } = useAuth();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
