@@ -1,36 +1,45 @@
 
 import React from 'react';
-import { Mail, User } from 'lucide-react';
 import { Conversation } from '@/types/messaging';
+import { ArrowLeft, User, Briefcase } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
 interface ChatHeaderProps {
   conversation: Conversation;
 }
 
 const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation }) => {
+  const clientName = conversation.client_info?.contact_name || 'Unknown Client';
+  const companyName = conversation.client_info?.company_name;
+  const projectTitle = conversation.project_title;
+
   return (
-    <div className="p-3 bg-muted/50 border-b">
-      <div className="font-medium">
-        {conversation.client_info?.contact_name || 'Unknown Client'}
-      </div>
-      <div className="text-sm text-muted-foreground">
-        {conversation.project_title}
+    <div className="p-3 border-b flex items-center gap-3 bg-white">
+      <div className="md:hidden">
+        <Button variant="ghost" size="icon" className="mr-2">
+          <ArrowLeft className="h-4 w-4" />
+        </Button>
       </div>
       
-      {/* Client contact details */}
-      <div className="flex flex-wrap gap-4 mt-2 text-xs">
-        {conversation.client_info?.email && (
-          <div className="flex items-center gap-1">
-            <Mail className="h-3 w-3" />
-            <span>{conversation.client_info.email}</span>
-          </div>
-        )}
-        {conversation.client_info?.company_name && (
-          <div className="flex items-center gap-1">
-            <User className="h-3 w-3" />
-            <span>{conversation.client_info.company_name}</span>
-          </div>
-        )}
+      <div className="bg-primary/10 text-primary rounded-full p-2">
+        <User className="h-5 w-5" />
+      </div>
+      
+      <div className="flex-grow min-w-0">
+        <div className="font-medium truncate">
+          {clientName}
+          {companyName && (
+            <span className="ml-1 text-sm text-muted-foreground">
+              ({companyName})
+            </span>
+          )}
+        </div>
+        
+        <div className="flex items-center gap-1 text-xs text-muted-foreground truncate">
+          <Briefcase className="h-3 w-3 flex-shrink-0" />
+          <span className="truncate">Project: {projectTitle}</span>
+        </div>
       </div>
     </div>
   );

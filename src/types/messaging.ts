@@ -15,6 +15,15 @@ export interface Conversation {
   client_info: ClientInfo | null;
 }
 
+export interface MessageAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  path: string;
+}
+
 export interface Message {
   id: string;
   conversation_id: string;
@@ -22,4 +31,5 @@ export interface Message {
   message: string;
   created_at: string;
   is_read: boolean;
+  attachments?: MessageAttachment[];
 }
