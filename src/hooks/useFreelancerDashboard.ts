@@ -7,11 +7,12 @@ export type { LeadSettings };
 
 export const useFreelancerDashboard = () => {
   const { leadSettings, isLoading: isLoadingSettings, error } = useLeadSettingsData();
-  const { projectLeads } = useProjectLeadsGenerator(leadSettings);
+  const { projectLeads, isLoading: isLoadingLeads } = useProjectLeadsGenerator(leadSettings);
 
   return {
     leadSettings,
     isLoadingSettings,
+    isLoadingLeads,
     projectLeads,
     error
   };

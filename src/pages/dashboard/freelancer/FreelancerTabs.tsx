@@ -1,74 +1,61 @@
 
-import React, { useEffect, useState } from 'react';
-import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProjectLead } from '@/types/projects';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
-import AvailableTabContent from './tabs/AvailableTabContent';
-import LeadsTabContent from './tabs/LeadsTabContent';
-import ApplicationsTabContent from './tabs/ApplicationsTabContent';
 import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
+import ApplicationsTabContent from './tabs/ApplicationsTabContent';
+import LeadsTabContent from './tabs/LeadsTabContent';
+import AvailableTabContent from './tabs/AvailableTabContent';
 import MessagesTabContent from './tabs/MessagesTabContent';
-import { useSearchParams } from 'react-router-dom';
 
 interface FreelancerTabsProps {
   isLoadingSettings: boolean;
+  isLoadingLeads?: boolean;
   leadSettings: LeadSettings | null;
   projectLeads: ProjectLead[];
 }
 
 const FreelancerTabs: React.FC<FreelancerTabsProps> = ({ 
   isLoadingSettings, 
+  isLoadingLeads,
   leadSettings, 
   projectLeads 
 }) => {
-  const [searchParams, setSearchParams] = useSearchParams();
-  const tabFromUrl = searchParams.get('tab');
-  const [activeTab, setActiveTab] = useState<string>('available');
-  
-  // Set initial tab based on URL or default to 'available'
-  useEffect(() => {
-    if (tabFromUrl && ['available', 'leads', 'applied', 'active', 'messages'].includes(tabFromUrl)) {
-      setActiveTab(tabFromUrl);
-    }
-  }, [tabFromUrl]);
-  
-  // Update URL when tab changes
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    setSearchParams({ tab: value });
-  };
+  const [activeTab, setActiveTab] = useState('available');
   
   return (
-    <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-      <TabsList className="mb-6">
-        <TabsTrigger value="available">Available Projects</TabsTrigger>
+    <Tabs defaultValue="available" value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <TabsList className="grid grid-cols-5 mb-8">
+        <TabsTrigger value="available">Available</TabsTrigger>
         <TabsTrigger value="leads">My Leads</TabsTrigger>
-        <TabsTrigger value="applied">My Responses</TabsTrigger>
+        <TabsTrigger value="applications">Applications</TabsTrigger>
         <TabsTrigger value="active">Active Jobs</TabsTrigger>
         <TabsTrigger value="messages">Messages</TabsTrigger>
       </TabsList>
       
-      <TabsContent value="available" className="space-y-6">
+      <TabsContent value="available" className="pt-2">
         <AvailableTabContent />
       </TabsContent>
       
-      <TabsContent value="leads" className="space-y-6">
+      <TabsContent value="leads" className="pt-2">
         <LeadsTabContent 
-          isLoadingSettings={isLoadingSettings} 
-          leadSettings={leadSettings} 
-          projectLeads={projectLeads} 
+          isLoadingSettings={isLoadingSettings}
+          isLoadingLeads={isLoadingLeads}
+          leadSettings={leadSettings}
+          projectLeads={projectLeads}
         />
       </TabsContent>
       
-      <TabsContent value="applied" className="space-y-4">
+      <TabsContent value="applications" className="pt-2">
         <ApplicationsTabContent />
       </TabsContent>
       
-      <TabsContent value="active" className="space-y-4">
+      <TabsContent value="active" className="pt-2">
         <ActiveJobsTabContent />
       </TabsContent>
       
-      <TabsContent value="messages" className="space-y-4">
+      <TabsContent value="messages" className="pt-2">
         <MessagesTabContent />
       </TabsContent>
     </Tabs>

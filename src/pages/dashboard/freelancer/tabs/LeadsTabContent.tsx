@@ -6,18 +6,21 @@ import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 
 interface LeadsTabContentProps {
   isLoadingSettings: boolean;
+  isLoadingLeads?: boolean;
   leadSettings: LeadSettings | null;
   projectLeads: ProjectLead[];
 }
 
 const LeadsTabContent: React.FC<LeadsTabContentProps> = ({ 
   isLoadingSettings, 
+  isLoadingLeads,
   leadSettings, 
   projectLeads 
 }) => {
   return (
     <LeadsTab 
-      isLoadingSettings={isLoadingSettings} 
+      isLoadingSettings={isLoadingSettings}
+      isLoadingLeads={isLoadingLeads}
       leadSettings={leadSettings} 
       projectLeads={projectLeads} 
     />

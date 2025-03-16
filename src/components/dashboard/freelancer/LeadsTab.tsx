@@ -7,21 +7,27 @@ import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import EmptyLeadsMessage from './leads/EmptyLeadsMessage';
 import LeadsHeader from './leads/LeadsHeader';
-import { isUserFreelancer } from '@/hooks/verification/services/user-verification';
 import { Badge } from '@/components/ui/badge';
 import { formatDateAgo } from '@/utils/projectFormatters';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface LeadsTabProps {
   isLoadingSettings: boolean;
+  isLoadingLeads?: boolean;
   leadSettings: LeadSettings | null;
   projectLeads: ProjectLead[];
 }
 
-const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, projectLeads }) => {
+const LeadsTab: React.FC<LeadsTabProps> = ({ 
+  isLoadingSettings, 
+  isLoadingLeads = false,
+  leadSettings, 
+  projectLeads 
+}) => {
   // Handle refresh
   const handleRefresh = () => {
     console.log('Refreshing leads...');
-    // This would typically refresh the lead data
+    window.location.reload(); // Simple refresh for now
   };
   
   // Use our custom hook for lead filtering
@@ -36,9 +42,38 @@ const LeadsTab: React.FC<LeadsTabProps> = ({ isLoadingSettings, leadSettings, pr
   
   return (
     <div className="space-y-4">
-      <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings} />
+      <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads} />
       
-      {filteredLeads.length === 0 ? (
+      {isLoadingLeads ? (
+        <div className="bg-white rounded-lg border overflow-hidden">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Project Title</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Work Type</TableHead>
+                <TableHead>Budget</TableHead>
+                <TableHead>Posted</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Action</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array(3).fill(0).map((_, index) => (
+                <TableRow key={index}>
+                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
+                  <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
+                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      ) : filteredLeads.length === 0 ? (
         <EmptyLeadsMessage />
       ) : (
         <div className="bg-white rounded-lg border overflow-hidden">
