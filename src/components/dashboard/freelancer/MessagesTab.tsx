@@ -1,11 +1,10 @@
 
 import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { Skeleton } from '@/components/ui/skeleton';
 import EmptyStateCard from './EmptyStateCard';
 import { useConversations } from '@/hooks/messages/useConversations';
-import ConversationsList from './messages/ConversationsList';
-import ChatArea from './messages/ChatArea';
+import MessagesTabSkeleton from './messages/MessagesTabSkeleton';
+import MessagesLayout from './messages/MessagesLayout';
 
 const MessagesTab: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -32,25 +31,7 @@ const MessagesTab: React.FC = () => {
   }, [conversationId, conversations, setSelectedConversation]);
   
   if (isLoading) {
-    return (
-      <div className="grid grid-cols-3 gap-4 h-[calc(100vh-180px)]">
-        <div className="col-span-1 border rounded-md p-4">
-          <Skeleton className="h-10 w-full mb-4" />
-          <Skeleton className="h-16 w-full mb-2" />
-          <Skeleton className="h-16 w-full mb-2" />
-          <Skeleton className="h-16 w-full" />
-        </div>
-        <div className="col-span-2 border rounded-md p-4">
-          <Skeleton className="h-8 w-1/3 mb-4" />
-          <div className="space-y-2 mb-4">
-            <Skeleton className="h-10 w-2/3" />
-            <Skeleton className="h-10 w-1/2 ml-auto" />
-            <Skeleton className="h-10 w-3/4" />
-          </div>
-          <Skeleton className="h-12 w-full mt-auto" />
-        </div>
-      </div>
-    );
+    return <MessagesTabSkeleton />;
   }
   
   if (conversations.length === 0) {
@@ -63,23 +44,13 @@ const MessagesTab: React.FC = () => {
   }
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-180px)]">
-      {/* Conversations list */}
-      <div className="md:col-span-1 h-full overflow-hidden border rounded-md">
-        <ConversationsList
-          conversations={conversations}
-          selectedConversation={selectedConversation}
-          onSelectConversation={setSelectedConversation}
-          onRefresh={fetchConversations}
-          isLoading={isLoading}
-        />
-      </div>
-      
-      {/* Chat area */}
-      <div className="md:col-span-2 border rounded-md flex flex-col overflow-hidden">
-        <ChatArea selectedConversation={selectedConversation} />
-      </div>
-    </div>
+    <MessagesLayout
+      conversations={conversations}
+      selectedConversation={selectedConversation}
+      setSelectedConversation={setSelectedConversation}
+      fetchConversations={fetchConversations}
+      isLoading={isLoading}
+    />
   );
 };
 
