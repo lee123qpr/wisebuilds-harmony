@@ -3,11 +3,11 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getCurrentUserId } from './conversations';
 import { Message, MessageAttachment } from '@/types/messaging';
+import type { Json } from '@/integrations/supabase/types';
 
 // Fetch messages for a conversation
 export const fetchMessages = async (conversationId: string) => {
   try {
-    // We need to use type assertion because messages table isn't in the Supabase type definition
     const { data, error } = await supabase
       .from('messages')
       .select('*')
@@ -24,7 +24,18 @@ export const fetchMessages = async (conversationId: string) => {
       return [];
     }
     
-    return data || [];
+    // Transform attachments from Json to MessageAttachment[] if needed
+    const messagesWithFormattedAttachments = data?.map(msg => {
+      if (msg.attachments && typeof msg.attachments !== 'string') {
+        return {
+          ...msg,
+          attachments: Array.isArray(msg.attachments) ? msg.attachments : []
+        };
+      }
+      return msg;
+    }) || [];
+    
+    return messagesWithFormattedAttachments;
   } catch (e) {
     console.error('Error in fetchMessages:', e);
     toast({
@@ -152,7 +163,7 @@ export const sendMessage = async (conversationId: string, message: string, attac
       }
     }
     
-    // Send the message
+    // Send the message - convert MessageAttachment[] to Json for database
     const { error } = await supabase
       .from('messages')
       .insert({
@@ -160,7 +171,7 @@ export const sendMessage = async (conversationId: string, message: string, attac
         sender_id: userId,
         message: messageText,
         is_read: false,
-        attachments: attachments.length > 0 ? attachments : null
+        attachments: attachments.length > 0 ? attachments as unknown as Json : null
       });
     
     if (error) {

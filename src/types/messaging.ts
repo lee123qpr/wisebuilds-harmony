@@ -1,3 +1,4 @@
+import type { Json } from '@/integrations/supabase/types';
 
 export interface MessageAttachment {
   id?: string;
@@ -14,7 +15,7 @@ export interface Message {
   sender_id: string;
   is_read: boolean;
   conversation_id: string;
-  attachments?: MessageAttachment[];
+  attachments?: MessageAttachment[] | Json | null;
 }
 
 export interface ClientInfo {

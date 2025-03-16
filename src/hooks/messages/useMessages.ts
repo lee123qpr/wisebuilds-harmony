@@ -5,6 +5,18 @@ import { fetchMessages, markMessagesAsRead, sendMessage, uploadMessageAttachment
 import { updateConversationTime } from '@/services/conversations';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import type { Json } from '@/integrations/supabase/types';
+
+// Helper function to ensure message attachments are properly typed
+const ensureMessageAttachments = (message: any): Message => {
+  if (message.attachments && typeof message.attachments !== 'string') {
+    return {
+      ...message,
+      attachments: Array.isArray(message.attachments) ? message.attachments : []
+    };
+  }
+  return message as Message;
+};
 
 export const useMessages = (selectedConversation: Conversation | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -33,11 +45,13 @@ export const useMessages = (selectedConversation: Conversation | null) => {
 
     const getMessages = async () => {
       const fetchedMessages = await fetchMessages(selectedConversation.id);
-      setMessages(fetchedMessages);
+      // Ensure the attachments are properly typed
+      const formattedMessages = fetchedMessages.map(msg => ensureMessageAttachments(msg));
+      setMessages(formattedMessages);
 
-      const unreadMessageIds = fetchedMessages
-        .filter((msg: Message) => !msg.is_read && msg.sender_id !== currentUserId)
-        .map((msg: Message) => msg.id);
+      const unreadMessageIds = formattedMessages
+        .filter((msg) => !msg.is_read && msg.sender_id !== currentUserId)
+        .map((msg) => msg.id);
 
       if (unreadMessageIds.length > 0) {
         markMessagesAsRead(unreadMessageIds);
@@ -56,7 +70,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
           filter: `conversation_id=eq.${selectedConversation.id}`
         }, 
         payload => {
-          const newMsg = payload.new as Message;
+          const newMsg = ensureMessageAttachments(payload.new);
           setMessages(prev => [...prev, newMsg]);
           
           if (newMsg.sender_id !== currentUserId && currentUserId) {
