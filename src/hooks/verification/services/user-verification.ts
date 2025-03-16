@@ -13,9 +13,9 @@ export const isUserFreelancer = async (): Promise<boolean> => {
       return false;
     }
     
-    // Check the freelancer_profiles table
+    // Check the freelancer_verification table instead since we know it exists in the database
     const { data, error } = await supabase
-      .from('freelancer_profiles')
+      .from('freelancer_verification')
       .select('id')
       .eq('user_id', user.id)
       .maybeSingle();

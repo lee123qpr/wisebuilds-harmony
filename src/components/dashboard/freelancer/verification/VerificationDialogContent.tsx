@@ -121,7 +121,7 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({
       )}
       
       {verificationError && !setupError && !bucketAccessError && (
-        <Alert variant="warning">
+        <Alert variant="default">
           <Info className="h-4 w-4" />
           <AlertDescription>
             There was an issue loading your verification status. Some features may be limited.
