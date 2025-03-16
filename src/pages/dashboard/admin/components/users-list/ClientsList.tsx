@@ -10,6 +10,7 @@ import { format } from 'date-fns';
 import { AdminUser } from '../../hooks/useUsers';
 import { TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import { useToast } from '@/hooks/use-toast';
 
 interface ClientsListProps {
   users: AdminUser[];
@@ -19,13 +20,15 @@ interface ClientsListProps {
 }
 
 const ClientsList = ({ users, isLoading, error, onRefresh }: ClientsListProps) => {
+  const { toast } = useToast();
+  
   // Filter only business users
   const clients = users.filter(user => 
     user.user_metadata?.user_type === 'business'
   );
 
   const handleViewProfile = (userId: string) => {
-    window.open(`/dashboard/client/profile/${userId}`, '_blank');
+    window.open(`/dashboard/business/profile?id=${userId}`, '_blank');
   };
 
   return (

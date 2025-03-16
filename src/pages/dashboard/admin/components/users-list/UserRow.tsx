@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { CheckCircle, XCircle, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { AdminUser } from '../../hooks/useUsers';
+import { useToast } from '@/hooks/use-toast';
 
 interface UserRowProps {
   user: AdminUser;
@@ -14,21 +15,27 @@ interface UserRowProps {
 }
 
 const UserRow = ({ user, getUserTypeColor }: UserRowProps) => {
+  const { toast } = useToast();
+
   const handleViewProfile = () => {
-    // Open in new tab according to user type
+    // Get user type
     const userType = user.user_metadata?.user_type;
-    let profileUrl = '';
     
+    // Determine which route to use based on user type
     if (userType === 'freelancer') {
-      profileUrl = `/dashboard/freelancer/profile/${user.id}`;
+      // For freelancers, use the existing /dashboard/freelancer/profile route
+      window.open(`/dashboard/freelancer/profile?id=${user.id}`, '_blank');
     } else if (userType === 'business') {
-      profileUrl = `/dashboard/client/profile/${user.id}`;
+      // For businesses, use the existing /dashboard/business/profile route
+      window.open(`/dashboard/business/profile?id=${user.id}`, '_blank');
     } else {
-      // For admin or unknown types, just show basic profile
-      profileUrl = `/dashboard/profile/${user.id}`;
+      // For admins or unknown types, show a toast notification
+      toast({
+        title: "Profile not available",
+        description: `Profile view for ${userType || 'unknown'} users is not currently available.`,
+        variant: "default"
+      });
     }
-    
-    window.open(profileUrl, '_blank');
   };
 
   return (

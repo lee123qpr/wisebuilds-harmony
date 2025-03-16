@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableHeader, TableRow, TableHead, TableBody } from '@/components/ui/table';
@@ -11,6 +10,7 @@ import { AdminUser } from '../../hooks/useUsers';
 import { TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { useToast } from '@/hooks/use-toast';
 
 interface FreelancersListProps {
   users: AdminUser[];
@@ -20,6 +20,8 @@ interface FreelancersListProps {
 }
 
 const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersListProps) => {
+  const { toast } = useToast();
+  
   // Filter only freelancer users
   const freelancers = users.filter(user => 
     user.user_metadata?.user_type === 'freelancer'
@@ -71,7 +73,7 @@ const FreelancersList = ({ users, isLoading, error, onRefresh }: FreelancersList
   };
 
   const handleViewProfile = (userId: string) => {
-    window.open(`/dashboard/freelancer/profile/${userId}`, '_blank');
+    window.open(`/dashboard/freelancer/profile?id=${userId}`, '_blank');
   };
 
   return (
