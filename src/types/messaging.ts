@@ -49,7 +49,7 @@ export interface Conversation {
   freelancer_info?: FreelancerInfo;
   client_info?: ClientInfo;
   project_info?: ProjectInfo;
-  project_title?: string; // Adding this to fix the error
+  project_title?: string;
   unread_count?: number;
 }
 
