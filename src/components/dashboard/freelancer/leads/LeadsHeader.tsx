@@ -35,7 +35,8 @@ const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading, locatio
         <Button 
           onClick={() => navigate('/dashboard/freelancer/lead-settings')} 
           variant="outline" 
-          size="sm"
+          size="default"
+          className="flex items-center h-9"
         >
           <Filter className="mr-2 h-4 w-4" />
           Update Filters
