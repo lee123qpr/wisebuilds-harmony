@@ -30,7 +30,45 @@ export const useProjectApplications = (projectId: string | undefined) => {
         const applicationsWithProfiles = await Promise.all(
           applicationsData.map(async (application) => {
             try {
-              // Get user data via edge function (since we can't access auth.users directly)
+              // First try to get the freelancer profile from freelancer_profiles
+              const { data: profileData, error: profileError } = await supabase
+                .from('freelancer_profiles')
+                .select('*')
+                .eq('id', application.user_id)
+                .maybeSingle();
+                
+              if (profileError) {
+                console.error('Error fetching freelancer profile:', profileError);
+              }
+              
+              // If we found a profile, use that data
+              if (profileData) {
+                // Get verification status
+                const { data: verificationData, error: verificationError } = await supabase
+                  .rpc('is_user_verified', { user_id: application.user_id });
+                
+                if (verificationError) {
+                  console.error('Error checking verification status:', verificationError);
+                }
+                
+                return {
+                  ...application,
+                  freelancer_profile: {
+                    id: application.user_id,
+                    email: profileData.email,
+                    verified: verificationData || false,
+                    first_name: profileData.first_name || '',
+                    last_name: profileData.last_name || '',
+                    display_name: profileData.display_name || 'Anonymous Freelancer',
+                    phone_number: profileData.phone_number || '',
+                    job_title: profileData.job_title || '',
+                    location: profileData.location || '',
+                    profile_photo: profileData.profile_photo || null,
+                  }
+                };
+              }
+              
+              // If no profile was found, fall back to the user metadata
               const { data: userData, error: userError } = await supabase.functions.invoke(
                 'get-user-profile',
                 {
@@ -59,7 +97,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
               const jobTitle = userMetadata.job_title || userMetadata.profession || '';
               const location = userMetadata.location || '';
               
-              // Combine all data
+              // Return the application with user metadata
               return {
                 ...application,
                 freelancer_profile: {

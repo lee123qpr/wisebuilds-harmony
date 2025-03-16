@@ -33,7 +33,72 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
         path: work.path || '' // Ensure path is included, even if empty
       }));
       
-      // Update user metadata to keep it in sync
+      // Check if the freelancer profile exists
+      const { data: existingProfile } = await supabase
+        .from('freelancer_profiles')
+        .select('id')
+        .eq('id', user.id)
+        .maybeSingle();
+      
+      if (existingProfile) {
+        // Update existing profile
+        const { error: updateError } = await supabase
+          .from('freelancer_profiles')
+          .update({
+            display_name: values.fullName,
+            first_name: values.fullName.split(' ')[0],
+            last_name: values.fullName.split(' ').slice(1).join(' '),
+            job_title: values.profession,
+            location: values.location,
+            bio: values.bio,
+            phone_number: values.phoneNumber,
+            website: websiteUrl,
+            profile_photo: profileImage,
+            hourly_rate: values.hourlyRate,
+            availability: values.availability,
+            skills: values.skills,
+            experience: values.experience,
+            qualifications: values.qualifications,
+            accreditations: values.accreditations,
+            indemnity_insurance: values.indemnityInsurance,
+            previous_work: previousWork,
+            id_verified: values.idVerified,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', user.id);
+        
+        if (updateError) throw updateError;
+      } else {
+        // Create new profile
+        const { error: insertError } = await supabase
+          .from('freelancer_profiles')
+          .insert({
+            id: user.id,
+            display_name: values.fullName,
+            first_name: values.fullName.split(' ')[0],
+            last_name: values.fullName.split(' ').slice(1).join(' '),
+            job_title: values.profession,
+            location: values.location,
+            bio: values.bio,
+            phone_number: values.phoneNumber,
+            website: websiteUrl,
+            profile_photo: profileImage,
+            hourly_rate: values.hourlyRate,
+            availability: values.availability,
+            skills: values.skills,
+            experience: values.experience,
+            qualifications: values.qualifications,
+            accreditations: values.accreditations,
+            indemnity_insurance: values.indemnityInsurance,
+            previous_work: previousWork,
+            id_verified: values.idVerified,
+            member_since: new Date().toISOString()
+          });
+        
+        if (insertError) throw insertError;
+      }
+      
+      // Also update user metadata to keep it in sync (but this is not the primary source)
       const { error: updateUserError } = await supabase.auth.updateUser({
         data: {
           full_name: values.fullName,
@@ -57,7 +122,8 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
       });
       
       if (updateUserError) {
-        throw updateUserError;
+        console.warn('Warning: Could not update user metadata:', updateUserError);
+        // Don't throw here as the main profile update succeeded
       }
       
       toast({

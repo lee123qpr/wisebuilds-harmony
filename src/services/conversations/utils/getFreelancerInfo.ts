@@ -2,11 +2,33 @@
 import { supabase } from '@/integrations/supabase/client';
 
 /**
- * Gets freelancer information from auth user data
+ * Gets freelancer information from freelancer_profiles table
  */
 export const getFreelancerInfo = async (freelancerId: string) => {
-  // We don't have a freelancer_profiles table, so we'll get data directly from auth
   try {
+    // First try to get the freelancer profile from the database
+    const { data: profileData, error: profileError } = await supabase
+      .from('freelancer_profiles')
+      .select('*')
+      .eq('id', freelancerId)
+      .maybeSingle();
+    
+    if (profileError) {
+      console.error('Error fetching freelancer profile:', profileError);
+    }
+    
+    // If we found a profile, return the data
+    if (profileData) {
+      return {
+        full_name: profileData.display_name || 'Unknown Freelancer',
+        business_name: null,
+        profile_image: profileData.profile_photo || null,
+        phone_number: profileData.phone_number || null,
+        email: profileData.email || null
+      };
+    }
+    
+    // If no profile was found, fall back to the edge function as a last resort
     const { data: userData, error: userError } = await supabase.functions.invoke(
       'get-user-email',
       {
@@ -33,7 +55,7 @@ export const getFreelancerInfo = async (freelancerId: string) => {
       email: userData.email || null
     };
   } catch (error) {
-    console.error('Error calling edge function:', error);
+    console.error('Error getting freelancer info:', error);
     
     // No data available
     return {
