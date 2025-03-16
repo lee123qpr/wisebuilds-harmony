@@ -70,13 +70,14 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           client_id: project.user_id, // Assuming user_id is client_id
           client_name: '', // Default empty string
           client_company: '', // Default empty string
-          start_date: project.start_date || '',
+          start_date: project.start_date || new Date().toISOString(), // Provide default value
           applications: project.applications || 0,
           documents: project.documents || null,
           requires_site_visits: project.requires_site_visits || false,
           status: project.status,
           updated_at: project.updated_at || project.created_at,
-          user_id: project.user_id
+          user_id: project.user_id,
+          purchases_count: project.purchases_count || 0
         })) as ProjectLead[] : [];
         
         setProjectLeads(leads);

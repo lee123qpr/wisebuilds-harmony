@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertTriangle, Info, Briefcase } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useState, useEffect } from 'react';
+import { ProjectLead } from '@/types/projects';
 
 const AvailableTabContent: React.FC = () => {
   // Use our new hook with filtering disabled (false)
@@ -98,11 +99,11 @@ const AvailableTabContent: React.FC = () => {
         </Card>
       ) : (
         <ProjectListView 
-          projects={projects}
+          projects={projects as any}
           isLoading={isLoading}
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
-          selectedProject={selectedProject}
+          selectedProject={selectedProject as any}
         />
       )}
     </div>

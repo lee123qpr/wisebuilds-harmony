@@ -7,6 +7,7 @@ import LeadSettingsAlert from '@/components/dashboard/freelancer/leads/LeadSetti
 import LeadsHeader from '@/components/dashboard/freelancer/leads/LeadsHeader';
 import { useState, useEffect } from 'react';
 import EmptyLeadsMessage from '@/components/dashboard/freelancer/leads/EmptyLeadsMessage';
+import { ProjectLead } from '@/types/projects';
 
 interface LeadsTabContentProps {
   isLoadingSettings: boolean;
@@ -52,11 +53,11 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
         <EmptyLeadsMessage />
       ) : (
         <ProjectListView 
-          projects={filteredProjects}
+          projects={filteredProjects as any}
           isLoading={isLoadingLeads}
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
-          selectedProject={selectedProject}
+          selectedProject={selectedProject as any}
         />
       )}
     </div>

@@ -1,4 +1,6 @@
 
+import { Json } from "@/integrations/supabase/types";
+
 export interface ProjectLead {
   id: string;
   title: string;
@@ -19,12 +21,12 @@ export interface ProjectLead {
   client_id: string;
   client_name?: string;
   client_company?: string;
-  start_date?: string;
+  start_date: string; // Changed from optional to required
   applications: number;
   documents: Json | null;
   requires_site_visits: boolean;
   status: string;
   updated_at: string;
   user_id: string;
-  purchases_count: number; // Add this missing property
+  purchases_count: number;
 }
