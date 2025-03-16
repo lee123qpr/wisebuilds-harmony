@@ -30,6 +30,29 @@ export const useProjectApplications = (projectId: string | undefined) => {
         const applicationsWithProfiles = await Promise.all(
           applicationsData.map(async (application) => {
             try {
+              // First, check if there's a freelancer profile
+              const { data: profileData, error: profileError } = await supabase
+                .from('freelancer_profiles')
+                .select('*')
+                .eq('id', application.user_id)
+                .single();
+
+              if (!profileError && profileData) {
+                // If there's a profile, use that data
+                return {
+                  ...application,
+                  freelancer_profile: {
+                    ...profileData,
+                    // Ensure id is set correctly
+                    id: application.user_id,
+                    // Additional properties expected by the UI
+                    display_name: profileData.display_name || 
+                      (profileData.first_name && profileData.last_name ? 
+                        `${profileData.first_name} ${profileData.last_name}` : 'Freelancer'),
+                  }
+                };
+              }
+              
               // Get user data via edge function (since we can't access auth.users directly)
               const { data: userData, error: userError } = await supabase.functions.invoke(
                 'get-user-profile',
@@ -40,9 +63,6 @@ export const useProjectApplications = (projectId: string | undefined) => {
               
               if (userError) throw userError;
               
-              // Since there's no freelancer_profiles table, we'll get basic info from user metadata
-              // and add additional info if needed in the future
-              
               // Get verification status
               const { data: verificationData, error: verificationError } = await supabase
                 .rpc('is_user_verified', { user_id: application.user_id });
@@ -51,6 +71,13 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 console.error('Error checking verification status:', verificationError);
               }
               
+              // Get name from user metadata
+              const firstName = userData?.user_metadata?.first_name;
+              const lastName = userData?.user_metadata?.last_name;
+              const displayName = firstName && lastName 
+                ? `${firstName} ${lastName}` 
+                : (userData?.email ? userData.email.split('@')[0] : 'Freelancer');
+              
               // Combine all data
               return {
                 ...application,
@@ -58,14 +85,12 @@ export const useProjectApplications = (projectId: string | undefined) => {
                   id: application.user_id,
                   email: userData?.email,
                   verified: verificationData || false,
-                  // Get name from user_metadata if available
-                  first_name: userData?.user_metadata?.first_name,
-                  last_name: userData?.user_metadata?.last_name,
-                  display_name: 
-                    (userData?.user_metadata?.first_name && userData?.user_metadata?.last_name) ? 
-                    `${userData.user_metadata.first_name} ${userData.user_metadata.last_name}` : 
-                    'Anonymous Freelancer',
+                  first_name: firstName,
+                  last_name: lastName,
+                  display_name: displayName,
+                  profile_photo: userData?.user_metadata?.avatar_url,
                   phone_number: userData?.user_metadata?.phone_number,
+                  job_title: userData?.user_metadata?.job_title || 'Freelancer'
                 }
               };
             } catch (err) {

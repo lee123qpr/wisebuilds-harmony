@@ -40,12 +40,27 @@ serve(async (req) => {
     if (!user) {
       throw new Error('User not found')
     }
+    
+    console.log('User found:', user.user.id);
+    console.log('User metadata:', JSON.stringify(user.user.user_metadata));
 
-    // Return the user email and metadata
+    // Try to get profile data from freelancer_profiles table
+    const { data: profileData, error: profileError } = await supabase
+      .from('freelancer_profiles')
+      .select('*')
+      .eq('id', userId)
+      .single();
+      
+    if (profileData && !profileError) {
+      console.log('Found profile data in freelancer_profiles');
+    }
+
+    // Return the user email, metadata and profile data if available
     return new Response(
       JSON.stringify({
         email: user.user.email,
-        user_metadata: user.user.user_metadata
+        user_metadata: user.user.user_metadata,
+        profile_data: profileData || null
       }),
       {
         headers: {
@@ -56,6 +71,7 @@ serve(async (req) => {
       }
     )
   } catch (error) {
+    console.error('Error in get-user-profile:', error);
     return new Response(
       JSON.stringify({ error: error.message }),
       {

@@ -26,9 +26,13 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
   const applicationDate = format(new Date(application.created_at), 'dd MMM yyyy');
   
   const getInitials = (name?: string) => {
-    if (!name) return 'FP';
+    if (!name) return 'FL';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
+
+  const displayName = profile?.display_name || 
+    (profile?.first_name && profile?.last_name ? 
+      `${profile.first_name} ${profile.last_name}` : 'Freelancer');
 
   const handleStartChat = async () => {
     try {
@@ -89,8 +93,8 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex flex-col items-center space-y-2">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={profile?.profile_photo} alt={profile?.display_name} />
-              <AvatarFallback>{getInitials(profile?.display_name)}</AvatarFallback>
+              <AvatarImage src={profile?.profile_photo} alt={displayName} />
+              <AvatarFallback>{getInitials(displayName)}</AvatarFallback>
             </Avatar>
             
             {profile?.verified && (
@@ -103,7 +107,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
           
           <div className="flex-1 space-y-4">
             <div>
-              <h3 className="text-xl font-semibold">{profile?.display_name || 'Freelancer'}</h3>
+              <h3 className="text-xl font-semibold">{displayName}</h3>
               <p className="text-muted-foreground">{profile?.job_title || 'Freelancer'}</p>
               
               <div className="flex flex-wrap gap-2 mt-2">
