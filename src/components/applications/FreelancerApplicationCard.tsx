@@ -4,9 +4,9 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { MessageSquare, Phone, Mail, MapPin, Star, Calendar, CheckCircle2, Briefcase } from 'lucide-react';
+import { MessageSquare, Phone, Mail, MapPin, Star, Calendar, CheckCircle2, Briefcase, Building } from 'lucide-react';
 import { FreelancerApplication } from '@/types/applications';
-import { format } from 'date-fns';
+import { format, parseISO } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -31,6 +31,60 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
   const getInitials = (name?: string) => {
     if (!name) return 'AF';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  };
+
+  const formatMemberSince = (dateString?: string) => {
+    if (!dateString) return 'Recently joined';
+    try {
+      return format(parseISO(dateString), 'MMMM yyyy');
+    } catch (e) {
+      return 'Recently joined';
+    }
+  };
+
+  const renderRatingStars = (rating?: number) => {
+    if (!rating) return null;
+    
+    const stars = [];
+    const fullStars = Math.floor(rating);
+    const hasHalfStar = rating % 1 >= 0.5;
+    
+    // Full stars
+    for (let i = 0; i < fullStars; i++) {
+      stars.push(
+        <Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+      );
+    }
+    
+    // Half star
+    if (hasHalfStar) {
+      stars.push(
+        <div key="half" className="relative">
+          <Star className="h-4 w-4 text-gray-300" />
+          <div className="absolute inset-0 overflow-hidden w-1/2">
+            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+          </div>
+        </div>
+      );
+    }
+    
+    // Empty stars
+    const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
+    for (let i = 0; i < emptyStars; i++) {
+      stars.push(
+        <Star key={`empty-${i}`} className="h-4 w-4 text-gray-300" />
+      );
+    }
+    
+    return (
+      <div className="flex items-center gap-1">
+        <div className="flex">{stars}</div>
+        <span className="text-sm font-medium ml-1">{rating.toFixed(1)}</span>
+        <span className="text-sm text-muted-foreground">
+          ({profile?.reviews_count || 0})
+        </span>
+      </div>
+    );
   };
 
   const handleStartChat = async () => {
@@ -105,35 +159,30 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
           
           <div className="flex-1 space-y-4">
             <div>
-              <h3 className="text-xl font-semibold">{profile?.display_name || 'Freelancer'}</h3>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
+                <h3 className="text-xl font-semibold">{profile?.display_name || 'Freelancer'}</h3>
+                {profile?.rating && renderRatingStars(profile.rating)}
+              </div>
+              
               <p className="text-muted-foreground">{profile?.job_title || 'Freelancer'}</p>
               
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="mt-3 space-y-1.5">
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                  Member since {formatMemberSince(profile?.member_since)}
+                </div>
+                
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Briefcase className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                  {profile?.jobs_completed || 0} jobs completed
+                </div>
+                
                 {profile?.location && (
                   <div className="flex items-center text-sm text-muted-foreground">
-                    <MapPin className="h-4 w-4 mr-1" />
+                    <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
                     {profile.location}
                   </div>
                 )}
-                
-                {profile?.job_title && !profile?.location && (
-                  <div className="flex items-center text-sm text-muted-foreground">
-                    <Briefcase className="h-4 w-4 mr-1" />
-                    {profile.job_title}
-                  </div>
-                )}
-                
-                {profile?.rating && (
-                  <div className="flex items-center text-sm text-amber-500">
-                    <Star className="h-4 w-4 mr-1 fill-amber-500" />
-                    {profile.rating.toFixed(1)} ({profile.reviews_count || 0} reviews)
-                  </div>
-                )}
-                
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="h-4 w-4 mr-1" />
-                  Applied on {applicationDate}
-                </div>
               </div>
             </div>
             

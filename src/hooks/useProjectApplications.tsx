@@ -50,6 +50,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
               
               // Extract user metadata
               const userMetadata = userData?.user_metadata || {};
+              const email = userData?.email || '';
               const firstName = userMetadata.first_name || userMetadata.firstname || '';
               const lastName = userMetadata.last_name || userMetadata.lastname || '';
               const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
@@ -59,12 +60,29 @@ export const useProjectApplications = (projectId: string | undefined) => {
               const jobTitle = userMetadata.job_title || userMetadata.profession || '';
               const location = userMetadata.location || '';
               
+              // Get any reviews for this user
+              const { data: reviews, error: reviewsError } = await supabase
+                .from('client_reviews')
+                .select('rating')
+                .eq('reviewer_id', application.user_id);
+              
+              if (reviewsError) {
+                console.error('Error fetching reviews:', reviewsError);
+              }
+              
+              // Calculate average rating
+              let rating = null;
+              if (reviews && reviews.length > 0) {
+                const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+                rating = sum / reviews.length;
+              }
+              
               // Combine all data
               return {
                 ...application,
                 freelancer_profile: {
                   id: application.user_id,
-                  email: userData?.email,
+                  email: email,
                   verified: verificationData || false,
                   first_name: firstName,
                   last_name: lastName,
@@ -73,6 +91,10 @@ export const useProjectApplications = (projectId: string | undefined) => {
                   job_title: jobTitle,
                   location: location,
                   profile_photo: userMetadata.avatar_url,
+                  rating: rating,
+                  reviews_count: reviews?.length || 0,
+                  member_since: userData?.user?.created_at || userMetadata.created_at,
+                  jobs_completed: userMetadata.jobs_completed || 0
                 }
               };
             } catch (err) {

@@ -28,4 +28,6 @@ export interface FreelancerProfile {
   day_rate?: string;
   email?: string;
   phone_number?: string;
+  member_since?: string;
+  jobs_completed?: number;
 }
