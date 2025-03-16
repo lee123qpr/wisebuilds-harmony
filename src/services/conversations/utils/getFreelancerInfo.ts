@@ -1,10 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { FreelancerInfo } from '@/types/messaging';
 
 /**
  * Gets freelancer information from auth user data
  */
-export const getFreelancerInfo = async (freelancerId: string) => {
+export const getFreelancerInfo = async (freelancerId: string): Promise<FreelancerInfo> => {
   // We don't have a freelancer_profiles table, so we'll get data directly from auth
   try {
     const { data: userData, error: userError } = await supabase.functions.invoke(

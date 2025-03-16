@@ -9,4 +9,6 @@ export interface Verification {
   admin_notes: string | null;
   user_email?: string;
   user_full_name?: string;
+  verified_at?: string | null;
+  verified_by?: string | null;
 }

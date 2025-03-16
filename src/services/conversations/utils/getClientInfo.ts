@@ -35,7 +35,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     const { data: userData, error: userError } = await supabase.functions.invoke(
       'get-user-email',
       {
-        body: { userId: clientId } // Changed from user_id to userId to match the edge function parameter
+        body: { userId: clientId }
       }
     );
     
