@@ -80,36 +80,36 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     // This avoids a separate query that might trigger permissions issues
     const { data: upsertData, error: upsertError } = await supabase
       .from('freelancer_verification')
-      .upsert(
-        {
-          user_id: userId,
-          id_document_path: filePath,
-          verification_status: 'pending',
-          submitted_at: new Date().toISOString(),
-          updated_at: new Date().toISOString()
-        },
-        { onConflict: 'user_id', returning: 'representation' }
-      )
-      .select()
-      .single();
+      .upsert({
+        user_id: userId,
+        id_document_path: filePath,
+        verification_status: 'pending',
+        submitted_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }, { 
+        onConflict: 'user_id'
+      })
+      .select();
     
     if (upsertError) {
       console.error('Upsert verification record error:', upsertError);
       throw upsertError;
     }
     
-    if (!upsertData) {
+    if (!upsertData || upsertData.length === 0) {
       throw new Error('No verification data returned after upsert');
     }
     
+    const recordData = upsertData[0];
+    
     const verificationData: VerificationData = {
-      id: upsertData.id,
-      user_id: upsertData.user_id,
-      verification_status: mapStatusToVerificationStatus(upsertData.verification_status),
-      id_document_path: upsertData.id_document_path,
-      submitted_at: upsertData.submitted_at,
-      verified_at: upsertData.verified_at,
-      admin_notes: upsertData.admin_notes
+      id: recordData.id,
+      user_id: recordData.user_id,
+      verification_status: mapStatusToVerificationStatus(recordData.verification_status),
+      id_document_path: recordData.id_document_path,
+      submitted_at: recordData.submitted_at,
+      verified_at: recordData.verified_at,
+      admin_notes: recordData.admin_notes
     };
     
     return {
