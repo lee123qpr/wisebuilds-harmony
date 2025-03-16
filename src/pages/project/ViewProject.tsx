@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,7 +8,7 @@ import ProjectDocuments from '@/components/projects/ProjectDocuments';
 import ProjectNotFound from '@/components/projects/ProjectNotFound';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
-import LeadPurchaseButton from '@/components/projects/LeadPurchaseButton';
+import { LeadPurchaseButton } from '@/components/projects/lead-purchase';
 import { useAuth } from '@/context/AuthContext';
 import { 
   ProjectHeaderSkeleton, 
@@ -70,6 +69,8 @@ const ViewProject = () => {
                 <LeadPurchaseButton 
                   projectId={project!.id}
                   projectTitle={project!.title}
+                  project={project}
+                  purchasesCount={project!.purchases_count || 0}
                   onPurchaseSuccess={handlePurchaseSuccess}
                 />
               </div>

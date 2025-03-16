@@ -4,7 +4,7 @@ import { useProjects } from '@/components/projects/useProjects';
 import ProjectListView from './ProjectListView';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { RefreshCw, AlertTriangle, Info, Briefcase, Filter } from 'lucide-react';
+import { RefreshCw, AlertTriangle, Info, Briefcase } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
@@ -67,10 +67,6 @@ const AvailableProjectsTab: React.FC = () => {
         </div>
         
         <div className="flex gap-3">
-          <Button variant="outline" size="sm" className="hidden md:flex">
-            <Filter className="mr-2 h-4 w-4" />
-            Filter
-          </Button>
           <Button 
             onClick={handleRefresh} 
             size="sm" 

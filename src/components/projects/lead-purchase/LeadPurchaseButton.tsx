@@ -1,29 +1,20 @@
 
-import React from 'react';
-import { Button } from '@/components/ui/button';
-import { Loader2, CreditCard, ShieldCheck } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { usePurchaseLead, useCheckPurchaseStatus } from '@/hooks/usePurchaseLead';
 import { useAuth } from '@/context/AuthContext';
 import { useCredits } from '@/hooks/useCredits';
 import { useVerification } from '@/hooks/useVerification';
 import { useToast } from '@/hooks/use-toast';
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from '@/components/ui/tooltip';
-
-interface LeadPurchaseButtonProps {
-  projectId: string;
-  projectTitle?: string;
-  purchasesCount?: number;
-  onPurchaseSuccess: () => void;
-}
+import { calculateLeadCredits } from '@/hooks/leads/utils/calculateLeadCredits';
+import { LeadPurchaseButtonProps } from './types';
+import PurchaseButton from './PurchaseButton';
+import VerificationMessage from './VerificationMessage';
 
 const LeadPurchaseButton = ({ 
   projectId, 
   projectTitle, 
+  project,
   purchasesCount = 0,
   onPurchaseSuccess 
 }: LeadPurchaseButtonProps) => {
@@ -33,10 +24,32 @@ const LeadPurchaseButton = ({
   const { creditBalance, isLoadingBalance, refetchCredits } = useCredits();
   const { isVerified, verificationStatus } = useVerification();
   const { toast } = useToast();
+  const [requiredCredits, setRequiredCredits] = useState(1);
   
   const purchaseLimit = 5;
   const limitReached = purchasesCount >= purchaseLimit;
-  const notEnoughCredits = typeof creditBalance === 'number' && creditBalance < 1;
+  const notEnoughCredits = typeof creditBalance === 'number' && creditBalance < requiredCredits;
+
+  useEffect(() => {
+    if (project && project.budget && project.duration && project.hiring_status) {
+      console.log('Project details for credit calculation:', {
+        budget: project.budget,
+        duration: project.duration,
+        hiring_status: project.hiring_status
+      });
+      
+      const credits = calculateLeadCredits(
+        project.budget,
+        project.duration,
+        project.hiring_status
+      );
+      setRequiredCredits(credits);
+      console.log(`Required credits calculated: ${credits}`);
+    } else {
+      console.log('Missing project details for credit calculation:', project);
+      setRequiredCredits(1); // Default fallback
+    }
+  }, [project]);
 
   const handlePurchaseLead = async () => {
     if (!user) {
@@ -69,7 +82,7 @@ const LeadPurchaseButton = ({
     console.log(`Attempting to purchase lead for project: ${projectTitle || projectId}`);
     
     try {
-      const success = await purchaseLead(projectId, projectTitle);
+      const success = await purchaseLead(projectId, projectTitle, undefined, project);
       
       console.log(`Purchase result for ${projectTitle || projectId}:`, success);
       
@@ -77,7 +90,6 @@ const LeadPurchaseButton = ({
         console.log(`Lead purchase successful for ${projectTitle || projectId}`);
         onPurchaseSuccess();
         
-        // Refetch credit balance
         if (refetchCredits) {
           await refetchCredits();
         }
@@ -94,7 +106,6 @@ const LeadPurchaseButton = ({
     }
   };
 
-  // Determine if the purchase button should be disabled
   const isPurchaseDisabled = 
     isPurchasing || 
     isLoadingBalance || 
@@ -107,51 +118,23 @@ const LeadPurchaseButton = ({
     return null;
   }
 
-  // Show verification tooltip if needed
   if (verificationStatus === 'pending' || verificationStatus === 'rejected') {
-    return (
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button 
-              disabled={true}
-              className="flex items-center gap-2"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              Requires Verification
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>
-            {verificationStatus === 'pending' 
-              ? 'Your ID verification is pending. You cannot purchase leads until your ID is verified.' 
-              : 'Your ID verification was rejected. Please submit a new document.'}
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
-    );
+    return <VerificationMessage verificationStatus={verificationStatus} />;
   }
 
   return (
-    <Button 
-      onClick={handlePurchaseLead} 
-      disabled={isPurchaseDisabled}
-      className="flex items-center gap-2"
-    >
-      {isPurchasing || isCheckingPurchase ? (
-        <Loader2 className="h-4 w-4 animate-spin" />
-      ) : (
-        <CreditCard className="h-4 w-4" />
-      )}
-      {isCheckingPurchase 
-        ? 'Checking...' 
-        : isPurchasing 
-          ? 'Purchasing...' 
-          : limitReached
-            ? 'Limit Reached'
-            : notEnoughCredits
-              ? 'Insufficient Credits'
-              : `Purchase Lead (1 Credit)`}
-    </Button>
+    <TooltipProvider>
+      <PurchaseButton
+        isCheckingPurchase={isCheckingPurchase}
+        isPurchasing={isPurchasing}
+        isPurchaseDisabled={isPurchaseDisabled}
+        limitReached={limitReached}
+        notEnoughCredits={notEnoughCredits}
+        requiredCredits={requiredCredits}
+        project={project}
+        onPurchase={handlePurchaseLead}
+      />
+    </TooltipProvider>
   );
 };
 

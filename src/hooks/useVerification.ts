@@ -73,7 +73,7 @@ export const useVerification = () => {
       const fileExt = file.name.split('.').pop();
       const fileName = `${user.id}/id-document-${Date.now()}.${fileExt}`;
       
-      // Upload the file
+      // Upload the file directly - the bucket should already exist through our SQL migration
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('id-documents')
         .upload(fileName, file, {
@@ -82,36 +82,50 @@ export const useVerification = () => {
         });
       
       if (uploadError) {
+        console.error('Upload error:', uploadError);
         throw uploadError;
       }
       
       // Get the file path
       const filePath = uploadData?.path;
+      console.log('File uploaded successfully to:', filePath);
       
       // Check if verification record exists
-      if (!verificationData) {
+      const { data: existingData, error: checkError } = await supabase
+        .from('freelancer_verification')
+        .select('id')
+        .eq('user_id', user.id)
+        .single();
+        
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking verification record:', checkError);
+        throw checkError;
+      }
+      
+      let resultData;
+      
+      if (!existingData) {
+        console.log('Creating new verification record...');
         // Create new verification record
         const { data, error } = await supabase
           .from('freelancer_verification')
           .insert({
             user_id: user.id,
             id_document_path: filePath,
-            verification_status: 'pending'
+            verification_status: 'pending',
+            submitted_at: new Date().toISOString()
           })
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Insert verification record error:', error);
+          throw error;
+        }
         
-        setVerificationData({
-          id: data.id,
-          user_id: data.user_id,
-          verification_status: mapStatusToVerificationStatus(data.verification_status),
-          id_document_path: data.id_document_path,
-          submitted_at: data.submitted_at,
-          verified_at: data.verified_at
-        });
+        resultData = data;
       } else {
+        console.log('Updating existing verification record...');
         // Update existing verification record
         const { data, error } = await supabase
           .from('freelancer_verification')
@@ -124,15 +138,22 @@ export const useVerification = () => {
           .select()
           .single();
         
-        if (error) throw error;
+        if (error) {
+          console.error('Update verification record error:', error);
+          throw error;
+        }
         
+        resultData = data;
+      }
+      
+      if (resultData) {
         setVerificationData({
-          id: data.id,
-          user_id: data.user_id,
-          verification_status: mapStatusToVerificationStatus(data.verification_status),
-          id_document_path: data.id_document_path,
-          submitted_at: data.submitted_at,
-          verified_at: data.verified_at
+          id: resultData.id,
+          user_id: resultData.user_id,
+          verification_status: mapStatusToVerificationStatus(resultData.verification_status),
+          id_document_path: resultData.id_document_path,
+          submitted_at: resultData.submitted_at,
+          verified_at: resultData.verified_at
         });
       }
       
