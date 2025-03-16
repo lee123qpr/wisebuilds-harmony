@@ -21,10 +21,12 @@ type ProjectActionsProps = {
   projectId: string;
   hasDocuments?: boolean;
   refreshProjects?: () => Promise<void>;
+  projectTitle?: string;
 };
 
-const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects }: ProjectActionsProps) => {
+const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects, projectTitle }: ProjectActionsProps) => {
   const navigate = useNavigate();
+  const isTestProject = projectTitle?.startsWith('Test ');
 
   const handleViewProject = () => {
     // Navigate to view project details page
@@ -70,15 +72,17 @@ const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects
         {(handleDelete) => (
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" title="Delete">
-                <Trash2 className="h-4 w-4" />
+              <Button variant="ghost" size="icon" title={isTestProject ? "Delete Test Project" : "Delete"}>
+                <Trash2 className={`h-4 w-4 ${isTestProject ? "text-red-500" : ""}`} />
               </Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
                 <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This action cannot be undone. This will permanently delete the project and all associated data.
+                  {isTestProject 
+                    ? "This will delete the test project. Any user can delete test projects."
+                    : "This action cannot be undone. This will permanently delete the project and all associated data."}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

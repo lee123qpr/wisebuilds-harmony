@@ -29,7 +29,7 @@ export const ProjectDeleteHandler: React.FC<ProjectDeleteHandlerProps> = ({
         return;
       }
 
-      console.log('Deleting project with ID:', projectId);
+      console.log('Attempting to delete project with ID:', projectId);
 
       // First check if the current user is the owner of the project
       const { data: userData } = await supabase.auth.getUser();
@@ -44,7 +44,7 @@ export const ProjectDeleteHandler: React.FC<ProjectDeleteHandlerProps> = ({
         return;
       }
       
-      // Check project ownership and also if it's a test project
+      // Check project ownership and if it's a test project
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
         .select('user_id, title')
@@ -57,7 +57,8 @@ export const ProjectDeleteHandler: React.FC<ProjectDeleteHandlerProps> = ({
       }
       
       // Check if it's a test project (title starts with "Test ")
-      const isTestProject = projectData.title.startsWith('Test ');
+      const isTestProject = projectData.title && projectData.title.startsWith('Test ');
+      console.log('Is test project?', isTestProject, 'Project title:', projectData.title);
       
       // Allow deletion if user is owner OR if it's a test project
       if (projectData.user_id !== currentUserId && !isTestProject) {
@@ -69,6 +70,7 @@ export const ProjectDeleteHandler: React.FC<ProjectDeleteHandlerProps> = ({
         return;
       }
 
+      console.log('Proceeding with project deletion...');
       const { error } = await supabase
         .from('projects')
         .delete()
