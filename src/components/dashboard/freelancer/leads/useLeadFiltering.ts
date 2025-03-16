@@ -23,7 +23,29 @@ export const useLeadFiltering = (leadSettings: LeadSettings | null, projectLeads
       
       // Match by work type (if specified)
       const workTypeMatches = !leadSettings.work_type || 
+                              leadSettings.work_type === 'any' ||
                               lead.work_type === leadSettings.work_type;
+      
+      // Match by budget (if specified)
+      // This is a simplified budget check - assumes budget format is consistent
+      const budgetMatches = !leadSettings.budget || leadSettings.budget === '' || 
+                            lead.budget.includes(leadSettings.budget);
+      
+      // Match by duration (if specified)
+      const durationMatches = !leadSettings.duration || leadSettings.duration === '' ||
+                              lead.duration === leadSettings.duration;
+      
+      // Match by hiring status (if specified)
+      const hiringStatusMatches = !leadSettings.hiring_status || leadSettings.hiring_status === '' ||
+                                  lead.hiring_status === leadSettings.hiring_status;
+      
+      // Match by insurance requirements (if specified)
+      const insuranceMatches = !leadSettings.requires_insurance || 
+                               lead.requires_insurance === leadSettings.requires_insurance;
+      
+      // Match by site visit requirements (if specified)
+      const siteVisitsMatches = !leadSettings.requires_site_visits || 
+                                lead.requires_site_visits === leadSettings.requires_site_visits;
       
       // Match by keywords (if any)
       const keywordsMatch = !leadSettings.keywords || 
@@ -42,7 +64,9 @@ export const useLeadFiltering = (leadSettings: LeadSettings | null, projectLeads
                             }));
       
       // Return true if all specified criteria match
-      return roleMatches && locationMatches && workTypeMatches && keywordsMatch;
+      return roleMatches && locationMatches && workTypeMatches && 
+             budgetMatches && durationMatches && hiringStatusMatches && 
+             insuranceMatches && siteVisitsMatches && keywordsMatch;
     });
   }, [leadSettings, projectLeads]);
   
