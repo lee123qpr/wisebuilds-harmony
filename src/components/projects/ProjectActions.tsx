@@ -14,8 +14,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
+import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
 
 type ProjectActionsProps = {
   applications: number;
@@ -26,7 +25,6 @@ type ProjectActionsProps = {
 
 const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects }: ProjectActionsProps) => {
   const navigate = useNavigate();
-  const { toast } = useToast();
 
   const handleViewProject = () => {
     // Navigate to view project details page
@@ -36,34 +34,6 @@ const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects
   const handleEditProject = () => {
     // Navigate to edit project page
     navigate(`/project/${projectId}/edit`);
-  };
-
-  const handleDeleteProject = async () => {
-    try {
-      const { error } = await supabase
-        .from('projects')
-        .delete()
-        .eq('id', projectId);
-
-      if (error) throw error;
-
-      toast({
-        title: "Project deleted",
-        description: "The project has been deleted successfully.",
-      });
-
-      // Refresh projects list after deletion
-      if (refreshProjects) {
-        refreshProjects();
-      }
-    } catch (error: any) {
-      console.error('Error deleting project:', error);
-      toast({
-        variant: 'destructive',
-        title: "Error deleting project",
-        description: error.message || "There was an error deleting the project.",
-      });
-    }
   };
 
   const handleViewDocuments = () => {
@@ -96,25 +66,29 @@ const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects
         <PenSquare className="h-4 w-4" />
       </Button>
       
-      <AlertDialog>
-        <AlertDialogTrigger asChild>
-          <Button variant="ghost" size="icon" title="Delete">
-            <Trash2 className="h-4 w-4" />
-          </Button>
-        </AlertDialogTrigger>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the project and all associated data.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDeleteProject}>Delete</AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <ProjectDeleteHandler projectId={projectId}>
+        {(handleDelete) => (
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="ghost" size="icon" title="Delete">
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This action cannot be undone. This will permanently delete the project and all associated data.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction onClick={handleDelete}>Delete</AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        )}
+      </ProjectDeleteHandler>
       
       {hasDocuments && (
         <Button 
