@@ -4,7 +4,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
-import { MessageSquare, ClipboardList } from 'lucide-react';
+import { PlusCircle, MessageSquare, ClipboardList } from 'lucide-react';
 import NewProjectDialog from '@/components/projects/NewProjectDialog';
 import ProjectsTable from '@/components/projects/ProjectsTable';
 import BusinessMessagesTab from '@/components/dashboard/business/MessagesTab';
@@ -37,7 +37,15 @@ const BusinessDashboard = () => {
               <NewProjectDialog />
             </div>
             
-            <ProjectsTable />
+            <Card>
+              <CardHeader className="pb-3">
+                <CardTitle>Projects</CardTitle>
+                <CardDescription>Manage your posted construction projects</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <ProjectsTable />
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="applications" className="space-y-4">

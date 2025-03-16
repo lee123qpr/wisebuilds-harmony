@@ -6,7 +6,6 @@ import { useNavigate } from 'react-router-dom';
 import { Info, Plus } from 'lucide-react';
 import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
 import { useCreateTestProject } from '@/hooks/projects/useCreateTestProject';
-import { formatBudget, formatRole } from '@/utils/projectFormatters';
 
 const EmptyLeadsMessage: React.FC = () => {
   const navigate = useNavigate();
@@ -20,38 +19,6 @@ const EmptyLeadsMessage: React.FC = () => {
     if (leadSettings?.role) {
       createTestProject(leadSettings.role);
     }
-  };
-
-  // Format the duration for display
-  const formatDuration = (duration: string) => {
-    if (!duration) return 'Any';
-    
-    const durationMap: Record<string, string> = {
-      'less_than_1_week': 'Less than 1 week',
-      '1_week': '1 week',
-      '2_weeks': '2 weeks',
-      '3_weeks': '3 weeks',
-      '4_weeks': '4 weeks',
-      '6_weeks_plus': '6+ weeks'
-    };
-    
-    return durationMap[duration] || duration;
-  };
-
-  // Format hiring status for display
-  const formatHiringStatus = (status: string) => {
-    if (!status) return 'Any';
-    
-    const statusMap: Record<string, string> = {
-      'enquiring': 'Just Enquiring',
-      'ready': 'Ready to Hire',
-      'urgent': 'Urgent'
-    };
-    
-    return statusMap[status] || status
-      .split('_')
-      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-      .join(' ');
   };
 
   return (
@@ -71,47 +38,13 @@ const EmptyLeadsMessage: React.FC = () => {
       </CardHeader>
       <CardContent className="pt-0">
         <div className="mb-4 text-sm text-muted-foreground">
-          <p className="font-medium mb-2">Your current filters:</p>
-          <ul className="list-disc pl-5 space-y-1">
-            <li><span className="font-medium">Role:</span> {formatRole(leadSettings?.role || 'Not set')}</li>
-            <li><span className="font-medium">Location:</span> {leadSettings?.location || 'Not set'}</li>
-            <li><span className="font-medium">Work Type:</span> {leadSettings?.work_type || 'Any'}</li>
-            
-            {/* Budget filter */}
-            <li><span className="font-medium">Budget:</span> {leadSettings?.budget ? formatBudget(leadSettings.budget) : 'Any'}</li>
-            
-            {/* Duration filter */}
-            <li><span className="font-medium">Duration:</span> {leadSettings?.duration ? formatDuration(leadSettings.duration) : 'Any'}</li>
-            
-            {/* Hiring Status filter - now using formatted text */}
-            <li><span className="font-medium">Hiring Status:</span> {leadSettings?.hiring_status ? formatHiringStatus(leadSettings.hiring_status) : 'Any'}</li>
-            
-            {/* Insurance Requirements filter */}
-            <li><span className="font-medium">Insurance Required:</span> {leadSettings?.requires_insurance ? 'Yes' : 'Any'}</li>
-            
-            {/* Site Visits Requirements filter */}
-            <li><span className="font-medium">Site Visits Required:</span> {leadSettings?.requires_site_visits ? 'Yes' : 'Any'}</li>
-            
-            {/* Keywords filter */}
-            <li>
-              <span className="font-medium">Keywords:</span> {
-                !leadSettings?.keywords || 
-                (typeof leadSettings.keywords === 'string' 
-                  ? leadSettings.keywords.length === 0 
-                  : leadSettings.keywords.length === 0) 
-                  ? 'None' 
-                  : (typeof leadSettings.keywords === 'string' 
-                      ? leadSettings.keywords 
-                      : leadSettings.keywords.join(', '))
-              }
-            </li>
+          <p>Your current filters:</p>
+          <ul className="list-disc pl-5 mt-2">
+            <li>Role: {leadSettings?.role || 'Not set'}</li>
+            <li>Location: {leadSettings?.location || 'Not set'}</li>
+            <li>Work Type: {leadSettings?.work_type || 'Any'}</li>
           </ul>
         </div>
-        
-        <div className="border-t pt-4 text-sm text-muted-foreground">
-          <p>Try broadening your filters to see more leads or check back later for new projects.</p>
-        </div>
-        
         <div className="flex flex-wrap gap-3 mt-4">
           <Button 
             onClick={() => navigate('/dashboard/freelancer/lead-settings')}

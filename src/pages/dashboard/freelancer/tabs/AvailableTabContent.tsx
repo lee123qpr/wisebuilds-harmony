@@ -10,8 +10,8 @@ import { useState, useEffect } from 'react';
 import { ProjectLead } from '@/types/projects';
 
 const AvailableTabContent: React.FC = () => {
-  // Use our hook with filtering disabled (false)
-  const { projectLeads: projects, isLoading, refreshProjects } = useProjectsWithFiltering(false);
+  // Use our new hook with filtering disabled (false)
+  const { projectLeads: projects, isLoading } = useProjectsWithFiltering(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   
@@ -28,9 +28,9 @@ const AvailableTabContent: React.FC = () => {
   }, [projects, selectedProjectId]);
 
   // Handle refresh
-  const handleRefresh = async () => {
+  const handleRefresh = () => {
     console.log('Refreshing projects...');
-    await refreshProjects();
+    window.location.reload(); // Simple refresh for now
   };
 
   if (error) {
