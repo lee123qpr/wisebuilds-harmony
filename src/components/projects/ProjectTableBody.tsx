@@ -78,6 +78,7 @@ const ProjectTableBody = ({ projects, isLoading, refreshProjects }: ProjectTable
               projectId={project.id}
               hasDocuments={project.documents && project.documents.length > 0}
               refreshProjects={refreshProjects}
+              projectTitle={project.title}
             />
           </TableCell>
         </TableRow>
@@ -87,4 +88,3 @@ const ProjectTableBody = ({ projects, isLoading, refreshProjects }: ProjectTable
 };
 
 export default ProjectTableBody;
-

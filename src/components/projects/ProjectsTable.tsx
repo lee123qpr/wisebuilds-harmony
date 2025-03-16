@@ -57,7 +57,7 @@ const ProjectsTable = () => {
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Created</TableHead>
-              <TableHead>Applications</TableHead>
+              <TableHead>Freelancers Interested</TableHead>
               <TableHead>Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -112,7 +112,7 @@ const ProjectsTable = () => {
                 <TableHead>Title</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Created</TableHead>
-                <TableHead>Applications</TableHead>
+                <TableHead title="Number of freelancers who have expressed interest">Freelancers Interested</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
