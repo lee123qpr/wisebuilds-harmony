@@ -13,9 +13,10 @@ import { supabase } from '@/integrations/supabase/client';
 interface ProjectDetailsProps {
   project: Project;
   refreshTrigger?: number;
+  forceShowContactInfo?: boolean;
 }
 
-const ProjectDetails = ({ project, refreshTrigger = 0 }: ProjectDetailsProps) => {
+const ProjectDetails = ({ project, refreshTrigger = 0, forceShowContactInfo = false }: ProjectDetailsProps) => {
   const [hasBeenPurchased, setHasBeenPurchased] = useState(false);
   const { user } = useAuth();
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
@@ -45,6 +46,8 @@ const ProjectDetails = ({ project, refreshTrigger = 0 }: ProjectDetailsProps) =>
     checkIfApplicationExists();
   }, [project.id, user, isFreelancer, refreshTrigger]);
 
+  const shouldShowContactInfo = forceShowContactInfo || hasBeenPurchased;
+
   return (
     <Card>
       <CardHeader>
@@ -57,7 +60,7 @@ const ProjectDetails = ({ project, refreshTrigger = 0 }: ProjectDetailsProps) =>
         </div>
       </CardHeader>
       <CardContent className="space-y-6">
-        {hasBeenPurchased && (
+        {shouldShowContactInfo && (
           <>
             <ClientContactInfo projectId={project.id} />
             <Separator />

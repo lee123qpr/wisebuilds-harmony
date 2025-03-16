@@ -5,10 +5,17 @@ import { Clock } from 'lucide-react';
 import AnyOptionBadge from './AnyOptionBadge';
 
 interface DurationBadgeProps {
-  duration: string;
+  duration?: string;
 }
 
 const DurationBadge = ({ duration }: DurationBadgeProps) => {
+  if (!duration) {
+    return <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-gray-100 text-gray-600">
+      <Clock className="h-3.5 w-3.5" />
+      Unknown
+    </Badge>;
+  }
+  
   if (duration === 'any') {
     return <AnyOptionBadge label="Duration" />;
   }
@@ -32,13 +39,15 @@ const DurationBadge = ({ duration }: DurationBadgeProps) => {
     return 'bg-[#EFF6FF] text-[#2563EB] border-[#60A5FA]';
   };
 
-  // Format duration for display
-  const formattedDuration = duration
-    .replace('_', ' ')
-    .replace('plus', '+')
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  // Format duration for display (safely)
+  const formattedDuration = typeof duration === 'string' 
+    ? duration
+        .replace(/_/g, ' ')
+        .replace('plus', '+')
+        .split(' ')
+        .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' ')
+    : 'Unknown';
 
   return (
     <Badge variant="outline" className={`flex items-center gap-1.5 py-1.5 px-3 ${getDurationStyles()}`}>
