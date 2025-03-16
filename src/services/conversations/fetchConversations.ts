@@ -68,7 +68,7 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
       }
     }));
     
-    return formattedConversations;
+    return formattedConversations as Conversation[];
   } catch (e) {
     console.error('Error in fetchConversations:', e);
     return [];

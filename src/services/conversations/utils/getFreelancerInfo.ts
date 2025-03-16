@@ -21,7 +21,7 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${supabase.auth.getSession().then(res => res.data.session?.access_token)}`
+        'Authorization': `Bearer ${(await supabase.auth.getSession()).data.session?.access_token}`
       },
       body: JSON.stringify({ userId: freelancerId })
     });
@@ -49,8 +49,8 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
                     String(metaData.display_name || '') : 
                     metaData && typeof metaData === 'object' && 'first_name' in metaData && 'last_name' in metaData ? 
                     `${String(metaData.first_name || '')} ${String(metaData.last_name || '')}`.trim() : 'Freelancer',
-      profile_image: metaData && typeof metaData === 'object' && 'avatar_url' in metaData ? 
-                    (metaData.avatar_url ? String(metaData.avatar_url) : null) : null,
+      profile_image: metaData && typeof metaData === 'object' && 'profile_photo' in metaData ? 
+                    (metaData.profile_photo ? String(metaData.profile_photo) : null) : null,
       phone_number: metaData && typeof metaData === 'object' ? 
                     ('phone_number' in metaData && metaData.phone_number ? String(metaData.phone_number) : 
                     'phone' in metaData && metaData.phone ? String(metaData.phone) : null) : null,
@@ -58,8 +58,8 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       email_verified: userData.email_confirmed || false,
       member_since: userData && userData.user && userData.user.created_at ? 
                    String(userData.user.created_at) : 
-                   metaData && typeof metaData === 'object' && 'created_at' in metaData ? 
-                   String(metaData.created_at || '') : null,
+                   metaData && typeof metaData === 'object' && 'member_since' in metaData ? 
+                   String(metaData.member_since || '') : null,
       jobs_completed: metaData && typeof metaData === 'object' && 'jobs_completed' in metaData ? 
                       Number(metaData.jobs_completed) || 0 : 0,
       rating,
