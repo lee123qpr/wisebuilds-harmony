@@ -8,8 +8,8 @@ import { Message, MessageAttachment } from '@/types/messaging';
 export const fetchMessages = async (conversationId: string) => {
   try {
     // We need to use type assertion because messages table isn't in the Supabase type definition
-    const { data, error } = await (supabase
-      .from('messages') as any)
+    const { data, error } = await supabase
+      .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
@@ -41,8 +41,8 @@ export const markMessagesAsRead = async (messageIds: string[]) => {
   if (messageIds.length === 0) return;
   
   try {
-    const { error } = await (supabase
-      .from('messages') as any)
+    const { error } = await supabase
+      .from('messages')
       .update({ is_read: true })
       .in('id', messageIds);
     
@@ -153,8 +153,8 @@ export const sendMessage = async (conversationId: string, message: string, attac
     }
     
     // Send the message
-    const { error } = await (supabase
-      .from('messages') as any)
+    const { error } = await supabase
+      .from('messages')
       .insert({
         conversation_id: conversationId,
         sender_id: userId,

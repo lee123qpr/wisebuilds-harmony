@@ -68,9 +68,9 @@ export const createConversation = async (freelancerId: string, clientId: string,
       };
     }
     
-    // We need to use type assertion because conversations table isn't in the Supabase type definition
-    const { data, error } = await (supabase
-      .from('conversations') as any)
+    // Create conversation record
+    const { data, error } = await supabase
+      .from('conversations')
       .insert({
         freelancer_id: freelancerId,
         client_id: clientId,
@@ -111,8 +111,8 @@ export const createConversation = async (freelancerId: string, clientId: string,
 // Update conversation's last message time
 export const updateConversationTime = async (conversationId: string) => {
   try {
-    return await (supabase
-      .from('conversations') as any)
+    return await supabase
+      .from('conversations')
       .update({ last_message_time: new Date().toISOString() })
       .eq('id', conversationId);
   } catch (error) {
