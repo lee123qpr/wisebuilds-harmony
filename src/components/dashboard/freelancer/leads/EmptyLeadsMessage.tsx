@@ -11,25 +11,21 @@ const EmptyLeadsMessage: React.FC = () => {
   return (
     <Card className="border-t-0 rounded-t-none">
       <CardContent className="p-6">
-        <div className="flex items-start space-x-4">
-          <div className="rounded-full bg-blue-50 p-2">
+        <div className="flex flex-col items-center justify-center py-8 text-center">
+          <div className="rounded-full bg-blue-50 p-3 mb-4">
             <Info className="h-6 w-6 text-blue-500" />
           </div>
-          <div className="space-y-4">
-            <div>
-              <h3 className="text-xl font-semibold">No Matching Leads Available</h3>
-              <p className="text-gray-600">
-                We couldn't find any projects matching your current preferences
-              </p>
-            </div>
-            <Button 
-              onClick={() => navigate('/dashboard/freelancer/lead-settings')}
-              variant="outline"
-              className="mt-2"
-            >
-              Update Lead Settings
-            </Button>
-          </div>
+          <h3 className="text-xl font-semibold mb-2">No Matching Leads Available</h3>
+          <p className="text-gray-600 mb-4 max-w-md">
+            We couldn't find any projects matching your current preferences
+          </p>
+          <Button 
+            onClick={() => navigate('/dashboard/freelancer/lead-settings')}
+            variant="default"
+            className="mt-2"
+          >
+            Update Lead Settings
+          </Button>
         </div>
       </CardContent>
     </Card>

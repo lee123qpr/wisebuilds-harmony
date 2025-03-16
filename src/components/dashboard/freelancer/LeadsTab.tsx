@@ -47,7 +47,7 @@ const LeadsTab: React.FC<LeadsTabProps> = ({
   }
   
   return (
-    <div className="space-y-0">
+    <div className="space-y-0 bg-background">
       <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads} />
       
       {isLoadingLeads ? (
