@@ -1,0 +1,25 @@
+
+export interface ClientInfo {
+  contact_name: string | null;
+  email: string | null;
+  company_name: string | null;
+}
+
+export interface Conversation {
+  id: string;
+  client_id: string;
+  freelancer_id: string;
+  project_id: string;
+  last_message_time: string;
+  project_title: string;
+  client_info: ClientInfo | null;
+}
+
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  message: string;
+  created_at: string;
+  is_read: boolean;
+}

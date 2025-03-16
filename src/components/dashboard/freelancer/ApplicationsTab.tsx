@@ -29,13 +29,15 @@ const ApplicationsTab: React.FC = () => {
   const {
     data: applications,
     isLoading,
-    error
+    error,
+    refetch
   } = useQuery({
     queryKey: ['applications', user?.id],
     queryFn: async () => {
       if (!user) return [];
       
       try {
+        console.log('Fetching user applications...');
         // Use custom RPC function to get applications
         const { data: applicationData, error: appError } = await supabase.rpc('get_user_applications', {
           user_id: user.id
@@ -47,8 +49,11 @@ const ApplicationsTab: React.FC = () => {
         }
         
         if (!applicationData || applicationData.length === 0) {
+          console.log('No applications found');
           return [];
         }
+        
+        console.log('Received application data:', applicationData);
         
         // Get project details for each application
         const applicationProjects = applicationData.map((app: any) => ({
@@ -57,14 +62,16 @@ const ApplicationsTab: React.FC = () => {
           application_created_at: app.created_at
         }));
         
-        console.log('Fetched applications:', applicationProjects);
+        console.log('Processed applications:', applicationProjects);
         return applicationProjects as ApplicationWithProject[];
       } catch (error) {
         console.error('Error fetching applications:', error);
         return [];
       }
     },
-    enabled: !!user
+    enabled: !!user,
+    refetchOnMount: true,
+    refetchOnWindowFocus: true
   });
   
   // Find the selected project from applications
@@ -74,8 +81,14 @@ const ApplicationsTab: React.FC = () => {
   useEffect(() => {
     if (applications?.length && !selectedProjectId) {
       setSelectedProjectId(applications[0].id);
+      console.log('Setting initial selected project:', applications[0].id);
     }
-  }, [applications]);
+  }, [applications, selectedProjectId]);
+  
+  // Force refresh when tab becomes visible
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
   
   if (error) {
     console.error('Error loading applications:', error);

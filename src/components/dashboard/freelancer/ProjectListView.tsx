@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
@@ -10,6 +11,7 @@ import ProjectDetailPlaceholder from './ProjectDetailPlaceholder';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface ProjectListViewProps {
   projects: Project[];
@@ -33,13 +35,17 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [purchasedProjects, setPurchasedProjects] = useState<Record<string, boolean>>({});
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+  const queryClient = useQueryClient();
 
   const handlePurchaseSuccess = () => {
     toast({
       title: 'Lead purchased',
       description: 'You can now view the client contact information',
     });
+    
+    // Refresh purchase status
     setRefreshTrigger(prev => prev + 1);
+    
     // Update purchased status for the current project
     if (selectedProject) {
       setPurchasedProjects(prev => ({
@@ -47,6 +53,9 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
         [selectedProject.id]: true
       }));
     }
+    
+    // Refresh applications data for the "My Responses" tab
+    queryClient.invalidateQueries({ queryKey: ['applications'] });
   };
 
   useEffect(() => {
@@ -69,6 +78,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
           }
           
           purchasedStatus[projectId] = data === true;
+          console.log(`Project ${projectId} purchased status:`, data);
         }
         
         setPurchasedProjects(purchasedStatus);
@@ -88,11 +98,9 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
     return <EmptyProjectState />;
   }
 
-  console.log('Selected project for purchase:', selectedProject);
-
   return (
     <ResizablePanelGroup direction="horizontal" className="rounded-lg border bg-white">
-      <ResizablePanel defaultSize={40} minSize={30}>
+      <ResizablePanel defaultSize={35} minSize={25}>
         <div className="divide-y h-[700px] overflow-auto">
           {projects.map((project) => (
             <ProjectCard
@@ -108,7 +116,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       
       <ResizableHandle withHandle />
       
-      <ResizablePanel defaultSize={60}>
+      <ResizablePanel defaultSize={65}>
         {selectedProject ? (
           <div className="p-6 h-[700px] overflow-auto">
             {isFreelancer && !showContactInfo && !purchasedProjects[selectedProject.id] && (

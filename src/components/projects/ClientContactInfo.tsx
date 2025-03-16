@@ -1,8 +1,9 @@
 import React from 'react';
-import { Mail, Phone, Building, User, ExternalLink, MapPin, Globe } from 'lucide-react';
+import { Mail, Phone, Building, User, ExternalLink, MapPin, Globe, MessageCircle } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
 import { useContactInfo } from '@/hooks/leads/useContactInfo';
+import { useNavigate } from 'react-router-dom';
 
 interface ClientContactInfoProps {
   projectId: string;
@@ -10,8 +11,13 @@ interface ClientContactInfoProps {
 
 const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
   const { clientInfo, isLoading, error } = useContactInfo(projectId);
+  const navigate = useNavigate();
   
   console.log('ClientContactInfo rendering with:', { clientInfo, isLoading, error });
+
+  const handleMessageNow = () => {
+    navigate(`/dashboard/freelancer?tab=messages&projectId=${projectId}&clientId=${clientInfo?.user_id || ''}`);
+  };
 
   if (isLoading) {
     return (
@@ -42,26 +48,19 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
     );
   }
 
-  // Determine if we have at least the essential contact info
   const hasEssentialContactInfo = !!(clientInfo.contact_name || clientInfo.email || clientInfo.phone_number);
 
-  // Format phone number for tel: link - properly format for international dialing
   const formatPhoneForLink = (phone: string) => {
-    // First remove all non-digit characters
     const digits = phone.replace(/\D/g, '');
     
-    // Check if it already has the + prefix
     if (phone.startsWith('+')) {
-      // Return the original number format to maintain the plus sign
       return phone;
     }
     
-    // If no plus sign but starts with 00 (international format), replace with +
     if (digits.startsWith('00')) {
       return '+' + digits.substring(2);
     }
     
-    // Otherwise, return the cleaned digits
     return digits;
   };
 
@@ -101,7 +100,7 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
               <Phone className="h-4 w-4 text-green-600 flex-shrink-0" />
               <span className="font-medium min-w-24">Phone:</span>
               <a 
-                href={`tel:${clientInfo.phone_number}`} 
+                href={`tel:${formatPhoneForLink(clientInfo.phone_number)}`} 
                 className="text-blue-600 hover:underline font-semibold"
               >
                 {clientInfo.phone_number}
@@ -137,8 +136,8 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         </div>
       )}
       
-      {clientInfo.website && (
-        <div className="pt-2">
+      <div className="flex items-center justify-between pt-2 gap-2">
+        {clientInfo.website && (
           <Button
             variant="outline"
             size="sm"
@@ -148,8 +147,18 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
             <ExternalLink className="h-4 w-4 mr-2" />
             Visit Website
           </Button>
-        </div>
-      )}
+        )}
+        
+        <Button
+          variant="default"
+          size="sm"
+          className="bg-green-600 hover:bg-green-700 text-white ml-auto"
+          onClick={handleMessageNow}
+        >
+          <MessageCircle className="h-4 w-4 mr-2" />
+          Message Now
+        </Button>
+      </div>
     </div>
   );
 };

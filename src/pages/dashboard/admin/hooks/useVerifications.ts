@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Verification } from '../types';
+import { mapStatusToVerificationStatus } from '@/hooks/verification/verificationService';
 
 export const useVerifications = () => {
   const [verifications, setVerifications] = useState<Verification[]>([]);
@@ -49,7 +50,8 @@ export const useVerifications = () => {
         return {
           ...verification,
           user_email: emailData?.[0]?.email || 'Unknown',
-          user_full_name: fullName
+          user_full_name: fullName,
+          verification_status: mapStatusToVerificationStatus(verification.verification_status)
         };
       }));
       

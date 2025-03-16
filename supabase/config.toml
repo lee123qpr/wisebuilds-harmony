@@ -32,4 +32,3 @@ verify_jwt = true
 
 [functions.get-user-email]
 verify_jwt = true
-
