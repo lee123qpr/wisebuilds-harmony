@@ -44,10 +44,10 @@ export const ProjectDeleteHandler: React.FC<ProjectDeleteHandlerProps> = ({
         return;
       }
       
-      // Check project ownership
+      // Check project ownership and also if it's a test project
       const { data: projectData, error: projectError } = await supabase
         .from('projects')
-        .select('user_id')
+        .select('user_id, title')
         .eq('id', projectId)
         .single();
         
@@ -56,7 +56,11 @@ export const ProjectDeleteHandler: React.FC<ProjectDeleteHandlerProps> = ({
         throw new Error("Couldn't verify project ownership");
       }
       
-      if (projectData.user_id !== currentUserId) {
+      // Check if it's a test project (title starts with "Test ")
+      const isTestProject = projectData.title.startsWith('Test ');
+      
+      // Allow deletion if user is owner OR if it's a test project
+      if (projectData.user_id !== currentUserId && !isTestProject) {
         toast({
           variant: 'destructive',
           title: "Permission denied",
