@@ -1,12 +1,12 @@
 import React from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import AvailableProjectsTab from '@/components/dashboard/freelancer/AvailableProjectsTab';
+import LeadsTab from '@/components/dashboard/freelancer/LeadsTab';
+import ApplicationsTab from '@/components/dashboard/freelancer/ApplicationsTab';
+import ActiveJobsTab from '@/components/dashboard/freelancer/ActiveJobsTab';
+import MessagesTab from '@/components/dashboard/freelancer/MessagesTab';
 import { ProjectLead } from '@/types/projects';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
-import AvailableTabContent from './tabs/AvailableTabContent';
-import LeadsTabContent from './tabs/LeadsTabContent';
-import ApplicationsTabContent from './tabs/ApplicationsTabContent';
-import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
-import MessagesTabContent from './tabs/MessagesTabContent';
 
 interface FreelancerTabsProps {
   isLoadingSettings: boolean;
@@ -30,11 +30,11 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       </TabsList>
       
       <TabsContent value="available" className="space-y-6">
-        <AvailableTabContent />
+        <AvailableProjectsTab />
       </TabsContent>
       
       <TabsContent value="leads" className="space-y-6">
-        <LeadsTabContent 
+        <LeadsTab 
           isLoadingSettings={isLoadingSettings} 
           leadSettings={leadSettings} 
           projectLeads={projectLeads} 
@@ -42,15 +42,15 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="applied" className="space-y-4">
-        <ApplicationsTabContent />
+        <ApplicationsTab />
       </TabsContent>
       
       <TabsContent value="active" className="space-y-4">
-        <ActiveJobsTabContent />
+        <ActiveJobsTab />
       </TabsContent>
       
       <TabsContent value="messages" className="space-y-4">
-        <MessagesTabContent />
+        <MessagesTab />
       </TabsContent>
     </Tabs>
   );
