@@ -12,6 +12,11 @@ interface LeadsHeaderProps {
 const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading }) => {
   const navigate = useNavigate();
 
+  const handleRefresh = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onRefresh();
+  };
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-2">
@@ -29,14 +34,14 @@ const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading }) => {
           Update Filters
         </Button>
         <Button 
-          onClick={onRefresh} 
+          onClick={handleRefresh} 
           size="sm" 
           variant="outline" 
           className="flex items-center"
           disabled={isLoading}
         >
           <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-          Refresh
+          {isLoading ? 'Refreshing...' : 'Refresh'}
         </Button>
       </div>
     </div>

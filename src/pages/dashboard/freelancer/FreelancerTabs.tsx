@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
@@ -17,10 +17,24 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
   isLoadingSettings, 
   leadSettings 
 }) => {
-  const [activeTab, setActiveTab] = useState('available');
+  // Get the active tab from localStorage or default to 'available'
+  const getInitialTab = () => {
+    if (typeof window !== 'undefined') {
+      const savedTab = localStorage.getItem('freelancer-active-tab');
+      return savedTab || 'available';
+    }
+    return 'available';
+  };
+  
+  const [activeTab, setActiveTab] = useState(getInitialTab);
+  
+  // Save the active tab to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('freelancer-active-tab', activeTab);
+  }, [activeTab]);
   
   return (
-    <Tabs defaultValue="available" value={activeTab} onValueChange={setActiveTab} className="w-full">
+    <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab} className="w-full">
       <TabsList className="grid grid-cols-5 mb-8">
         <TabsTrigger value="available">Available Projects</TabsTrigger>
         <TabsTrigger value="leads">My Leads</TabsTrigger>

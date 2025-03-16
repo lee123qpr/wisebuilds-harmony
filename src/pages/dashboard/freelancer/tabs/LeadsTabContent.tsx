@@ -8,6 +8,7 @@ import LeadsHeader from '@/components/dashboard/freelancer/leads/LeadsHeader';
 import { useState, useEffect } from 'react';
 import EmptyLeadsMessage from '@/components/dashboard/freelancer/leads/EmptyLeadsMessage';
 import { toast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface LeadsTabContentProps {
   isLoadingSettings: boolean;
@@ -20,9 +21,11 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
 }) => {
   console.log('LeadsTabContent render:', { isLoadingSettings, leadSettings });
   
+  const queryClient = useQueryClient();
   // Use our new hook with filtering enabled (true) based on leadSettings
   const { projectLeads: filteredProjects, isLoading: isLoadingLeads } = useProjectsWithFiltering(true, leadSettings);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   useEffect(() => {
     console.log('Filtered projects in LeadsTabContent:', filteredProjects.length);
@@ -40,14 +43,24 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
     }
   }, [filteredProjects, selectedProjectId]);
 
-  // Handle refresh
-  const handleRefresh = () => {
-    console.log('Refreshing leads...');
+  // Handle refresh - improved to stay on the current tab
+  const handleRefresh = async () => {
+    console.log('Refreshing leads without page reload...');
+    setIsRefreshing(true);
+    
     toast({
       title: "Refreshing leads",
       description: "Looking for new matching leads...",
     });
-    window.location.reload(); // Simple refresh for now
+    
+    // Invalidate relevant queries to refresh data
+    await queryClient.invalidateQueries({ queryKey: ['projects'] });
+    await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+    
+    // Small delay to ensure the UI shows something is happening
+    setTimeout(() => {
+      setIsRefreshing(false);
+    }, 1000);
   };
   
   // If loading or no settings, show alert
@@ -63,14 +76,14 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
   
   return (
     <div className="space-y-4">
-      <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads} />
+      <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads || isRefreshing} />
       
-      {filteredProjects.length === 0 && !isLoadingLeads ? (
+      {filteredProjects.length === 0 && !isLoadingLeads && !isRefreshing ? (
         <EmptyLeadsMessage />
       ) : (
         <ProjectListView 
           projects={filteredProjects as any}
-          isLoading={isLoadingLeads}
+          isLoading={isLoadingLeads || isRefreshing}
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
           selectedProject={selectedProject as any}
