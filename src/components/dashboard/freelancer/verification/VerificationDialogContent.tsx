@@ -1,10 +1,11 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { DialogContent } from '@/components/ui/dialog';
 import { useVerification } from '@/hooks/verification';
 import { useVerificationSetup } from '@/hooks/verification/useVerificationSetup';
 import { useDocumentUpload } from '@/hooks/verification/useDocumentUpload';
 import { useDocumentDeletion } from '@/hooks/verification/useDocumentDeletion';
+import { checkIdDocumentsBucketAccess } from '@/hooks/verification/services/user-verification';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
 import VerificationDialogHeader from './dialog/VerificationDialogHeader';
 import VerificationStatus from './dialog/VerificationStatus';
@@ -12,9 +13,13 @@ import VerificationDialogFooter from './dialog/VerificationDialogFooter';
 
 interface VerificationDialogContentProps {
   onClose: () => void;
+  onBucketError?: () => void;
 }
 
-const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ onClose }) => {
+const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ 
+  onClose,
+  onBucketError
+}) => {
   const { 
     verificationStatus, 
     verificationData,
@@ -43,6 +48,18 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ o
     // Success callback to close dialog after successful deletion
     setTimeout(() => onClose(), 1500);
   });
+
+  // Check if bucket is accessible
+  useEffect(() => {
+    const checkBucketAccess = async () => {
+      const hasAccess = await checkIdDocumentsBucketAccess();
+      if (!hasAccess && onBucketError) {
+        onBucketError();
+      }
+    };
+    
+    checkBucketAccess();
+  }, [onBucketError]);
 
   return (
     <DialogContent className="sm:max-w-[425px]">

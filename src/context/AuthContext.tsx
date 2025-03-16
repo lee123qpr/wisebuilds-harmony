@@ -2,6 +2,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Session, User } from '@supabase/supabase-js';
+import { isUserFreelancer } from '@/hooks/verification/services/user-verification';
 
 type AuthContextType = {
   session: Session | null;
@@ -21,11 +22,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [userType, setUserType] = useState<string | null>(null);
+  const [isVerifiedFreelancer, setIsVerifiedFreelancer] = useState(false);
   
   // Derived state for clearer user role checks
-  const isFreelancer = userType === 'freelancer';
+  const isFreelancer = userType === 'freelancer' || isVerifiedFreelancer;
   const isBusiness = userType === 'business';
   const isAdmin = userType === 'admin';
+
+  // Check if user is a freelancer through multiple methods
+  const checkFreelancerStatus = async (userId: string) => {
+    if (userType === 'freelancer') return true;
+    
+    try {
+      const isFreelancer = await isUserFreelancer();
+      setIsVerifiedFreelancer(isFreelancer);
+      return isFreelancer;
+    } catch (error) {
+      console.error('Error checking freelancer status:', error);
+      return false;
+    }
+  };
 
   useEffect(() => {
     // Get initial session
@@ -41,6 +57,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         if (data.session?.user?.user_metadata?.user_type) {
           setUserType(data.session.user.user_metadata.user_type);
         }
+        
+        // Check if user is a freelancer through other means
+        if (data.session?.user) {
+          await checkFreelancerStatus(data.session.user.id);
+        }
       } catch (error) {
         console.error('Error getting initial session:', error);
       } finally {
@@ -52,7 +73,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     // Listen for auth changes
     const { data: authListener } = supabase.auth.onAuthStateChange(
-      (event, newSession) => {
+      async (event, newSession) => {
         console.log('Auth state changed:', event);
         setSession(newSession);
         setUser(newSession?.user ?? null);
@@ -62,6 +83,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           setUserType(newSession.user.user_metadata.user_type);
         } else {
           setUserType(null);
+        }
+        
+        // Check freelancer status on auth change
+        if (newSession?.user) {
+          await checkFreelancerStatus(newSession.user.id);
+        } else {
+          setIsVerifiedFreelancer(false);
         }
         
         setIsLoading(false);
