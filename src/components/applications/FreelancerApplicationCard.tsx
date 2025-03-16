@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,8 +58,8 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
       // If conversation exists, navigate to it
       if (existingConversations && existingConversations.length > 0) {
         console.log('Using existing conversation:', existingConversations[0].id);
-        // Navigate to the dashboard/freelancer/messages tab with the conversation selected
-        navigate(`/dashboard/freelancer?tab=messages&conversation=${existingConversations[0].id}`);
+        // Navigate to the business dashboard messages tab since we're logged in as a business user
+        navigate(`/dashboard/business?tab=messages&conversation=${existingConversations[0].id}`);
       } else {
         // Create new conversation
         console.log('Creating new conversation for:', profile.id, clientId, projectId);
@@ -69,8 +70,8 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
         }
         
         console.log('Created new conversation:', newConversation.id);
-        // Navigate to the dashboard/freelancer/messages tab with the new conversation selected
-        navigate(`/dashboard/freelancer?tab=messages&conversation=${newConversation.id}`);
+        // Navigate to the business dashboard messages tab since we're logged in as a business user
+        navigate(`/dashboard/business?tab=messages&conversation=${newConversation.id}`);
       }
     } catch (error: any) {
       console.error('Error starting chat:', error);
