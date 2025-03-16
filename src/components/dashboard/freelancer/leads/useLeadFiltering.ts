@@ -26,14 +26,64 @@ export const useLeadFiltering = (leadSettings: LeadSettings | null, projectLeads
                               leadSettings.work_type === 'any' ||
                               lead.work_type === leadSettings.work_type;
       
-      // Match by budget (if specified)
-      // This is a simplified budget check - assumes budget format is consistent
-      const budgetMatches = !leadSettings.budget || leadSettings.budget === '' || 
-                            lead.budget.includes(leadSettings.budget);
+      // Improved budget matching - extract numeric values for comparison
+      let budgetMatches = true;
+      if (leadSettings.budget && leadSettings.budget !== '' && leadSettings.budget !== 'any') {
+        // Extract budget numbers from settings and lead
+        const settingsBudgetMatch = leadSettings.budget.match(/[\d,]+/g);
+        const leadBudgetMatch = lead.budget.match(/[\d,]+/g);
+        
+        if (settingsBudgetMatch && leadBudgetMatch) {
+          // Compare budget ranges (simplified - assuming format £X,XXX-£Y,YYY)
+          // For budget matching, we'll consider it a match if there's any overlap in the ranges
+          const settingsMin = parseInt(settingsBudgetMatch[0].replace(/,/g, ''), 10);
+          const settingsMax = settingsBudgetMatch.length > 1 ? 
+            parseInt(settingsBudgetMatch[1].replace(/,/g, ''), 10) : settingsMin;
+          
+          const leadMin = parseInt(leadBudgetMatch[0].replace(/,/g, ''), 10);
+          const leadMax = leadBudgetMatch.length > 1 ? 
+            parseInt(leadBudgetMatch[1].replace(/,/g, ''), 10) : leadMin;
+          
+          // If ranges overlap, consider it a match
+          budgetMatches = !(leadMax < settingsMin || leadMin > settingsMax);
+          
+          console.log('Budget comparison:', {
+            settingsBudget: leadSettings.budget,
+            leadBudget: lead.budget,
+            settingsRange: [settingsMin, settingsMax],
+            leadRange: [leadMin, leadMax],
+            matches: budgetMatches
+          });
+        }
+      }
       
-      // Match by duration (if specified)
-      const durationMatches = !leadSettings.duration || leadSettings.duration === '' ||
-                              lead.duration === leadSettings.duration;
+      // Improved duration matching - map duration codes to priorities
+      let durationMatches = true;
+      if (leadSettings.duration && leadSettings.duration !== '' && leadSettings.duration !== 'any') {
+        // Map durations to numeric values for comparison
+        const durationPriorities: Record<string, number> = {
+          'less_than_1_week': 1,
+          '1_week': 2,
+          '2_weeks': 3,
+          '3_weeks': 4,
+          '4_weeks': 5,
+          '6_weeks_plus': 6
+        };
+        
+        const leadDurationValue = durationPriorities[lead.duration] || 0;
+        const settingsDurationValue = durationPriorities[leadSettings.duration] || 0;
+        
+        // For now, require the project duration to match or exceed the requested duration
+        durationMatches = leadDurationValue >= settingsDurationValue;
+        
+        console.log('Duration comparison:', {
+          settingsDuration: leadSettings.duration,
+          leadDuration: lead.duration,
+          settingsValue: settingsDurationValue,
+          leadValue: leadDurationValue,
+          matches: durationMatches
+        });
+      }
       
       // Match by hiring status (if specified)
       const hiringStatusMatches = !leadSettings.hiring_status || leadSettings.hiring_status === '' ||
