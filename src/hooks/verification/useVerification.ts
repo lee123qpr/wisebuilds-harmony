@@ -21,13 +21,16 @@ export const useVerification = (): UseVerificationResult => {
   // Fetch verification status
   const refreshVerificationStatus = async () => {
     if (!user) return;
-
+    
     setIsLoading(true);
-    const data = await fetchVerificationStatus(user.id);
-    if (data) {
+    try {
+      const data = await fetchVerificationStatus(user.id);
       setVerificationData(data);
+    } catch (error) {
+      console.error('Error refreshing verification status:', error);
+    } finally {
+      setIsLoading(false);
     }
-    setIsLoading(false);
   };
 
   // Upload ID document

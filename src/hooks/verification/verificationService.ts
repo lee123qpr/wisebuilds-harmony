@@ -14,16 +14,26 @@ export const mapStatusToVerificationStatus = (status: string): VerificationStatu
 // Fetch verification status
 export const fetchVerificationStatus = async (userId: string): Promise<VerificationData | null> => {
   try {
+    console.log('Fetching verification status for user:', userId);
+    
     const { data, error } = await supabase
       .from('freelancer_verification')
       .select('*')
       .eq('user_id', userId)
       .single();
     
-    if (error && error.code !== 'PGRST116') {
+    if (error) {
+      // If record not found, don't treat as an error
+      if (error.code === 'PGRST116') {
+        console.log('No verification record found for user');
+        return null;
+      }
+      
       console.error('Error fetching verification status:', error);
       throw error;
     }
+    
+    console.log('Verification data found:', data);
     
     if (data) {
       return {
@@ -39,7 +49,7 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
     
     return null;
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in fetchVerificationStatus:', error);
     return null;
   }
 };
