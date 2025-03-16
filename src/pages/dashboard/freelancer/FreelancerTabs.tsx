@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
 import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
-import ApplicationsTabContent from './tabs/ApplicationsTabContent';
+import QuotesTabContent from './tabs/QuotesTabContent';
 import LeadsTabContent from './tabs/LeadsTabContent';
 import AvailableTabContent from './tabs/AvailableTabContent';
 import MessagesTabContent from './tabs/MessagesTabContent';
@@ -38,7 +38,7 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       <TabsList className="grid grid-cols-5 mb-8">
         <TabsTrigger value="available">Available Projects</TabsTrigger>
         <TabsTrigger value="leads">My Leads</TabsTrigger>
-        <TabsTrigger value="applications">Applications</TabsTrigger>
+        <TabsTrigger value="quotes">My Quotes</TabsTrigger>
         <TabsTrigger value="active">Active Jobs</TabsTrigger>
         <TabsTrigger value="messages">Messages</TabsTrigger>
       </TabsList>
@@ -54,8 +54,8 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
         />
       </TabsContent>
       
-      <TabsContent value="applications" className="pt-2">
-        <ApplicationsTabContent />
+      <TabsContent value="quotes" className="pt-2">
+        <QuotesTabContent />
       </TabsContent>
       
       <TabsContent value="active" className="pt-2">
