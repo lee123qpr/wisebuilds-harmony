@@ -20,5 +20,18 @@ export interface Message {
   message: string;
   is_read: boolean;
   created_at: string;
-  attachments?: any[];
+  attachments?: MessageAttachment[];
 }
+
+export interface MessageAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  path?: string;
+}
+
+// Re-export the ClientInfo and FreelancerInfo interfaces to make them available
+export { ClientInfo } from '@/services/conversations/utils/getClientInfo';
+export { FreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
