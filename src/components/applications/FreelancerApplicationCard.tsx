@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -42,37 +41,36 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
         throw new Error('Not authenticated');
       }
       
+      if (!profile?.id) {
+        throw new Error('Freelancer profile not found');
+      }
+      
       // Check if a conversation exists between this client and freelancer for this project
       const { data: existingConversations, error: checkError } = await supabase
         .from('conversations')
         .select('id')
         .eq('project_id', projectId)
-        .eq('freelancer_id', profile?.id);
+        .eq('freelancer_id', profile.id);
         
       if (checkError) throw checkError;
       
-      let conversationId;
-      
+      // If conversation exists, navigate to it
       if (existingConversations && existingConversations.length > 0) {
-        // Conversation exists, use its ID
-        conversationId = existingConversations[0].id;
-        
-        // Navigate to existing conversation
-        navigate(`/messages/${conversationId}`);
+        console.log('Using existing conversation:', existingConversations[0].id);
+        // Navigate to the dashboard/freelancer/messages tab with the conversation selected
+        navigate(`/dashboard/freelancer?tab=messages&conversation=${existingConversations[0].id}`);
       } else {
-        // Create new conversation using the service
-        if (!profile?.id) {
-          throw new Error('Freelancer profile not found');
-        }
-        
+        // Create new conversation
+        console.log('Creating new conversation for:', profile.id, clientId, projectId);
         const newConversation = await createConversation(profile.id, clientId, projectId);
         
         if (!newConversation) {
           throw new Error('Failed to create conversation');
         }
         
-        // Navigate to the new conversation
-        navigate(`/messages/${newConversation.id}`);
+        console.log('Created new conversation:', newConversation.id);
+        // Navigate to the dashboard/freelancer/messages tab with the new conversation selected
+        navigate(`/dashboard/freelancer?tab=messages&conversation=${newConversation.id}`);
       }
     } catch (error: any) {
       console.error('Error starting chat:', error);
