@@ -1,4 +1,3 @@
-
 import { Json } from "@/integrations/supabase/types";
 
 export interface FreelancerApplication {
@@ -28,4 +27,20 @@ export interface FreelancerProfile {
   day_rate?: string;
   email?: string;
   phone_number?: string;
+}
+
+export interface ProjectApplication {
+  id: string;
+  projectId: string;
+  userId: string;
+  message: string;
+  createdAt: string;
+  email: string | null;
+  firstName: string | null;
+  lastName: string | null;
+  displayName: string | null;
+  phoneNumber: string | null;
+  jobTitle: string | null;
+  location: string | null;
+  profilePhoto: string | null;
 }

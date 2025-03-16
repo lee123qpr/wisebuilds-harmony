@@ -36,3 +36,11 @@ export interface Message {
   is_read: boolean;
   attachments?: MessageAttachment[];
 }
+
+export interface FreelancerInfo {
+  name: string;
+  profile_photo: string | null;
+  phone_number?: string | null;
+  email?: string | null;
+  id: string;
+}

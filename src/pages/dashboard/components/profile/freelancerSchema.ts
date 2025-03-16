@@ -1,4 +1,3 @@
-
 import * as z from 'zod';
 import { UploadedFile } from '@/components/projects/file-upload/types';
 
@@ -89,3 +88,27 @@ export const freelancerProfileSchema = z.object({
     .default([]),
   idVerified: z.boolean().default(false),
 });
+
+// Export the type for the FreelancerProfileData
+export type FreelancerProfileData = {
+  first_name: string;
+  last_name: string;
+  display_name: string;
+  job_title: string | null;
+  location: string | null;
+  bio: string | null;
+  email: string | null;
+  phone_number: string | null;
+  website: string | null;
+  hourly_rate: string | null;
+  availability: string | null;
+  skills: string[] | null;
+  experience: string | null;
+  qualifications: string[] | null;
+  accreditations: string[] | null;
+  has_indemnity_insurance: boolean;
+  indemnity_insurance: any | null;
+  previous_work: any[] | null;
+  previous_employers: any[] | null;
+  profile_photo: string | null;
+};

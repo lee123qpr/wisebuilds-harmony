@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -17,7 +16,6 @@ const ProjectApplications = () => {
   const { project, loading: projectLoading } = useProjectDetails(projectId);
   const { applications, isLoading, error } = useProjectApplications(projectId);
 
-  // Loading skeleton for application cards
   const ApplicationCardSkeleton = () => (
     <Card className="mb-6">
       <CardContent className="p-6">
@@ -75,7 +73,7 @@ const ProjectApplications = () => {
         ) : error ? (
           <Card>
             <CardContent className="p-6">
-              <p className="text-center text-red-500">Error loading applications: {error}</p>
+              <p className="text-center text-red-500">Error loading applications: {error.message}</p>
             </CardContent>
           </Card>
         ) : applications.length === 0 ? (

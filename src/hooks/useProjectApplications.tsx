@@ -55,7 +55,6 @@ export const useProjectApplications = (projectId: string) => {
                 message: app.message,
                 createdAt: app.created_at,
                 email: freelancerProfile.email || null,
-                // Add freelancer profile information
                 firstName: freelancerProfile.first_name || null,
                 lastName: freelancerProfile.last_name || null,
                 displayName: freelancerProfile.display_name || null,

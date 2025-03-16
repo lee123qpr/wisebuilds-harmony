@@ -2,7 +2,7 @@
 // This file adds type definitions for the freelancer_profiles table
 // that isn't automatically generated in the Supabase types
 
-import { Database } from "@/integrations/supabase/types";
+import { Database as GeneratedDatabase } from "@/integrations/supabase/types";
 
 // Extend the Database type to include freelancer_profiles
 declare module '@/integrations/supabase/types' {
@@ -107,22 +107,22 @@ declare module '@/integrations/supabase/types' {
           ];
         };
         client_profiles: {
-          Row: Database['public']['Tables']['client_profiles']['Row'] & {
+          Row: GeneratedDatabase['public']['Tables']['client_profiles']['Row'] & {
             email: string | null;
           };
-          Insert: Database['public']['Tables']['client_profiles']['Insert'] & {
+          Insert: GeneratedDatabase['public']['Tables']['client_profiles']['Insert'] & {
             email?: string | null;
           };
-          Update: Database['public']['Tables']['client_profiles']['Update'] & {
+          Update: GeneratedDatabase['public']['Tables']['client_profiles']['Update'] & {
             email?: string | null;
           };
-          Relationships: Database['public']['Tables']['client_profiles']['Relationships'];
+          Relationships: GeneratedDatabase['public']['Tables']['client_profiles']['Relationships'];
         };
-      } & Omit<Database['public']['Tables'], 'client_profiles'>;
-      Views: Database['public']['Views'];
-      Functions: Database['public']['Functions'];
-      Enums: Database['public']['Enums'];
-      CompositeTypes: Database['public']['CompositeTypes'];
+      } & Omit<GeneratedDatabase['public']['Tables'], 'client_profiles'>;
+      Views: GeneratedDatabase['public']['Views'];
+      Functions: GeneratedDatabase['public']['Functions'];
+      Enums: GeneratedDatabase['public']['Enums'];
+      CompositeTypes: GeneratedDatabase['public']['CompositeTypes'];
     };
   }
 }

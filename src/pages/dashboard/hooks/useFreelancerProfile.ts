@@ -1,45 +1,19 @@
 
-import { useState } from 'react';
-import { useFreelancerProfileForm } from './useFreelancerProfileForm';
-import { useSaveFreelancerProfile } from './useSaveFreelancerProfile';
 import { useLoadFreelancerProfile } from './useLoadFreelancerProfile';
-import { User } from '@supabase/supabase-js';
+import { useSaveFreelancerProfile } from './useSaveFreelancerProfile';
+import { useAuth } from '@/context/AuthContext';
 
-export const useFreelancerProfile = (user: User | null) => {
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [profileImage, setProfileImage] = useState<string | null>(null);
-  const [memberSince, setMemberSince] = useState<string | null>(null);
-  const [emailVerified, setEmailVerified] = useState<boolean>(false);
-  const [jobsCompleted, setJobsCompleted] = useState<number>(0);
-  const [idVerified, setIdVerified] = useState<boolean>(false);
+export const useFreelancerProfile = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
   
-  const { form, isLoading, setIsLoading } = useFreelancerProfileForm();
+  const { profile, isLoading: isLoadingProfile } = useLoadFreelancerProfile(userId);
+  const { saveProfile, isSaving } = useSaveFreelancerProfile();
   
-  const { saveProfile, isSaving } = useSaveFreelancerProfile(user, profileImage);
-  
-  useLoadFreelancerProfile({
-    user,
-    form,
-    setProfileImage,
-    setMemberSince,
-    setEmailVerified,
-    setJobsCompleted,
-    setIsLoading
-  });
-
   return {
-    form,
-    isLoading,
-    isSaving,
-    profileImage,
-    uploadingImage,
-    setUploadingImage,
-    setProfileImage,
+    profile,
+    isLoadingProfile,
     saveProfile,
-    memberSince,
-    emailVerified,
-    jobsCompleted,
-    idVerified,
-    setIdVerified
+    isSaving
   };
 };
