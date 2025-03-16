@@ -40,17 +40,8 @@ export const useProjectApplications = (projectId: string | undefined) => {
               
               if (userError) throw userError;
               
-              // Get freelancer profile data
-              const { data: profileData, error: profileError } = await supabase
-                .from('freelancer_profiles')
-                .select('*')
-                .eq('id', application.user_id)
-                .single();
-                
-              if (profileError && profileError.code !== 'PGRST116') {
-                // PGRST116 means not found, which might happen if profile not created yet
-                console.error('Error fetching freelancer profile:', profileError);
-              }
+              // Since there's no freelancer_profiles table, we'll get basic info from user metadata
+              // and add additional info if needed in the future
               
               // Get verification status
               const { data: verificationData, error: verificationError } = await supabase
@@ -67,15 +58,14 @@ export const useProjectApplications = (projectId: string | undefined) => {
                   id: application.user_id,
                   email: userData?.email,
                   verified: verificationData || false,
-                  ...profileData,
                   // Get name from user_metadata if available
-                  first_name: profileData?.first_name || userData?.user_metadata?.first_name,
-                  last_name: profileData?.last_name || userData?.user_metadata?.last_name,
-                  display_name: profileData?.display_name || 
+                  first_name: userData?.user_metadata?.first_name,
+                  last_name: userData?.user_metadata?.last_name,
+                  display_name: 
                     (userData?.user_metadata?.first_name && userData?.user_metadata?.last_name) ? 
                     `${userData.user_metadata.first_name} ${userData.user_metadata.last_name}` : 
                     'Anonymous Freelancer',
-                  phone_number: profileData?.phone_number || userData?.user_metadata?.phone_number,
+                  phone_number: userData?.user_metadata?.phone_number,
                 }
               };
             } catch (err) {
