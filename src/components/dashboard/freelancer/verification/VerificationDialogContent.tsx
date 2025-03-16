@@ -12,6 +12,7 @@ import VerificationStatus from './dialog/VerificationStatus';
 import VerificationDialogFooter from './dialog/VerificationDialogFooter';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertCircle } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface VerificationDialogContentProps {
   onClose: () => void;
@@ -30,6 +31,7 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({
   
   const { setupComplete, isSettingUp, setupError } = useVerificationSetup();
   const [bucketAccessError, setBucketAccessError] = useState(false);
+  const { toast } = useToast();
   
   const { 
     selectedFile, 
@@ -56,19 +58,34 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({
   useEffect(() => {
     const checkBucketAccess = async () => {
       if (setupComplete) {
-        const hasAccess = await checkIdDocumentsBucketAccess();
-        if (!hasAccess) {
-          console.error('Failed to access storage bucket');
-          setBucketAccessError(true);
-          if (onBucketError) {
-            onBucketError();
+        try {
+          const hasAccess = await checkIdDocumentsBucketAccess();
+          if (!hasAccess) {
+            console.error('Failed to access storage bucket');
+            setBucketAccessError(true);
+            toast({
+              variant: 'destructive',
+              title: 'Storage access error',
+              description: 'Cannot access document storage. Please try again later.'
+            });
+            if (onBucketError) {
+              onBucketError();
+            }
           }
+        } catch (error) {
+          console.error('Error checking bucket access:', error);
+          setBucketAccessError(true);
+          toast({
+            variant: 'destructive',
+            title: 'Storage access error',
+            description: 'Error connecting to document storage system.'
+          });
         }
       }
     };
     
     checkBucketAccess();
-  }, [setupComplete, onBucketError]);
+  }, [setupComplete, onBucketError, toast]);
 
   return (
     <DialogContent className="sm:max-w-[425px]">
