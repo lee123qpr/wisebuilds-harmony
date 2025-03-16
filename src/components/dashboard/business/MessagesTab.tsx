@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyStateCard from '../freelancer/EmptyStateCard';
@@ -11,6 +11,7 @@ const BusinessMessagesTab: React.FC = () => {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId');
   const freelancerId = searchParams.get('freelancerId');
+  const conversationId = searchParams.get('conversation');
   
   const { 
     conversations, 
@@ -20,9 +21,19 @@ const BusinessMessagesTab: React.FC = () => {
     fetchConversations 
   } = useConversations(projectId, freelancerId, true); // Pass true to indicate business client
   
+  // Set the selected conversation based on URL parameter
+  useEffect(() => {
+    if (conversationId && conversations.length > 0) {
+      const conversation = conversations.find(c => c.id === conversationId);
+      if (conversation) {
+        setSelectedConversation(conversation);
+      }
+    }
+  }, [conversationId, conversations, setSelectedConversation]);
+  
   if (isLoading) {
     return (
-      <div className="grid grid-cols-3 gap-4 h-[calc(100vh-180px)]">
+      <div className="grid grid-cols-3 gap-4 h-[calc(100vh-280px)]">
         <div className="col-span-1 border rounded-md p-4">
           <Skeleton className="h-10 w-full mb-4" />
           <Skeleton className="h-16 w-full mb-2" />
@@ -52,7 +63,7 @@ const BusinessMessagesTab: React.FC = () => {
   }
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-180px)]">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-280px)]">
       {/* Conversations list */}
       <div className="md:col-span-1 h-full overflow-hidden border rounded-md">
         <ConversationsList

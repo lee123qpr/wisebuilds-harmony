@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { createConversation } from '@/services/conversations';
+import { useAuth } from '@/context/AuthContext';
 
 interface FreelancerApplicationCardProps {
   application: FreelancerApplication;
@@ -22,6 +24,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
 }) => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { user } = useAuth();
   const profile = application.freelancer_profile;
   const applicationDate = format(new Date(application.created_at), 'dd MMM yyyy');
   
@@ -33,10 +36,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
   const handleStartChat = async () => {
     try {
       // Get current user (client) ID
-      const { data: userData, error: userError } = await supabase.auth.getUser();
-      if (userError) throw userError;
-      
-      const clientId = userData.user?.id;
+      const clientId = user?.id;
       if (!clientId) {
         throw new Error('Not authenticated');
       }
@@ -45,23 +45,26 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
         throw new Error('Freelancer profile not found');
       }
       
+      console.log('Starting chat between client', clientId, 'and freelancer', profile.id, 'for project', projectId);
+      
       // Check if a conversation exists between this client and freelancer for this project
       const { data: existingConversations, error: checkError } = await supabase
         .from('conversations')
         .select('id')
         .eq('project_id', projectId)
-        .eq('freelancer_id', profile.id);
+        .eq('freelancer_id', profile.id)
+        .eq('client_id', clientId);
         
       if (checkError) throw checkError;
       
       // If conversation exists, navigate to it
       if (existingConversations && existingConversations.length > 0) {
         console.log('Using existing conversation:', existingConversations[0].id);
-        // Navigate to the dashboard/freelancer/messages tab with the conversation selected
-        navigate(`/dashboard/freelancer?tab=messages&conversation=${existingConversations[0].id}`);
+        // Navigate to the business messages tab with the conversation selected
+        navigate(`/dashboard/business?tab=messages&conversation=${existingConversations[0].id}`);
       } else {
         // Create new conversation
-        console.log('Creating new conversation for:', profile.id, clientId, projectId);
+        console.log('Creating new conversation between client', clientId, 'and freelancer', profile.id);
         const newConversation = await createConversation(profile.id, clientId, projectId);
         
         if (!newConversation) {
@@ -69,8 +72,8 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
         }
         
         console.log('Created new conversation:', newConversation.id);
-        // Navigate to the dashboard/freelancer/messages tab with the new conversation selected
-        navigate(`/dashboard/freelancer?tab=messages&conversation=${newConversation.id}`);
+        // Navigate to the business messages tab with the new conversation selected
+        navigate(`/dashboard/business?tab=messages&conversation=${newConversation.id}`);
       }
     } catch (error: any) {
       console.error('Error starting chat:', error);

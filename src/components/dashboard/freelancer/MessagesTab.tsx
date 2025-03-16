@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import EmptyStateCard from './EmptyStateCard';
@@ -11,6 +11,7 @@ const MessagesTab: React.FC = () => {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId');
   const clientId = searchParams.get('clientId');
+  const conversationId = searchParams.get('conversation');
   
   const { 
     conversations, 
@@ -19,6 +20,16 @@ const MessagesTab: React.FC = () => {
     isLoading, 
     fetchConversations 
   } = useConversations(projectId, clientId);
+  
+  // Set the selected conversation based on URL parameter
+  useEffect(() => {
+    if (conversationId && conversations.length > 0) {
+      const conversation = conversations.find(c => c.id === conversationId);
+      if (conversation) {
+        setSelectedConversation(conversation);
+      }
+    }
+  }, [conversationId, conversations, setSelectedConversation]);
   
   if (isLoading) {
     return (
