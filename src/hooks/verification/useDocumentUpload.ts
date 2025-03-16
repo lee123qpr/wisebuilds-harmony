@@ -4,13 +4,31 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { useVerification } from './useVerification';
 
-export const useDocumentUpload = () => {
+export const useDocumentUpload = (onSuccess?: () => void) => {
   const [isUploading, setIsUploading] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { toast } = useToast();
   const { user } = useAuth();
   const { uploadVerificationDocument, refreshVerificationStatus } = useVerification();
 
-  const handleSubmit = async (file: File) => {
+  const handleFileSelection = (file: File) => {
+    setSelectedFile(file);
+  };
+
+  const handleRemoveSelectedFile = () => {
+    setSelectedFile(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedFile) {
+      toast({
+        variant: 'destructive',
+        title: 'No file selected',
+        description: 'Please select a file to upload',
+      });
+      return false;
+    }
+
     if (!user) {
       toast({
         variant: 'destructive',
@@ -24,9 +42,10 @@ export const useDocumentUpload = () => {
     try {
       console.log('Uploading document for user:', user.id);
       
-      const result = await uploadVerificationDocument(file);
+      const result = await uploadVerificationDocument(selectedFile);
       
-      if (!result.success) {
+      // Check if result is not a boolean (indicating it's the response object)
+      if (typeof result === 'object' && !result.success) {
         const errorMessage = result.errorMessage || 'Upload failed. Please try again.';
         console.error('Upload failed with result:', result);
         toast({
@@ -47,6 +66,14 @@ export const useDocumentUpload = () => {
         description: 'Your document was uploaded successfully and is pending review.',
       });
       
+      // Clear the selected file after successful upload
+      setSelectedFile(null);
+      
+      // Call onSuccess callback if provided
+      if (onSuccess) {
+        onSuccess();
+      }
+      
       return true;
     } catch (error: any) {
       console.error('Error during document upload:', error);
@@ -62,8 +89,11 @@ export const useDocumentUpload = () => {
   };
 
   return {
+    selectedFile,
     isUploading,
-    handleSubmit
+    handleSubmit,
+    handleFileSelection,
+    handleRemoveSelectedFile
   };
 };
 

@@ -37,7 +37,12 @@ export const useVerification = (): UseVerificationResult => {
 
   // Upload ID document
   const handleUploadVerificationDocument = async (file: File) => {
-    if (!user) return null;
+    if (!user) {
+      return {
+        success: false,
+        errorMessage: 'You must be logged in to upload documents.'
+      };
+    }
     
     setIsUploading(true);
     try {
@@ -46,7 +51,7 @@ export const useVerification = (): UseVerificationResult => {
       
       if (!result.success) {
         console.error('Upload failed with result:', result);
-        throw result.error || new Error('Upload failed');
+        return result;
       }
       
       console.log('Upload successful:', result);
@@ -55,10 +60,13 @@ export const useVerification = (): UseVerificationResult => {
         setVerificationData(result.verificationData);
       }
       
-      return result.filePath || true;
+      return result;
     } catch (error: any) {
       console.error('Error uploading document:', error);
-      throw error;
+      return {
+        success: false,
+        errorMessage: error.message || 'An unexpected error occurred'
+      };
     } finally {
       setIsUploading(false);
     }
@@ -66,7 +74,9 @@ export const useVerification = (): UseVerificationResult => {
 
   // Delete ID document
   const handleDeleteVerificationDocument = async () => {
-    if (!user || !verificationData?.id_document_path) return false;
+    if (!user || !verificationData?.id_document_path) {
+      return false;
+    }
     
     setIsDeleting(true);
     try {

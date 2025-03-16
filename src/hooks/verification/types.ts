@@ -11,6 +11,14 @@ export interface VerificationData {
   admin_notes: string | null;
 }
 
+export interface VerificationResult {
+  success: boolean;
+  filePath?: string;
+  verificationData?: VerificationData;
+  error?: any;
+  errorMessage?: string;
+}
+
 export interface UseVerificationResult {
   verificationData: VerificationData | null;
   verificationStatus: VerificationStatus;
@@ -18,7 +26,7 @@ export interface UseVerificationResult {
   isLoading: boolean;
   isUploading: boolean;
   isDeleting: boolean;
-  uploadVerificationDocument: (file: File) => Promise<string | boolean | null>;
+  uploadVerificationDocument: (file: File) => Promise<VerificationResult>;
   deleteVerificationDocument: () => Promise<boolean>;
   refreshVerificationStatus: () => Promise<VerificationData | null>;
 }
