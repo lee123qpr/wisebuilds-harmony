@@ -43,16 +43,17 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
         // For business clients, get freelancer info
         const freelancerInfo = await getFreelancerInfo(conv.freelancer_id);
         
+        // Create proper client_info structure that matches ClientInfo interface
         return {
           ...conv,
           project_title: conv.projects?.title || 'Unknown Project',
           freelancer_info: freelancerInfo,
-          // Add client_info for compatibility with existing components
           client_info: {
-            contact_name: freelancerInfo.full_name || 'Unknown Freelancer',
-            company_name: freelancerInfo.business_name,
-            logo_url: freelancerInfo.profile_image,
-            email: freelancerInfo.email
+            id: userId, // Include the required id field
+            contact_name: freelancerInfo?.display_name || 'Unknown Freelancer',
+            company_name: null,
+            logo_url: freelancerInfo?.profile_image,
+            email: freelancerInfo?.email
           }
         };
       } else {

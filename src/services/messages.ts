@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { getCurrentUserId } from './conversations';
@@ -113,7 +114,7 @@ export const uploadMessageAttachment = async (file: File): Promise<MessageAttach
       size: file.size,
       type: file.type,
       url: publicUrl,
-      path: filePath
+      path: filePath // This is now valid since we updated the MessageAttachment interface
     };
   } catch (e) {
     console.error('Unexpected error during file upload:', e);

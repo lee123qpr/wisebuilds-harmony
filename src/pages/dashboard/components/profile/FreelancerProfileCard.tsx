@@ -19,6 +19,8 @@ interface FreelancerProfileCardProps {
   emailVerified: boolean;
   jobsCompleted: number;
   idVerified?: boolean;
+  rating?: number;
+  reviewsCount?: number;
 }
 
 const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
@@ -32,9 +34,11 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   memberSince,
   emailVerified,
   jobsCompleted,
-  idVerified = false
+  idVerified = false,
+  rating = 0,
+  reviewsCount = 0
 }) => {
-  console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted });
+  console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted, rating, reviewsCount });
   
   // Use our custom hook for image upload
   const {
@@ -102,6 +106,16 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
               <h2 className="text-xl font-semibold truncate">{fullName || 'Your Name'}</h2>
               <p className="text-sm text-muted-foreground">{profession || 'Your Profession'}</p>
             </div>
+
+            {/* Show rating if available */}
+            {rating > 0 && (
+              <div className="flex items-center gap-2 mb-2">
+                <RatingStars rating={rating} size="sm" />
+                <span className="text-sm text-muted-foreground">
+                  ({reviewsCount} {reviewsCount === 1 ? 'review' : 'reviews'})
+                </span>
+              </div>
+            )}
 
             <ProfileInfoBadges
               emailVerified={emailVerified}
