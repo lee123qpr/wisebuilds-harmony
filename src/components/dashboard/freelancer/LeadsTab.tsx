@@ -4,12 +4,10 @@ import { ProjectLead } from '@/types/projects';
 import LeadSettingsAlert from './leads/LeadSettingsAlert';
 import { useLeadFiltering } from './leads/useLeadFiltering';
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import EmptyLeadsMessage from './leads/EmptyLeadsMessage';
 import LeadsHeader from './leads/LeadsHeader';
-import { Badge } from '@/components/ui/badge';
-import { formatDateAgo } from '@/utils/projectFormatters';
 import { Skeleton } from '@/components/ui/skeleton';
+import ProjectListView from './ProjectListView';
 
 interface LeadsTabProps {
   isLoadingSettings: boolean;
@@ -24,16 +22,24 @@ const LeadsTab: React.FC<LeadsTabProps> = ({
   leadSettings, 
   projectLeads 
 }) => {
+  // Use our custom hook for lead filtering
+  const { 
+    filteredLeads
+  } = useLeadFiltering(leadSettings, projectLeads);
+  
+  const [selectedProjectId, setSelectedProjectId] = React.useState<string | null>(
+    filteredLeads.length > 0 ? filteredLeads[0].id : null
+  );
+
+  const selectedProject = filteredLeads.find(
+    project => project.id === selectedProjectId
+  ) || null;
+  
   // Handle refresh
   const handleRefresh = () => {
     console.log('Refreshing leads...');
     window.location.reload(); // Simple refresh for now
   };
-  
-  // Use our custom hook for lead filtering
-  const { 
-    filteredLeads
-  } = useLeadFiltering(leadSettings, projectLeads);
   
   // If loading or no settings, show alert
   if (isLoadingSettings || !leadSettings) {
@@ -45,73 +51,21 @@ const LeadsTab: React.FC<LeadsTabProps> = ({
       <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads} />
       
       {isLoadingLeads ? (
-        <div className="bg-white rounded-lg border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project Title</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Work Type</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead>Posted</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {Array(3).fill(0).map((_, index) => (
-                <TableRow key={index}>
-                  <TableCell><Skeleton className="h-4 w-full" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-24" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-16" /></TableCell>
-                  <TableCell><Skeleton className="h-6 w-16 rounded-full" /></TableCell>
-                  <TableCell><Skeleton className="h-4 w-20" /></TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+        <div className="space-y-4">
+          <Skeleton className="h-12 w-full" />
+          <Skeleton className="h-64 w-full" />
         </div>
       ) : filteredLeads.length === 0 ? (
         <EmptyLeadsMessage />
       ) : (
-        <div className="bg-white rounded-lg border overflow-hidden">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Project Title</TableHead>
-                <TableHead>Location</TableHead>
-                <TableHead>Work Type</TableHead>
-                <TableHead>Budget</TableHead>
-                <TableHead>Posted</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Action</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredLeads.map((lead) => (
-                <TableRow key={lead.id}>
-                  <TableCell className="font-medium">{lead.title}</TableCell>
-                  <TableCell>{lead.location}</TableCell>
-                  <TableCell>{lead.work_type}</TableCell>
-                  <TableCell>{lead.budget}</TableCell>
-                  <TableCell>{formatDateAgo(lead.created_at)}</TableCell>
-                  <TableCell>
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                      {lead.hiring_status || 'Open'}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <a href={`/projects/${lead.id}`} className="text-primary hover:underline">
-                      View Details
-                    </a>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <ProjectListView
+          projects={filteredLeads}
+          isLoading={isLoadingLeads}
+          selectedProjectId={selectedProjectId}
+          setSelectedProjectId={setSelectedProjectId}
+          selectedProject={selectedProject}
+          showContactInfo={true}
+        />
       )}
     </div>
   );

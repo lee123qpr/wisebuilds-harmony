@@ -49,16 +49,42 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         
         console.log('Fetched real leads:', data);
         
-        // Parse the data to match the ProjectLead type
-        const leads = data ? data.map(project => ({
-          ...project,
-          tags: project.tags || [],
-          documents: Array.isArray(project.documents) 
-            ? project.documents 
-            : (project.documents ? JSON.parse(String(project.documents)) : [])
-        })) as ProjectLead[] : [];
-        
-        setProjectLeads(leads);
+        if (data) {
+          // Convert the data to match the ProjectLead type
+          const convertedLeads: ProjectLead[] = data.map(project => ({
+            id: project.id,
+            title: project.title,
+            description: project.description,
+            budget: project.budget,
+            role: project.role,
+            created_at: project.created_at,
+            location: project.location,
+            work_type: project.work_type,
+            duration: project.duration,
+            hiring_status: project.hiring_status || 'enquiring',
+            requires_equipment: project.requires_equipment || false,
+            requires_security_check: false, // Default values for required fields
+            requires_insurance: project.requires_insurance || false,
+            requires_qualifications: false, // Default values for required fields
+            published: true, // Default to true
+            client_id: project.user_id,
+            client_name: '',
+            client_company: '',
+            applications: project.applications || 0,
+            documents: project.documents,
+            requires_site_visits: project.requires_site_visits || false,
+            status: project.status,
+            updated_at: project.updated_at,
+            user_id: project.user_id,
+            tags: [], // Default empty array
+            purchases_count: project.purchases_count || 0,
+            start_date: project.start_date
+          }));
+          
+          setProjectLeads(convertedLeads);
+        } else {
+          setProjectLeads([]);
+        }
       } catch (error) {
         console.error('Error in fetchLeads:', error);
         setProjectLeads([]);
