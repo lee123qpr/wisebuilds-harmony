@@ -1,21 +1,13 @@
 
 import React, { useState, useEffect } from 'react';
-import { Button } from '@/components/ui/button';
-import { Loader2, X } from 'lucide-react';
-import {
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { DialogContent } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
 import { setupVerificationSystem } from '@/hooks/verification/setupVerification';
 import { useVerification } from '@/hooks/verification';
-import { useToast } from '@/hooks/use-toast';
-import DocumentUploadSection from './DocumentUploadSection';
-import SubmittedDocumentInfo from './SubmittedDocumentInfo';
 import DeleteConfirmationDialog from './DeleteConfirmationDialog';
-import { VerificationStatus } from '../VerificationBadge';
+import VerificationDialogHeader from './dialog/VerificationDialogHeader';
+import VerificationStatus from './dialog/VerificationStatus';
+import VerificationDialogFooter from './dialog/VerificationDialogFooter';
 
 interface VerificationDialogContentProps {
   onClose: () => void;
@@ -126,82 +118,31 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ o
     setSelectedFile(null);
   };
 
-  // Check if it's a new verification or rejected to allow resubmission
-  const canSubmit = verificationStatus !== 'approved' && verificationStatus !== 'pending';
-  // Document has been submitted but not approved yet, so can be deleted
-  const canDelete = verificationStatus === 'pending' || verificationStatus === 'rejected';
-
   return (
     <DialogContent className="sm:max-w-[425px]">
-      <DialogHeader>
-        <DialogTitle>Identity Verification</DialogTitle>
-        <DialogDescription>
-          Upload a government-issued ID (passport, driver's license, or national ID card) to verify your identity.
-          <span className="text-orange-500 font-medium block mt-1">
-            Note: Must be a UK or Ireland issued document.
-          </span>
-        </DialogDescription>
-      </DialogHeader>
+      <VerificationDialogHeader />
       
-      <div className="grid gap-4 py-4">
-        <p className="text-sm text-muted-foreground">
-          Your document will be reviewed by our team. This process usually takes 1-2 business days.
-        </p>
-        
-        {canSubmit && (
-          <DocumentUploadSection 
-            setupComplete={setupComplete}
-            isUploading={isUploading}
-            onFileSelected={setSelectedFile}
-          />
-        )}
-        
-        {canDelete && verificationData?.id_document_path && (
-          <SubmittedDocumentInfo 
-            verificationData={verificationData}
-            isDeleting={isDeleting}
-            onDelete={() => setConfirmDeleteOpen(true)}
-          />
-        )}
-        
-        {selectedFile && (
-          <div className="text-sm border border-gray-200 p-3 rounded-md bg-gray-50 flex justify-between items-center">
-            <div className="truncate max-w-[250px]">
-              Selected file: <span className="font-medium">{selectedFile.name}</span>
-            </div>
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              className="h-7 w-7 p-0" 
-              onClick={handleRemoveSelectedFile}
-              aria-label="Remove selected file"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-      </div>
+      <VerificationStatus 
+        verificationStatus={verificationStatus}
+        verificationData={verificationData}
+        setupComplete={setupComplete}
+        isUploading={isUploading}
+        isDeleting={isDeleting}
+        selectedFile={selectedFile}
+        onFileSelected={setSelectedFile}
+        onRemoveFile={handleRemoveSelectedFile}
+        onDelete={() => setConfirmDeleteOpen(true)}
+      />
       
-      <DialogFooter>
-        <Button type="button" variant="outline" onClick={onClose} disabled={isUploading || isDeleting}>
-          Cancel
-        </Button>
-        {canSubmit && selectedFile && (
-          <Button 
-            onClick={handleSubmit} 
-            disabled={!selectedFile || isUploading || !setupComplete}
-          >
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              'Submit for Verification'
-            )}
-          </Button>
-        )}
-      </DialogFooter>
+      <VerificationDialogFooter 
+        verificationStatus={verificationStatus}
+        selectedFile={selectedFile}
+        setupComplete={setupComplete}
+        isUploading={isUploading}
+        isDeleting={isDeleting}
+        onCancel={onClose}
+        onSubmit={handleSubmit}
+      />
       
       <DeleteConfirmationDialog
         open={confirmDeleteOpen}
