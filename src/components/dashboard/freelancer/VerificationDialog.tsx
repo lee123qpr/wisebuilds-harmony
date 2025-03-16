@@ -8,16 +8,20 @@ import {
 } from '@/components/ui/dialog';
 import VerificationDialogContent from './verification/VerificationDialogContent';
 import { useVerification } from '@/hooks/verification';
+import { useAuth } from '@/context/AuthContext';
 import { 
   Tooltip, 
   TooltipContent, 
   TooltipProvider, 
   TooltipTrigger 
 } from '@/components/ui/tooltip';
+import { useToast } from '@/hooks/use-toast';
 
 const VerificationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
   const { verificationStatus, isLoading } = useVerification();
+  const { userType } = useAuth();
+  const { toast } = useToast();
 
   const getButtonLabel = () => {
     switch (verificationStatus) {
@@ -47,6 +51,15 @@ const VerificationDialog: React.FC = () => {
 
   // Handle button click to open dialog
   const handleOpenDialog = () => {
+    if (userType !== 'freelancer') {
+      toast({
+        variant: 'destructive',
+        title: 'Freelancers Only',
+        description: 'Only freelancer accounts can verify their identity.'
+      });
+      return;
+    }
+    
     setOpen(true);
   };
 

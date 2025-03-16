@@ -23,7 +23,14 @@ export const isUserFreelancer = async (): Promise<boolean> => {
     
     if (clientError && clientError.code === 'PGRST116') {
       // No client profile found, this could be a freelancer
-      return true;
+      // We should check for credit balance which is only for freelancers
+      const { data: freelancerCredits } = await supabase
+        .from('freelancer_credits')
+        .select('credit_balance')
+        .eq('user_id', session.user.id)
+        .single();
+        
+      return !!freelancerCredits; // If credits exist, user is a freelancer
     }
     
     // If client profile exists, user is not a freelancer

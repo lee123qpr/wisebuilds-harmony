@@ -17,7 +17,8 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
     
     if (error) {
       console.error('Error fetching verification status:', error);
-      throw error;
+      // Don't throw the error, just log it and return null
+      return null;
     }
     
     console.log('Verification data found:', data);
