@@ -3,11 +3,44 @@ import React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { leadSettingsSchema, LeadSettingsFormValues } from '../schema';
-import { useLeadSettingsData } from './useLeadSettingsData';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 export const useLeadSettingsForm = () => {
-  const { leadSettings, isLoading, error } = useLeadSettingsData();
+  const { user } = useAuth();
   const [isFormInitialized, setIsFormInitialized] = React.useState(false);
+  
+  // Fetch settings directly from the database
+  const { data: leadSettings, isLoading, error } = useQuery({
+    queryKey: ['leadSettings', user?.id],
+    queryFn: async () => {
+      if (!user) return null;
+      
+      console.log('Fetching lead settings for user:', user.id);
+      
+      try {
+        const { data, error } = await supabase
+          .from('lead_settings')
+          .select('*')
+          .eq('user_id', user.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching lead settings:', error);
+          throw error;
+        }
+        
+        console.log('Retrieved lead settings:', data);
+        
+        return data;
+      } catch (err) {
+        console.error('Exception in query function:', err);
+        throw err;
+      }
+    },
+    enabled: !!user,
+  });
   
   // Create form with zod validation
   const form = useForm<LeadSettingsFormValues>({

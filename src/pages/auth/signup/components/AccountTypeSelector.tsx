@@ -43,12 +43,20 @@ const AccountTypeSelector = ({ form, isLoading }: AccountTypeSelectorProps) => {
               >
                 Business Client
               </ToggleGroupItem>
+              <ToggleGroupItem 
+                value="admin" 
+                className="flex-1 data-[state=on]:bg-primary data-[state=on]:text-primary-foreground"
+              >
+                Admin
+              </ToggleGroupItem>
             </ToggleGroup>
           </FormControl>
           <FormDescription>
             {userType === 'freelancer' 
               ? "Select Freelancer if you're looking for construction projects" 
-              : "Select Business if you want to post construction projects"}
+              : userType === 'business'
+                ? "Select Business if you want to post construction projects"
+                : "Select Admin for administrative access"}
           </FormDescription>
           <FormMessage />
         </FormItem>

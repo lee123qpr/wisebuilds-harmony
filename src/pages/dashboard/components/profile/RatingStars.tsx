@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Star } from 'lucide-react';
 
@@ -22,13 +23,13 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   const starSizes = {
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
-    lg: 'h-6 w-6'
+    lg: 'h-8 w-8'
   };
 
   const textSizes = {
     sm: 'text-sm',
     md: 'text-base',
-    lg: 'text-lg'
+    lg: 'text-2xl'
   };
 
   const renderStars = () => {
@@ -74,10 +75,10 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       <div className="flex">
         {renderStars()}
       </div>
-      <span className={`${textSizes[size]} font-medium ml-1`}>
+      <span className={`${textSizes[size]} font-medium ml-2`}>
         {rating.toFixed(1)}
       </span>
-      <span className={`${textSizes[size]} text-muted-foreground`}>
+      <span className={`${textSizes[size]} text-muted-foreground ml-1`}>
         ({reviewCount})
       </span>
     </div>

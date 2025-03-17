@@ -27,7 +27,7 @@ export const signupSchema = z.object({
     }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
   confirmPassword: z.string().min(8, { message: 'Please confirm your password' }),
-  userType: z.enum(['freelancer', 'business']),
+  userType: z.enum(['freelancer', 'business', 'admin']),
 }).refine((data) => data.password === data.confirmPassword, {
   message: "Passwords don't match",
   path: ["confirmPassword"],

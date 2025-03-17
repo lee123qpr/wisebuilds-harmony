@@ -1,7 +1,7 @@
 
 import React from 'react';
-import VerificationList from './components/VerificationList';
-import VerificationDetailDialog from './components/VerificationDetailDialog';
+import VerificationList from './components/verification/VerificationList';
+import VerificationDetailDialog from './components/verification/VerificationDetailDialog';
 import { useVerifications } from './hooks/useVerifications';
 
 const VerificationTab = () => {
@@ -16,7 +16,8 @@ const VerificationTab = () => {
     setAdminNotes,
     isUpdating,
     viewDocument,
-    updateVerificationStatus
+    updateVerificationStatus,
+    refreshVerifications
   } = useVerifications();
 
   return (

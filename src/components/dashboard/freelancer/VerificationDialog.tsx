@@ -1,70 +1,23 @@
 
 import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { ShieldCheck, Upload, Loader2 } from 'lucide-react';
+import { ShieldCheck, HelpCircle } from 'lucide-react';
 import {
   Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import VerificationDialogContent from './verification/VerificationDialogContent';
 import { useVerification } from '@/hooks/verification';
-import { useToast } from '@/hooks/use-toast';
+import { 
+  Tooltip, 
+  TooltipContent, 
+  TooltipProvider, 
+  TooltipTrigger 
+} from '@/components/ui/tooltip';
 
 const VerificationDialog: React.FC = () => {
   const [open, setOpen] = useState(false);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { uploadVerificationDocument, isUploading, verificationStatus } = useVerification();
-  const { toast } = useToast();
-
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const file = e.target.files[0];
-      
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-      if (!validTypes.includes(file.type)) {
-        toast({
-          variant: 'destructive',
-          title: 'Invalid file type',
-          description: 'Please upload a JPEG, PNG or PDF file.',
-        });
-        return;
-      }
-      
-      // Validate file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        toast({
-          variant: 'destructive',
-          title: 'File too large',
-          description: 'Please upload a file smaller than 5MB.',
-        });
-        return;
-      }
-      
-      setSelectedFile(file);
-    }
-  };
-
-  const handleSubmit = async () => {
-    if (!selectedFile) {
-      toast({
-        variant: 'destructive',
-        title: 'No file selected',
-        description: 'Please select a file to upload.',
-      });
-      return;
-    }
-
-    const result = await uploadVerificationDocument(selectedFile);
-    if (result) {
-      setSelectedFile(null);
-      setOpen(false);
-    }
-  };
+  const { verificationStatus, isLoading } = useVerification();
 
   const getButtonLabel = () => {
     switch (verificationStatus) {
@@ -79,85 +32,50 @@ const VerificationDialog: React.FC = () => {
     }
   };
 
-  const isDisabled = verificationStatus === 'approved' || verificationStatus === 'pending';
+  const getTooltipContent = () => {
+    switch (verificationStatus) {
+      case 'approved':
+        return 'Your identity has been verified. You now have full access to the platform.';
+      case 'pending':
+        return 'We are reviewing your submitted document. This usually takes 1-2 business days.';
+      case 'rejected':
+        return 'Your verification was declined. Please submit a new document.';
+      default:
+        return 'Upload a government ID to unlock all platform features and apply for jobs.';
+    }
+  };
+
+  // Handle button click to open dialog
+  const handleOpenDialog = () => {
+    setOpen(true);
+  };
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button 
-          variant={verificationStatus === 'approved' ? 'ghost' : 'outline'} 
-          className="flex items-center gap-2"
-          disabled={isDisabled}
-        >
-          <ShieldCheck className="h-4 w-4" />
-          {getButtonLabel()}
-        </Button>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button 
+                variant={verificationStatus === 'approved' ? 'ghost' : 'outline'} 
+                className="flex items-center gap-2"
+                disabled={verificationStatus === 'approved' || isLoading}
+                onClick={handleOpenDialog}
+              >
+                <ShieldCheck className="h-4 w-4" />
+                {isLoading ? 'Loading...' : getButtonLabel()}
+                {verificationStatus !== 'approved' && 
+                  <HelpCircle className="h-3 w-3 ml-1 text-muted-foreground" />
+                }
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="text-sm">{getTooltipContent()}</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <DialogTitle>Identity Verification</DialogTitle>
-          <DialogDescription>
-            Upload a government-issued ID (passport, driver's license, or national ID card) to verify your identity.
-            <span className="text-orange-500 font-medium block mt-1">
-              Note: Must be a UK or Ireland issued document.
-            </span>
-          </DialogDescription>
-        </DialogHeader>
-        
-        <div className="grid gap-4 py-4">
-          <p className="text-sm text-muted-foreground">
-            Your document will be reviewed by our team. This process usually takes 1-2 business days.
-          </p>
-          
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-            <input
-              type="file"
-              id="id-document"
-              onChange={handleFileChange}
-              accept="image/jpeg,image/png,application/pdf"
-              className="hidden"
-              disabled={isUploading}
-            />
-            <label
-              htmlFor="id-document"
-              className="flex flex-col items-center justify-center cursor-pointer"
-            >
-              <Upload className="h-8 w-8 text-gray-400 mb-2" />
-              <p className="text-sm text-gray-600 font-medium">
-                Click to upload your ID document
-              </p>
-              <p className="text-xs text-gray-500 mt-1">
-                JPEG, PNG or PDF (max. 5MB)
-              </p>
-              <p className="text-xs text-orange-500 mt-1">
-                UK or Ireland documents only
-              </p>
-            </label>
-          </div>
-          
-          {selectedFile && (
-            <div className="text-sm">
-              Selected file: <span className="font-medium">{selectedFile.name}</span>
-            </div>
-          )}
-        </div>
-        
-        <DialogFooter>
-          <Button type="button" variant="outline" onClick={() => setOpen(false)} disabled={isUploading}>
-            Cancel
-          </Button>
-          <Button onClick={handleSubmit} disabled={!selectedFile || isUploading}>
-            {isUploading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                Uploading...
-              </>
-            ) : (
-              'Submit for Verification'
-            )}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
+      {open && <VerificationDialogContent onClose={() => setOpen(false)} />}
     </Dialog>
   );
 };

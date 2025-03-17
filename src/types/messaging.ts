@@ -1,3 +1,4 @@
+
 export interface ClientInfo {
   contact_name: string | null;
   email: string | null;
@@ -6,6 +7,19 @@ export interface ClientInfo {
   phone_number?: string | null;
   website?: string | null;
   company_address?: string | null;
+}
+
+export interface FreelancerInfo {
+  full_name: string | null;
+  email: string | null;
+  profile_image: string | null;
+  phone_number?: string | null;
+  business_name?: string | null;
+  member_since?: string | null;
+  jobs_completed?: number;
+  rating?: number;
+  reviews_count?: number;
+  email_verified?: boolean;
 }
 
 export interface Conversation {

@@ -29,6 +29,11 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   if (allowedUserTypes && allowedUserTypes.length > 0) {
     const userType = user.user_metadata?.user_type;
     
+    // Allow admins to access any protected route
+    if (userType === 'admin') {
+      return <>{children}</>;
+    }
+    
     if (!userType || !allowedUserTypes.includes(userType)) {
       // Redirect to home or unauthorized page
       return <Navigate to="/" replace />;

@@ -6,10 +6,19 @@ import NewLeadSettingsForm from './NewLeadSettingsForm';
 import LeadSettingsHeader from './LeadSettingsHeader';
 import { useAuth } from '@/context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useQueryClient } from '@tanstack/react-query';
 
 const LeadSettings = () => {
   const { user, isLoading: authLoading } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  
+  // Invalidate lead settings query to ensure we get fresh data
+  React.useEffect(() => {
+    if (user) {
+      queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+    }
+  }, [user, queryClient]);
   
   // Redirect if not authenticated
   React.useEffect(() => {

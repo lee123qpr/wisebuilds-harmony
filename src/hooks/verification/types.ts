@@ -8,7 +8,7 @@ export interface VerificationData {
   id_document_path: string | null;
   submitted_at: string | null;
   verified_at: string | null;
-  admin_notes?: string | null;
+  admin_notes: string | null;
 }
 
 export interface UseVerificationResult {
@@ -17,6 +17,8 @@ export interface UseVerificationResult {
   isVerified: boolean;
   isLoading: boolean;
   isUploading: boolean;
-  uploadVerificationDocument: (file: File) => Promise<string | null>;
-  refreshVerificationStatus: () => Promise<void>;
+  isDeleting: boolean;
+  uploadVerificationDocument: (file: File) => Promise<string | boolean | null>;
+  deleteVerificationDocument: () => Promise<boolean>;
+  refreshVerificationStatus: () => Promise<VerificationData | null>;
 }

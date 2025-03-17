@@ -16,14 +16,16 @@ const ReviewsTab: React.FC<ReviewsTabProps> = ({ userId }) => {
     <Card>
       <CardHeader className="pb-3">
         <div className="flex justify-between items-center">
-          <CardTitle>Freelancer Reviews</CardTitle>
+          <div>
+            <CardTitle className="text-2xl font-bold">Freelancer Reviews</CardTitle>
+            <CardDescription className="mt-1">
+              Reviews from clients who have worked with you
+            </CardDescription>
+          </div>
           {averageRating !== null && (
             <RatingStars rating={averageRating} reviewCount={reviewCount} size="lg" />
           )}
         </div>
-        <CardDescription>
-          Reviews from clients who have worked with you
-        </CardDescription>
       </CardHeader>
       <CardContent>
         <ReviewsList userId={userId} />
