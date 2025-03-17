@@ -1,0 +1,17 @@
+<svg width="180" height="40" viewBox="0 0 180 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Building icon -->
+  <rect x="5" y="8" width="30" height="28" rx="2" fill="#4A6CF7" />
+  <rect x="10" y="13" width="6" height="6" rx="1" fill="white" />
+  <rect x="22" y="13" width="6" height="6" rx="1" fill="white" />
+  <rect x="10" y="23" width="6" height="6" rx="1" fill="white" />
+  <rect x="22" y="23" width="6" height="6" rx="1" fill="white" />
+  <rect x="14" y="31" width="10" height="5" rx="1" fill="white" />
+  
+  <!-- Company name text -->
+  <text x="45" y="25" font-family="Arial, sans-serif" font-size="16" font-weight="bold" fill="#333333">
+    WiseBuilds
+  </text>
+  <text x="47" y="32" font-family="Arial, sans-serif" font-size="8" fill="#666666">
+    Harmony
+  </text>
+</svg> 
