@@ -1,10 +1,11 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { useImageUpload } from '../../hooks/useImageUpload';
 import FreelancerAvatar from './FreelancerAvatar';
 import ProfileInfoBadges from './ProfileInfoBadges';
+import AccountTypeSelector from './AccountTypeSelector';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;
@@ -36,7 +37,6 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted });
   console.log('Initial profile image:', initialProfileImage);
   
-  // Use our custom hook for image upload properly configured for RLS policies
   const {
     imageUrl,
     uploadingImage,
@@ -52,7 +52,6 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
       : 'freelancer'
   });
 
-  // Sync with parent state when our local state changes
   React.useEffect(() => {
     if (imageUrl) {
       console.log('Syncing image URL to parent:', imageUrl);
@@ -64,7 +63,6 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
     setParentUploadingImage(uploadingImage);
   }, [uploadingImage, setParentUploadingImage]);
 
-  // Initialize our local state with the props
   React.useEffect(() => {
     if (initialProfileImage && !imageUrl) {
       console.log('Initializing local image state with:', initialProfileImage);
@@ -72,7 +70,19 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
     }
   }, [initialProfileImage, imageUrl, setImageUrl]);
 
-  // Generate initials for avatar fallback
+  const [userType, setUserType] = React.useState<string | null>(null);
+  
+  React.useEffect(() => {
+    const getUserType = async () => {
+      const { data } = await supabase.auth.getUser();
+      const type = data.user?.user_metadata?.user_type as string || null;
+      setUserType(type);
+      console.log('Current user type:', type);
+    };
+    
+    getUserType();
+  }, [userId]);
+
   const getInitials = () => {
     if (!fullName) return 'FP'; // Default: Freelancer Profile
     
@@ -84,7 +94,6 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
       .substring(0, 2);
   };
 
-  // Format the member since date
   const formattedMemberSince = memberSince 
     ? format(new Date(memberSince), 'MMMM yyyy')
     : 'Recently joined';
@@ -120,6 +129,16 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
               userId={userId}
               idVerified={idVerified}
             />
+            
+            {userType !== 'freelancer' && (
+              <div className="mt-4 border-t pt-4">
+                <AccountTypeSelector 
+                  userId={userId} 
+                  currentType={userType || undefined}
+                  onTypeUpdated={setUserType}
+                />
+              </div>
+            )}
           </div>
         </div>
       </CardContent>

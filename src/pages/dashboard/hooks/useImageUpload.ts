@@ -29,6 +29,21 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       console.log('Uploading image for user:', userId);
       console.log('File details:', { name: file.name, type: file.type, size: file.size });
       
+      // Check user metadata for user_type
+      const { data: userData } = await supabase.auth.getUser();
+      const userType = userData?.user?.user_metadata?.user_type;
+      
+      console.log('Current user type:', userType);
+      
+      if (userType !== 'freelancer') {
+        console.warn('User is not a freelancer. This might cause upload to fail due to RLS policies.');
+        toast({
+          variant: 'destructive',
+          title: 'Warning',
+          description: 'Your account is not set as a freelancer type. Please use the Account Type selector to update your account type before uploading.',
+        });
+      }
+      
       // Create unique file name
       const fileExt = file.name.split('.').pop();
       const fileName = `${namePrefix.trim() || 'profile'}-${Date.now()}.${fileExt}`;
