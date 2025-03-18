@@ -14,7 +14,6 @@ interface Application {
   id: string;
   created_at: string;
   project_id: string;
-  projects?: any; // The raw projects data from the join
 }
 
 interface ApplicationWithProject extends Project {
@@ -81,22 +80,14 @@ const QuotesTab: React.FC = () => {
         console.log('Received application data:', applicationData);
         
         // Transform the data to match the ApplicationWithProject interface
-        const applicationProjects = (applicationData as Application[]).map((app) => {
-          // Make sure projects is an object before spreading
-          if (app.projects && typeof app.projects === 'object' && app.projects !== null) {
-            return {
-              ...app.projects,
-              application_id: app.id,
-              application_created_at: app.created_at
-            };
-          }
-          // Handle case where projects might be null or undefined
-          console.warn('No project data found for application:', app.id);
-          return null;
-        }).filter(Boolean) as ApplicationWithProject[]; // Filter out null values
+        const applicationProjects = applicationData.map((app) => ({
+          ...app.projects,
+          application_id: app.id,
+          application_created_at: app.created_at
+        }));
         
         console.log('Processed applications:', applicationProjects);
-        return applicationProjects;
+        return applicationProjects as ApplicationWithProject[];
       } catch (error) {
         console.error('Error fetching applications:', error);
         return [];
