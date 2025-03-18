@@ -1,90 +1,116 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
+import { ArrowLeft, Briefcase, Calendar, CheckCircle, CheckCircle2, Mail, MapPin, Phone, Star } from 'lucide-react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Loader2, MessageSquare, ArrowLeft, Star, Calendar, Briefcase, MapPin, Mail, Phone, CheckCircle, CheckCircle2 } from 'lucide-react';
+import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import { format, parseISO } from 'date-fns';
 import { FreelancerProfile } from '@/types/applications';
-import { createConversation } from '@/services/conversations';
-import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 
-const FreelancerProfileView = () => {
+const FreelancerProfileView: React.FC = () => {
   const { freelancerId } = useParams<{ freelancerId: string }>();
   const navigate = useNavigate();
-  const { user } = useAuth();
   const { toast } = useToast();
-  
-  const { data: profile, isLoading, error } = useQuery({
-    queryKey: ['freelancerProfile', freelancerId],
-    queryFn: async () => {
-      if (!freelancerId) throw new Error('Freelancer ID is required');
-      
-      const { data, error } = await supabase
-        .from('freelancer_profiles')
-        .select('*')
-        .eq('id', freelancerId)
-        .single();
-        
-      if (error) throw error;
-      return data as FreelancerProfile;
-    },
-    enabled: !!freelancerId
-  });
+  const [profile, setProfile] = useState<FreelancerProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
-  const handleStartChat = async () => {
-    try {
-      if (!user?.id) {
-        throw new Error('Not authenticated');
-      }
+  useEffect(() => {
+    const fetchFreelancerProfile = async () => {
+      if (!freelancerId) return;
       
-      if (!freelancerId) {
-        throw new Error('Freelancer profile not found');
-      }
-      
-      // Check if a conversation exists between this client and freelancer
-      const { data: existingConversations, error: checkError } = await supabase
-        .from('conversations')
-        .select('id')
-        .eq('freelancer_id', freelancerId)
-        .eq('client_id', user.id);
+      setIsLoading(true);
+      try {
+        // Get user data via edge function
+        const { data: userData, error: userError } = await supabase.functions.invoke(
+          'get-user-profile',
+          {
+            body: { userId: freelancerId }
+          }
+        );
         
-      if (checkError) throw checkError;
-      
-      // If conversation exists, navigate to it
-      if (existingConversations && existingConversations.length > 0) {
-        // Navigate to the business messages tab with the conversation selected
-        navigate(`/dashboard/business?tab=messages&conversation=${existingConversations[0].id}`);
-      } else {
-        // Create new conversation (without project ID)
-        const newConversation = await createConversation(freelancerId, user.id);
+        if (userError) throw userError;
         
-        if (!newConversation) {
-          throw new Error('Failed to create conversation');
+        // Get verification status
+        const { data: verificationData, error: verificationError } = await supabase
+          .rpc('is_user_verified', { user_id: freelancerId });
+        
+        if (verificationError) {
+          console.error('Error checking verification status:', verificationError);
         }
         
-        // Navigate to the business messages tab with the new conversation selected
-        navigate(`/dashboard/business?tab=messages&conversation=${newConversation.id}`);
+        // Extract user metadata
+        const userMetadata = userData?.user_metadata || {};
+        const email = userData?.email || '';
+        const firstName = userMetadata.first_name || userMetadata.firstname || '';
+        const lastName = userMetadata.last_name || userMetadata.lastname || '';
+        const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
+        const displayName = firstName && lastName 
+          ? `${firstName} ${lastName}` 
+          : userMetadata.full_name || 'Anonymous Freelancer';
+        const jobTitle = userMetadata.job_title || userMetadata.profession || '';
+        const location = userMetadata.location || '';
+        const bio = userMetadata.bio || '';
+        const skills = userMetadata.skills || [];
+        
+        // Get any reviews for this user
+        const { data: reviews, error: reviewsError } = await supabase
+          .from('client_reviews')
+          .select('rating')
+          .eq('reviewer_id', freelancerId);
+        
+        if (reviewsError) {
+          console.error('Error fetching reviews:', reviewsError);
+        }
+        
+        // Calculate average rating
+        let rating = null;
+        if (reviews && reviews.length > 0) {
+          const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
+          rating = sum / reviews.length;
+        }
+        
+        setProfile({
+          id: freelancerId,
+          email: email,
+          verified: verificationData || false,
+          email_verified: userData?.email_confirmed || false,
+          first_name: firstName,
+          last_name: lastName,
+          display_name: displayName,
+          phone_number: phoneNumber,
+          job_title: jobTitle,
+          location: location,
+          bio: bio,
+          skills: skills,
+          profile_photo: userMetadata.avatar_url,
+          rating: rating,
+          reviews_count: reviews?.length || 0,
+          member_since: userData?.user?.created_at || userMetadata.created_at,
+          jobs_completed: userMetadata.jobs_completed || 0
+        });
+      } catch (error: any) {
+        console.error('Error fetching freelancer profile:', error);
+        toast({
+          title: 'Error loading profile',
+          description: error.message || 'Could not load freelancer profile',
+          variant: 'destructive',
+        });
+      } finally {
+        setIsLoading(false);
       }
-    } catch (error: any) {
-      console.error('Error starting chat:', error);
-      toast({
-        title: 'Error starting chat',
-        description: error.message || 'Failed to start conversation',
-        variant: 'destructive',
-      });
-    }
-  };
+    };
+    
+    fetchFreelancerProfile();
+  }, [freelancerId, toast]);
 
   const getInitials = (name?: string) => {
-    if (!name) return 'AF';
+    if (!name) return 'FL';
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
   };
 
@@ -104,14 +130,12 @@ const FreelancerProfileView = () => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
     
-    // Full stars
     for (let i = 0; i < fullStars; i++) {
       stars.push(
         <Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
       );
     }
     
-    // Half star
     if (hasHalfStar) {
       stars.push(
         <div key="half" className="relative">
@@ -123,7 +147,6 @@ const FreelancerProfileView = () => {
       );
     }
     
-    // Empty stars
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
@@ -142,176 +165,146 @@ const FreelancerProfileView = () => {
     );
   };
 
-  if (isLoading) {
-    return (
-      <MainLayout>
-        <div className="container py-8 flex items-center justify-center">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        </div>
-      </MainLayout>
-    );
-  }
-
-  if (error || !profile) {
-    return (
-      <MainLayout>
-        <div className="container py-8">
-          <div className="text-center">
-            <h1 className="text-2xl font-bold mb-4">Freelancer not found</h1>
-            <p className="text-muted-foreground mb-6">We couldn't find the freelancer profile you're looking for.</p>
-            <Button onClick={() => navigate(-1)}>
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              Go back
-            </Button>
-          </div>
-        </div>
-      </MainLayout>
-    );
-  }
-
   return (
     <MainLayout>
       <div className="container py-8">
-        <Button 
-          variant="ghost" 
-          onClick={() => navigate(-1)} 
-          className="mb-6"
-        >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back
-        </Button>
-        
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-          <div className="md:col-span-1">
-            <Card>
-              <CardContent className="p-6">
-                <div className="flex flex-col items-center space-y-4">
-                  <Avatar className="h-32 w-32">
+        <div className="flex items-center gap-2 mb-6">
+          <Button variant="ghost" size="icon" onClick={() => navigate(-1)}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+          <h1 className="text-2xl font-bold">Freelancer Profile</h1>
+        </div>
+
+        {isLoading ? (
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-6">
+                <Skeleton className="h-24 w-24 rounded-full" />
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <Skeleton className="h-7 w-48 mb-2" />
+                    <Skeleton className="h-4 w-32 mb-2" />
+                    <div className="flex gap-2 mt-2">
+                      <Skeleton className="h-4 w-24" />
+                      <Skeleton className="h-4 w-24" />
+                    </div>
+                  </div>
+                  <Skeleton className="h-24 w-full" />
+                  <div>
+                    <Skeleton className="h-5 w-32 mb-2" />
+                    <Skeleton className="h-4 w-full max-w-md mb-1" />
+                    <Skeleton className="h-4 w-full max-w-md" />
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ) : !profile ? (
+          <Card>
+            <CardContent className="p-6 text-center">
+              <p>Profile not found or could not be loaded.</p>
+              <Button variant="outline" className="mt-4" onClick={() => navigate(-1)}>
+                Go Back
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row gap-6">
+                <div className="flex flex-col items-center space-y-2">
+                  <Avatar className="h-24 w-24">
                     <AvatarImage src={profile.profile_photo} alt={profile.display_name} />
                     <AvatarFallback>{getInitials(profile.display_name)}</AvatarFallback>
                   </Avatar>
                   
-                  <div className="text-center">
-                    <h2 className="text-xl font-bold">{profile.display_name}</h2>
-                    <p className="text-muted-foreground">{profile.job_title}</p>
-                    {profile.rating && renderRatingStars(profile.rating)}
-                  </div>
-                  
-                  <div className="w-full space-y-3">
-                    <Button className="w-full flex items-center gap-2" onClick={handleStartChat}>
-                      <MessageSquare className="h-4 w-4" />
-                      Message
-                    </Button>
-                  </div>
-                  
-                  <div className="w-full space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">Member since {formatMemberSince(profile.member_since)}</span>
-                    </div>
-                    
-                    <div className="flex items-center gap-2">
-                      <Briefcase className="h-4 w-4 text-muted-foreground" />
-                      <span className="text-sm">{profile.jobs_completed || 0} jobs completed</span>
-                    </div>
-                    
-                    {profile.location && (
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-sm">{profile.location}</span>
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div className="w-full flex flex-col gap-1.5">
+                  <div className="flex flex-col items-center gap-1">
                     {profile.email_verified && (
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1 w-full justify-center py-1">
+                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
                         <CheckCircle className="h-3 w-3" />
                         Email Verified
                       </Badge>
                     )}
                     
                     {profile.verified && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1 w-full justify-center py-1">
+                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
                         <CheckCircle2 className="h-3 w-3" />
                         ID Verified
                       </Badge>
                     )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-          
-          <div className="md:col-span-3">
-            <Tabs defaultValue="about">
-              <TabsList>
-                <TabsTrigger value="about">About</TabsTrigger>
-                <TabsTrigger value="contact">Contact</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="about" className="p-4 bg-white rounded-md mt-4">
-                {profile.bio && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-medium mb-3">Bio</h3>
-                    <p className="text-sm">{profile.bio}</p>
-                  </div>
-                )}
                 
-                {profile.skills && profile.skills.length > 0 && (
-                  <div className="mb-6">
-                    <h3 className="text-lg font-medium mb-3">Skills</h3>
-                    <div className="flex flex-wrap gap-2">
-                      {profile.skills.map((skill, index) => (
-                        <Badge key={index} variant="secondary">{skill}</Badge>
-                      ))}
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
+                      <h2 className="text-xl font-semibold">{profile.display_name || 'Freelancer'}</h2>
+                      {profile.rating && renderRatingStars(profile.rating)}
+                    </div>
+                    
+                    <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
+                    
+                    <div className="mt-3 space-y-1.5">
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                        Member since {formatMemberSince(profile.member_since)}
+                      </div>
+                      
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Briefcase className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                        {profile.jobs_completed || 0} jobs completed
+                      </div>
+                      
+                      {profile.location && (
+                        <div className="flex items-center text-sm text-muted-foreground">
+                          <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                          {profile.location}
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
-                
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  {profile.hourly_rate && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">Hourly Rate</h4>
-                      <p>{profile.hourly_rate}</p>
+                  
+                  {profile.bio && (
+                    <div className="bg-slate-50 p-4 rounded-md">
+                      <p className="font-medium mb-1">Bio:</p>
+                      <p className="text-sm">{profile.bio}</p>
                     </div>
                   )}
                   
-                  {profile.day_rate && (
+                  {profile.skills && profile.skills.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium text-muted-foreground">Day Rate</h4>
-                      <p>{profile.day_rate}</p>
-                    </div>
-                  )}
-                </div>
-              </TabsContent>
-              
-              <TabsContent value="contact" className="p-4 bg-white rounded-md mt-4">
-                <div className="space-y-4">
-                  {profile.email && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Email</h4>
-                      <div className="flex items-center">
-                        <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <a href={`mailto:${profile.email}`} className="text-blue-600 hover:underline">{profile.email}</a>
+                      <p className="font-medium mb-2">Skills:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {profile.skills.map((skill, index) => (
+                          <Badge key={index} variant="secondary">{skill}</Badge>
+                        ))}
                       </div>
                     </div>
                   )}
                   
-                  {profile.phone_number && (
-                    <div>
-                      <h4 className="text-sm font-medium text-muted-foreground mb-1">Phone</h4>
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                        <a href={`tel:${profile.phone_number}`} className="text-blue-600 hover:underline">{profile.phone_number}</a>
-                      </div>
+                  <div>
+                    <p className="font-medium mb-2">Contact information:</p>
+                    <div className="space-y-2">
+                      {profile.email && (
+                        <div className="flex items-center">
+                          <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <a href={`mailto:${profile.email}`} className="text-sm text-blue-600 hover:underline">{profile.email}</a>
+                        </div>
+                      )}
+                      
+                      {profile.phone_number && (
+                        <div className="flex items-center">
+                          <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                          <a href={`tel:${profile.phone_number}`} className="text-sm text-blue-600 hover:underline">{profile.phone_number}</a>
+                        </div>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
-              </TabsContent>
-            </Tabs>
-          </div>
-        </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </MainLayout>
   );
