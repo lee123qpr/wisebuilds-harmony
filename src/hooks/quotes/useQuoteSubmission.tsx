@@ -86,6 +86,11 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
 
       if (error) throw error;
 
+      toast({
+        title: 'Quote submitted successfully',
+        description: 'Your quote has been sent to the client',
+      });
+      
       return true;
     } catch (error: any) {
       console.error('Error submitting quote:', error);

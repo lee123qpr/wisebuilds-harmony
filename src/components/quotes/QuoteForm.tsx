@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -117,13 +116,11 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
         quote_files: quoteFiles.length > 0 ? quoteFiles : undefined,
       };
       
+      console.log('Submitting quote data:', quoteData);
+      
       const success = await submitQuote(quoteData);
       
       if (success) {
-        toast({
-          title: 'Quote submitted successfully',
-          description: 'Your quote has been sent to the client',
-        });
         onSubmitSuccess();
       }
     } catch (error) {
