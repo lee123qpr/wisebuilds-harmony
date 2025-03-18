@@ -13,10 +13,8 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   reviewCount,
   size = 'md'
 }) => {
-  console.log('RatingStars - Props:', { rating, reviewCount, size });
-  
-  if (rating === null || isNaN(rating)) {
-    console.log('RatingStars - Rating is null or NaN, not rendering');
+  // Return null if rating is null, undefined, or NaN
+  if (rating === null || rating === undefined || isNaN(rating)) {
     return null;
   }
 
