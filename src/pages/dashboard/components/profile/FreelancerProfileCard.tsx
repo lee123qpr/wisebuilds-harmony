@@ -34,6 +34,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   idVerified = false
 }) => {
   console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted });
+  console.log('Initial profile image:', initialProfileImage);
   
   // Use our custom hook for image upload
   const {
@@ -52,6 +53,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   // Sync with parent state when our local state changes
   React.useEffect(() => {
     if (imageUrl) {
+      console.log('Syncing image URL to parent:', imageUrl);
       setParentProfileImage(imageUrl);
     }
   }, [imageUrl, setParentProfileImage]);
@@ -63,6 +65,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   // Initialize our local state with the props
   React.useEffect(() => {
     if (initialProfileImage && !imageUrl) {
+      console.log('Initializing local image state with:', initialProfileImage);
       setImageUrl(initialProfileImage);
     }
   }, [initialProfileImage, imageUrl, setImageUrl]);
@@ -84,6 +87,11 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
     ? format(new Date(memberSince), 'MMMM yyyy')
     : 'Recently joined';
 
+  const handleImageUploadProxy = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('Image upload triggered with file:', e.target.files?.[0]?.name);
+    handleImageUpload(e);
+  };
+
   return (
     <Card>
       <CardContent className="p-4">
@@ -93,7 +101,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
             uploadingImage={uploadingImage}
             imageKey={imageKey}
             initials={getInitials()}
-            handleImageUpload={handleImageUpload}
+            handleImageUpload={handleImageUploadProxy}
           />
 
           <div className="flex-1 min-w-0">

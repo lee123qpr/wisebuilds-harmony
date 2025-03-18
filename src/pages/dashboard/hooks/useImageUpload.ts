@@ -35,8 +35,23 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       console.log('Uploading to path:', filePath);
       
+      // Check if the user-uploads bucket exists
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const userUploadsBucketExists = buckets?.some(bucket => bucket.name === 'user-uploads');
+      
+      if (!userUploadsBucketExists) {
+        console.error('user-uploads bucket does not exist');
+        toast({
+          variant: 'destructive',
+          title: 'Storage Error',
+          description: 'The storage location for uploads is not configured properly.',
+        });
+        setUploadingImage(false);
+        return;
+      }
+      
       // Upload the file to Supabase Storage
-      const { error: uploadError, data } = await supabase.storage
+      const { error: uploadError } = await supabase.storage
         .from('user-uploads')
         .upload(filePath, file, { upsert: true });
 
