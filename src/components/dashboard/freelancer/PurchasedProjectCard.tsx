@@ -1,116 +1,122 @@
 
-import React from 'react';
-import { CalendarIcon, MapPinIcon, Clock, Briefcase, Eye, MessageSquare, Quote } from 'lucide-react';
-import { formatDistanceToNow } from 'date-fns';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { formatBudget, formatRole, formatDuration } from '@/utils/projectFormatters';
+import { Button } from '@/components/ui/button';
+import { Calendar, Coins, MapPin, Briefcase, ArrowRight, Quote } from 'lucide-react';
+import { format } from 'date-fns';
+import HiringStatusBadge from '@/components/projects/HiringStatusBadge';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import QuoteDialog from '@/components/quotes/QuoteDialog';
+import { useFreelancerQuote } from '@/hooks/quotes/useFreelancerQuote';
+import ViewQuoteDetails from '@/components/quotes/ViewQuoteDetails';
 
-interface Project {
-  id: string;
-  title: string;
-  budget: string;
-  location: string;
-  work_type: string;
-  duration: string;
-  role: string;
-  created_at: string;
-  application_created_at: string;
+interface PurchasedProjectProps {
+  project: any;
 }
 
-interface PurchasedProjectCardProps {
-  project: Project;
-}
-
-const PurchasedProjectCard: React.FC<PurchasedProjectCardProps> = ({ project }) => {
+const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
   const navigate = useNavigate();
+  const [showQuoteDetails, setShowQuoteDetails] = useState(false);
   
-  // Format the timeAgo string
-  const timeAgo = formatDistanceToNow(new Date(project.application_created_at), { addSuffix: true });
-
+  // Check if the freelancer has already submitted a quote
+  const { data: existingQuote, isLoading: isCheckingQuote } = useFreelancerQuote({
+    projectId: project.id
+  });
+  
+  const hasSubmittedQuote = !!existingQuote;
+  
   const handleViewDetails = () => {
     navigate(`/marketplace/${project.id}`);
   };
-
-  const handleMessage = () => {
-    // Future implementation: Open message dialog or navigate to messages
-    console.log('Message client for project:', project.id);
-  };
-
-  const handleQuote = () => {
-    // Navigate to project page to submit a quote
-    navigate(`/project/${project.id}`);
+  
+  const handleRefresh = () => {
+    setShowQuoteDetails(true);
   };
   
+  const formattedDate = project.created_at 
+    ? format(new Date(project.created_at), 'MMM d, yyyy')
+    : 'Unknown date';
+  
   return (
-    <Card className="mb-4 hover:shadow-md transition-all">
-      <div className="flex flex-col md:flex-row justify-between">
-        <div className="flex-grow">
-          <CardHeader className="pb-2">
-            <div className="flex items-center gap-2 mb-1">
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-                Purchased {timeAgo}
-              </Badge>
-            </div>
-            <CardTitle className="text-lg">{project.title}</CardTitle>
-          </CardHeader>
-          
-          <CardContent className="pb-2">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
-              <div className="flex items-center">
-                <Briefcase className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span>{formatRole(project.role)}</span>
+    <Card className="w-full">
+      <CardHeader className="pb-2">
+        <div className="flex flex-wrap justify-between items-start gap-2">
+          <CardTitle className="text-xl">{project.title}</CardTitle>
+          <HiringStatusBadge status={project.hiring_status} />
+        </div>
+      </CardHeader>
+      
+      <CardContent>
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
+          <div className="space-y-4">
+            <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
+              <div className="flex items-center gap-1">
+                <Calendar className="h-4 w-4" />
+                <span>{formattedDate}</span>
               </div>
-              <div className="flex items-center">
-                <MapPinIcon className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span>{project.location}</span>
-              </div>
-              <div className="flex items-center">
-                <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span>{formatDuration(project.duration)}</span>
-              </div>
+              
+              {project.budget && (
+                <div className="flex items-center gap-1">
+                  <Coins className="h-4 w-4" />
+                  <span>{project.budget}</span>
+                </div>
+              )}
+              
+              {project.location && (
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>{project.location}</span>
+                </div>
+              )}
+              
+              {project.role && (
+                <div className="flex items-center gap-1">
+                  <Briefcase className="h-4 w-4" />
+                  <span>{project.role}</span>
+                </div>
+              )}
             </div>
             
-            <div className="mt-2 text-sm font-medium">
-              Budget: {formatBudget(project.budget)}
+            {/* Display quote details when available and showQuoteDetails is true */}
+            {showQuoteDetails && hasSubmittedQuote && (
+              <ViewQuoteDetails 
+                projectId={project.id} 
+                projectTitle={project.title}
+              />
+            )}
+            
+            <div className="flex flex-wrap gap-2 mt-4">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                onClick={handleViewDetails}
+              >
+                View Details
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              
+              {hasSubmittedQuote ? (
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  className="gap-2"
+                  onClick={() => setShowQuoteDetails(!showQuoteDetails)}
+                >
+                  <Quote className="h-4 w-4" />
+                  {showQuoteDetails ? 'Hide Quote' : 'View Quote'}
+                </Button>
+              ) : (
+                <QuoteDialog 
+                  projectId={project.id}
+                  projectTitle={project.title}
+                  clientId={project.user_id}
+                  onQuoteSubmitted={handleRefresh}
+                />
+              )}
             </div>
-          </CardContent>
+          </div>
         </div>
-        
-        <div className="flex flex-row md:flex-col justify-end items-center gap-2 p-4">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full justify-start gap-2"
-            onClick={handleViewDetails}
-          >
-            <Eye className="h-4 w-4" />
-            <span className="hidden md:inline">View Details</span>
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full justify-start gap-2"
-            onClick={handleMessage}
-          >
-            <MessageSquare className="h-4 w-4" />
-            <span className="hidden md:inline">Message</span>
-          </Button>
-          
-          <Button 
-            variant="outline" 
-            size="sm" 
-            className="w-full justify-start gap-2"
-            onClick={handleQuote}
-          >
-            <Quote className="h-4 w-4" />
-            <span className="hidden md:inline">Quote</span>
-          </Button>
-        </div>
-      </div>
+      </CardContent>
     </Card>
   );
 };

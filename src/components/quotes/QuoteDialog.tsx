@@ -13,6 +13,7 @@ import { Quote } from 'lucide-react';
 import QuoteForm from './QuoteForm';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { supabase } from '@/integrations/supabase/client';
+import { useFreelancerQuote } from '@/hooks/quotes/useFreelancerQuote';
 
 interface QuoteDialogProps {
   projectId: string;
@@ -29,6 +30,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
 }) => {
   const [open, setOpen] = React.useState(false);
   const [clientName, setClientName] = useState<string>('');
+  const { data: existingQuote, refetch } = useFreelancerQuote({ projectId });
 
   useEffect(() => {
     const fetchClientInfo = async () => {
@@ -74,10 +76,16 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
 
   const handleSubmitSuccess = () => {
     setOpen(false);
+    refetch(); // Refresh the quote data
     if (onQuoteSubmitted) {
       onQuoteSubmitted();
     }
   };
+
+  // Don't show the dialog trigger if user already submitted a quote
+  if (existingQuote) {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
