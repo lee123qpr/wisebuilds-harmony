@@ -21,6 +21,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
 }) => {
   // Create a ref for the file input
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const [imageError, setImageError] = React.useState(false);
 
   // When the button is clicked, trigger the hidden file input
   const handleButtonClick = () => {
@@ -35,6 +36,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       console.log('File selected for upload:', file.name);
+      setImageError(false); // Reset error state when new file is selected
       handleImageUpload(e);
     } else {
       console.log('No file selected');
@@ -45,21 +47,27 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   React.useEffect(() => {
     if (profileImageUrl) {
       console.log('Avatar rendering with URL:', profileImageUrl);
+      setImageError(false); // Reset error state when URL changes
     } else {
       console.log('Avatar rendering with no image URL, showing initials:', initials);
     }
   }, [profileImageUrl, imageKey, initials]);
 
+  const handleImageError = () => {
+    console.error("Failed to load image:", profileImageUrl);
+    setImageError(true);
+  };
+
   return (
     <div className="relative">
       <Avatar className="h-20 w-20 border-2 border-white shadow-md">
-        {profileImageUrl ? (
+        {profileImageUrl && !imageError ? (
           <AvatarImage
             src={profileImageUrl}
             alt="Profile"
             className="object-cover"
             key={imageKey}
-            onError={() => console.error("Failed to load image:", profileImageUrl)}
+            onError={handleImageError}
           />
         ) : (
           <AvatarFallback className="text-lg bg-primary text-primary-foreground">

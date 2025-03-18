@@ -6,7 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface UseImageUploadProps {
   userId: string;
-  folder: string;
+  folder: string; // Keeping this for backward compatibility, but it's no longer used
   namePrefix: string;
 }
 
@@ -32,8 +32,8 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       // Create unique file name
       const fileExt = file.name.split('.').pop();
       const fileName = `${namePrefix}-${Date.now()}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`; // Fix: Remove folder from path as it's in the policy
-
+      const filePath = `${userId}/${fileName}`; // Only use userId in the path to comply with RLS policy
+      
       console.log('Uploading to path:', filePath);
       console.log('Bucket name:', 'freelancer-avatar');
       
@@ -78,12 +78,12 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         title: 'Upload Failed',
         description: error instanceof Error 
           ? error.message 
-          : 'There was an error uploading your image. Make sure you are a freelancer user.',
+          : 'There was an error uploading your image. Make sure you are a freelancer user and your account has proper permissions.',
       });
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, folder, namePrefix, toast]);
+  }, [userId, namePrefix, toast]);
 
   return {
     imageUrl,
