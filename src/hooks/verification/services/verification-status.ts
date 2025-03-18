@@ -24,12 +24,6 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       .maybeSingle();
     
     if (error) {
-      // If record not found, don't treat as an error
-      if (error.code === 'PGRST116') {
-        console.log('No verification record found for user');
-        return null;
-      }
-      
       console.error('Error fetching verification status:', error);
       return null;
     }
