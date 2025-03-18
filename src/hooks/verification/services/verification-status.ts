@@ -18,7 +18,6 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
     
     // Query the freelancer_verification table directly
     try {
-      // Create a function call to is_user_verified to avoid direct access to users table
       const { data, error } = await supabase
         .from('freelancer_verification')
         .select('*')

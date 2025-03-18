@@ -132,7 +132,7 @@ serve(async (req) => {
         `DROP POLICY IF EXISTS "Service role can access all verification records" ON public.freelancer_verification;`,
         `DROP POLICY IF EXISTS "Admin users can view all verification records" ON public.freelancer_verification;`,
         
-        // Create new policies
+        // Create new policies using simple auth.uid() checks to avoid direct users table access
         `CREATE POLICY "Only freelancers can insert their own verification records" 
          ON public.freelancer_verification FOR INSERT WITH CHECK (
            auth.uid() = user_id
