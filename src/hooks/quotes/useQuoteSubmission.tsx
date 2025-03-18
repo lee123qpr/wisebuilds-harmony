@@ -69,10 +69,11 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
 
     if (error) throw error;
     
-    // Ensure the status is one of the allowed values in the Quote type
+    // Type assertion to ensure status is of the correct type
+    // This is safe because we explicitly set status to 'pending' above
     return {
       ...data,
-      status: data.status as "pending" | "accepted" | "declined"
+      status: data.status as Quote['status']
     };
   };
 
