@@ -6,14 +6,15 @@ import {
   CardHeader, 
   CardTitle, 
   CardDescription, 
-  CardContent, 
-  CardFooter 
+  CardContent
 } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { useFreelancerQuote } from '@/hooks/quotes/useFreelancerQuote';
-import { Quote } from '@/types/quotes';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Check, Clock, X } from 'lucide-react';
+import QuoteStatusBadge from './details/QuoteStatusBadge';
+import PriceSection from './details/PriceSection';
+import TimelineSection from './details/TimelineSection';
+import PaymentSection from './details/PaymentSection';
+import DescriptionSection from './details/DescriptionSection';
+import QuoteDetailsSkeleton from './details/QuoteDetailsSkeleton';
 
 interface ViewQuoteDetailsProps {
   projectId: string;
@@ -75,146 +76,5 @@ const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({ projectId, projectT
     </Card>
   );
 };
-
-const QuoteStatusBadge = ({ status }: { status: Quote['status'] }) => {
-  switch (status) {
-    case 'pending':
-      return (
-        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200 flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          Pending
-        </Badge>
-      );
-    case 'accepted':
-      return (
-        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
-          <Check className="h-3 w-3" />
-          Accepted
-        </Badge>
-      );
-    case 'declined':
-      return (
-        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 flex items-center gap-1">
-          <X className="h-3 w-3" />
-          Declined
-        </Badge>
-      );
-    default:
-      return null;
-  }
-};
-
-const PriceSection = ({ quote }: { quote: Quote }) => {
-  // Determine which price type was used
-  const priceType = quote.fixed_price 
-    ? 'Fixed Price' 
-    : quote.estimated_price 
-      ? 'Estimated Price' 
-      : quote.day_rate 
-        ? 'Day Rate' 
-        : 'Not specified';
-  
-  const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
-
-  return (
-    <div className="space-y-2">
-      <h3 className="text-md font-semibold">Price Details</h3>
-      <div className="bg-slate-50 p-3 rounded-md">
-        <div className="grid grid-cols-2 gap-2">
-          <span className="text-sm text-slate-600">Price Type:</span>
-          <span className="text-sm font-medium">{priceType}</span>
-          
-          <span className="text-sm text-slate-600">Amount:</span>
-          <span className="text-sm font-medium">{priceValue}</span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const TimelineSection = ({ quote }: { quote: Quote }) => {
-  return (
-    <div className="space-y-2">
-      <h3 className="text-md font-semibold">Timeline</h3>
-      <div className="bg-slate-50 p-3 rounded-md">
-        <div className="grid grid-cols-2 gap-2">
-          <span className="text-sm text-slate-600">Start Date:</span>
-          <span className="text-sm font-medium">
-            {quote.available_start_date 
-              ? format(new Date(quote.available_start_date), 'MMMM d, yyyy') 
-              : 'Not specified'}
-          </span>
-          
-          <span className="text-sm text-slate-600">Duration:</span>
-          <span className="text-sm font-medium">
-            {quote.estimated_duration && quote.duration_unit 
-              ? `${quote.estimated_duration} ${quote.duration_unit}` 
-              : 'Not specified'}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const PaymentSection = ({ quote }: { quote: Quote }) => {
-  return (
-    <div className="space-y-2">
-      <h3 className="text-md font-semibold">Payment Details</h3>
-      <div className="bg-slate-50 p-3 rounded-md">
-        <div className="grid grid-cols-2 gap-2">
-          <span className="text-sm text-slate-600">Payment Method:</span>
-          <span className="text-sm font-medium">
-            {quote.preferred_payment_method || 'Not specified'}
-          </span>
-          
-          <span className="text-sm text-slate-600">Payment Terms:</span>
-          <span className="text-sm font-medium">
-            {quote.payment_terms || 'Not specified'}
-          </span>
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const DescriptionSection = ({ quote }: { quote: Quote }) => {
-  return (
-    <div className="space-y-2">
-      <h3 className="text-md font-semibold">Description</h3>
-      <div className="bg-slate-50 p-3 rounded-md">
-        <p className="text-sm whitespace-pre-wrap">{quote.description || 'No description provided.'}</p>
-      </div>
-    </div>
-  );
-};
-
-const QuoteDetailsSkeleton = () => (
-  <Card className="mb-6">
-    <CardHeader>
-      <Skeleton className="h-6 w-3/4" />
-      <Skeleton className="h-4 w-1/2 mt-2" />
-    </CardHeader>
-    <CardContent className="space-y-4">
-      <div className="space-y-2">
-        <Skeleton className="h-5 w-1/4" />
-        <div className="bg-slate-50 p-3 rounded-md">
-          <div className="grid grid-cols-2 gap-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-full" />
-          </div>
-        </div>
-      </div>
-      <div className="space-y-2">
-        <Skeleton className="h-5 w-1/4" />
-        <div className="bg-slate-50 p-3 rounded-md">
-          <Skeleton className="h-20 w-full" />
-        </div>
-      </div>
-    </CardContent>
-  </Card>
-);
 
 export default ViewQuoteDetails;
