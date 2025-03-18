@@ -41,11 +41,14 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
     }
   };
 
+  // Log the current profile image URL for debugging
   React.useEffect(() => {
     if (profileImageUrl) {
       console.log('Avatar rendering with URL:', profileImageUrl);
+    } else {
+      console.log('Avatar rendering with no image URL, showing initials:', initials);
     }
-  }, [profileImageUrl, imageKey]);
+  }, [profileImageUrl, imageKey, initials]);
 
   return (
     <div className="relative">
@@ -56,6 +59,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
             alt="Profile"
             className="object-cover"
             key={imageKey}
+            onError={() => console.error("Failed to load image:", profileImageUrl)}
           />
         ) : (
           <AvatarFallback className="text-lg bg-primary text-primary-foreground">
