@@ -73,7 +73,8 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
     return {
       ...data,
       status: data.status as Quote['status'],
-      duration_unit: data.duration_unit as Quote['duration_unit']
+      duration_unit: data.duration_unit as Quote['duration_unit'],
+      quote_files: Array.isArray(data.quote_files) ? data.quote_files : []
     };
   };
 
