@@ -562,29 +562,59 @@ export type Database = {
       }
       quotes: {
         Row: {
+          available_start_date: string | null
           client_id: string
           created_at: string
+          day_rate: string | null
+          description: string | null
+          duration_unit: string | null
+          estimated_duration: string | null
+          estimated_price: string | null
+          fixed_price: string | null
           freelancer_id: string
           id: string
+          payment_terms: string | null
+          preferred_payment_method: string | null
           project_id: string
+          quote_files: Json | null
           status: string
           updated_at: string
         }
         Insert: {
+          available_start_date?: string | null
           client_id: string
           created_at?: string
+          day_rate?: string | null
+          description?: string | null
+          duration_unit?: string | null
+          estimated_duration?: string | null
+          estimated_price?: string | null
+          fixed_price?: string | null
           freelancer_id: string
           id?: string
+          payment_terms?: string | null
+          preferred_payment_method?: string | null
           project_id: string
+          quote_files?: Json | null
           status?: string
           updated_at?: string
         }
         Update: {
+          available_start_date?: string | null
           client_id?: string
           created_at?: string
+          day_rate?: string | null
+          description?: string | null
+          duration_unit?: string | null
+          estimated_duration?: string | null
+          estimated_price?: string | null
+          fixed_price?: string | null
           freelancer_id?: string
           id?: string
+          payment_terms?: string | null
+          preferred_payment_method?: string | null
           project_id?: string
+          quote_files?: Json | null
           status?: string
           updated_at?: string
         }
