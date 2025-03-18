@@ -16,6 +16,8 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
+import { useQuoteSubmission } from '@/hooks/quotes/useQuoteSubmission';
+import { useAuth } from '@/context/AuthContext';
 
 const quoteFormSchema = z.object({
   price: z.string().min(1, { message: 'Price is required' }),
@@ -39,6 +41,13 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
   onCancel 
 }) => {
   const { toast } = useToast();
+  const { user } = useAuth();
+  const clientId = user?.user_metadata?.client_id || '';
+  
+  const { submitQuote, isSubmitting } = useQuoteSubmission({ 
+    projectId, 
+    clientId 
+  });
   
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(quoteFormSchema),
@@ -51,14 +60,15 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
 
   const onSubmit = async (data: QuoteFormValues) => {
     try {
-      // Submit quote functionality will be implemented in the hook
-      // Pass the form data to the parent component
-      onSubmitSuccess();
+      const success = await submitQuote(data);
       
-      toast({
-        title: 'Quote submitted successfully',
-        description: 'Your quote has been sent to the client',
-      });
+      if (success) {
+        toast({
+          title: 'Quote submitted successfully',
+          description: 'Your quote has been sent to the client',
+        });
+        onSubmitSuccess();
+      }
     } catch (error) {
       console.error('Error submitting quote:', error);
       toast({
@@ -138,7 +148,9 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
           <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button type="submit">Submit Quote</Button>
+          <Button type="submit" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit Quote'}
+          </Button>
         </div>
       </form>
     </Form>

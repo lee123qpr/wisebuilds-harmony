@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Quote } from 'lucide-react';
 import QuoteForm from './QuoteForm';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 interface QuoteDialogProps {
   projectId: string;
@@ -49,12 +50,16 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
             Send a detailed quote to the client for this project
           </DialogDescription>
         </DialogHeader>
-        <QuoteForm
-          projectId={projectId}
-          projectTitle={projectTitle}
-          onSubmitSuccess={handleSubmitSuccess}
-          onCancel={() => setOpen(false)}
-        />
+        <ScrollArea className="max-h-[60vh]">
+          <div className="p-1">
+            <QuoteForm
+              projectId={projectId}
+              projectTitle={projectTitle}
+              onSubmitSuccess={handleSubmitSuccess}
+              onCancel={() => setOpen(false)}
+            />
+          </div>
+        </ScrollArea>
       </DialogContent>
     </Dialog>
   );
