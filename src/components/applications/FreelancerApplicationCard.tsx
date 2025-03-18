@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -49,14 +48,12 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
     
-    // Full stars
     for (let i = 0; i < fullStars; i++) {
       stars.push(
         <Star key={`full-${i}`} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
       );
     }
     
-    // Half star
     if (hasHalfStar) {
       stars.push(
         <div key="half" className="relative">
@@ -68,7 +65,6 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
       );
     }
     
-    // Empty stars
     const emptyStars = 5 - fullStars - (hasHalfStar ? 1 : 0);
     for (let i = 0; i < emptyStars; i++) {
       stars.push(
@@ -89,7 +85,6 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
 
   const handleStartChat = async () => {
     try {
-      // Get current user (client) ID
       const clientId = user?.id;
       if (!clientId) {
         throw new Error('Not authenticated');
@@ -101,7 +96,6 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
       
       console.log('Starting chat between client', clientId, 'and freelancer', profile.id, 'for project', projectId);
       
-      // Check if a conversation exists between this client and freelancer for this project
       const { data: existingConversations, error: checkError } = await supabase
         .from('conversations')
         .select('id')
@@ -111,14 +105,10 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
         
       if (checkError) throw checkError;
       
-      // If conversation exists, navigate to it
       if (existingConversations && existingConversations.length > 0) {
         console.log('Using existing conversation:', existingConversations[0].id);
-        // Navigate to the business messages tab with the conversation selected
         navigate(`/dashboard/business?tab=messages&conversation=${existingConversations[0].id}`);
       } else {
-        // Create new conversation
-        console.log('Creating new conversation between client', clientId, 'and freelancer', profile.id);
         const newConversation = await createConversation(profile.id, clientId, projectId);
         
         if (!newConversation) {
@@ -126,7 +116,6 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
         }
         
         console.log('Created new conversation:', newConversation.id);
-        // Navigate to the business messages tab with the new conversation selected
         navigate(`/dashboard/business?tab=messages&conversation=${newConversation.id}`);
       }
     } catch (error: any) {
@@ -137,6 +126,19 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
         variant: 'destructive',
       });
     }
+  };
+
+  const handleViewProfile = () => {
+    if (!profile?.id) {
+      toast({
+        title: "Profile not available",
+        description: "This freelancer's profile cannot be viewed at this time.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    navigate(`/freelancer/profile/${profile.id}`);
   };
 
   return (
@@ -230,7 +232,12 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
                 Message now
               </Button>
               
-              <Button variant="outline">View full profile</Button>
+              <Button 
+                variant="outline"
+                onClick={handleViewProfile}
+              >
+                View full profile
+              </Button>
             </div>
           </div>
         </div>

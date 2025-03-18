@@ -6,6 +6,7 @@ import EditProject from "../pages/project/EditProject";
 import ProjectDocuments from "../pages/project/ProjectDocuments";
 import ProjectApplications from "../pages/project/ProjectApplications";
 import NotFound from "../pages/NotFound";
+import FreelancerProfileView from "../pages/freelancer/FreelancerProfileView";
 
 export const projectRoutes = (
   <>
@@ -39,6 +40,16 @@ export const projectRoutes = (
       element={
         <ProtectedRoute allowedUserTypes={['business']}>
           <ProjectApplications />
+        </ProtectedRoute>
+      } 
+    />
+    
+    {/* Freelancer Profile View */}
+    <Route 
+      path="/freelancer/profile/:freelancerId" 
+      element={
+        <ProtectedRoute allowedUserTypes={['business']}>
+          <FreelancerProfileView />
         </ProtectedRoute>
       } 
     />
