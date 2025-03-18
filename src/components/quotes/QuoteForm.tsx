@@ -60,7 +60,14 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
 
   const onSubmit = async (data: QuoteFormValues) => {
     try {
-      const success = await submitQuote(data);
+      // Explicitly cast data to ensure it matches QuoteFormData type
+      const quoteData = {
+        price: data.price,
+        description: data.description,
+        estimatedDuration: data.estimatedDuration
+      };
+      
+      const success = await submitQuote(quoteData);
       
       if (success) {
         toast({
