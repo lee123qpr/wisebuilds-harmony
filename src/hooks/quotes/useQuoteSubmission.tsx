@@ -5,9 +5,12 @@ import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 
 interface QuoteFormData {
-  price: string;
+  fixed_price?: string;
+  estimated_price?: string;
   description: string;
-  estimatedDuration: string;
+  available_start_date?: string;
+  estimated_duration?: string;
+  duration_unit?: 'days' | 'weeks' | 'months';
 }
 
 interface UseQuoteSubmissionProps {
@@ -61,9 +64,12 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
             project_id: projectId,
             freelancer_id: user.id,
             client_id: clientId,
-            price: formData.price,
+            fixed_price: formData.fixed_price,
+            estimated_price: formData.estimated_price,
             description: formData.description,
-            estimated_duration: formData.estimatedDuration,
+            available_start_date: formData.available_start_date,
+            estimated_duration: formData.estimated_duration,
+            duration_unit: formData.duration_unit,
             status: 'pending',
           },
         ])

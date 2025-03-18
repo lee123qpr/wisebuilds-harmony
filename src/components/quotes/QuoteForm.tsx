@@ -1,8 +1,9 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
+import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -18,11 +19,30 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useQuoteSubmission } from '@/hooks/quotes/useQuoteSubmission';
 import { useAuth } from '@/context/AuthContext';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
+import { Calendar } from '@/components/ui/calendar';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { CalendarIcon } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const quoteFormSchema = z.object({
-  price: z.string().min(1, { message: 'Price is required' }),
+  priceType: z.enum(['fixed', 'estimated']),
+  fixedPrice: z.string().optional().refine(val => val === undefined || val.length > 0, { 
+    message: 'Fixed price is required when price type is fixed'
+  }),
+  estimatedPrice: z.string().optional().refine(val => val === undefined || val.length > 0, { 
+    message: 'Estimated price is required when price type is estimated'
+  }),
   description: z.string().min(10, { message: 'Description must be at least 10 characters' }),
+  availableStartDate: z.date({
+    required_error: 'Please select a start date',
+  }),
   estimatedDuration: z.string().min(1, { message: 'Estimated duration is required' }),
+  durationUnit: z.enum(['days', 'weeks', 'months'], {
+    required_error: 'Please select a duration unit',
+  }),
 });
 
 type QuoteFormValues = z.infer<typeof quoteFormSchema>;
@@ -44,29 +64,42 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const clientId = user?.user_metadata?.client_id || '';
+  const [priceType, setPriceType] = useState<'fixed' | 'estimated'>('fixed');
   
   const { submitQuote, isSubmitting } = useQuoteSubmission({ 
     projectId, 
-    clientId 
+    clientId: user?.id || ''
   });
   
   const form = useForm<QuoteFormValues>({
     resolver: zodResolver(quoteFormSchema),
     defaultValues: {
-      price: '',
+      priceType: 'fixed',
+      fixedPrice: '',
+      estimatedPrice: '',
       description: '',
       estimatedDuration: '',
+      durationUnit: 'days',
     },
   });
 
+  // Watch for price type changes to update UI
+  const watchPriceType = form.watch('priceType');
+  
+  React.useEffect(() => {
+    setPriceType(watchPriceType);
+  }, [watchPriceType]);
+
   const onSubmit = async (data: QuoteFormValues) => {
     try {
-      // Explicitly cast data to ensure it matches QuoteFormData type
+      // Format the quote data based on the form inputs
       const quoteData = {
-        price: data.price,
+        fixed_price: data.priceType === 'fixed' ? data.fixedPrice : undefined,
+        estimated_price: data.priceType === 'estimated' ? data.estimatedPrice : undefined,
         description: data.description,
-        estimatedDuration: data.estimatedDuration
+        available_start_date: data.availableStartDate ? format(data.availableStartDate, 'yyyy-MM-dd') : undefined,
+        estimated_duration: data.estimatedDuration,
+        duration_unit: data.durationUnit,
       };
       
       const success = await submitQuote(quoteData);
@@ -103,37 +136,154 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
         
         <FormField
           control={form.control}
-          name="price"
+          name="priceType"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Price (£)</FormLabel>
+            <FormItem className="space-y-3">
+              <FormLabel>Price Type</FormLabel>
               <FormControl>
-                <Input placeholder="£0.00" {...field} />
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  defaultValue={field.value}
+                  className="flex flex-col space-y-1"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="fixed" id="fixed" />
+                    <Label htmlFor="fixed">Fixed Price</Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="estimated" id="estimated" />
+                    <Label htmlFor="estimated">Estimated Price</Label>
+                  </div>
+                </RadioGroup>
               </FormControl>
               <FormDescription>
-                Enter the total price for this project
+                Select whether you want to provide a fixed or estimated price
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
         
+        {priceType === 'fixed' && (
+          <FormField
+            control={form.control}
+            name="fixedPrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Fixed Price (£)</FormLabel>
+                <FormControl>
+                  <Input placeholder="£0.00" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Enter the total fixed price for this project
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        
+        {priceType === 'estimated' && (
+          <FormField
+            control={form.control}
+            name="estimatedPrice"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estimated Price (£)</FormLabel>
+                <FormControl>
+                  <Input placeholder="£0.00" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Enter an estimated price range for this project
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        
         <FormField
           control={form.control}
-          name="estimatedDuration"
+          name="availableStartDate"
           render={({ field }) => (
-            <FormItem>
-              <FormLabel>Estimated Duration</FormLabel>
-              <FormControl>
-                <Input placeholder="e.g. 2 weeks" {...field} />
-              </FormControl>
+            <FormItem className="flex flex-col">
+              <FormLabel>Available to Start On</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <FormControl>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full pl-3 text-left font-normal",
+                        !field.value && "text-muted-foreground"
+                      )}
+                    >
+                      {field.value ? (
+                        format(field.value, "PPP")
+                      ) : (
+                        <span>Pick a date</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
+                  </FormControl>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value}
+                    onSelect={field.onChange}
+                    disabled={(date) => date < new Date()}
+                    initialFocus
+                    className="p-3 pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
               <FormDescription>
-                How long will it take you to complete this project?
+                When can you start working on this project?
               </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
+        
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="estimatedDuration"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Estimated Duration</FormLabel>
+                <FormControl>
+                  <Input type="number" min="1" placeholder="e.g. 2" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="durationUnit"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Duration Unit</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select unit" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="days">Days</SelectItem>
+                    <SelectItem value="weeks">Weeks</SelectItem>
+                    <SelectItem value="months">Months</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         
         <FormField
           control={form.control}

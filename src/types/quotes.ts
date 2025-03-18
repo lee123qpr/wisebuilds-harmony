@@ -4,9 +4,12 @@ export interface Quote {
   project_id: string;
   freelancer_id: string;
   client_id: string;
-  price?: string;
+  fixed_price?: string;
+  estimated_price?: string;
   description?: string;
+  available_start_date?: string;
   estimated_duration?: string;
+  duration_unit?: 'days' | 'weeks' | 'months';
   status: 'pending' | 'accepted' | 'declined';
   created_at: string;
   updated_at: string;
