@@ -32,12 +32,12 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       // Create unique file name
       const fileExt = file.name.split('.').pop();
       const fileName = `${namePrefix}-${Date.now()}.${fileExt}`;
-      const filePath = `${folder}/${userId}/${fileName}`;
-      
+      const filePath = `${userId}/${fileName}`; // Fix: Remove folder from path as it's in the policy
+
       console.log('Uploading to path:', filePath);
       console.log('Bucket name:', 'freelancer-avatar');
       
-      // Directly upload to the new bucket
+      // Upload to freelancer-avatar bucket
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('freelancer-avatar')
         .upload(filePath, file, { 
@@ -76,7 +76,9 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       toast({
         variant: 'destructive',
         title: 'Upload Failed',
-        description: error instanceof Error ? error.message : 'There was an unexpected error uploading your image.',
+        description: error instanceof Error 
+          ? error.message 
+          : 'There was an error uploading your image. Make sure you are a freelancer user.',
       });
     } finally {
       setUploadingImage(false);

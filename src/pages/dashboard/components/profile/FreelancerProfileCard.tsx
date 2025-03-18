@@ -36,7 +36,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted });
   console.log('Initial profile image:', initialProfileImage);
   
-  // Use our custom hook for image upload
+  // Use our custom hook for image upload with corrected folder path
   const {
     imageUrl,
     uploadingImage,
@@ -46,8 +46,8 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
     setUploadingImage
   } = useImageUpload({
     userId,
-    folder: 'profiles',
-    namePrefix: fullName ? fullName.replace(/\s+/g, '-').toLowerCase() : userId
+    folder: '', // Not needed anymore since we use userId directly in the path
+    namePrefix: fullName ? fullName.replace(/\s+/g, '-').toLowerCase() : 'freelancer'
   });
 
   // Sync with parent state when our local state changes
