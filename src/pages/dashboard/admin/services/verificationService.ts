@@ -22,10 +22,10 @@ export const fetchAllVerifications = async () => {
 
 export const getUserInfoForVerification = async (userId: string) => {
   try {
-    // Get user info from freelancer_profiles instead of auth.users
+    // Get user info from freelancer_profiles
     const { data, error } = await supabase
       .from('freelancer_profiles')
-      .select('email, full_name')
+      .select('display_name, email')
       .eq('id', userId)
       .maybeSingle();
     
@@ -56,7 +56,7 @@ export const getUserInfoForVerification = async (userId: string) => {
     
     return {
       user_email: data.email || 'No email provided',
-      user_full_name: data.full_name || 'Unknown User'
+      user_full_name: data.display_name || 'Unknown User'
     };
   } catch (error) {
     console.error('Exception in getUserInfoForVerification:', error);
