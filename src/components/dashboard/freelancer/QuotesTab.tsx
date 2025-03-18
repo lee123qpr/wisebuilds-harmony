@@ -14,6 +14,7 @@ interface Application {
   id: string;
   created_at: string;
   project_id: string;
+  projects?: any; // The raw projects data from the join
 }
 
 interface ApplicationWithProject extends Project {
@@ -80,9 +81,9 @@ const QuotesTab: React.FC = () => {
         console.log('Received application data:', applicationData);
         
         // Transform the data to match the ApplicationWithProject interface
-        const applicationProjects = applicationData.map((app) => {
+        const applicationProjects = (applicationData as Application[]).map((app) => {
           // Make sure projects is an object before spreading
-          if (app.projects && typeof app.projects === 'object') {
+          if (app.projects && typeof app.projects === 'object' && app.projects !== null) {
             return {
               ...app.projects,
               application_id: app.id,
