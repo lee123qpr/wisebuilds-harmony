@@ -2,31 +2,28 @@
 import { useState, useEffect } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { Verification } from '../types';
-import { fetchAllVerifications, getUserInfoForVerification, updateVerification } from '../services/verificationService';
-import { useDocumentPreview } from './useDocumentPreview';
+import { 
+  fetchAllVerifications, 
+  getUserInfoForVerification, 
+  getDocumentSignedUrl,
+  updateVerification
+} from '../services/verificationService';
 
 export const useVerifications = () => {
   const [verifications, setVerifications] = useState<Verification[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   const { toast } = useToast();
-  const { documentUrl, loadDocumentUrl } = useDocumentPreview();
 
-  // Fetch all verification requests
   const fetchVerifications = async () => {
     setIsLoading(true);
     try {
-      // Get basic verification records
+      // Fetch all verification records
       const verificationRecords = await fetchAllVerifications();
-      
-      if (verificationRecords.length === 0) {
-        setVerifications([]);
-        setIsLoading(false);
-        return;
-      }
       
       // For each verification, fetch the user email and name from auth.users
       const enhancedData: Verification[] = await Promise.all(
@@ -48,26 +45,38 @@ export const useVerifications = () => {
         })
       );
       
-      console.log('Enhanced verification data:', enhancedData);
       setVerifications(enhancedData);
     } catch (error) {
       console.error('Error fetching verifications:', error);
       toast({
-        variant: 'destructive',
         title: 'Error',
-        description: 'Failed to load verification requests.'
+        description: 'Failed to load verification requests.',
+        variant: 'destructive',
       });
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Load verifications on component mount
   useEffect(() => {
     fetchVerifications();
   }, []);
 
-  // View document handler
+  const loadDocumentUrl = async (documentPath: string) => {
+    if (!documentPath) {
+      setDocumentUrl(null);
+      return;
+    }
+    
+    try {
+      const url = await getDocumentSignedUrl(documentPath);
+      setDocumentUrl(url);
+    } catch (error) {
+      console.error('Error loading document URL:', error);
+      setDocumentUrl(null);
+    }
+  };
+
   const viewDocument = async (verification: Verification) => {
     setSelectedVerification(verification);
     setAdminNotes(verification.admin_notes || '');
@@ -80,7 +89,6 @@ export const useVerifications = () => {
     setDialogOpen(true);
   };
 
-  // Update verification status handler
   const updateVerificationStatus = async (status: 'approved' | 'rejected') => {
     if (!selectedVerification) return;
     
@@ -88,32 +96,28 @@ export const useVerifications = () => {
     try {
       await updateVerification(selectedVerification.id, status, adminNotes);
       
-      // Update local state
-      setVerifications(prev => 
-        prev.map(v => 
-          v.id === selectedVerification.id 
-            ? { ...v, verification_status: status, admin_notes: adminNotes } 
-            : v
-        )
-      );
-      
-      // Close dialog
+      // Close dialog and refresh data
       setDialogOpen(false);
+      await fetchVerifications();
       
       toast({
         title: 'Success',
-        description: `Verification ${status === 'approved' ? 'approved' : 'rejected'} successfully.`
+        description: `Verification ${status === 'approved' ? 'approved' : 'rejected'} successfully.`,
       });
     } catch (error) {
-      console.error('Error updating verification:', error);
+      console.error('Error updating verification status:', error);
       toast({
-        variant: 'destructive',
         title: 'Error',
-        description: 'Failed to update verification status.'
+        description: 'Failed to update verification status.',
+        variant: 'destructive',
       });
     } finally {
       setIsUpdating(false);
     }
+  };
+
+  const refreshVerifications = () => {
+    fetchVerifications();
   };
 
   return {
@@ -128,6 +132,6 @@ export const useVerifications = () => {
     isUpdating,
     viewDocument,
     updateVerificationStatus,
-    refreshVerifications: fetchVerifications
+    refreshVerifications
   };
 };
