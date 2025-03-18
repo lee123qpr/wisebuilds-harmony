@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -12,6 +12,7 @@ import { Button } from '@/components/ui/button';
 import { Quote } from 'lucide-react';
 import QuoteForm from './QuoteForm';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { supabase } from '@/integrations/supabase/client';
 
 interface QuoteDialogProps {
   projectId: string;
@@ -27,6 +28,49 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
   onQuoteSubmitted,
 }) => {
   const [open, setOpen] = React.useState(false);
+  const [clientName, setClientName] = useState<string>('');
+
+  useEffect(() => {
+    const fetchClientInfo = async () => {
+      try {
+        // Try to get client information from the client_profiles table
+        const { data: clientProfile, error: clientError } = await supabase
+          .from('client_profiles')
+          .select('contact_name, company_name')
+          .eq('id', clientId)
+          .maybeSingle();
+
+        if (clientProfile && clientProfile.contact_name) {
+          setClientName(clientProfile.contact_name);
+          return;
+        }
+
+        // If no client profile, fetch from edge function
+        const { data: userData, error: userError } = await supabase.functions.invoke(
+          'get-user-email',
+          {
+            body: { userId: clientId }
+          }
+        );
+
+        if (userData && userData.full_name) {
+          setClientName(userData.full_name);
+        } else if (userData && userData.email) {
+          // Use the part before @ as a fallback name
+          setClientName(userData.email.split('@')[0]);
+        } else {
+          setClientName('Client');
+        }
+      } catch (error) {
+        console.error('Error fetching client information:', error);
+        setClientName('Client');
+      }
+    };
+
+    if (open && clientId) {
+      fetchClientInfo();
+    }
+  }, [clientId, open]);
 
   const handleSubmitSuccess = () => {
     setOpen(false);
@@ -55,6 +99,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
             <QuoteForm
               projectId={projectId}
               projectTitle={projectTitle}
+              clientName={clientName}
               onSubmitSuccess={handleSubmitSuccess}
               onCancel={() => setOpen(false)}
             />

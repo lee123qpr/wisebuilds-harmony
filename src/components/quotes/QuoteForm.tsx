@@ -30,6 +30,7 @@ type QuoteFormValues = z.infer<typeof quoteFormSchema>;
 interface QuoteFormProps {
   projectId: string;
   projectTitle: string;
+  clientName: string;
   onSubmitSuccess: () => void;
   onCancel: () => void;
 }
@@ -37,6 +38,7 @@ interface QuoteFormProps {
 const QuoteForm: React.FC<QuoteFormProps> = ({ 
   projectId, 
   projectTitle, 
+  clientName,
   onSubmitSuccess, 
   onCancel 
 }) => {
@@ -90,7 +92,10 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="mb-4">
-          <h2 className="text-xl font-semibold">Submit Quote for: {projectTitle}</h2>
+          <h2 className="text-xl font-semibold">Project: {projectTitle}</h2>
+          <p className="text-sm text-muted-foreground mb-2">
+            Client: {clientName}
+          </p>
           <p className="text-sm text-muted-foreground">
             Provide details of your proposal to the client
           </p>

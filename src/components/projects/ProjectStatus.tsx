@@ -15,6 +15,7 @@ interface ProjectStatusProps {
   hiringStatus: string;
   applicationsCount: number;
   clientId?: string;
+  projectTitle?: string; // Add projectTitle prop
 }
 
 const ProjectStatus = ({ 
@@ -23,6 +24,7 @@ const ProjectStatus = ({
   hiringStatus, 
   applicationsCount,
   clientId,
+  projectTitle = 'Project', // Default to 'Project' if not provided
 }: ProjectStatusProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -68,7 +70,7 @@ const ProjectStatus = ({
         {isFreelancer && clientId && (
           <QuoteDialog 
             projectId={projectId}
-            projectTitle={status} // Ideally this should be the project title
+            projectTitle={projectTitle} // Pass the proper project title
             clientId={clientId}
             onQuoteSubmitted={() => {
               // Refresh the page or data after quote submission
