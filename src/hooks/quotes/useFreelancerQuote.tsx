@@ -30,7 +30,19 @@ export const useFreelancerQuote = ({ projectId }: UseFreelancerQuoteProps) => {
         throw error;
       }
       
-      return data;
+      if (!data) return null;
+      
+      // Validate that the status is one of the expected values
+      const validStatuses: Quote['status'][] = ['pending', 'accepted', 'declined'];
+      const status = validStatuses.includes(data.status as Quote['status']) 
+        ? (data.status as Quote['status']) 
+        : 'pending'; // Default to pending if somehow an invalid status is received
+      
+      // Return the data with the validated status
+      return {
+        ...data,
+        status,
+      } as Quote;
     },
     enabled: !!user && !!projectId,
   });
