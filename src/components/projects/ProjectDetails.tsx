@@ -10,7 +10,7 @@ import { useAuth } from '@/context/AuthContext';
 import ClientContactInfo from './ClientContactInfo';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
-import { Check, ShoppingCart } from 'lucide-react';
+import { Check } from 'lucide-react';
 import PurchaseLimitBar from './PurchaseLimitBar';
 
 interface ProjectDetailsProps {
@@ -54,7 +54,7 @@ const ProjectDetails = ({ project, refreshTrigger = 0, forceShowContactInfo = fa
   const shouldShowContactInfo = forceShowContactInfo || hasBeenPurchased;
 
   return (
-    <Card className={hasBeenPurchased ? "border-l-4 border-l-green-500" : ""}>
+    <Card>
       <CardHeader>
         <div className="mb-4">
           <h2 className="text-2xl font-bold">Project Details</h2>
@@ -63,15 +63,10 @@ const ProjectDetails = ({ project, refreshTrigger = 0, forceShowContactInfo = fa
         <div className="flex justify-between items-start">
           <CardTitle>{project.title}</CardTitle>
           
-          {hasBeenPurchased ? (
+          {hasBeenPurchased && (
             <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
               <Check className="h-3 w-3" />
               Purchased
-            </Badge>
-          ) : (
-            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-100 flex items-center gap-1">
-              <ShoppingCart className="h-3 w-3" />
-              Available
             </Badge>
           )}
         </div>

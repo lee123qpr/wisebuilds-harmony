@@ -7,7 +7,7 @@ import { useQuery } from '@tanstack/react-query';
 import EmptyStateCard from './EmptyStateCard';
 import { Project } from '@/components/projects/useProjects';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Info, FileText } from 'lucide-react';
+import { Info } from 'lucide-react';
 import PurchasedProjectCard from './PurchasedProjectCard';
 
 interface Application {
@@ -59,10 +59,7 @@ const QuotesTab: React.FC = () => {
               hiring_status,
               requires_insurance,
               requires_equipment,
-              requires_site_visits,
-              start_date,
-              client_name,
-              client_company
+              requires_site_visits
             )
           `)
           .eq('user_id', user.id);
@@ -120,27 +117,23 @@ const QuotesTab: React.FC = () => {
   
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-2 mb-2">
-        <FileText className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold">My Quotes</h2>
-      </div>
-      
-      <p className="text-muted-foreground mb-6">
+      <h2 className="text-2xl font-bold">My Quotes</h2>
+      <p className="text-muted-foreground mb-4">
         Projects you've purchased contact information for
       </p>
       
-      <Alert className="mb-6 bg-blue-50 border-blue-200">
+      <Alert className="mb-4 bg-blue-50 border-blue-200">
         <Info className="h-4 w-4 text-blue-600 mr-2" />
         <AlertDescription className="text-blue-800">
           You've purchased these leads and can now access their full project details and contact information. Use the action buttons to view details, message clients, or create quotes.
         </AlertDescription>
       </Alert>
       
-      <div className="space-y-6">
+      <div className="space-y-4">
         {isLoading ? (
           <div className="space-y-4">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-36 bg-gray-100 animate-pulse rounded-lg"></div>
+              <div key={i} className="h-32 bg-gray-100 animate-pulse rounded-lg"></div>
             ))}
           </div>
         ) : (
