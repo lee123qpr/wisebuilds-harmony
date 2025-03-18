@@ -14,7 +14,8 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
-  open?: boolean // Add the open property that was missing
+  open?: boolean
+  onOpenChange?: (open: boolean) => void
 }
 
 const actionTypes = {
@@ -105,7 +106,7 @@ export const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         toasts: state.toasts.map((t) =>
-          t.id === toastId ||  toastId === undefined
+          t.id === toastId || toastId === undefined
             ? {
                 ...t,
                 open: false,
