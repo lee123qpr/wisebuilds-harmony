@@ -8,6 +8,7 @@ interface ProjectInfoProps {
 }
 
 const ProjectInfo: React.FC<ProjectInfoProps> = ({ projectTitle, clientName }) => {
+  // Format today's date properly
   const currentDate = new Date().toLocaleDateString('en-US', {
     year: 'numeric',
     month: 'long',
@@ -25,7 +26,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ projectTitle, clientName }) =
             {projectTitle}
           </h2>
           <p className="text-sm text-slate-500">
-            Quote created on {currentDate}
+            Quote will be created today, {currentDate}
           </p>
         </div>
       </div>

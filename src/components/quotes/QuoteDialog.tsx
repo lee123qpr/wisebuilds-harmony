@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   Dialog,
@@ -32,7 +33,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
 }) => {
   const [open, setOpen] = React.useState(false);
   const [clientName, setClientName] = useState<string>('');
-  const { data: existingQuote, refetch } = useFreelancerQuote({ projectId });
+  const { data: existingQuote, isLoading: isCheckingQuote, refetch } = useFreelancerQuote({ projectId });
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
@@ -81,15 +82,30 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
 
   const handleSubmitSuccess = () => {
     setOpen(false);
+    toast({
+      title: "Quote successfully submitted!",
+      description: "Your quote has been sent to the client.",
+      variant: "success"
+    });
     refetch(); // Refresh the quote data
     if (onQuoteSubmitted) {
       onQuoteSubmitted();
     }
   };
 
+  // Show loading state while checking for existing quote
+  if (isCheckingQuote) {
+    return <Button variant="outline" size="sm" className="gap-2" disabled>
+      <span className="animate-pulse">Checking...</span>
+    </Button>;
+  }
+
   // Don't show the dialog trigger if user already submitted a quote
   if (existingQuote) {
-    return null;
+    return <Button variant="outline" size="sm" className="gap-2" disabled>
+      <Quote className="h-4 w-4" />
+      <span>Quote Submitted</span>
+    </Button>;
   }
 
   return (
