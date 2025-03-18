@@ -1,3 +1,4 @@
+
 import { format, formatDistanceToNow } from 'date-fns';
 
 // Format date string to readable format
@@ -34,10 +35,13 @@ export const formatRole = (role: string) => {
 export const formatBudget = (budget: string) => {
   if (!budget) return 'Not specified';
   
-  // Improved budget formatting
+  // Improved budget formatting with £ symbol
   if (budget === 'under_1000' || budget === 'less_than_1000') return 'Less than £1,000';
   if (budget === '1000_to_5000') return '£1,000 - £5,000';
   if (budget === '5000_to_10000') return '£5,000 - £10,000';
+  if (budget === '10000_to_25000') return '£10,000 - £25,000';
+  if (budget === '25000_to_50000') return '£25,000 - £50,000';
+  if (budget === 'more_than_50000') return 'More than £50,000';
   if (budget === '10000_to_50000') return '£10,000 - £50,000';
   if (budget === '50000_to_100000') return '£50,000 - £100,000';
   if (budget === '100000_plus') return 'Over £100,000';
@@ -56,7 +60,16 @@ export const formatBudget = (budget: string) => {
       .join(' ');
   }
   
-  return '£' + budget;
+  // Handle hyphenated budgets (like "2500-5000")
+  if (budget.includes('-')) {
+    const [min, max] = budget.split('-');
+    // Format with commas for thousands
+    const formattedMin = parseInt(min).toLocaleString('en-GB');
+    const formattedMax = parseInt(max).toLocaleString('en-GB');
+    return `£${formattedMin} - £${formattedMax}`;
+  }
+  
+  return `£${budget}`;
 };
 
 // Format duration string to readable format
@@ -64,7 +77,7 @@ export const formatDuration = (duration: string) => {
   if (!duration) return 'Not specified';
   
   // Improved duration formatting
-  if (duration === '6_weeks_plus' || duration === '6_weeks_plus') return '6 Weeks Plus';
+  if (duration === '6_weeks_plus') return '6 Weeks+';
   if (duration === '1_day') return '1 Day';
   if (duration === '3_days') return '3 Days';
   if (duration === '1_week') return '1 Week';

@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
+import { formatBudget, formatRole, formatDuration } from '@/utils/projectFormatters';
 
 interface Project {
   id: string;
@@ -28,16 +29,6 @@ const PurchasedProjectCard: React.FC<PurchasedProjectCardProps> = ({ project }) 
   
   // Format the timeAgo string
   const timeAgo = formatDistanceToNow(new Date(project.application_created_at), { addSuffix: true });
-  
-  // Map budget to a readable format
-  const budgetMap: Record<string, string> = {
-    'less_than_1000': '< $1,000',
-    '1000_to_5000': '$1,000 - $5,000',
-    '5000_to_10000': '$5,000 - $10,000',
-    '10000_to_25000': '$10,000 - $25,000',
-    '25000_to_50000': '$25,000 - $50,000',
-    'more_than_50000': '> $50,000',
-  };
 
   const handleViewDetails = () => {
     navigate(`/marketplace/${project.id}`);
@@ -70,7 +61,7 @@ const PurchasedProjectCard: React.FC<PurchasedProjectCardProps> = ({ project }) 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-2 text-sm text-muted-foreground">
               <div className="flex items-center">
                 <Briefcase className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span>{project.role.replace(/_/g, ' ')}</span>
+                <span>{formatRole(project.role)}</span>
               </div>
               <div className="flex items-center">
                 <MapPinIcon className="h-4 w-4 mr-2 text-muted-foreground" />
@@ -78,12 +69,12 @@ const PurchasedProjectCard: React.FC<PurchasedProjectCardProps> = ({ project }) 
               </div>
               <div className="flex items-center">
                 <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
-                <span>{project.duration.replace(/_/g, ' ')}</span>
+                <span>{formatDuration(project.duration)}</span>
               </div>
             </div>
             
             <div className="mt-2 text-sm font-medium">
-              Budget: {budgetMap[project.budget] || project.budget}
+              Budget: {formatBudget(project.budget)}
             </div>
           </CardContent>
         </div>
