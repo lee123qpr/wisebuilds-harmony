@@ -17,20 +17,10 @@ export const useQuotes = ({ projectId, forClient = false }: UseQuotesProps = {})
     queryFn: async (): Promise<QuoteWithFreelancer[]> => {
       if (!user) return [];
       
+      // First, get the quotes
       let query = supabase
         .from('quotes')
-        .select(`
-          *,
-          freelancer_profile:freelancer_id(
-            first_name,
-            last_name,
-            display_name,
-            profile_photo,
-            job_title,
-            rating,
-            verified
-          )
-        `);
+        .select('*');
       
       // If projectId is provided, filter by that project
       if (projectId) {
@@ -44,22 +34,55 @@ export const useQuotes = ({ projectId, forClient = false }: UseQuotesProps = {})
         query = query.eq('freelancer_id', user.id);
       }
       
-      // Execute the query
-      const { data, error } = await query;
+      // Execute the quotes query
+      const { data: quotesData, error: quotesError } = await query;
       
-      if (error) {
-        console.error('Error fetching quotes:', error);
-        throw error;
+      if (quotesError) {
+        console.error('Error fetching quotes:', quotesError);
+        throw quotesError;
       }
       
-      // Transform the data to ensure proper typing
-      return (data || []).map(quote => {
+      if (!quotesData || quotesData.length === 0) {
+        return [];
+      }
+      
+      // Now get the freelancer profiles for these quotes
+      const freelancerIds = quotesData.map(quote => quote.freelancer_id);
+      
+      const { data: freelancerProfiles, error: profilesError } = await supabase
+        .from('freelancer_profiles')
+        .select('id, first_name, last_name, display_name, profile_photo, job_title, rating, verified')
+        .in('id', freelancerIds);
+      
+      if (profilesError) {
+        console.error('Error fetching freelancer profiles:', profilesError);
+        // Continue without profiles rather than failing completely
+      }
+      
+      // Create a map of freelancer profiles by ID for quick lookup
+      const profileMap = (freelancerProfiles || []).reduce((map, profile) => {
+        map[profile.id] = profile;
+        return map;
+      }, {} as Record<string, any>);
+      
+      // Combine quotes with freelancer profiles
+      return quotesData.map(quote => {
+        const freelancerProfile = profileMap[quote.freelancer_id] || {};
+        
         return {
           ...quote,
           status: quote.status as QuoteWithFreelancer['status'],
           duration_unit: quote.duration_unit as QuoteWithFreelancer['duration_unit'],
           quote_files: Array.isArray(quote.quote_files) ? quote.quote_files : [],
-          freelancer_profile: quote.freelancer_profile || {}
+          freelancer_profile: {
+            first_name: freelancerProfile.first_name,
+            last_name: freelancerProfile.last_name,
+            display_name: freelancerProfile.display_name,
+            profile_photo: freelancerProfile.profile_photo,
+            job_title: freelancerProfile.job_title,
+            rating: freelancerProfile.rating,
+            verified: freelancerProfile.verified
+          }
         };
       });
     },
