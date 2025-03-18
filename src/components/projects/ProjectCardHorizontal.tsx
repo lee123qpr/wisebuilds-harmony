@@ -49,7 +49,7 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   
   const handleQuotesClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the card click event from firing
-    navigate(`/dashboard/business?tab=quotes&projectId=${project.id}`);
+    navigate(`/project/${project.id}/quotes`);
   };
   
   return (

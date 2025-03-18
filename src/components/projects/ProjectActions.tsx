@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Eye, PenSquare, Trash2, FileText, MessageSquare } from 'lucide-react';
+import { Eye, PenSquare, Trash2, FileText, MessageSquare, Quote } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { 
   AlertDialog, 
@@ -22,9 +22,17 @@ type ProjectActionsProps = {
   hasDocuments?: boolean;
   refreshProjects?: () => Promise<void>;
   projectTitle?: string;
+  quoteCount?: number;
 };
 
-const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects, projectTitle }: ProjectActionsProps) => {
+const ProjectActions = ({ 
+  applications, 
+  projectId, 
+  hasDocuments, 
+  refreshProjects, 
+  projectTitle,
+  quoteCount = 0
+}: ProjectActionsProps) => {
   const navigate = useNavigate();
   const isTestProject = projectTitle?.startsWith('Test ');
 
@@ -46,6 +54,11 @@ const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects
   const handleViewApplications = () => {
     // Navigate to project applications page
     navigate(`/project/${projectId}/applications`);
+  };
+  
+  const handleViewQuotes = () => {
+    // Navigate to project quotes comparison page
+    navigate(`/project/${projectId}/quotes`);
   };
 
   return (
@@ -113,6 +126,17 @@ const ProjectActions = ({ applications, projectId, hasDocuments, refreshProjects
           onClick={handleViewApplications}
         >
           <MessageSquare className="h-4 w-4" />
+        </Button>
+      )}
+      
+      {quoteCount > 0 && (
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          title="Quotes"
+          onClick={handleViewQuotes}
+        >
+          <Quote className="h-4 w-4" />
         </Button>
       )}
     </div>

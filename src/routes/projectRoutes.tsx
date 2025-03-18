@@ -1,23 +1,18 @@
 
 import { Route } from "react-router-dom";
-import ProtectedRoute from "../components/auth/ProtectedRoute";
 import ViewProject from "../pages/project/ViewProject";
 import EditProject from "../pages/project/EditProject";
 import ProjectDocuments from "../pages/project/ProjectDocuments";
 import ProjectApplications from "../pages/project/ProjectApplications";
-import NotFound from "../pages/NotFound";
-import FreelancerProfileView from "../pages/freelancer/FreelancerProfileView";
+import ProjectQuotesComparison from "../pages/project/ProjectQuotesComparison";
+import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 export const projectRoutes = (
   <>
     {/* Project Routes */}
     <Route 
       path="/project/:projectId" 
-      element={
-        <ProtectedRoute allowedUserTypes={['business']}>
-          <ViewProject />
-        </ProtectedRoute>
-      } 
+      element={<ViewProject />} 
     />
     <Route 
       path="/project/:projectId/edit" 
@@ -29,11 +24,7 @@ export const projectRoutes = (
     />
     <Route 
       path="/project/:projectId/documents" 
-      element={
-        <ProtectedRoute allowedUserTypes={['business']}>
-          <ProjectDocuments />
-        </ProtectedRoute>
-      } 
+      element={<ProjectDocuments />} 
     />
     <Route 
       path="/project/:projectId/applications" 
@@ -43,26 +34,17 @@ export const projectRoutes = (
         </ProtectedRoute>
       } 
     />
-    
-    {/* Freelancer Profile View */}
     <Route 
-      path="/freelancer/profile/:freelancerId" 
+      path="/project/:projectId/quotes" 
       element={
         <ProtectedRoute allowedUserTypes={['business']}>
-          <FreelancerProfileView />
+          <ProjectQuotesComparison />
         </ProtectedRoute>
       } 
     />
-    
-    {/* Marketplace Routes */}
     <Route 
-      path="/marketplace/:projectId" 
-      element={
-        <ProtectedRoute allowedUserTypes={['freelancer']}>
-          <ViewProject />
-        </ProtectedRoute>
-      } 
+      path="/project/:projectId/quotes/:quoteId" 
+      element={<ViewProject />} 
     />
-    <Route path="/marketplace" element={<NotFound />} />
   </>
 );
