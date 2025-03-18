@@ -37,7 +37,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   
   // Use our custom hook for image upload
   const {
-    imageUrl: cachedImageUrl,
+    imageUrl,
     uploadingImage,
     imageKey,
     handleImageUpload,
@@ -51,10 +51,10 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
 
   // Sync with parent state when our local state changes
   React.useEffect(() => {
-    if (cachedImageUrl) {
-      setParentProfileImage(cachedImageUrl);
+    if (imageUrl) {
+      setParentProfileImage(imageUrl);
     }
-  }, [cachedImageUrl, setParentProfileImage]);
+  }, [imageUrl, setParentProfileImage]);
 
   React.useEffect(() => {
     setParentUploadingImage(uploadingImage);
@@ -62,10 +62,10 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
 
   // Initialize our local state with the props
   React.useEffect(() => {
-    if (initialProfileImage && !cachedImageUrl) {
+    if (initialProfileImage && !imageUrl) {
       setImageUrl(initialProfileImage);
     }
-  }, [initialProfileImage, cachedImageUrl, setImageUrl]);
+  }, [initialProfileImage, imageUrl, setImageUrl]);
 
   // Generate initials for avatar fallback
   const getInitials = () => {
@@ -89,7 +89,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
       <CardContent className="p-4">
         <div className="flex flex-row items-center gap-4">
           <FreelancerAvatar
-            profileImageUrl={cachedImageUrl}
+            profileImageUrl={imageUrl}
             uploadingImage={uploadingImage}
             imageKey={imageKey}
             initials={getInitials()}

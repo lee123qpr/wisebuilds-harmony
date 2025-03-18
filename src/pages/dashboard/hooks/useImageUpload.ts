@@ -19,15 +19,21 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !userId) return;
+    if (!file || !userId) {
+      console.log('No file selected or missing userId');
+      return;
+    }
 
     try {
       setUploadingImage(true);
+      console.log('Uploading image for user:', userId);
       
       // Create unique file name
       const fileExt = file.name.split('.').pop();
       const fileName = `${namePrefix}-${Date.now()}.${fileExt}`;
       const filePath = `${folder}/${userId}/${fileName}`;
+      
+      console.log('Uploading to path:', filePath);
       
       // Upload the file to Supabase Storage
       const { error: uploadError, data } = await supabase.storage
@@ -35,14 +41,19 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
+        console.error('Error during upload:', uploadError);
         throw uploadError;
       }
 
+      console.log('Upload successful, getting public URL');
+      
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('user-uploads')
         .getPublicUrl(filePath);
 
+      console.log('Image uploaded successfully, publicUrl:', publicUrl);
+      
       setImageUrl(publicUrl);
       setImageKey(uuidv4()); // Force re-render of Avatar
       

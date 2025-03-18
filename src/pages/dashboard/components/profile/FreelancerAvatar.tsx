@@ -19,6 +19,16 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   initials,
   handleImageUpload
 }) => {
+  // Create a ref for the file input
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+
+  // When the button is clicked, trigger the hidden file input
+  const handleButtonClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <div className="relative">
       <Avatar className="h-20 w-20 border-2 border-white shadow-md">
@@ -40,6 +50,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
             size="icon"
             className="h-8 w-8 rounded-full shadow"
             disabled={uploadingImage}
+            onClick={handleButtonClick}
           >
             {uploadingImage ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -48,9 +59,10 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
             )}
           </Button>
           <input
+            ref={fileInputRef}
             type="file"
             accept="image/*"
-            className="absolute inset-0 opacity-0 cursor-pointer"
+            className="hidden"
             onChange={handleImageUpload}
             disabled={uploadingImage}
           />
