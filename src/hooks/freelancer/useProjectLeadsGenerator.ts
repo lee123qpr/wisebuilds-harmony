@@ -24,19 +24,35 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         // Apply filters only if leadSettings is provided
         if (leadSettings) {
           // Filter by role if specified and not 'any'
-          if (leadSettings.role && leadSettings.role !== 'any') {
-            // Convert role to lowercase for comparison to handle case sensitivity
-            query = query.ilike('role', `%${leadSettings.role}%`);
+          if (leadSettings.role && leadSettings.role !== 'any' && leadSettings.role !== 'Any') {
+            // Use ilike for case-insensitive partial matching
+            query = query.ilike('role', `%${leadSettings.role.toLowerCase()}%`);
+            console.log(`Filtering by role: %${leadSettings.role.toLowerCase()}%`);
           }
           
           // Filter by location if specified and not 'any'
           if (leadSettings.location && leadSettings.location !== 'any' && leadSettings.location !== 'Any') {
-            query = query.ilike('location', `%${leadSettings.location.split(',')[0]}%`);
+            // Extract the first part of the location before any commas for broader matching
+            const locationPart = leadSettings.location.split(',')[0].trim().toLowerCase();
+            query = query.ilike('location', `%${locationPart}%`);
+            console.log(`Filtering by location: %${locationPart}%`);
           }
           
           // Filter by work type if specified and not 'any'
           if (leadSettings.work_type && leadSettings.work_type !== 'any' && leadSettings.work_type !== 'Any') {
             query = query.eq('work_type', leadSettings.work_type);
+            console.log(`Filtering by work type: ${leadSettings.work_type}`);
+          }
+          
+          // Add additional filters for other fields if needed
+          if (leadSettings.requires_insurance === true) {
+            query = query.eq('requires_insurance', true);
+            console.log('Filtering for projects requiring insurance');
+          }
+          
+          if (leadSettings.requires_site_visits === true) {
+            query = query.eq('requires_site_visits', true);
+            console.log('Filtering for projects requiring site visits');
           }
         }
         
@@ -50,6 +66,7 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         }
         
         console.log('Fetched projects:', data);
+        console.log('Number of projects fetched:', data ? data.length : 0);
         
         // Parse the data to match the ProjectLead type
         const leads = data ? data.map(project => ({
@@ -61,18 +78,17 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           created_at: project.created_at,
           location: project.location,
           work_type: project.work_type,
-          tags: [], // Default empty array for tags if not present
+          tags: project.tags || [], 
           duration: project.duration,
           hiring_status: project.hiring_status,
           requires_equipment: project.requires_equipment || false,
-          // These properties don't exist in the database, so we set defaults
-          requires_security_check: false, 
+          requires_security_check: false, // Set default value for field not in DB
           requires_insurance: project.requires_insurance || false,
-          requires_qualifications: false,
+          requires_qualifications: false, // Set default value for field not in DB
           published: true, // Default value
           client_id: project.user_id, // Assuming user_id is client_id
-          client_name: '', // Default empty string since it doesn't exist
-          client_company: '', // Default empty string since it doesn't exist
+          client_name: '', // Default empty string for field not in DB
+          client_company: '', // Default empty string for field not in DB
           start_date: project.start_date || new Date().toISOString(), // Provide default value
           applications: project.applications || 0,
           documents: project.documents || null,

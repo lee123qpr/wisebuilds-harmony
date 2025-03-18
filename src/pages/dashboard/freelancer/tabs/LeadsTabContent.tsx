@@ -60,6 +60,11 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
       
       // Force a refresh of the lead settings as well
       await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+      
+      // Sometimes we need a full page refresh to get updated data
+      if (filteredProjects.length === 0) {
+        window.location.reload();
+      }
     } catch (error) {
       console.error('Error refreshing leads:', error);
       toast({

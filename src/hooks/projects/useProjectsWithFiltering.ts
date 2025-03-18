@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { useLeadSettingsData } from '@/hooks/freelancer/useLeadSettingsData';
 import { useProjectLeadsGenerator } from '@/hooks/freelancer/useProjectLeadsGenerator';
@@ -14,12 +15,18 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
   // Otherwise use customLeadSettings if provided, or fallback to leadSettings from hook
   const settingsToUse = useFiltering ? (customLeadSettings || leadSettings) : null;
   
+  // Log which settings we're using
+  useEffect(() => {
+    console.log('UseProjectsWithFiltering using settings:', settingsToUse);
+  }, [settingsToUse]);
+  
   const { projectLeads, isLoading: isLeadsLoading } = useProjectLeadsGenerator(settingsToUse);
   
   const [filteredLeads, setFilteredLeads] = useState<ProjectLead[]>([]);
   
   useEffect(() => {
     console.log('Project leads updated:', projectLeads);
+    console.log('Number of leads received:', projectLeads.length);
     setFilteredLeads(projectLeads);
   }, [projectLeads]);
   
