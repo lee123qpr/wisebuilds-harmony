@@ -64,13 +64,14 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           duration: project.duration,
           hiring_status: project.hiring_status,
           requires_equipment: project.requires_equipment || false,
-          requires_security_check: project.requires_security_check || false,
+          // These properties don't exist in the database, so we set defaults
+          requires_security_check: false, 
           requires_insurance: project.requires_insurance || false,
-          requires_qualifications: project.requires_qualifications || false,
+          requires_qualifications: false,
           published: true, // Default value
           client_id: project.user_id, // Assuming user_id is client_id
-          client_name: project.client_name || '', // Default empty string
-          client_company: project.client_company || '', // Default empty string
+          client_name: '', // Default empty string since it doesn't exist
+          client_company: '', // Default empty string since it doesn't exist
           start_date: project.start_date || new Date().toISOString(), // Provide default value
           applications: project.applications || 0,
           documents: project.documents || null,
