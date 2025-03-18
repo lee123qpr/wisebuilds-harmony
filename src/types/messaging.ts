@@ -17,9 +17,10 @@ export interface FreelancerInfo {
   business_name?: string | null;
   member_since?: string | null;
   jobs_completed?: number;
-  rating?: number;
+  rating?: number | null;
   reviews_count?: number;
   email_verified?: boolean;
+  verified?: boolean;
 }
 
 export interface Conversation {
