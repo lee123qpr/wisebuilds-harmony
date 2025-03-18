@@ -42,21 +42,26 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   };
 
   React.useEffect(() => {
-    console.log('FreelancerAvatar rendered with profileImageUrl:', profileImageUrl);
-  }, [profileImageUrl]);
+    if (profileImageUrl) {
+      console.log('Avatar rendering with URL:', profileImageUrl);
+    }
+  }, [profileImageUrl, imageKey]);
 
   return (
     <div className="relative">
       <Avatar className="h-20 w-20 border-2 border-white shadow-md">
-        <AvatarImage
-          src={profileImageUrl || ''}
-          alt="Profile"
-          className="object-cover"
-          key={imageKey}
-        />
-        <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-          {initials}
-        </AvatarFallback>
+        {profileImageUrl ? (
+          <AvatarImage
+            src={profileImageUrl}
+            alt="Profile"
+            className="object-cover"
+            key={imageKey}
+          />
+        ) : (
+          <AvatarFallback className="text-lg bg-primary text-primary-foreground">
+            {initials}
+          </AvatarFallback>
+        )}
       </Avatar>
       <div className="absolute -bottom-2 -right-2">
         <div className="relative">

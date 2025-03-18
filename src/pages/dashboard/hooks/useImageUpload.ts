@@ -35,58 +35,21 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       const filePath = `${folder}/${userId}/${fileName}`;
       
       console.log('Uploading to path:', filePath);
-      console.log('Using bucket: "User Uploads"'); // Updated bucket name
       
-      // First verify bucket exists before attempting upload
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      
-      if (bucketsError) {
-        console.error('Error listing buckets:', bucketsError);
-        toast({
-          variant: 'destructive',
-          title: 'Storage Error',
-          description: 'Could not access storage. Please try again later.',
-        });
-        return;
-      }
-      
-      // Look for the bucket with the corrected name as shown in the screenshot
-      const userUploadsBucket = buckets?.find(bucket => bucket.id === 'User Uploads');
-      
-      if (!userUploadsBucket) {
-        console.error('User Uploads bucket does not exist');
-        toast({
-          variant: 'destructive',
-          title: 'Storage Setup Error',
-          description: 'The storage location for uploads is not configured properly. Please contact support.',
-        });
-        return;
-      }
-      
-      console.log('Bucket found, attempting to upload');
-      
-      // Upload the file to Supabase Storage with corrected bucket name
+      // Upload directly without checking bucket
+      // This is more reliable since the bucket list API might have issues
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('User Uploads')  // Updated to match the actual bucket name
+        .from('User Uploads')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
         console.error('Error during upload:', uploadError);
         
-        if (uploadError.message.includes('bucket') || uploadError.message.includes('storage')) {
-          console.error('Bucket-related error:', uploadError.message);
-          toast({
-            variant: 'destructive',
-            title: 'Storage Error',
-            description: 'The storage location for uploads is not configured properly. Please contact support.',
-          });
-        } else {
-          toast({
-            variant: 'destructive',
-            title: 'Upload Failed',
-            description: 'There was an error uploading your image: ' + uploadError.message,
-          });
-        }
+        toast({
+          variant: 'destructive',
+          title: 'Upload Failed',
+          description: 'There was an error uploading your image: ' + uploadError.message,
+        });
         return;
       }
 
@@ -102,9 +65,9 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
 
       console.log('Upload successful, getting public URL for path:', filePath);
       
-      // Get public URL with corrected bucket name
+      // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('User Uploads')  // Updated to match the actual bucket name
+        .from('User Uploads')
         .getPublicUrl(filePath);
 
       console.log('Image uploaded successfully, publicUrl:', publicUrl);
