@@ -6,6 +6,7 @@ import { useClientReviews } from '../../hooks/useClientReviews';
 import { useVerification } from '@/hooks/verification';
 import VerificationBadge from '@/components/common/VerificationBadge';
 import RatingStars from '@/components/common/RatingStars';
+import { VerificationStatus as CommonVerificationStatus } from '@/components/common/VerificationBadge';
 
 interface ProfileInfoBadgesProps {
   emailVerified: boolean;
@@ -28,6 +29,13 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
   
   console.log('ProfileInfoBadges - Rating Data:', { averageRating, reviewCount, userId });
 
+  // Convert the verificationStatus to the expected type
+  const mappedVerificationStatus: CommonVerificationStatus = 
+    verificationStatus === 'verified' || verificationStatus === 'approved' ? 'verified' :
+    verificationStatus === 'pending' ? 'pending' :
+    verificationStatus === 'rejected' ? 'rejected' : 
+    'not_submitted';
+
   return (
     <div className="w-full">
       <div className="flex flex-wrap items-center gap-2 mb-3">
@@ -38,7 +46,7 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
         
         <VerificationBadge 
           type="id" 
-          status={verificationStatus} 
+          status={mappedVerificationStatus} 
         />
         
         {idVerified && (

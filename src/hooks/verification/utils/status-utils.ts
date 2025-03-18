@@ -3,8 +3,8 @@ import type { VerificationStatus } from '@/components/dashboard/freelancer/Verif
 
 // Converts database string status to our VerificationStatus type
 export const mapStatusToVerificationStatus = (status: string): VerificationStatus => {
-  if (status === 'pending' || status === 'approved' || status === 'rejected') {
-    return status;
-  }
+  if (status === 'pending') return 'pending';
+  if (status === 'approved') return 'verified'; // Map 'approved' to 'verified'
+  if (status === 'rejected') return 'rejected';
   return 'not_submitted';
 };

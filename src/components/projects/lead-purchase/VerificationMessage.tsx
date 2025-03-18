@@ -8,18 +8,25 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from '@/components/ui/tooltip';
-import VerificationBadge from '@/components/common/VerificationBadge';
+import VerificationBadge, { VerificationStatus } from '@/components/common/VerificationBadge';
 
 interface VerificationMessageProps {
   verificationStatus: string;
 }
 
 const VerificationMessage: React.FC<VerificationMessageProps> = ({ verificationStatus }) => {
+  // Map the status to the expected type
+  const mappedStatus: VerificationStatus = 
+    verificationStatus === 'approved' ? 'verified' :
+    verificationStatus === 'pending' ? 'pending' :
+    verificationStatus === 'rejected' ? 'rejected' : 
+    'not_submitted';
+
   return (
     <div className="flex flex-col gap-2">
       <VerificationBadge 
         type="id" 
-        status={verificationStatus as any} 
+        status={mappedStatus} 
         showTooltip={true}
       />
       

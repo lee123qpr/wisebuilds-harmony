@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import VerificationBadge from '@/components/common/VerificationBadge';
+import VerificationBadge, { VerificationStatus } from '@/components/common/VerificationBadge';
 import { FreelancerProfile } from '@/types/applications';
 
 interface FreelancerAvatarProps {
