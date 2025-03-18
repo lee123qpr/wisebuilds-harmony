@@ -35,6 +35,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       const filePath = `${folder}/${userId}/${fileName}`;
       
       console.log('Uploading to path:', filePath);
+      console.log('Using bucket: "User Uploads"'); // Updated bucket name
       
       // First verify bucket exists before attempting upload
       const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
@@ -49,10 +50,11 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         return;
       }
       
-      const userUploadsBucket = buckets?.find(bucket => bucket.id === 'user-uploads');
+      // Look for the bucket with the corrected name as shown in the screenshot
+      const userUploadsBucket = buckets?.find(bucket => bucket.id === 'User Uploads');
       
       if (!userUploadsBucket) {
-        console.error('user-uploads bucket does not exist');
+        console.error('User Uploads bucket does not exist');
         toast({
           variant: 'destructive',
           title: 'Storage Setup Error',
@@ -63,9 +65,9 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       console.log('Bucket found, attempting to upload');
       
-      // Upload the file to Supabase Storage
+      // Upload the file to Supabase Storage with corrected bucket name
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('user-uploads')
+        .from('User Uploads')  // Updated to match the actual bucket name
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
@@ -100,9 +102,9 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
 
       console.log('Upload successful, getting public URL for path:', filePath);
       
-      // Get public URL
+      // Get public URL with corrected bucket name
       const { data: { publicUrl } } = supabase.storage
-        .from('user-uploads')
+        .from('User Uploads')  // Updated to match the actual bucket name
         .getPublicUrl(filePath);
 
       console.log('Image uploaded successfully, publicUrl:', publicUrl);
