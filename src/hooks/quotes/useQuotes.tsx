@@ -51,7 +51,7 @@ export const useQuotes = ({ projectId, forClient = false }: UseQuotesProps = {})
       
       const { data: freelancerProfiles, error: profilesError } = await supabase
         .from('freelancer_profiles')
-        .select('id, first_name, last_name, display_name, profile_photo, job_title, rating, verified')
+        .select('id, first_name, last_name, display_name, profile_photo, job_title, rating')
         .in('id', freelancerIds);
       
       if (profilesError) {
@@ -81,7 +81,7 @@ export const useQuotes = ({ projectId, forClient = false }: UseQuotesProps = {})
             profile_photo: freelancerProfile.profile_photo,
             job_title: freelancerProfile.job_title,
             rating: freelancerProfile.rating,
-            verified: freelancerProfile.verified
+            // Remove the verified field since it doesn't exist in the database
           }
         };
       });
