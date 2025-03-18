@@ -31,11 +31,20 @@ export const useVerifications = () => {
       // For each verification, fetch the user email and name from auth.users
       const enhancedData: Verification[] = await Promise.all(
         verificationRecords.map(async (item) => {
-          const userInfo = await getUserInfoForVerification(item.user_id);
-          return {
-            ...item,
-            ...userInfo
-          };
+          try {
+            const userInfo = await getUserInfoForVerification(item.user_id);
+            return {
+              ...item,
+              ...userInfo
+            };
+          } catch (error) {
+            console.error(`Error enhancing verification data for user ${item.user_id}:`, error);
+            return {
+              ...item,
+              user_email: 'Error fetching',
+              user_full_name: 'Unknown'
+            };
+          }
         })
       );
       
@@ -64,7 +73,9 @@ export const useVerifications = () => {
     setAdminNotes(verification.admin_notes || '');
     
     // Get document URL if there's a path
-    await loadDocumentUrl(verification.id_document_path);
+    if (verification.id_document_path) {
+      await loadDocumentUrl(verification.id_document_path);
+    }
     
     setDialogOpen(true);
   };

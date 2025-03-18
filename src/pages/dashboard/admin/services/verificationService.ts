@@ -27,22 +27,29 @@ export const getUserInfoForVerification = async (userId: string): Promise<{
   try {
     console.log('Fetching user data for:', userId);
     
-    // Get user data from auth admin API
-    const { data: userData, error: userError } = await supabase.auth.admin.getUserById(
-      userId
-    );
+    // Instead of directly querying auth.users, use the freelancer_profiles table
+    const { data: profileData, error: profileError } = await supabase
+      .from('freelancer_profiles')
+      .select('email, display_name, first_name, last_name')
+      .eq('id', userId)
+      .single();
     
-    if (userError || !userData?.user) {
-      console.error('Error fetching user data:', userError);
+    if (profileError || !profileData) {
+      console.error('Error fetching user profile data:', profileError);
       return {
         user_email: 'Unknown',
         user_full_name: 'Unknown'
       };
     }
     
+    // Construct the full name from available data
+    const fullName = profileData.display_name || 
+      (profileData.first_name && profileData.last_name ? 
+        `${profileData.first_name} ${profileData.last_name}` : 'Unknown');
+    
     return {
-      user_email: userData.user.email || 'Unknown',
-      user_full_name: userData.user.user_metadata?.full_name || 'Unknown'
+      user_email: profileData.email || 'Unknown',
+      user_full_name: fullName
     };
   } catch (error) {
     console.error('Error fetching user data:', error);

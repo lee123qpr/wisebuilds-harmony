@@ -21,7 +21,7 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       .from('freelancer_verification')
       .select('*')
       .eq('user_id', userId)
-      .single();
+      .maybeSingle();
     
     if (error) {
       // If record not found, don't treat as an error
