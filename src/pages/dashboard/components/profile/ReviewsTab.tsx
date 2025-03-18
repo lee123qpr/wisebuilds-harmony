@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ReviewsList from './ReviewsList';
 import { useClientReviews } from '../../hooks/useClientReviews';
-import RatingStars from './RatingStars';
+import RatingStars from '@/components/common/RatingStars';
 
 interface ReviewsTabProps {
   userId: string;
