@@ -1,8 +1,9 @@
 
-import { useState } from 'react';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { Quote } from '@/types/quotes';
 
 interface QuoteFormData {
   fixed_price?: string;
@@ -23,90 +24,97 @@ interface UseQuoteSubmissionProps {
 }
 
 export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const { user } = useAuth();
   const { toast } = useToast();
+  const queryClient = useQueryClient();
 
-  const submitQuote = async (formData: QuoteFormData) => {
-    if (!user) {
-      toast({
-        title: 'Authentication required',
-        description: 'You must be logged in to submit a quote',
-        variant: 'destructive',
-      });
-      return false;
-    }
+  // Check if quote exists
+  const checkQuoteExists = async (freelancerId: string): Promise<boolean> => {
+    const { data: existingQuote, error: checkError } = await supabase.rpc(
+      'check_quote_exists',
+      {
+        p_project_id: projectId,
+        p_freelancer_id: freelancerId,
+      }
+    );
 
-    try {
-      setIsSubmitting(true);
+    if (checkError) throw checkError;
+    return !!existingQuote;
+  };
 
-      // Check if a quote already exists for this project and freelancer
-      const { data: existingQuote, error: checkError } = await supabase.rpc(
-        'check_quote_exists',
+  // Create quote
+  const createQuote = async (formData: QuoteFormData, freelancerId: string): Promise<Quote> => {
+    const { data, error } = await supabase
+      .from('quotes')
+      .insert([
         {
-          p_project_id: projectId,
-          p_freelancer_id: user.id,
-        }
-      );
+          project_id: projectId,
+          freelancer_id: freelancerId,
+          client_id: clientId,
+          fixed_price: formData.fixed_price,
+          estimated_price: formData.estimated_price,
+          day_rate: formData.day_rate,
+          description: formData.description,
+          available_start_date: formData.available_start_date,
+          estimated_duration: formData.estimated_duration,
+          duration_unit: formData.duration_unit,
+          preferred_payment_method: formData.preferred_payment_method,
+          payment_terms: formData.payment_terms,
+          quote_files: formData.quote_files,
+          status: 'pending',
+        },
+      ])
+      .select()
+      .single();
 
-      if (checkError) throw checkError;
+    if (error) throw error;
+    return data;
+  };
 
-      if (existingQuote) {
-        toast({
-          title: 'Quote already exists',
-          description: 'You have already submitted a quote for this project',
-          variant: 'destructive',
-        });
-        return false;
+  // Use React Query mutation
+  const mutation = useMutation({
+    mutationFn: async (formData: QuoteFormData) => {
+      if (!user) {
+        throw new Error('Authentication required');
       }
 
+      console.log('Submitting quote data:', formData);
+      
+      // First check if quote exists
+      const quoteExists = await checkQuoteExists(user.id);
+      
+      if (quoteExists) {
+        throw new Error('You have already submitted a quote for this project');
+      }
+      
       // Create a new quote
-      const { data, error } = await supabase
-        .from('quotes')
-        .insert([
-          {
-            project_id: projectId,
-            freelancer_id: user.id,
-            client_id: clientId,
-            fixed_price: formData.fixed_price,
-            estimated_price: formData.estimated_price,
-            day_rate: formData.day_rate,
-            description: formData.description,
-            available_start_date: formData.available_start_date,
-            estimated_duration: formData.estimated_duration,
-            duration_unit: formData.duration_unit,
-            preferred_payment_method: formData.preferred_payment_method,
-            payment_terms: formData.payment_terms,
-            quote_files: formData.quote_files,
-            status: 'pending',
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) throw error;
-
+      return await createQuote(formData, user.id);
+    },
+    onSuccess: () => {
+      // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['projects', projectId] });
+      
       toast({
         title: 'Quote submitted successfully',
         description: 'Your quote has been sent to the client',
       });
-      
-      return true;
-    } catch (error: any) {
+    },
+    onError: (error: Error) => {
       console.error('Error submitting quote:', error);
+      
       toast({
         title: 'Failed to submit quote',
         description: error.message || 'Please try again later',
         variant: 'destructive',
       });
-      return false;
-    } finally {
-      setIsSubmitting(false);
     }
-  };
+  });
 
   return {
-    submitQuote,
-    isSubmitting,
+    submitQuote: mutation.mutate,
+    isSubmitting: mutation.isPending,
+    error: mutation.error,
+    isSuccess: mutation.isSuccess
   };
 };

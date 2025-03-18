@@ -43,7 +43,7 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
   const [priceType, setPriceType] = useState<'fixed' | 'estimated' | 'day_rate'>('fixed');
   const [quoteFiles, setQuoteFiles] = useState<UploadedFile[]>([]);
   
-  const { submitQuote, isSubmitting } = useQuoteSubmission({ 
+  const { submitQuote, isSubmitting, isSuccess } = useQuoteSubmission({ 
     projectId, 
     clientId: user?.id || ''
   });
@@ -69,6 +69,13 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
   React.useEffect(() => {
     setPriceType(watchPriceType);
   }, [watchPriceType]);
+  
+  // Handle successful submission
+  React.useEffect(() => {
+    if (isSuccess) {
+      onSubmitSuccess();
+    }
+  }, [isSuccess, onSubmitSuccess]);
 
   const onSubmit = async (data: QuoteFormValues) => {
     try {
@@ -88,16 +95,12 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
       
       console.log('Submitting quote data:', quoteData);
       
-      const success = await submitQuote(quoteData);
-      
-      if (success) {
-        onSubmitSuccess();
-      }
+      submitQuote(quoteData);
     } catch (error) {
-      console.error('Error submitting quote:', error);
+      console.error('Error preparing quote data:', error);
       toast({
         title: 'Failed to submit quote',
-        description: 'Please try again later',
+        description: 'Please check the form inputs and try again',
         variant: 'destructive',
       });
     }
