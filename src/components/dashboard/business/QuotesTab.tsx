@@ -11,7 +11,7 @@ const BusinessQuotesTab: React.FC = () => {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId');
   
-  const { quotes, isLoading } = useQuotes({ 
+  const { data: quotes, isLoading } = useQuotes({ 
     projectId: projectId || undefined,
     forClient: true 
   });
@@ -20,7 +20,7 @@ const BusinessQuotesTab: React.FC = () => {
     return <QuotesTabSkeleton />;
   }
   
-  if (quotes.length === 0) {
+  if (!quotes || quotes.length === 0) {
     return (
       <EmptyStateCard
         title="No quotes yet"

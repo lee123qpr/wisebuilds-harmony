@@ -30,7 +30,18 @@ export const useProjectDetails = (projectId: string | undefined) => {
             : (data.documents ? JSON.parse(String(data.documents)) : [])
         } as Project;
         
-        setProject(projectWithDocuments);
+        // Get quote count for this project
+        const { count: quoteCount, error: quoteError } = await supabase
+          .from('quotes')
+          .select('id', { count: 'exact', head: true })
+          .eq('project_id', projectId);
+          
+        if (quoteError) console.error('Error fetching quote count:', quoteError);
+        
+        setProject({
+          ...projectWithDocuments,
+          quote_count: quoteCount || 0
+        });
       } catch (error: any) {
         console.error('Error fetching project:', error);
         toast({

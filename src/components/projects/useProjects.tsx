@@ -37,6 +37,7 @@ export interface Project {
   requires_site_visits: boolean;
   status: string;
   chat_count?: number; // Added for chat count
+  quote_count?: number; // Added for quote count
   updated_at: string;
   user_id: string;
   purchases_count?: number;
@@ -82,10 +83,11 @@ export const useProjects = () => {
           : (project.documents ? JSON.parse(String(project.documents)) : [])
       }));
       
-      // Fetch conversation counts for each project
-      const projectsWithChatCounts = await Promise.all(
+      // Fetch conversation counts and quote counts for each project
+      const projectsWithCounts = await Promise.all(
         processedProjects.map(async (project) => {
           try {
+            // Get chat count
             const { data: conversations, error: chatError } = await supabase
               .from('conversations')
               .select('id')
@@ -93,21 +95,31 @@ export const useProjects = () => {
             
             if (chatError) throw chatError;
             
+            // Get quote count
+            const { count: quoteCount, error: quoteError } = await supabase
+              .from('quotes')
+              .select('id', { count: 'exact', head: true })
+              .eq('project_id', project.id);
+            
+            if (quoteError) throw quoteError;
+            
             return {
               ...project,
-              chat_count: conversations?.length || 0
+              chat_count: conversations?.length || 0,
+              quote_count: quoteCount || 0
             };
           } catch (err) {
-            console.error(`Error fetching chat count for project ${project.id}:`, err);
+            console.error(`Error fetching counts for project ${project.id}:`, err);
             return {
               ...project,
-              chat_count: 0
+              chat_count: 0,
+              quote_count: 0
             };
           }
         })
       );
       
-      setProjects(projectsWithChatCounts);
+      setProjects(projectsWithCounts);
     } catch (error: any) {
       console.error('Error fetching projects:', error);
       setError(error.message || 'An unexpected error occurred');
