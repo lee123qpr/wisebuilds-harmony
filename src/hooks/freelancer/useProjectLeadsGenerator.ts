@@ -78,7 +78,7 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           created_at: project.created_at,
           location: project.location,
           work_type: project.work_type,
-          tags: project.tags || [], 
+          tags: [], // Provide an empty array as default since tags don't exist in DB
           duration: project.duration,
           hiring_status: project.hiring_status,
           requires_equipment: project.requires_equipment || false,
