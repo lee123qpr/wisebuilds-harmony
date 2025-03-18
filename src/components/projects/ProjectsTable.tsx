@@ -4,9 +4,6 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { Input } from '@/components/ui/input';
 import { useProjects } from '@/components/projects/useProjects';
 import ProjectFilters from '@/components/projects/ProjectFilters';
-import NewProjectDialog from '@/components/projects/NewProjectDialog';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import ProjectCardHorizontal from './ProjectCardHorizontal';
 
 const ProjectsTable = () => {
@@ -69,7 +66,6 @@ const ProjectsTable = () => {
               onStatusChange={setStatusFilter}
               onHiringChange={setHiringFilter}
             />
-            <NewProjectDialog />
           </div>
         </div>
       </div>
