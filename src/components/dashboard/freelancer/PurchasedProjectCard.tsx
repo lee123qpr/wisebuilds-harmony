@@ -2,13 +2,17 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Calendar, Coins, MapPin, Briefcase, ArrowRight, Quote } from 'lucide-react';
+import { Calendar, Coins, MapPin, Briefcase, ArrowRight, Quote, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import HiringStatusBadge from '@/components/projects/HiringStatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import QuoteDialog from '@/components/quotes/QuoteDialog';
 import { useFreelancerQuote } from '@/hooks/quotes/useFreelancerQuote';
 import ViewQuoteDetails from '@/components/quotes/ViewQuoteDetails';
+import { createConversation } from '@/services/conversations';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PurchasedProjectProps {
   project: any;
@@ -17,6 +21,8 @@ interface PurchasedProjectProps {
 const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
   const navigate = useNavigate();
   const [showQuoteDetails, setShowQuoteDetails] = useState(false);
+  const { toast } = useToast();
+  const { user } = useAuth();
   
   // Check if the freelancer has already submitted a quote
   const { data: existingQuote, isLoading: isCheckingQuote } = useFreelancerQuote({
@@ -31,6 +37,48 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
   
   const handleRefresh = () => {
     setShowQuoteDetails(true);
+  };
+  
+  const handleStartChat = async () => {
+    try {
+      if (!user) {
+        throw new Error('Not authenticated');
+      }
+      
+      console.log('Starting chat between freelancer', user.id, 'and client', project.user_id, 'for project', project.id);
+      
+      // Check if conversation already exists
+      const { data: existingConversations, error: checkError } = await supabase
+        .from('conversations')
+        .select('id')
+        .eq('project_id', project.id)
+        .eq('freelancer_id', user.id)
+        .eq('client_id', project.user_id);
+        
+      if (checkError) throw checkError;
+      
+      if (existingConversations && existingConversations.length > 0) {
+        console.log('Using existing conversation:', existingConversations[0].id);
+        navigate(`/dashboard/freelancer?tab=messages&conversation=${existingConversations[0].id}`);
+      } else {
+        // Create a new conversation
+        const newConversation = await createConversation(user.id, project.user_id, project.id);
+        
+        if (!newConversation) {
+          throw new Error('Failed to create conversation');
+        }
+        
+        console.log('Created new conversation:', newConversation.id);
+        navigate(`/dashboard/freelancer?tab=messages&conversation=${newConversation.id}`);
+      }
+    } catch (error: any) {
+      console.error('Error starting chat:', error);
+      toast({
+        title: 'Error starting chat',
+        description: error.message || 'Failed to start conversation',
+        variant: 'destructive',
+      });
+    }
   };
   
   const formattedDate = project.created_at 
@@ -93,6 +141,16 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
               >
                 View Details
                 <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
+              
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="gap-2"
+                onClick={handleStartChat}
+              >
+                <MessageSquare className="h-4 w-4" />
+                Message Now
               </Button>
               
               {hasSubmittedQuote ? (
