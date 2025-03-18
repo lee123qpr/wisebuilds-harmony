@@ -23,18 +23,19 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         
         // Apply filters only if leadSettings is provided
         if (leadSettings) {
-          // Filter by role if specified
+          // Filter by role if specified and not 'any'
           if (leadSettings.role && leadSettings.role !== 'any') {
-            query = query.eq('role', leadSettings.role);
+            // Convert role to lowercase for comparison to handle case sensitivity
+            query = query.ilike('role', `%${leadSettings.role}%`);
           }
           
-          // Filter by location if specified
-          if (leadSettings.location && leadSettings.location !== 'any') {
-            query = query.ilike('location', `%${leadSettings.location}%`);
+          // Filter by location if specified and not 'any'
+          if (leadSettings.location && leadSettings.location !== 'any' && leadSettings.location !== 'Any') {
+            query = query.ilike('location', `%${leadSettings.location.split(',')[0]}%`);
           }
           
-          // Filter by work type if specified
-          if (leadSettings.work_type && leadSettings.work_type !== 'any') {
+          // Filter by work type if specified and not 'any'
+          if (leadSettings.work_type && leadSettings.work_type !== 'any' && leadSettings.work_type !== 'Any') {
             query = query.eq('work_type', leadSettings.work_type);
           }
         }

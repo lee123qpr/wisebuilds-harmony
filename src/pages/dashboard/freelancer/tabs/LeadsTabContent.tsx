@@ -22,13 +22,14 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
   console.log('LeadsTabContent render:', { isLoadingSettings, leadSettings });
   
   const queryClient = useQueryClient();
-  // Use our new hook with filtering enabled (true) based on leadSettings
-  const { projectLeads: filteredProjects, isLoading: isLoadingLeads } = useProjectsWithFiltering(true, leadSettings);
+  // Use our hook with filtering enabled (true) based on leadSettings
+  const { projectLeads: filteredProjects, isLoading: isLoadingLeads, refreshProjects } = useProjectsWithFiltering(true, leadSettings);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
   
   useEffect(() => {
     console.log('Filtered projects in LeadsTabContent:', filteredProjects.length);
+    console.log('Projects data:', filteredProjects);
   }, [filteredProjects]);
   
   // Find the selected project
@@ -43,9 +44,9 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
     }
   }, [filteredProjects, selectedProjectId]);
 
-  // Handle refresh - improved to stay on the current tab
+  // Handle refresh - improved to use the refreshProjects function
   const handleRefresh = async () => {
-    console.log('Refreshing leads without page reload...');
+    console.log('Refreshing leads...');
     setIsRefreshing(true);
     
     toast({
@@ -53,14 +54,22 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
       description: "Looking for new matching leads...",
     });
     
-    // Invalidate relevant queries to refresh data
-    await queryClient.invalidateQueries({ queryKey: ['projects'] });
-    await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
-    
-    // Small delay to ensure the UI shows something is happening
-    setTimeout(() => {
+    try {
+      // Use the refreshProjects function from useProjectsWithFiltering
+      await refreshProjects();
+      
+      // Force a refresh of the lead settings as well
+      await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+    } catch (error) {
+      console.error('Error refreshing leads:', error);
+      toast({
+        variant: 'destructive',
+        title: "Error refreshing leads",
+        description: "There was a problem refreshing your leads. Please try again.",
+      });
+    } finally {
       setIsRefreshing(false);
-    }, 1000);
+    }
   };
   
   // If loading or no settings, show alert
