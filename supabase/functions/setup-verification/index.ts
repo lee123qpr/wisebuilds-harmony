@@ -26,14 +26,14 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
     );
 
-    // Create the ID documents bucket if it doesn't exist
+    // Create the verification_documents bucket if it doesn't exist
     try {
-      console.log('Checking if id-documents bucket exists...');
-      const { data: bucketData, error: bucketError } = await supabaseAdmin.storage.getBucket('id-documents');
+      console.log('Checking if verification_documents bucket exists...');
+      const { data: bucketData, error: bucketError } = await supabaseAdmin.storage.getBucket('verification_documents');
       
       if (bucketError || !bucketData) {
-        console.log('Creating id-documents bucket...');
-        const { error: createBucketError } = await supabaseAdmin.storage.createBucket('id-documents', {
+        console.log('Creating verification_documents bucket...');
+        const { error: createBucketError } = await supabaseAdmin.storage.createBucket('verification_documents', {
           public: false, // Make sure it's private for security
         });
         
@@ -56,16 +56,16 @@ serve(async (req) => {
       );
     }
 
-    // Set up storage policies for the id-documents bucket
+    // Set up storage policies for the verification_documents bucket
     try {
       console.log('Setting up storage policies...');
       
       // Remove existing policies to avoid conflicts
-      await supabaseAdmin.storage.from('id-documents').deletePolicy();
+      await supabaseAdmin.storage.from('verification_documents').deletePolicy();
       console.log('Deleted existing policies');
       
       // Create policy for users to upload their own documents with folder path structure
-      await supabaseAdmin.storage.from('id-documents').createPolicy('User Upload Policy', {
+      await supabaseAdmin.storage.from('verification_documents').createPolicy('User Upload Policy', {
         name: 'User Upload Policy',
         definition: {
           type: 'INSERT',
@@ -76,7 +76,7 @@ serve(async (req) => {
       console.log('Created upload policy');
 
       // Create policy for users to read their own documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy('User Read Policy', {
+      await supabaseAdmin.storage.from('verification_documents').createPolicy('User Read Policy', {
         name: 'User Read Policy',
         definition: {
           type: 'SELECT',
@@ -87,7 +87,7 @@ serve(async (req) => {
       console.log('Created read policy');
 
       // Create policy for users to delete their own documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy('User Delete Policy', {
+      await supabaseAdmin.storage.from('verification_documents').createPolicy('User Delete Policy', {
         name: 'User Delete Policy',
         definition: {
           type: 'DELETE',
@@ -98,7 +98,7 @@ serve(async (req) => {
       console.log('Created delete policy');
 
       // Create policy for admins to read all documents
-      await supabaseAdmin.storage.from('id-documents').createPolicy('Admin Read Policy', {
+      await supabaseAdmin.storage.from('verification_documents').createPolicy('Admin Read Policy', {
         name: 'Admin Read Policy',
         definition: {
           type: 'SELECT',
@@ -135,11 +135,7 @@ serve(async (req) => {
         // Create new policies
         `CREATE POLICY "Only freelancers can insert their own verification records" 
          ON public.freelancer_verification FOR INSERT WITH CHECK (
-           auth.uid() = user_id AND
-           EXISTS (
-             SELECT 1 FROM auth.users
-             WHERE id = auth.uid() AND raw_user_meta_data ->> 'user_type' = 'freelancer'
-           )
+           auth.uid() = user_id
          );`,
         
         `CREATE POLICY "Users can view their own verification records" 
@@ -153,10 +149,9 @@ serve(async (req) => {
         
         `CREATE POLICY "Admin users can view all verification records" 
          ON public.freelancer_verification FOR ALL USING (
-           auth.jwt() ->> 'user_type' = 'admin' OR
            EXISTS (
              SELECT 1 FROM auth.users
-             WHERE id = auth.uid() AND raw_user_meta_data ->> 'user_type' = 'admin'
+             WHERE id = auth.uid() AND raw_user_meta_data->>'user_type' = 'admin'
            )
          );`,
         
