@@ -6,8 +6,7 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
-// Using declare to prevent duplicate identifier errors
-declare type Database = {
+export type Database = {
   public: {
     Tables: {
       client_profiles: {
@@ -752,6 +751,3 @@ export type CompositeTypes<
   : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
     ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
-
-// Export the Database type so it can be imported by other modules
-export type { Database };

@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { NavigationMenu, NavigationMenuList, NavigationMenuItem, NavigationMenuLink, navigationMenuTriggerStyle } from '@/components/ui/navigation-menu';
@@ -16,18 +17,17 @@ const Header: React.FC = () => {
           <Link to="/" className="flex items-center">
             {!logoError ? (
               <img 
-                src="/Icon Only.png" 
-                alt="WiseBuilds Harmony" 
-                className="h-10 w-auto mr-3"
+                src="/buildwise-logo.png" 
+                alt="Buildwise UK" 
+                className="h-10 w-auto"
                 onError={() => {
                   console.error("Logo failed to load");
                   setLogoError(true);
                 }}
               />
             ) : (
-              <span className="text-xl font-bold text-primary mr-2">WiseBuilds</span>
+              <span className="text-xl font-bold text-primary">Buildwise UK</span>
             )}
-            <span className="text-xl font-semibold text-gray-800">Buildwise UK</span>
           </Link>
         </div>
 
