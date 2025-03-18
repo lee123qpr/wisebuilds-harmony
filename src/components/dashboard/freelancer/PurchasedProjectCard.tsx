@@ -40,8 +40,8 @@ const PurchasedProjectCard: React.FC<PurchasedProjectCardProps> = ({ project }) 
   };
 
   const handleQuote = () => {
-    // Future implementation: Open quote dialog
-    console.log('Create quote for project:', project.id);
+    // Navigate to project page to submit a quote
+    navigate(`/project/${project.id}`);
   };
   
   return (

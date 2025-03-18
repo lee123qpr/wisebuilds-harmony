@@ -57,6 +57,9 @@ const ViewProject = () => {
     );
   }
 
+  // Get the client ID from the project
+  const clientId = project?.user_id;
+
   return (
     <MainLayout>
       <div className="container py-8">
@@ -126,6 +129,7 @@ const ViewProject = () => {
                   status={project!.status}
                   hiringStatus={project!.hiring_status}
                   applicationsCount={project!.applications || 0}
+                  clientId={clientId}
                 />
 
                 <ProjectDocuments 

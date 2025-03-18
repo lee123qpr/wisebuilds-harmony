@@ -3,19 +3,32 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Users } from 'lucide-react';
+import { Users, Quote } from 'lucide-react';
 import ProjectStatusBadge from '@/components/projects/ProjectStatusBadge';
 import HiringStatusBadge from '@/components/projects/HiringStatusBadge';
+import QuoteDialog from '@/components/quotes/QuoteDialog';
+import { useAuth } from '@/context/AuthContext';
 
 interface ProjectStatusProps {
   projectId: string;
   status: string;
   hiringStatus: string;
   applicationsCount: number;
+  clientId?: string;
 }
 
-const ProjectStatus = ({ projectId, status, hiringStatus, applicationsCount }: ProjectStatusProps) => {
+const ProjectStatus = ({ 
+  projectId, 
+  status, 
+  hiringStatus, 
+  applicationsCount,
+  clientId,
+}: ProjectStatusProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
+  
+  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+  const isBusiness = user?.user_metadata?.user_type === 'business';
 
   return (
     <Card>
@@ -40,8 +53,8 @@ const ProjectStatus = ({ projectId, status, hiringStatus, applicationsCount }: P
           <p className="font-medium">{applicationsCount || 0} applications</p>
         </div>
       </CardContent>
-      {applicationsCount > 0 && (
-        <CardFooter className="pt-2">
+      <CardFooter className="flex flex-col items-stretch space-y-2 pt-2">
+        {isBusiness && applicationsCount > 0 && (
           <Button 
             className="w-full"
             variant="outline"
@@ -50,8 +63,19 @@ const ProjectStatus = ({ projectId, status, hiringStatus, applicationsCount }: P
             <Users className="h-4 w-4 mr-2" />
             View Applications
           </Button>
-        </CardFooter>
-      )}
+        )}
+        
+        {isFreelancer && clientId && (
+          <QuoteDialog 
+            projectId={projectId}
+            projectTitle={status} // Ideally this should be the project title
+            clientId={clientId}
+            onQuoteSubmitted={() => {
+              // Refresh the page or data after quote submission
+            }}
+          />
+        )}
+      </CardFooter>
     </Card>
   );
 };
