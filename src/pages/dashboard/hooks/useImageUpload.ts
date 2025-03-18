@@ -43,10 +43,12 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         return;
       }
       
-      // Create unique file name
+      // Create unique file name with proper extension
       const fileExt = file.name.split('.').pop();
       const fileName = `${namePrefix.trim() || 'profile'}-${Date.now()}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`; // Only use userId in the path to comply with RLS policy
+      
+      // Important: The path MUST start with the userId for RLS policies to work
+      const filePath = `${userId}/${fileName}`;
       
       console.log('Uploading to path:', filePath);
       console.log('Bucket name:', 'freelancer-avatar');
@@ -92,7 +94,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         title: 'Upload Failed',
         description: error instanceof Error 
           ? error.message 
-          : 'There was an error uploading your image. Make sure you have a freelancer account with proper permissions.',
+          : 'There was an error uploading your image. Please verify your account type and permissions.',
       });
     } finally {
       setUploadingImage(false);
