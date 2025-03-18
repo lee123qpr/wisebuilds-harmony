@@ -30,6 +30,17 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
     }
   };
 
+  // Log when file is selected before handling upload
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      console.log('File selected for upload:', file.name);
+      handleImageUpload(e);
+    } else {
+      console.log('No file selected');
+    }
+  };
+
   React.useEffect(() => {
     console.log('FreelancerAvatar rendered with profileImageUrl:', profileImageUrl);
   }, [profileImageUrl]);
@@ -68,7 +79,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
             type="file"
             accept="image/*"
             className="hidden"
-            onChange={handleImageUpload}
+            onChange={handleFileChange}
             disabled={uploadingImage}
           />
         </div>

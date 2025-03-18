@@ -27,6 +27,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     try {
       setUploadingImage(true);
       console.log('Uploading image for user:', userId);
+      console.log('File details:', { name: file.name, type: file.type, size: file.size });
       
       // Create unique file name
       const fileExt = file.name.split('.').pop();
@@ -35,19 +36,41 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       console.log('Uploading to path:', filePath);
       
-      // Directly upload without checking bucket existence first
-      // Since we've created the bucket via SQL, it should exist now
-      console.log('Attempting to upload to user-uploads bucket');
+      // First verify bucket exists before attempting upload
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        console.error('Error listing buckets:', bucketsError);
+        toast({
+          variant: 'destructive',
+          title: 'Storage Error',
+          description: 'Could not access storage. Please try again later.',
+        });
+        return;
+      }
+      
+      const userUploadsBucket = buckets?.find(bucket => bucket.id === 'user-uploads');
+      
+      if (!userUploadsBucket) {
+        console.error('user-uploads bucket does not exist');
+        toast({
+          variant: 'destructive',
+          title: 'Storage Setup Error',
+          description: 'The storage location for uploads is not configured properly. Please contact support.',
+        });
+        return;
+      }
+      
+      console.log('Bucket found, attempting to upload');
       
       // Upload the file to Supabase Storage
-      const { error: uploadError } = await supabase.storage
+      const { data: uploadData, error: uploadError } = await supabase.storage
         .from('user-uploads')
         .upload(filePath, file, { upsert: true });
 
       if (uploadError) {
         console.error('Error during upload:', uploadError);
         
-        // More detailed error logging to diagnose the issue
         if (uploadError.message.includes('bucket') || uploadError.message.includes('storage')) {
           console.error('Bucket-related error:', uploadError.message);
           toast({
@@ -59,13 +82,23 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
           toast({
             variant: 'destructive',
             title: 'Upload Failed',
-            description: 'There was an error uploading your image.',
+            description: 'There was an error uploading your image: ' + uploadError.message,
           });
         }
         return;
       }
 
-      console.log('Upload successful, getting public URL');
+      if (!uploadData) {
+        console.error('Upload completed but no data returned');
+        toast({
+          variant: 'destructive',
+          title: 'Upload Issue',
+          description: 'Upload completed but we couldn\'t get the image URL. Please try again.',
+        });
+        return;
+      }
+
+      console.log('Upload successful, getting public URL for path:', filePath);
       
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
@@ -82,11 +115,11 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         description: 'Your profile image has been updated.',
       });
     } catch (error) {
-      console.error('Error uploading image:', error);
+      console.error('Error in image upload process:', error);
       toast({
         variant: 'destructive',
         title: 'Upload Failed',
-        description: 'There was an error uploading your image.',
+        description: 'There was an unexpected error uploading your image.',
       });
     } finally {
       setUploadingImage(false);
