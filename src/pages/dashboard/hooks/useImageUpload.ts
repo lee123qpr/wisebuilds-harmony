@@ -35,32 +35,9 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       console.log('Uploading to path:', filePath);
       
-      // Check if the user-uploads bucket exists
-      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
-      
-      if (bucketsError) {
-        console.error('Error listing buckets:', bucketsError);
-        toast({
-          variant: 'destructive',
-          title: 'Storage Error',
-          description: 'Could not access storage. Please try again later.',
-        });
-        setUploadingImage(false);
-        return;
-      }
-      
-      const userUploadsBucketExists = buckets?.some(bucket => bucket.id === 'user-uploads');
-      
-      if (!userUploadsBucketExists) {
-        console.error('user-uploads bucket does not exist');
-        toast({
-          variant: 'destructive',
-          title: 'Storage Error',
-          description: 'The storage location for uploads is not configured properly.',
-        });
-        setUploadingImage(false);
-        return;
-      }
+      // Directly upload without checking bucket existence first
+      // Since we've created the bucket via SQL, it should exist now
+      console.log('Attempting to upload to user-uploads bucket');
       
       // Upload the file to Supabase Storage
       const { error: uploadError } = await supabase.storage
@@ -69,7 +46,23 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
 
       if (uploadError) {
         console.error('Error during upload:', uploadError);
-        throw uploadError;
+        
+        // More detailed error logging to diagnose the issue
+        if (uploadError.message.includes('bucket') || uploadError.message.includes('storage')) {
+          console.error('Bucket-related error:', uploadError.message);
+          toast({
+            variant: 'destructive',
+            title: 'Storage Error',
+            description: 'The storage location for uploads is not configured properly. Please contact support.',
+          });
+        } else {
+          toast({
+            variant: 'destructive',
+            title: 'Upload Failed',
+            description: 'There was an error uploading your image.',
+          });
+        }
+        return;
       }
 
       console.log('Upload successful, getting public URL');
