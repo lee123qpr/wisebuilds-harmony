@@ -2,8 +2,9 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, CheckCircle2 } from 'lucide-react';
+import { CheckCircle, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { FreelancerProfile } from '@/types/applications';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface FreelancerAvatarProps {
   profile?: FreelancerProfile;
@@ -30,11 +31,34 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({ profile }) => {
           </Badge>
         )}
         
-        {profile?.verified && (
-          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
-            <CheckCircle2 className="h-3 w-3" />
-            ID Verified
-          </Badge>
+        {profile?.verified ? (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
+                  <ShieldCheck className="h-3 w-3" />
+                  ID Verified
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>This freelancer's identity has been verified</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        ) : (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="bg-gray-50 text-gray-700 border-gray-200 flex items-center gap-1">
+                  <ShieldAlert className="h-3 w-3" />
+                  Not Verified
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>This freelancer has not verified their identity</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         )}
       </div>
     </div>

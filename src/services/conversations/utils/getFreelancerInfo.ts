@@ -25,6 +25,14 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       };
     }
     
+    // Get verification status
+    const { data: verificationData, error: verificationError } = await supabase
+      .rpc('is_user_verified', { user_id: freelancerId });
+    
+    if (verificationError) {
+      console.error('Error checking verification status:', verificationError);
+    }
+    
     // Get any reviews for this user
     const { data: reviews, error: reviewsError } = await supabase
       .from('client_reviews')
@@ -50,11 +58,12 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       profile_image: metaData.avatar_url || null,
       phone_number: metaData.phone_number || metaData.phone || null,
       email: userData.email || null,
-      email_verified: userData.email_confirmed || false,
+      email_verified: !!userData.email_confirmed,
       member_since: userData.user?.created_at || metaData.created_at || null,
       jobs_completed: metaData.jobs_completed || 0,
       rating,
-      reviews_count: reviews?.length || 0
+      reviews_count: reviews?.length || 0,
+      verified: !!verificationData
     };
   } catch (error) {
     console.error('Error calling edge function:', error);

@@ -14,7 +14,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   size = 'md'
 }) => {
   // Return null if rating is null, undefined, or NaN
-  if (rating === null || rating === undefined || isNaN(rating)) {
+  if (rating === null || rating === undefined || isNaN(Number(rating))) {
     return null;
   }
 
@@ -31,9 +31,10 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   };
 
   const renderStars = () => {
+    const numericRating = Number(rating);
     const stars = [];
-    const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
+    const fullStars = Math.floor(numericRating);
+    const hasHalfStar = numericRating % 1 >= 0.5;
 
     for (let i = 0; i < fullStars; i++) {
       stars.push(
@@ -74,7 +75,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
         {renderStars()}
       </div>
       <span className={`${textSizes[size]} font-medium ml-2`}>
-        {rating.toFixed(1)}
+        {Number(rating).toFixed(1)}
       </span>
       <span className={`${textSizes[size]} text-muted-foreground ml-1`}>
         ({reviewCount})

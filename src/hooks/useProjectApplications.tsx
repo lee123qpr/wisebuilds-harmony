@@ -75,6 +75,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
               if (reviews && reviews.length > 0) {
                 const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
                 rating = sum / reviews.length;
+                console.log(`Rating calculated for ${displayName}:`, rating);
               }
               
               // Combine all data
@@ -83,8 +84,8 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 freelancer_profile: {
                   id: application.user_id,
                   email: email,
-                  verified: verificationData || false,
-                  email_verified: userData?.email_confirmed || false,
+                  verified: !!verificationData, // Convert to boolean
+                  email_verified: !!userData?.email_confirmed,
                   first_name: firstName,
                   last_name: lastName,
                   display_name: displayName,
