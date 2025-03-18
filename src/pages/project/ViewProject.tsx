@@ -130,6 +130,7 @@ const ViewProject = () => {
                   hiringStatus={project!.hiring_status}
                   applicationsCount={project!.applications || 0}
                   clientId={clientId}
+                  projectTitle={project!.title}
                 />
 
                 <ProjectDocuments 
