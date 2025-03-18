@@ -24,10 +24,15 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
 
   // When the button is clicked, trigger the hidden file input
   const handleButtonClick = () => {
+    console.log('Avatar upload button clicked');
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
+
+  React.useEffect(() => {
+    console.log('FreelancerAvatar rendered with profileImageUrl:', profileImageUrl);
+  }, [profileImageUrl]);
 
   return (
     <div className="relative">

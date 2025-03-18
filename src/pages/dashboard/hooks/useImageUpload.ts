@@ -36,8 +36,20 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       console.log('Uploading to path:', filePath);
       
       // Check if the user-uploads bucket exists
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const userUploadsBucketExists = buckets?.some(bucket => bucket.name === 'user-uploads');
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        console.error('Error listing buckets:', bucketsError);
+        toast({
+          variant: 'destructive',
+          title: 'Storage Error',
+          description: 'Could not access storage. Please try again later.',
+        });
+        setUploadingImage(false);
+        return;
+      }
+      
+      const userUploadsBucketExists = buckets?.some(bucket => bucket.id === 'user-uploads');
       
       if (!userUploadsBucketExists) {
         console.error('user-uploads bucket does not exist');
