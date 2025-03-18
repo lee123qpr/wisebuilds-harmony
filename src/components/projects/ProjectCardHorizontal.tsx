@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Project } from './useProjects';
 import { format } from 'date-fns';
-import { ChevronRight, UserRound, MessageSquare } from 'lucide-react';
+import { ChevronRight, UserRound, MessageSquare, Quote } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 
@@ -23,6 +23,9 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   // Number of chats
   const chatCount = project.chat_count || 0;
   
+  // Number of quotes
+  const quoteCount = project.quote_count || 0;
+  
   const handleClick = () => {
     navigate(`/project/${project.id}`);
   };
@@ -34,8 +37,12 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   
   const handleChatsClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the card click event from firing
-    // For now, just navigate to the project page
     navigate(`/project/${project.id}`);
+  };
+  
+  const handleQuotesClick = (e: React.MouseEvent) => {
+    e.stopPropagation(); // Prevent the card click event from firing
+    navigate(`/dashboard/business?tab=quotes&projectId=${project.id}`);
   };
   
   return (
@@ -51,7 +58,7 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
           
           <h3 className="text-xl font-semibold mb-5">{project.title}</h3>
           
-          <div className="grid grid-cols-2 gap-4 mt-4">
+          <div className="grid grid-cols-3 gap-4 mt-4">
             {/* Interested freelancers box */}
             <div 
               className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
@@ -77,6 +84,20 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
               <div>
                 <p className="font-medium">Chats</p>
                 <p className="text-sm text-muted-foreground">Chat started to discuss job</p>
+              </div>
+            </div>
+            
+            {/* Quotes box */}
+            <div 
+              className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
+              onClick={handleQuotesClick}
+            >
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3">
+                <span className="text-2xl font-bold text-primary">{quoteCount}</span>
+              </div>
+              <div>
+                <p className="font-medium">Quotes</p>
+                <p className="text-sm text-muted-foreground">Received quotes for project</p>
               </div>
             </div>
           </div>

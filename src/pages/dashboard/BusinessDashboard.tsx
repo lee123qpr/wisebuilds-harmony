@@ -8,6 +8,7 @@ import { useSearchParams } from 'react-router-dom';
 import NewProjectDialog from '@/components/projects/NewProjectDialog';
 import ProjectsTable from '@/components/projects/ProjectsTable';
 import BusinessMessagesTab from '@/components/dashboard/business/MessagesTab';
+import BusinessQuotesTab from '@/components/dashboard/business/QuotesTab';
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
@@ -17,7 +18,7 @@ const BusinessDashboard = () => {
   
   // Set the active tab based on URL parameters
   useEffect(() => {
-    if (tabParam && ['projects', 'applications', 'contracts', 'messages'].includes(tabParam)) {
+    if (tabParam && ['projects', 'applications', 'contracts', 'messages', 'quotes'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -39,6 +40,7 @@ const BusinessDashboard = () => {
             <TabsTrigger value="applications">Applications</TabsTrigger>
             <TabsTrigger value="contracts">Contracts</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
+            <TabsTrigger value="quotes">Quotes</TabsTrigger>
           </TabsList>
           
           <TabsContent value="projects" className="space-y-6">
@@ -82,6 +84,18 @@ const BusinessDashboard = () => {
               </CardHeader>
               <CardContent>
                 <BusinessMessagesTab />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="quotes" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Quotes</CardTitle>
+                <CardDescription>Project quotes from freelancers</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <BusinessQuotesTab />
               </CardContent>
             </Card>
           </TabsContent>
