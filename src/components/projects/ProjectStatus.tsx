@@ -1,11 +1,11 @@
 
 import React from 'react';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
-import { Briefcase, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import HiringStatusBadge from './HiringStatusBadge';
-import { useAuth } from '@/context/AuthContext';
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Users } from 'lucide-react';
+import ProjectStatusBadge from '@/components/projects/ProjectStatusBadge';
+import HiringStatusBadge from '@/components/projects/HiringStatusBadge';
 
 interface ProjectStatusProps {
   projectId: string;
@@ -14,50 +14,40 @@ interface ProjectStatusProps {
   applicationsCount: number;
 }
 
-const ProjectStatus: React.FC<ProjectStatusProps> = ({
-  projectId,
-  status,
-  hiringStatus,
-  applicationsCount
-}) => {
+const ProjectStatus = ({ projectId, status, hiringStatus, applicationsCount }: ProjectStatusProps) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  const isBusiness = user?.user_metadata?.user_type === 'business';
-  
-  const handleViewApplications = () => {
-    navigate(`/project/${projectId}/applications`);
-  };
-  
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Project Status</CardTitle>
+        <CardTitle>Status</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex justify-between items-center">
-          <span className="text-muted-foreground flex items-center gap-2">
-            <User className="h-4 w-4" />
-            Applications
-          </span>
-          <span className="font-medium">{applicationsCount}</span>
+      <CardContent className="space-y-6">
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-muted-foreground">Project Status</h4>
+          <div>
+            <ProjectStatusBadge status={status} />
+          </div>
         </div>
-        
-        <div className="flex justify-between items-center">
-          <span className="text-muted-foreground flex items-center gap-2">
-            <Briefcase className="h-4 w-4" />
-            Hiring Status
-          </span>
-          <HiringStatusBadge status={hiringStatus} />
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-muted-foreground">Hiring Status</h4>
+          <div>
+            <HiringStatusBadge status={hiringStatus} />
+          </div>
+        </div>
+        <div className="space-y-2">
+          <h4 className="text-sm font-medium text-muted-foreground">Applications</h4>
+          <p className="font-medium">{applicationsCount || 0} applications</p>
         </div>
       </CardContent>
-      
-      {isBusiness && (
-        <CardFooter>
+      {applicationsCount > 0 && (
+        <CardFooter className="pt-2">
           <Button 
-            variant="outline" 
             className="w-full"
-            onClick={handleViewApplications}
+            variant="outline"
+            onClick={() => navigate(`/project/${projectId}/applications`)}
           >
+            <Users className="h-4 w-4 mr-2" />
             View Applications
           </Button>
         </CardFooter>
