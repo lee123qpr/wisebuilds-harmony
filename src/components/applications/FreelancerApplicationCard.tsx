@@ -4,7 +4,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { FreelancerApplication } from '@/types/applications';
 import { format } from 'date-fns';
 import FreelancerAvatar from './FreelancerAvatar';
-import RatingStars from './RatingStars';
+import RatingStars from '@/components/common/RatingStars';
 import FreelancerMetadata from './FreelancerMetadata';
 import FreelancerContactInfo from './FreelancerContactInfo';
 import FreelancerApplicationActions from './FreelancerApplicationActions';
@@ -31,7 +31,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
                 <h3 className="text-xl font-semibold">{profile?.display_name || 'Freelancer'}</h3>
-                <RatingStars rating={profile?.rating} reviewsCount={profile?.reviews_count} />
+                <RatingStars rating={profile?.rating} reviewCount={profile?.reviews_count} />
               </div>
               
               <p className="text-muted-foreground">{profile?.job_title || 'Freelancer'}</p>

@@ -5,7 +5,7 @@ import { Calendar, Briefcase, CheckCircle2, Award } from 'lucide-react';
 import { useClientReviews } from '../../hooks/useClientReviews';
 import { useVerification } from '@/hooks/verification';
 import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
-import RatingStars from './RatingStars';
+import RatingStars from '@/components/common/RatingStars';
 
 interface ProfileInfoBadgesProps {
   emailVerified: boolean;
