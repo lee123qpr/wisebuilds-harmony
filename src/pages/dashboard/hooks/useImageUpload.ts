@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { isUserFreelancer } from '@/hooks/verification/services/user-verification';
 
 interface UseImageUploadProps {
   userId: string;
@@ -29,19 +30,17 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       console.log('Uploading image for user:', userId);
       console.log('File details:', { name: file.name, type: file.type, size: file.size });
       
-      // Check user metadata for user_type
-      const { data: userData } = await supabase.auth.getUser();
-      const userType = userData?.user?.user_metadata?.user_type;
+      // Check if user is a freelancer
+      const isFreelancer = await isUserFreelancer();
       
-      console.log('Current user type:', userType);
-      
-      if (userType !== 'freelancer') {
-        console.warn('User is not a freelancer. This might cause upload to fail due to RLS policies.');
+      if (!isFreelancer) {
+        console.error('User is not a freelancer. Upload will likely fail due to RLS policies.');
         toast({
           variant: 'destructive',
-          title: 'Warning',
-          description: 'Your account is not set as a freelancer type. Please use the Account Type selector to update your account type before uploading.',
+          title: 'Permission Error',
+          description: 'Only freelancer accounts can upload profile images. Your account is not set as a freelancer type.',
         });
+        return;
       }
       
       // Create unique file name
