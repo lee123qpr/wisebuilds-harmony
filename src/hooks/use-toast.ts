@@ -139,6 +139,13 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
+// Add a type augmentation for the toast variant to include 'success'
+declare module "@/components/ui/toast" {
+  interface ToastProps {
+    variant?: "default" | "destructive" | "success";
+  }
+}
+
 function toast({ ...props }: Toast) {
   const id = genId()
 

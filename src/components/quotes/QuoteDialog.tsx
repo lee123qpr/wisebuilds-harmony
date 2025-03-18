@@ -85,7 +85,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
     toast({
       title: "Quote successfully submitted!",
       description: "Your quote has been sent to the client.",
-      variant: "success"
+      variant: "success" // Now we can use success variant
     });
     refetch(); // Refresh the quote data
     if (onQuoteSubmitted) {
