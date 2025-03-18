@@ -5,6 +5,7 @@ import EditProject from "../pages/project/EditProject";
 import ProjectDocuments from "../pages/project/ProjectDocuments";
 import ProjectApplications from "../pages/project/ProjectApplications";
 import ProjectQuotesComparison from "../pages/project/ProjectQuotesComparison";
+import ViewQuoteDetails from "../pages/project/ViewQuoteDetails";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 
 export const projectRoutes = (
@@ -44,7 +45,11 @@ export const projectRoutes = (
     />
     <Route 
       path="/project/:projectId/quotes/:quoteId" 
-      element={<ViewProject />} 
+      element={
+        <ProtectedRoute allowedUserTypes={['business']}>
+          <ViewQuoteDetails />
+        </ProtectedRoute>
+      } 
     />
   </>
 );

@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Check, Clock, DollarSign, X } from 'lucide-react';
+import { Calendar, Check, Clock, DollarSign, Eye, X } from 'lucide-react';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
@@ -104,7 +104,13 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
           </div>
           
           <div className="flex justify-end">
-            <Button variant="outline" size="sm" onClick={handleViewDetails}>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleViewDetails}
+              className="flex items-center gap-2"
+            >
+              <Eye className="h-4 w-4" />
               View Details
             </Button>
           </div>
