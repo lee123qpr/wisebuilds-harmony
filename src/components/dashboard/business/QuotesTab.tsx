@@ -13,7 +13,8 @@ const BusinessQuotesTab: React.FC = () => {
   
   const { data: quotes, isLoading } = useQuotes({ 
     projectId: projectId || undefined,
-    forClient: true 
+    forClient: true,
+    refreshInterval: 10000 // Refresh every 10 seconds
   });
   
   if (isLoading) {

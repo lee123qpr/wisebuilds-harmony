@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Project } from './useProjects';
@@ -6,6 +5,7 @@ import { format } from 'date-fns';
 import { ChevronRight, UserRound, MessageSquare, Quote } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
+import { useQuotes } from '@/hooks/quotes/useQuotes';
 
 interface ProjectCardHorizontalProps {
   project: Project;
@@ -13,6 +13,13 @@ interface ProjectCardHorizontalProps {
 
 const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }) => {
   const navigate = useNavigate();
+  
+  // Get real-time quote count
+  const { data: quotes } = useQuotes({ 
+    projectId: project.id,
+    forClient: true,
+    refreshInterval: 10000 // Refresh every 10 seconds
+  });
   
   // Format posted date
   const formattedDate = format(new Date(project.created_at), 'dd MMM yyyy');
@@ -23,8 +30,8 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   // Number of chats
   const chatCount = project.chat_count || 0;
   
-  // Number of quotes
-  const quoteCount = project.quote_count || 0;
+  // Number of quotes - get from live data if available
+  const quoteCount = quotes ? quotes.length : (project.quote_count || 0);
   
   const handleClick = () => {
     navigate(`/project/${project.id}`);

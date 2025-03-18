@@ -7,9 +7,14 @@ import { useAuth } from '@/context/AuthContext';
 interface UseQuotesProps {
   projectId?: string;
   forClient?: boolean;
+  refreshInterval?: number;
 }
 
-export const useQuotes = ({ projectId, forClient = false }: UseQuotesProps = {}) => {
+export const useQuotes = ({ 
+  projectId, 
+  forClient = false, 
+  refreshInterval = 30000 
+}: UseQuotesProps = {}) => {
   const { user } = useAuth();
   
   return useQuery({
@@ -87,5 +92,7 @@ export const useQuotes = ({ projectId, forClient = false }: UseQuotesProps = {})
       });
     },
     enabled: !!user,
+    refetchInterval: refreshInterval, // Regularly refresh data
+    refetchOnWindowFocus: true, // Also refresh when window gets focus
   });
 };
