@@ -1,19 +1,25 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useProjectsWithFiltering } from '@/hooks/projects/useProjectsWithFiltering';
 import ProjectListView from '@/components/dashboard/freelancer/ProjectListView';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { RefreshCw, AlertTriangle, Info, Briefcase } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { ProjectLead } from '@/types/projects';
 
 const AvailableTabContent: React.FC = () => {
-  // Use our hook with filtering disabled (false)
+  // Use our hook with filtering disabled (false) to fetch all available projects
   const { projectLeads: projects, isLoading, refreshProjects } = useProjectsWithFiltering(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  
+  // Debug logging
+  useEffect(() => {
+    console.log('Available projects:', projects);
+    console.log('Is loading:', isLoading);
+  }, [projects, isLoading]);
   
   // Find the selected project
   const selectedProject = selectedProjectId 
@@ -30,7 +36,12 @@ const AvailableTabContent: React.FC = () => {
   // Handle refresh
   const handleRefresh = async () => {
     console.log('Refreshing projects...');
-    await refreshProjects();
+    try {
+      await refreshProjects();
+    } catch (err) {
+      console.error('Error refreshing projects:', err);
+      setError('Failed to refresh projects. Please try again.');
+    }
   };
 
   if (error) {

@@ -10,12 +10,10 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
 
   useEffect(() => {
     const fetchLeads = async () => {
-      if (!leadSettings) return;
-      
       setIsLoading(true);
       
       try {
-        console.log('Fetching real lead data based on settings:', leadSettings);
+        console.log('Fetching projects with settings:', leadSettings);
         
         // Start with a base query to the projects table
         let query = supabase
@@ -23,19 +21,22 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           .select('*')
           .eq('status', 'active');
         
-        // Filter by role if specified
-        if (leadSettings.role) {
-          query = query.eq('role', leadSettings.role);
-        }
-        
-        // Filter by location if specified
-        if (leadSettings.location) {
-          query = query.ilike('location', `%${leadSettings.location}%`);
-        }
-        
-        // Filter by work type if specified
-        if (leadSettings.work_type) {
-          query = query.eq('work_type', leadSettings.work_type);
+        // Apply filters only if leadSettings is provided
+        if (leadSettings) {
+          // Filter by role if specified
+          if (leadSettings.role && leadSettings.role !== 'any') {
+            query = query.eq('role', leadSettings.role);
+          }
+          
+          // Filter by location if specified
+          if (leadSettings.location && leadSettings.location !== 'any') {
+            query = query.ilike('location', `%${leadSettings.location}%`);
+          }
+          
+          // Filter by work type if specified
+          if (leadSettings.work_type && leadSettings.work_type !== 'any') {
+            query = query.eq('work_type', leadSettings.work_type);
+          }
         }
         
         // Get the results
@@ -47,7 +48,7 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           return;
         }
         
-        console.log('Fetched real leads:', data);
+        console.log('Fetched projects:', data);
         
         // Parse the data to match the ProjectLead type
         const leads = data ? data.map(project => ({
@@ -63,13 +64,13 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           duration: project.duration,
           hiring_status: project.hiring_status,
           requires_equipment: project.requires_equipment || false,
-          requires_security_check: false, // Default values for missing properties
+          requires_security_check: project.requires_security_check || false,
           requires_insurance: project.requires_insurance || false,
-          requires_qualifications: false, // Default value
+          requires_qualifications: project.requires_qualifications || false,
           published: true, // Default value
           client_id: project.user_id, // Assuming user_id is client_id
-          client_name: '', // Default empty string
-          client_company: '', // Default empty string
+          client_name: project.client_name || '', // Default empty string
+          client_company: project.client_company || '', // Default empty string
           start_date: project.start_date || new Date().toISOString(), // Provide default value
           applications: project.applications || 0,
           documents: project.documents || null,
@@ -89,6 +90,7 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
       }
     };
     
+    // Always fetch leads, even if leadSettings is null
     fetchLeads();
   }, [leadSettings]);
 

@@ -7,19 +7,22 @@ import { LeadSettings } from '@/hooks/freelancer/types';
 
 export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings?: LeadSettings | null) => {
   const { leadSettings, isLoading: isSettingsLoading } = useLeadSettingsData();
-  const { projectLeads, isLoading: isLeadsLoading } = useProjectLeadsGenerator(
-    useFiltering ? (customLeadSettings || leadSettings) : null
-  );
+  
+  // If useFiltering is false, pass null to useProjectLeadsGenerator to fetch all projects
+  const settingsToUse = useFiltering ? (customLeadSettings || leadSettings) : null;
+  
+  const { projectLeads, isLoading: isLeadsLoading } = useProjectLeadsGenerator(settingsToUse);
   
   const [filteredLeads, setFilteredLeads] = useState<ProjectLead[]>([]);
   
   useEffect(() => {
+    console.log('Project leads updated:', projectLeads);
     setFilteredLeads(projectLeads);
   }, [projectLeads]);
   
   const refreshProjects = async () => {
+    console.log('Refreshing projects...');
     // Force refetch by reloading the window
-    // This is a simple approach; in a production app, you might want to use a more sophisticated approach
     window.location.reload();
   };
   
