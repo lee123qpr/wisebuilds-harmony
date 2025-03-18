@@ -57,7 +57,7 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
           description: formData.description,
           available_start_date: formData.available_start_date,
           estimated_duration: formData.estimated_duration,
-          duration_unit: formData.duration_unit,
+          duration_unit: formData.duration_unit as 'days' | 'weeks' | 'months',
           preferred_payment_method: formData.preferred_payment_method,
           payment_terms: formData.payment_terms,
           quote_files: formData.quote_files,
@@ -69,11 +69,11 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
 
     if (error) throw error;
     
-    // Type assertion to ensure status is of the correct type
-    // This is safe because we explicitly set status to 'pending' above
+    // Ensure we have properly typed data
     return {
       ...data,
-      status: data.status as Quote['status']
+      status: data.status as Quote['status'],
+      duration_unit: data.duration_unit as Quote['duration_unit']
     };
   };
 
