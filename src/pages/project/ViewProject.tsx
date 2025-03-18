@@ -41,7 +41,7 @@ const ViewProject = () => {
   const handleGoBack = () => {
     // Go back to previous page
     if (isFreelancer) {
-      navigate('/dashboard/freelancer?tab=available');
+      navigate('/dashboard/freelancer?tab=quotes');
     } else if (isBusiness) {
       navigate('/dashboard/business');
     } else {
