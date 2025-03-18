@@ -68,7 +68,12 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
       .single();
 
     if (error) throw error;
-    return data;
+    
+    // Ensure the status is one of the allowed values in the Quote type
+    return {
+      ...data,
+      status: data.status as "pending" | "accepted" | "declined"
+    };
   };
 
   // Use React Query mutation
