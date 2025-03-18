@@ -1,10 +1,10 @@
+
 import React from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { useImageUpload } from '../../hooks/useImageUpload';
 import FreelancerAvatar from './FreelancerAvatar';
 import ProfileInfoBadges from './ProfileInfoBadges';
-import AccountTypeSelector from './AccountTypeSelector';
 import { supabase } from '@/integrations/supabase/client';
 
 interface FreelancerProfileCardProps {
@@ -129,16 +129,6 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
               userId={userId}
               idVerified={idVerified}
             />
-            
-            {userType !== 'freelancer' && (
-              <div className="mt-4 border-t pt-4">
-                <AccountTypeSelector 
-                  userId={userId} 
-                  currentType={userType || undefined}
-                  onTypeUpdated={setUserType}
-                />
-              </div>
-            )}
           </div>
         </div>
       </CardContent>
