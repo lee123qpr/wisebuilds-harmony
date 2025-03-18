@@ -7,10 +7,14 @@ import { useToast } from '@/hooks/use-toast';
 interface QuoteFormData {
   fixed_price?: string;
   estimated_price?: string;
+  day_rate?: string;
   description: string;
   available_start_date?: string;
   estimated_duration?: string;
   duration_unit?: 'days' | 'weeks' | 'months';
+  preferred_payment_method?: string;
+  payment_terms?: string;
+  quote_files?: any[];
 }
 
 interface UseQuoteSubmissionProps {
@@ -66,10 +70,14 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
             client_id: clientId,
             fixed_price: formData.fixed_price,
             estimated_price: formData.estimated_price,
+            day_rate: formData.day_rate,
             description: formData.description,
             available_start_date: formData.available_start_date,
             estimated_duration: formData.estimated_duration,
             duration_unit: formData.duration_unit,
+            preferred_payment_method: formData.preferred_payment_method,
+            payment_terms: formData.payment_terms,
+            quote_files: formData.quote_files,
             status: 'pending',
           },
         ])

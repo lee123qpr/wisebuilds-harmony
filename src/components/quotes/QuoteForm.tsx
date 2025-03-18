@@ -26,14 +26,19 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { CalendarIcon } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import FileUpload from '@/components/projects/file-upload/FileUpload';
+import { UploadedFile } from '@/components/projects/file-upload/types';
 
 const quoteFormSchema = z.object({
-  priceType: z.enum(['fixed', 'estimated']),
+  priceType: z.enum(['fixed', 'estimated', 'day_rate']),
   fixedPrice: z.string().optional().refine(val => val === undefined || val.length > 0, { 
     message: 'Fixed price is required when price type is fixed'
   }),
   estimatedPrice: z.string().optional().refine(val => val === undefined || val.length > 0, { 
     message: 'Estimated price is required when price type is estimated'
+  }),
+  dayRate: z.string().optional().refine(val => val === undefined || val.length > 0, { 
+    message: 'Day rate is required when price type is day rate'
   }),
   description: z.string().min(10, { message: 'Description must be at least 10 characters' }),
   availableStartDate: z.date({
@@ -43,6 +48,8 @@ const quoteFormSchema = z.object({
   durationUnit: z.enum(['days', 'weeks', 'months'], {
     required_error: 'Please select a duration unit',
   }),
+  preferredPaymentMethod: z.string().min(1, { message: 'Preferred payment method is required' }),
+  paymentTerms: z.string().min(1, { message: 'Payment terms are required' }),
 });
 
 type QuoteFormValues = z.infer<typeof quoteFormSchema>;
@@ -64,7 +71,8 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
 }) => {
   const { toast } = useToast();
   const { user } = useAuth();
-  const [priceType, setPriceType] = useState<'fixed' | 'estimated'>('fixed');
+  const [priceType, setPriceType] = useState<'fixed' | 'estimated' | 'day_rate'>('fixed');
+  const [quoteFiles, setQuoteFiles] = useState<UploadedFile[]>([]);
   
   const { submitQuote, isSubmitting } = useQuoteSubmission({ 
     projectId, 
@@ -77,9 +85,12 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
       priceType: 'fixed',
       fixedPrice: '',
       estimatedPrice: '',
+      dayRate: '',
       description: '',
       estimatedDuration: '',
       durationUnit: 'days',
+      preferredPaymentMethod: '',
+      paymentTerms: '',
     },
   });
 
@@ -96,10 +107,14 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
       const quoteData = {
         fixed_price: data.priceType === 'fixed' ? data.fixedPrice : undefined,
         estimated_price: data.priceType === 'estimated' ? data.estimatedPrice : undefined,
+        day_rate: data.priceType === 'day_rate' ? data.dayRate : undefined,
         description: data.description,
         available_start_date: data.availableStartDate ? format(data.availableStartDate, 'yyyy-MM-dd') : undefined,
         estimated_duration: data.estimatedDuration,
         duration_unit: data.durationUnit,
+        preferred_payment_method: data.preferredPaymentMethod,
+        payment_terms: data.paymentTerms,
+        quote_files: quoteFiles.length > 0 ? quoteFiles : undefined,
       };
       
       const success = await submitQuote(quoteData);
@@ -119,6 +134,10 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
         variant: 'destructive',
       });
     }
+  };
+
+  const handleQuoteFilesUploaded = (files: UploadedFile[]) => {
+    setQuoteFiles(files);
   };
 
   return (
@@ -154,10 +173,14 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
                     <RadioGroupItem value="estimated" id="estimated" />
                     <Label htmlFor="estimated">Estimated Price</Label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="day_rate" id="day_rate" />
+                    <Label htmlFor="day_rate">Day Rate</Label>
+                  </div>
                 </RadioGroup>
               </FormControl>
               <FormDescription>
-                Select whether you want to provide a fixed or estimated price
+                Select your preferred pricing approach for this project
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -195,6 +218,25 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
                 </FormControl>
                 <FormDescription>
                   Enter an estimated price range for this project
+                </FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+        
+        {priceType === 'day_rate' && (
+          <FormField
+            control={form.control}
+            name="dayRate"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Day Rate (£)</FormLabel>
+                <FormControl>
+                  <Input placeholder="£0.00" {...field} />
+                </FormControl>
+                <FormDescription>
+                  Enter your day rate for this project
                 </FormDescription>
                 <FormMessage />
               </FormItem>
@@ -287,6 +329,40 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
         
         <FormField
           control={form.control}
+          name="preferredPaymentMethod"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Preferred Payment Method</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Bank Transfer, PayPal" {...field} />
+              </FormControl>
+              <FormDescription>
+                How would you prefer to be paid for this project?
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
+          name="paymentTerms"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Payment Terms</FormLabel>
+              <FormControl>
+                <Input placeholder="e.g. Payment on completion, 50% upfront" {...field} />
+              </FormControl>
+              <FormDescription>
+                What are your payment terms for this project?
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        
+        <FormField
+          control={form.control}
           name="description"
           render={({ field }) => (
             <FormItem>
@@ -305,6 +381,17 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
             </FormItem>
           )}
         />
+        
+        <div className="space-y-4">
+          <FormLabel>Quote Documents</FormLabel>
+          <FileUpload 
+            onFilesUploaded={handleQuoteFilesUploaded}
+            existingFiles={quoteFiles}
+          />
+          <FormDescription>
+            Upload any formal quote documents or additional terms
+          </FormDescription>
+        </div>
         
         <div className="flex justify-end space-x-2">
           <Button type="button" variant="outline" onClick={onCancel}>
