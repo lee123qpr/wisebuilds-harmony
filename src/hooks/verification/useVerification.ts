@@ -107,7 +107,7 @@ export const useVerification = (): UseVerificationResult => {
   return {
     verificationData,
     verificationStatus: verificationData?.verification_status || 'not_submitted',
-    isVerified: verificationData?.verification_status === 'approved',
+    isVerified: verificationData?.verification_status === 'verified',
     isLoading,
     isUploading,
     isDeleting,

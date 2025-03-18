@@ -61,7 +61,7 @@ const LeadPurchaseButton = ({
       return;
     }
     
-    if (verificationStatus !== 'approved' && verificationStatus !== 'not_submitted') {
+    if (verificationStatus !== 'verified' && verificationStatus !== 'not_submitted') {
       toast({
         title: 'Verification required',
         description: 'Your ID verification is pending. You cannot purchase leads until your ID is verified.',
@@ -112,7 +112,7 @@ const LeadPurchaseButton = ({
     isCheckingPurchase || 
     limitReached ||
     notEnoughCredits ||
-    (verificationStatus !== 'approved' && verificationStatus !== 'not_submitted');
+    (verificationStatus !== 'verified' && verificationStatus !== 'not_submitted');
 
   if (hasBeenPurchased) {
     return null;

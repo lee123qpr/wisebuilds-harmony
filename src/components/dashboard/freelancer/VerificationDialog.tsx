@@ -21,7 +21,7 @@ const VerificationDialog: React.FC = () => {
 
   const getButtonLabel = () => {
     switch (verificationStatus) {
-      case 'approved':
+      case 'verified':
         return 'Verified';
       case 'pending':
         return 'Verification Pending';
@@ -34,7 +34,7 @@ const VerificationDialog: React.FC = () => {
 
   const getTooltipContent = () => {
     switch (verificationStatus) {
-      case 'approved':
+      case 'verified':
         return 'Your identity has been verified. You now have full access to the platform.';
       case 'pending':
         return 'We are reviewing your submitted document. This usually takes 1-2 business days.';
@@ -57,14 +57,14 @@ const VerificationDialog: React.FC = () => {
           <Tooltip>
             <TooltipTrigger asChild>
               <Button 
-                variant={verificationStatus === 'approved' ? 'ghost' : 'outline'} 
+                variant={verificationStatus === 'verified' ? 'ghost' : 'outline'} 
                 className="flex items-center gap-2"
-                disabled={verificationStatus === 'approved' || isLoading}
+                disabled={verificationStatus === 'verified' || isLoading}
                 onClick={handleOpenDialog}
               >
                 <ShieldCheck className="h-4 w-4" />
                 {isLoading ? 'Loading...' : getButtonLabel()}
-                {verificationStatus !== 'approved' && 
+                {verificationStatus !== 'verified' && 
                   <HelpCircle className="h-3 w-3 ml-1 text-muted-foreground" />
                 }
               </Button>

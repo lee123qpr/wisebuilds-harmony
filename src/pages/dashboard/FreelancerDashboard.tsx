@@ -60,7 +60,7 @@ const FreelancerDashboard = () => {
             isLoadingBalance={isLoadingBalance}
           />
           
-          {verificationStatus !== 'approved' && <VerificationDialog />}
+          {verificationStatus !== 'verified' && <VerificationDialog />}
         </div>
         
         <FreelancerTabs 

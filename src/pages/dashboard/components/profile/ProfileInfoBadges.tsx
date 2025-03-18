@@ -31,7 +31,7 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
 
   // Convert the verificationStatus to the expected type
   const mappedVerificationStatus: CommonVerificationStatus = 
-    verificationStatus === 'verified' || verificationStatus === 'approved' ? 'verified' :
+    verificationStatus === 'verified' ? 'verified' :
     verificationStatus === 'pending' ? 'pending' :
     verificationStatus === 'rejected' ? 'rejected' : 
     'not_submitted';

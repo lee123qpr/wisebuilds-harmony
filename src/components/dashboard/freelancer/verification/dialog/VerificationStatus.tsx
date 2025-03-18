@@ -29,7 +29,7 @@ const VerificationStatus: React.FC<VerificationStatusProps> = ({
   onDelete,
 }) => {
   // Check if it's a new verification or rejected to allow resubmission
-  const canSubmit = verificationStatus !== 'approved' && verificationStatus !== 'pending';
+  const canSubmit = verificationStatus !== 'verified' && verificationStatus !== 'pending';
   // Document has been submitted but not approved yet, so can be deleted
   const canDelete = verificationStatus === 'pending' || verificationStatus === 'rejected';
 

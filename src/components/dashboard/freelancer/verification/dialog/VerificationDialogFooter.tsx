@@ -25,7 +25,7 @@ const VerificationDialogFooter: React.FC<VerificationDialogFooterProps> = ({
   onSubmit,
 }) => {
   // Check if it's a new verification or rejected to allow resubmission
-  const canSubmit = verificationStatus !== 'approved' && verificationStatus !== 'pending';
+  const canSubmit = verificationStatus !== 'verified' && verificationStatus !== 'pending';
 
   return (
     <DialogFooter>
