@@ -25,7 +25,13 @@ export const useVerifications = () => {
       // Fetch all verification records
       const verificationRecords = await fetchAllVerifications();
       
-      // For each verification, fetch the user email and name from auth.users
+      if (!verificationRecords || verificationRecords.length === 0) {
+        setVerifications([]);
+        setIsLoading(false);
+        return;
+      }
+      
+      // For each verification, fetch the user info from freelancer_profiles instead of auth.users
       const enhancedData: Verification[] = await Promise.all(
         verificationRecords.map(async (item) => {
           try {
@@ -53,6 +59,7 @@ export const useVerifications = () => {
         description: 'Failed to load verification requests.',
         variant: 'destructive',
       });
+      setVerifications([]);
     } finally {
       setIsLoading(false);
     }
