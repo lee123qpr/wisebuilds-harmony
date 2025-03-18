@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Users } from 'lucide-react';
-import AnyOptionBadge from './AnyOptionBadge';
+import { Users, Filter } from 'lucide-react';
 
 interface HiringStatusBadgeProps {
   status: string;
@@ -10,7 +9,12 @@ interface HiringStatusBadgeProps {
 
 const HiringStatusBadge = ({ status }: HiringStatusBadgeProps) => {
   if (status === 'any') {
-    return <AnyOptionBadge label="Hiring Status" />;
+    return (
+      <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]">
+        <Filter className="h-3.5 w-3.5" />
+        Any Hiring Status
+      </Badge>
+    );
   }
 
   const getHiringStatusStyles = () => {

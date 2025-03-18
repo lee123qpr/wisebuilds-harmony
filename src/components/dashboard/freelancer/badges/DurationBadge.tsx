@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Clock } from 'lucide-react';
-import AnyOptionBadge from './AnyOptionBadge';
+import { Clock, Filter } from 'lucide-react';
 
 interface DurationBadgeProps {
   duration?: string;
@@ -17,7 +16,12 @@ const DurationBadge = ({ duration }: DurationBadgeProps) => {
   }
   
   if (duration === 'any') {
-    return <AnyOptionBadge label="Duration" />;
+    return (
+      <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]">
+        <Filter className="h-3.5 w-3.5" />
+        Any Duration
+      </Badge>
+    );
   }
 
   const getDurationStyles = () => {

@@ -1,8 +1,6 @@
-
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Briefcase } from 'lucide-react';
-import AnyOptionBadge from './AnyOptionBadge';
+import { Briefcase, Filter } from 'lucide-react';
 
 interface WorkTypeBadgeProps {
   workType: string;
@@ -10,7 +8,12 @@ interface WorkTypeBadgeProps {
 
 const WorkTypeBadge = ({ workType }: WorkTypeBadgeProps) => {
   if (workType === 'any') {
-    return <AnyOptionBadge label="Work Type" />;
+    return (
+      <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]">
+        <Filter className="h-3.5 w-3.5" />
+        Any Work Type
+      </Badge>
+    );
   }
 
   const getWorkTypeStyles = () => {

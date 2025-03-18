@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
-import { Tag } from 'lucide-react';
-import AnyOptionBadge from './AnyOptionBadge';
+import { Tag, Filter } from 'lucide-react';
 import { formatBudget } from '@/utils/projectFormatters';
 
 interface BudgetBadgeProps {
@@ -11,7 +10,12 @@ interface BudgetBadgeProps {
 
 const BudgetBadge = ({ budget }: BudgetBadgeProps) => {
   if (budget === 'any') {
-    return <AnyOptionBadge label="Budget" />;
+    return (
+      <Badge variant="outline" className="flex items-center gap-1.5 py-1.5 px-3 bg-[#F1F5F9] text-[#475569] border-[#CBD5E1]">
+        <Filter className="h-3.5 w-3.5" />
+        Any Budget
+      </Badge>
+    );
   }
   
   const getBudgetStyles = () => {
@@ -42,4 +46,3 @@ const BudgetBadge = ({ budget }: BudgetBadgeProps) => {
 };
 
 export default BudgetBadge;
-
