@@ -31,7 +31,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       // Create unique file name
       const fileExt = file.name.split('.').pop();
-      const fileName = `${namePrefix}-${Date.now()}.${fileExt}`;
+      const fileName = `${namePrefix.trim() || 'profile'}-${Date.now()}.${fileExt}`;
       const filePath = `${userId}/${fileName}`; // Only use userId in the path to comply with RLS policy
       
       console.log('Uploading to path:', filePath);
@@ -78,7 +78,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         title: 'Upload Failed',
         description: error instanceof Error 
           ? error.message 
-          : 'There was an error uploading your image. Make sure you are a freelancer user and your account has proper permissions.',
+          : 'There was an error uploading your image. Make sure you have a freelancer account with proper permissions.',
       });
     } finally {
       setUploadingImage(false);
