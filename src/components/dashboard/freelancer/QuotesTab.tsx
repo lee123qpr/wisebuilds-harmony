@@ -80,14 +80,22 @@ const QuotesTab: React.FC = () => {
         console.log('Received application data:', applicationData);
         
         // Transform the data to match the ApplicationWithProject interface
-        const applicationProjects = applicationData.map((app) => ({
-          ...app.projects,
-          application_id: app.id,
-          application_created_at: app.created_at
-        }));
+        const applicationProjects = applicationData.map((app) => {
+          // Make sure projects is an object before spreading
+          if (app.projects && typeof app.projects === 'object') {
+            return {
+              ...app.projects,
+              application_id: app.id,
+              application_created_at: app.created_at
+            };
+          }
+          // Handle case where projects might be null or undefined
+          console.warn('No project data found for application:', app.id);
+          return null;
+        }).filter(Boolean) as ApplicationWithProject[]; // Filter out null values
         
         console.log('Processed applications:', applicationProjects);
-        return applicationProjects as ApplicationWithProject[];
+        return applicationProjects;
       } catch (error) {
         console.error('Error fetching applications:', error);
         return [];
