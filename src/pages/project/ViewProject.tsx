@@ -16,6 +16,8 @@ import {
   ProjectStatusSkeleton, 
   ProjectDocumentsSkeleton 
 } from '@/components/projects/skeletons/ProjectSkeletons';
+import { Button } from '@/components/ui/button';
+import { ArrowLeft } from 'lucide-react';
 
 const ViewProject = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -36,6 +38,17 @@ const ViewProject = () => {
     navigate('/dashboard/business');
   };
 
+  const handleGoBack = () => {
+    // Go back to previous page
+    if (isFreelancer) {
+      navigate('/dashboard/freelancer?tab=available');
+    } else if (isBusiness) {
+      navigate('/dashboard/business');
+    } else {
+      navigate(-1); // Default fallback to browser history
+    }
+  };
+
   if (!project && !loading) {
     return (
       <MainLayout>
@@ -47,6 +60,18 @@ const ViewProject = () => {
   return (
     <MainLayout>
       <div className="container py-8">
+        <div className="mb-6">
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={handleGoBack} 
+            className="gap-2"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Go Back
+          </Button>
+        </div>
+
         {loading ? (
           <>
             <ProjectHeaderSkeleton />
