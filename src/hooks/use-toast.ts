@@ -1,3 +1,4 @@
+
 import * as React from "react"
 
 import type {
@@ -13,6 +14,7 @@ type ToasterToast = ToastProps & {
   title?: React.ReactNode
   description?: React.ReactNode
   action?: ToastActionElement
+  open?: boolean // Add the open property that was missing
 }
 
 const actionTypes = {
@@ -103,7 +105,7 @@ export const reducer = (state: State, action: Action): State => {
       return {
         ...state,
         toasts: state.toasts.map((t) =>
-          t.id === toastId || toastId === undefined
+          t.id === toastId ||  toastId === undefined
             ? {
                 ...t,
                 open: false,
@@ -139,7 +141,7 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, "id">
 
-// Add a type augmentation for the toast variant to include 'success'
+// Augment the ToastProps interface to include success variant
 declare module "@/components/ui/toast" {
   interface ToastProps {
     variant?: "default" | "destructive" | "success";
