@@ -35,11 +35,11 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       const filePath = `${folder}/${userId}/${fileName}`;
       
       console.log('Uploading to path:', filePath);
-      console.log('Bucket name:', 'User Uploads');
+      console.log('Bucket name:', 'freelancer-avatar');
       
-      // Directly upload to the bucket
+      // Directly upload to the new bucket
       const { data: uploadData, error: uploadError } = await supabase.storage
-        .from('User Uploads')
+        .from('freelancer-avatar')
         .upload(filePath, file, { 
           upsert: true,
           cacheControl: '3600'
@@ -59,7 +59,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       // Get public URL
       const { data: { publicUrl } } = supabase.storage
-        .from('User Uploads')
+        .from('freelancer-avatar')
         .getPublicUrl(filePath);
 
       console.log('Image uploaded successfully, publicUrl:', publicUrl);
