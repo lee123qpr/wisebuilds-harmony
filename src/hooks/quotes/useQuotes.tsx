@@ -19,13 +19,20 @@ export const useQuotes = ({
 }: UseQuotesProps = {}) => {
   const { user } = useAuth();
   
+  console.log("useQuotes hook called with:", { projectId, forClient, user: user?.id });
+  
   const queryResult = useQuery({
     queryKey: ['quotes', projectId, user?.id, forClient],
     queryFn: async (): Promise<QuoteWithFreelancer[]> => {
-      if (!user) return [];
+      if (!user) {
+        console.log("No user found, returning empty quotes array");
+        return [];
+      }
       
+      console.log('------------- QUOTE FETCH DIAGNOSTICS START -------------');
       console.log('Fetching quotes for', forClient ? 'client' : 'freelancer', 'with projectId:', projectId);
       console.log('User ID:', user.id);
+      console.log('User metadata:', user.user_metadata);
       
       // First, get the quotes
       let query = supabase
@@ -47,6 +54,8 @@ export const useQuotes = ({
         console.log('Filtering by freelancer_id:', user.id);
       }
       
+      console.log('Query parameters:', query);
+      
       // Execute the quotes query
       const { data: quotesData, error: quotesError } = await query;
       
@@ -55,7 +64,7 @@ export const useQuotes = ({
         throw quotesError;
       }
       
-      console.log('Quotes data from database:', quotesData);
+      console.log('Quotes data directly from database:', quotesData);
       
       if (!quotesData || quotesData.length === 0) {
         // Try one more query without the client_id filter to see if there are any quotes at all for this project
@@ -66,11 +75,29 @@ export const useQuotes = ({
             .select('*')
             .eq('project_id', projectId);
             
-          if (!allQuotesError && allQuotesData && allQuotesData.length > 0) {
-            console.log('Found quotes for this project but not associated with this client:', allQuotesData);
-            console.log('Check if the client_id in the quotes matches the current user id:', user.id);
+          if (!allQuotesError && allQuotesData) {
+            console.log('All quotes for this project (ignoring client filter):', allQuotesData);
+            if (allQuotesData.length > 0) {
+              console.log('Found quotes for this project but not associated with this client');
+              console.log('Quote client_ids:', allQuotesData.map(q => q.client_id));
+              console.log('Current user id:', user.id);
+            } else {
+              console.log('No quotes found for this project at all');
+            }
+          }
+          
+          // Try one more query to check ALL quotes in the system
+          console.log('Checking if there are ANY quotes in the system:');
+          const { data: systemQuotes, error: systemError } = await supabase
+            .from('quotes')
+            .select('*')
+            .limit(5);
+            
+          if (!systemError) {
+            console.log('Sample of quotes in the system:', systemQuotes);
           }
         }
+        console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
         return [];
       }
       
@@ -115,7 +142,8 @@ export const useQuotes = ({
         };
       });
       
-      console.log('Returning processed quotes with profiles:', result);
+      console.log('Final processed quotes with profiles:', result);
+      console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
       return result;
     },
     enabled: !!user,
@@ -127,7 +155,7 @@ export const useQuotes = ({
   useEffect(() => {
     if (!user || !projectId) return;
 
-    console.log('Setting up real-time listener for quotes table');
+    console.log('Setting up real-time listener for quotes table with projectId:', projectId);
     
     // Create a channel for real-time updates
     const channel = supabase
@@ -163,5 +191,9 @@ export const useQuotes = ({
     };
   }, [projectId, user, queryResult.refetch, forClient]);
 
-  return queryResult;
+  return {
+    ...queryResult,
+    isError: queryResult.isError,
+    error: queryResult.error
+  };
 };

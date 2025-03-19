@@ -19,7 +19,7 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
   
   // Sort quotes by creation date (newest first)
   const sortedQuotes = useMemo(() => {
-    console.log('Sorting quotes in table component:', quotes);
+    console.log('Sorting quotes in table component. Received quotes:', quotes);
     return [...quotes].sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
@@ -27,6 +27,12 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
 
   const handleViewDetails = (quoteId: string) => {
     try {
+      if (!quoteId) {
+        console.error('Cannot navigate: Invalid quoteId');
+        toast.error('Cannot view quote details');
+        return;
+      }
+      
       if (sortedQuotes.length > 0) {
         const projectId = sortedQuotes[0].project_id;
         console.log(`Navigating to quote details: /project/${projectId}/quotes/${quoteId}`);
@@ -57,6 +63,7 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
 
   return (
     <div className="overflow-x-auto">
+      <p className="text-sm text-muted-foreground mb-2">Showing {quotes.length} quote(s)</p>
       <Table className="border">
         <TableHeader className="bg-slate-50">
           <TableRow>
@@ -71,6 +78,8 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
         </TableHeader>
         <TableBody>
           {sortedQuotes.map((quote) => {
+            console.log('Rendering quote row for:', quote.id, quote);
+            
             // Get freelancer info
             const freelancer = quote.freelancer_profile || {};
             const freelancerName = freelancer.display_name || 

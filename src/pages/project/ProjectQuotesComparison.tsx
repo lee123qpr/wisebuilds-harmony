@@ -1,9 +1,9 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import MainLayout from '@/components/layout/MainLayout';
@@ -11,13 +11,24 @@ import QuoteCard from '@/components/quotes/QuoteCard';
 import ProjectQuotesComparisonTable from '@/components/quotes/ProjectQuotesComparisonTable';
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
+import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 
 const ProjectQuotesComparison = () => {
   const { projectId } = useParams();
   const { toast: legacyToast } = useToast();
   const [manualRefreshCount, setManualRefreshCount] = useState(0);
   const { project, loading: projectLoading } = useProjectDetails(projectId);
-  const { data: quotes, isLoading: quotesLoading, refetch, isRefetching } = useQuotes({ 
+  
+  console.log("ProjectQuotesComparison - Current projectId from URL params:", projectId);
+  
+  const { 
+    data: quotes, 
+    isLoading: quotesLoading, 
+    refetch, 
+    isRefetching,
+    isError,
+    error
+  } = useQuotes({ 
     projectId: projectId,
     forClient: true,
     refreshInterval: 10000 // Refresh every 10 seconds
@@ -27,16 +38,16 @@ const ProjectQuotesComparison = () => {
 
   // Force refetch when the component mounts or manual refresh happens
   useEffect(() => {
-    console.log('Quotes comparison page mounted or manual refresh triggered, fetching latest quotes');
+    console.log('ProjectQuotesComparison component mounted or manual refresh triggered, fetching latest quotes');
     refetch();
   }, [refetch, manualRefreshCount]);
 
   // Show toast when new quotes arrive (if not initial load)
   useEffect(() => {
-    if (quotes && quotes.length > 0 && !isLoading) {
-      console.log('Quotes data available:', quotes.length, 'quotes', quotes);
+    if (quotes) {
+      console.log('Quotes data available in component:', quotes.length, 'quotes', quotes);
     }
-  }, [quotes, isLoading]);
+  }, [quotes]);
 
   const handleManualRefresh = () => {
     toast.info('Refreshing quotes...');
@@ -69,6 +80,38 @@ const ProjectQuotesComparison = () => {
               </div>
             </CardContent>
           </Card>
+        </div>
+      </MainLayout>
+    );
+  }
+
+  if (isError) {
+    console.error("Error fetching quotes:", error);
+    return (
+      <MainLayout>
+        <div className="container py-8">
+          <div className="flex items-center gap-4 mb-8">
+            <Button variant="ghost" size="icon" asChild>
+              <Link to={`/project/${projectId}`}>
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <h1 className="text-2xl font-bold">Quotes Comparison</h1>
+          </div>
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Error</AlertTitle>
+            <AlertDescription>
+              Failed to load quotes. Please try refreshing the page.
+              {error instanceof Error ? ` Error: ${error.message}` : ''}
+            </AlertDescription>
+          </Alert>
+          <div className="mt-4">
+            <Button onClick={handleManualRefresh}>
+              <RefreshCw className="h-4 w-4 mr-2" />
+              Retry
+            </Button>
+          </div>
         </div>
       </MainLayout>
     );
@@ -143,20 +186,30 @@ const ProjectQuotesComparison = () => {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground mb-4">
                 When freelancers submit quotes for your project, they will appear here for comparison.
-                If you believe quotes have been submitted but are not showing, try refreshing the page.
               </p>
-              <div className="flex gap-4 mt-4">
-                <Button variant="outline" onClick={handleManualRefresh}>
-                  <RefreshCw className="h-4 w-4 mr-2" />
-                  Refresh Quotes
-                </Button>
-                <Button asChild>
-                  <Link to={`/project/${projectId}`}>Back to Project</Link>
-                </Button>
-              </div>
+              
+              <Alert className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Diagnostic Information</AlertTitle>
+                <AlertDescription>
+                  <div className="space-y-2 mt-2">
+                    <p><strong>Project ID:</strong> {projectId}</p>
+                    <p><strong>Quotes count:</strong> {quotes?.length || 0}</p>
+                  </div>
+                </AlertDescription>
+              </Alert>
             </CardContent>
+            <CardFooter className="flex gap-4">
+              <Button variant="default" onClick={handleManualRefresh} disabled={isRefetching}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${isRefetching ? 'animate-spin' : ''}`} />
+                Refresh Quotes
+              </Button>
+              <Button variant="outline" asChild>
+                <Link to={`/project/${projectId}`}>Back to Project</Link>
+              </Button>
+            </CardFooter>
           </Card>
         )}
       </div>
