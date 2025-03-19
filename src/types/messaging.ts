@@ -1,4 +1,3 @@
-
 export interface ClientInfo {
   contact_name: string | null;
   email: string | null;
@@ -21,6 +20,7 @@ export interface FreelancerInfo {
   reviews_count?: number;
   email_verified?: boolean;
   verified?: boolean;
+  location?: string | null;
 }
 
 export interface Conversation {

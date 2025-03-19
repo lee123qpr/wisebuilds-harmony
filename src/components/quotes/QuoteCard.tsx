@@ -11,7 +11,7 @@ import QuoteStatusBadge from './table/QuoteStatusBadge';
 import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
 import { Skeleton } from '@/components/ui/skeleton';
 import { FreelancerInfo } from '@/types/messaging';
-import { VerificationBadge } from '@/components/common/VerificationBadge';
+import VerificationBadge from '@/components/common/VerificationBadge';
 
 interface QuoteCardProps {
   quote: QuoteWithFreelancer;
@@ -89,7 +89,9 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
               <div>
                 <h3 className="font-medium flex items-center gap-1">
                   {freelancerName}
-                  {(freelancer.verified || freelancerInfo?.verified) && <VerificationBadge size="sm" />}
+                  {(freelancer.verified || freelancerInfo?.verified) && 
+                    <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
+                  }
                 </h3>
                 <p className="text-sm text-muted-foreground">{freelancer.job_title || 'Freelancer'}</p>
               </div>
