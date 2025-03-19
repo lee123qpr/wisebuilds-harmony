@@ -20,27 +20,40 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
         throw new Error('Missing required parameters');
       }
 
-      console.log('Accepting quote:', quoteId);
+      console.log('Accepting quote with ID:', quoteId);
 
-      // Properly await the Supabase response and handle it correctly
-      const { data, error } = await supabase
-        .from('quotes')
-        .update({ 
-          status: 'accepted', 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('id', quoteId)
-        .select();
+      try {
+        // Properly await the Supabase response and handle it correctly
+        const { data, error } = await supabase
+          .from('quotes')
+          .update({ 
+            status: 'accepted', 
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', quoteId)
+          .select();
 
-      if (error) {
-        console.error('Error accepting quote:', error);
-        throw error;
+        if (error) {
+          console.error('Error accepting quote:', error);
+          throw error;
+        }
+
+        // Verify the update was successful by checking the returned data
+        if (!data || data.length === 0) {
+          console.error('No data returned from update operation');
+          throw new Error('Failed to update quote status');
+        }
+
+        console.log('Quote accepted successfully, updated data:', data);
+        return data;
+      } catch (err) {
+        console.error('Error in acceptMutation:', err);
+        throw err;
       }
-
-      console.log('Quote accepted successfully:', data);
-      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Accept mutation completed successfully:', data);
+      
       // Invalidate queries to ensure fresh data is fetched
       queryClient.invalidateQueries({ queryKey: ['quote', projectId, quoteId] });
       queryClient.invalidateQueries({ queryKey: ['quotes', projectId] });
@@ -67,24 +80,37 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
 
       console.log('Rejecting quote:', quoteId);
 
-      const { data, error } = await supabase
-        .from('quotes')
-        .update({ 
-          status: 'declined', 
-          updated_at: new Date().toISOString() 
-        })
-        .eq('id', quoteId)
-        .select();
+      try {
+        const { data, error } = await supabase
+          .from('quotes')
+          .update({ 
+            status: 'declined', 
+            updated_at: new Date().toISOString() 
+          })
+          .eq('id', quoteId)
+          .select();
 
-      if (error) {
-        console.error('Error rejecting quote:', error);
-        throw error;
+        if (error) {
+          console.error('Error rejecting quote:', error);
+          throw error;
+        }
+
+        // Verify the update was successful
+        if (!data || data.length === 0) {
+          console.error('No data returned from reject update operation');
+          throw new Error('Failed to update quote status to declined');
+        }
+
+        console.log('Quote rejected successfully, updated data:', data);
+        return data;
+      } catch (err) {
+        console.error('Error in rejectMutation:', err);
+        throw err;
       }
-
-      console.log('Quote rejected successfully:', data);
-      return data;
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
+      console.log('Reject mutation completed successfully:', data);
+      
       // Invalidate relevant queries with correct keys
       queryClient.invalidateQueries({ queryKey: ['quote', projectId, quoteId] });
       queryClient.invalidateQueries({ queryKey: ['quotes', projectId] });

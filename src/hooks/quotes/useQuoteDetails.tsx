@@ -27,7 +27,7 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
 
       console.log('Fetching quote details:', quoteId);
       
-      // Fetch the quote
+      // Fetch the quote directly from database without caching
       const { data: quote, error: quoteError } = await supabase
         .from('quotes')
         .select('*')
@@ -41,6 +41,7 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
       }
       
       if (!quote) {
+        console.log('No quote found with ID:', quoteId);
         return null;
       }
       
@@ -128,9 +129,10 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
       };
     },
     enabled: !!user && !!projectId && !!quoteId,
-    refetchInterval: 5000, // Refresh every 5 seconds for more responsive UI
+    refetchInterval: 2000, // Refresh every 2 seconds for more responsive UI
     staleTime: 0, // Consider data always stale to ensure we get fresh data
     refetchOnWindowFocus: true, // Refetch when window gains focus
+    cacheTime: 0, // Disable caching completely to always fetch fresh data
   });
 
   return {

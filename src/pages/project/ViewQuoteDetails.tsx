@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,37 +39,62 @@ const ViewQuoteDetails = () => {
   // Force refetch data when component mounts or when URL params change
   useEffect(() => {
     if (projectId && quoteId) {
+      console.log('Initial data fetch for quote:', quoteId);
       refetch();
     }
+    
+    // Set up polling for updates
+    const intervalId = setInterval(() => {
+      if (projectId && quoteId) {
+        console.log('Polling for quote updates');
+        refetch();
+      }
+    }, 2000); // Poll every 2 seconds
+    
+    return () => clearInterval(intervalId);
   }, [projectId, quoteId, refetch]);
 
-  const handleAcceptQuote = async () => {
+  const handleAcceptQuote = useCallback(async () => {
+    if (!projectId || !quoteId) return;
+    
     try {
       console.log('ViewQuoteDetails - Accepting quote');
       await acceptQuote();
-      // Ensure UI is updated with the latest data
-      setTimeout(() => {
-        console.log('Refetching after accept');
-        refetch();
+      
+      // Immediately refetch data after accepting
+      console.log('Triggering refetch after accept');
+      await refetch();
+      
+      // Refetch again after a short delay to ensure DB changes are reflected
+      setTimeout(async () => {
+        console.log('Delayed refetch after accept');
+        await refetch();
       }, 1000);
     } catch (error) {
       console.error('Error accepting quote:', error);
     }
-  };
+  }, [projectId, quoteId, acceptQuote, refetch]);
 
-  const handleRejectQuote = async () => {
+  const handleRejectQuote = useCallback(async () => {
+    if (!projectId || !quoteId) return;
+    
     try {
       console.log('ViewQuoteDetails - Rejecting quote');
       await rejectQuote();
-      // Ensure UI is updated with the latest data
-      setTimeout(() => {
-        console.log('Refetching after reject');
-        refetch();
+      
+      // Immediately refetch data after rejecting
+      console.log('Triggering refetch after reject');
+      await refetch();
+      
+      // Refetch again after a short delay to ensure DB changes are reflected
+      setTimeout(async () => {
+        console.log('Delayed refetch after reject');
+        await refetch();
       }, 1000);
     } catch (error) {
       console.error('Error rejecting quote:', error);
     }
-  };
+  }, [projectId, quoteId, rejectQuote, refetch]);
 
   if (isLoading) {
     return (
@@ -119,6 +144,15 @@ const ViewQuoteDetails = () => {
           projectId={projectId || ''} 
           projectTitle={project?.title}
         />
+
+        {/* Debug information for status */}
+        <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
+          <p>Current Quote Status: {quote.status}</p>
+          <p>Last Updated: {new Date(quote.updated_at).toLocaleString()}</p>
+          <Button size="sm" variant="outline" onClick={() => refetch()} className="mt-1">
+            Refresh Data
+          </Button>
+        </div>
 
         {/* Freelancer profile card */}
         <Card className="mb-6">

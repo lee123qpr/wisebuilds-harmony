@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, MessageSquare } from 'lucide-react';
@@ -11,14 +10,13 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
-  DialogClose
 } from '@/components/ui/dialog';
 
 interface QuoteActionButtonsProps {
   quoteStatus: string;
   freelancerId: string;
-  onAccept: () => void;
-  onReject: () => void;
+  onAccept: () => Promise<void>;
+  onReject: () => Promise<void>;
   isAccepting: boolean;
   isRejecting: boolean;
 }
@@ -41,15 +39,27 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
 
   // Handlers with proper dialog management
   const handleAccept = async () => {
-    console.log('Handling accept in QuoteActionButtons');
-    await onAccept();
-    setAcceptDialogOpen(false);
+    try {
+      console.log('Handling accept in QuoteActionButtons');
+      await onAccept();
+      console.log('Accept completed, closing dialog');
+      setAcceptDialogOpen(false);
+    } catch (error) {
+      console.error('Error in handleAccept:', error);
+      // Keep dialog open on error
+    }
   };
 
   const handleReject = async () => {
-    console.log('Handling reject in QuoteActionButtons');
-    await onReject();
-    setRejectDialogOpen(false);
+    try {
+      console.log('Handling reject in QuoteActionButtons');
+      await onReject();
+      console.log('Reject completed, closing dialog');
+      setRejectDialogOpen(false);
+    } catch (error) {
+      console.error('Error in handleReject:', error);
+      // Keep dialog open on error
+    }
   };
 
   return (
