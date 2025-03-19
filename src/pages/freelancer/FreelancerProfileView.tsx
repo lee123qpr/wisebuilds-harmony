@@ -3,15 +3,17 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Briefcase, Calendar, CheckCircle, CheckCircle2, Mail, MapPin, Phone, Star } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
+import { ArrowLeft, Briefcase, Calendar, CheckCircle, CheckCircle2, Mail, MapPin, Phone, Star, User } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { format, parseISO } from 'date-fns';
 import { FreelancerProfile } from '@/types/applications';
+import ReviewsList from '@/pages/dashboard/components/profile/ReviewsList';
 
 const FreelancerProfileView: React.FC = () => {
   const { freelancerId } = useParams<{ freelancerId: string }>();
@@ -19,6 +21,7 @@ const FreelancerProfileView: React.FC = () => {
   const { toast } = useToast();
   const [profile, setProfile] = useState<FreelancerProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState("profile");
 
   useEffect(() => {
     const fetchFreelancerProfile = async () => {
@@ -209,101 +212,130 @@ const FreelancerProfileView: React.FC = () => {
             </CardContent>
           </Card>
         ) : (
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex flex-col md:flex-row gap-6">
-                <div className="flex flex-col items-center space-y-2">
-                  <Avatar className="h-24 w-24">
-                    <AvatarImage src={profile.profile_photo} alt={profile.display_name} />
-                    <AvatarFallback>{getInitials(profile.display_name)}</AvatarFallback>
-                  </Avatar>
-                  
-                  <div className="flex flex-col items-center gap-1">
-                    {profile.email_verified && (
-                      <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
-                        <CheckCircle className="h-3 w-3" />
-                        Email Verified
-                      </Badge>
-                    )}
-                    
-                    {profile.verified && (
-                      <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
-                        <CheckCircle2 className="h-3 w-3" />
-                        ID Verified
-                      </Badge>
-                    )}
-                  </div>
-                </div>
-                
-                <div className="flex-1 space-y-4">
-                  <div>
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
-                      <h2 className="text-xl font-semibold">{profile.display_name || 'Freelancer'}</h2>
-                      {profile.rating && renderRatingStars(profile.rating)}
+          <Tabs defaultValue="profile" value={activeTab} onValueChange={setActiveTab} className="space-y-4">
+            <TabsList className="ml-1">
+              <TabsTrigger value="profile">
+                <User className="h-4 w-4 mr-2" />
+                Profile
+              </TabsTrigger>
+              <TabsTrigger value="reviews">
+                <Star className="h-4 w-4 mr-2" />
+                Reviews
+              </TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="profile">
+              <Card>
+                <CardContent className="p-6">
+                  <div className="flex flex-col md:flex-row gap-6">
+                    <div className="flex flex-col items-center space-y-2">
+                      <Avatar className="h-24 w-24">
+                        <AvatarImage src={profile.profile_photo} alt={profile.display_name} />
+                        <AvatarFallback>{getInitials(profile.display_name)}</AvatarFallback>
+                      </Avatar>
+                      
+                      <div className="flex flex-col items-center gap-1">
+                        {profile.email_verified && (
+                          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 flex items-center gap-1">
+                            <CheckCircle className="h-3 w-3" />
+                            Email Verified
+                          </Badge>
+                        )}
+                        
+                        {profile.verified && (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
+                            <CheckCircle2 className="h-3 w-3" />
+                            ID Verified
+                          </Badge>
+                        )}
+                      </div>
                     </div>
                     
-                    <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
-                    
-                    <div className="mt-3 space-y-1.5">
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                        Member since {formatMemberSince(profile.member_since)}
-                      </div>
-                      
-                      <div className="flex items-center text-sm text-muted-foreground">
-                        <Briefcase className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                        {profile.jobs_completed || 0} jobs completed
-                      </div>
-                      
-                      {profile.location && (
-                        <div className="flex items-center text-sm text-muted-foreground">
-                          <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
-                          {profile.location}
+                    <div className="flex-1 space-y-4">
+                      <div>
+                        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
+                          <h2 className="text-xl font-semibold">{profile.display_name || 'Freelancer'}</h2>
+                          {profile.rating && renderRatingStars(profile.rating)}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  {profile.bio && (
-                    <div className="bg-slate-50 p-4 rounded-md">
-                      <p className="font-medium mb-1">Bio:</p>
-                      <p className="text-sm">{profile.bio}</p>
-                    </div>
-                  )}
-                  
-                  {profile.skills && profile.skills.length > 0 && (
-                    <div>
-                      <p className="font-medium mb-2">Skills:</p>
-                      <div className="flex flex-wrap gap-2">
-                        {profile.skills.map((skill, index) => (
-                          <Badge key={index} variant="secondary">{skill}</Badge>
-                        ))}
+                        
+                        <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
+                        
+                        <div className="mt-3 space-y-1.5">
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Calendar className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                            Member since {formatMemberSince(profile.member_since)}
+                          </div>
+                          
+                          <div className="flex items-center text-sm text-muted-foreground">
+                            <Briefcase className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                            {profile.jobs_completed || 0} jobs completed
+                          </div>
+                          
+                          {profile.location && (
+                            <div className="flex items-center text-sm text-muted-foreground">
+                              <MapPin className="h-4 w-4 mr-1.5 flex-shrink-0" />
+                              {profile.location}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                  
-                  <div>
-                    <p className="font-medium mb-2">Contact information:</p>
-                    <div className="space-y-2">
-                      {profile.email && (
-                        <div className="flex items-center">
-                          <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <a href={`mailto:${profile.email}`} className="text-sm text-blue-600 hover:underline">{profile.email}</a>
+                      
+                      {profile.bio && (
+                        <div className="bg-slate-50 p-4 rounded-md">
+                          <p className="font-medium mb-1">Bio:</p>
+                          <p className="text-sm">{profile.bio}</p>
                         </div>
                       )}
                       
-                      {profile.phone_number && (
-                        <div className="flex items-center">
-                          <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
-                          <a href={`tel:${profile.phone_number}`} className="text-sm text-blue-600 hover:underline">{profile.phone_number}</a>
+                      {profile.skills && profile.skills.length > 0 && (
+                        <div>
+                          <p className="font-medium mb-2">Skills:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {profile.skills.map((skill, index) => (
+                              <Badge key={index} variant="secondary">{skill}</Badge>
+                            ))}
+                          </div>
                         </div>
                       )}
+                      
+                      <div>
+                        <p className="font-medium mb-2">Contact information:</p>
+                        <div className="space-y-2">
+                          {profile.email && (
+                            <div className="flex items-center">
+                              <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
+                              <a href={`mailto:${profile.email}`} className="text-sm text-blue-600 hover:underline">{profile.email}</a>
+                            </div>
+                          )}
+                          
+                          {profile.phone_number && (
+                            <div className="flex items-center">
+                              <Phone className="h-4 w-4 mr-2 text-muted-foreground" />
+                              <a href={`tel:${profile.phone_number}`} className="text-sm text-blue-600 hover:underline">{profile.phone_number}</a>
+                            </div>
+                          )}
+                        </div>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            
+            <TabsContent value="reviews">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Client Reviews</CardTitle>
+                  <CardDescription>
+                    Feedback from clients who have worked with {profile.display_name || 'this freelancer'}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <ReviewsList userId={profile.id} />
+                </CardContent>
+              </Card>
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </MainLayout>
