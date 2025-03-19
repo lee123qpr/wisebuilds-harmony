@@ -15,6 +15,9 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
   quoteSubmitted = false,
   submissionDate
 }) => {
+  // Ensure clientName is never empty or undefined for display
+  const displayName = clientName && clientName !== 'undefined' ? clientName : 'Client';
+  
   return (
     <div className="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
       <div className="flex items-start gap-3 mb-3">
@@ -39,7 +42,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
         </div>
         <div>
           <p className="text-sm font-medium text-slate-700">
-            Client: <span className="font-semibold">{clientName}</span>
+            Client: <span className="font-semibold">{displayName}</span>
           </p>
         </div>
       </div>

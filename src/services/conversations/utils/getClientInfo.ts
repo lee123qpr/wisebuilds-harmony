@@ -33,7 +33,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   
   // If profile exists with contact_name, return it immediately
   if (clientProfile && clientProfile.contact_name) {
-    console.log('Returning client full name from profile:', clientProfile.contact_name);
+    console.log('Returning client name from profile:', clientProfile.contact_name);
     return {
       contact_name: clientProfile.contact_name,
       company_name: clientProfile.company_name,
