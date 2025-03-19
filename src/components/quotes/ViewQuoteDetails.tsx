@@ -6,12 +6,12 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useFreelancerQuote } from '@/hooks/quotes/useFreelancerQuote';
-import { QuoteStatusBadge } from '@/components/quotes/details/QuoteStatusBadge';
-import { PriceSection } from '@/components/quotes/details/PriceSection';
-import { TimelineSection } from '@/components/quotes/details/TimelineSection';
-import { PaymentSection } from '@/components/quotes/details/PaymentSection';
-import { DescriptionSection } from '@/components/quotes/details/DescriptionSection';
-import { QuoteDetailsSkeleton } from '@/components/quotes/details/QuoteDetailsSkeleton';
+import QuoteStatusBadge from '@/components/quotes/details/QuoteStatusBadge';
+import PriceSection from '@/components/quotes/details/PriceSection';
+import TimelineSection from '@/components/quotes/details/TimelineSection';
+import PaymentSection from '@/components/quotes/details/PaymentSection';
+import DescriptionSection from '@/components/quotes/details/DescriptionSection';
+import QuoteDetailsSkeleton from '@/components/quotes/details/QuoteDetailsSkeleton';
 import ProjectInfo from './components/ProjectInfo';
 
 interface ViewQuoteDetailsProps {
