@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { TableRow, TableCell } from '@/components/ui/table';
@@ -66,7 +67,7 @@ const QuoteTableRow: React.FC<QuoteTableRowProps> = ({ quote, onViewDetails }) =
     job_title: freelancer.job_title || 'Freelancer',
     rating: freelancer.rating || freelancerInfo?.rating || 0,
     location: freelancerInfo?.location || freelancer.location || '',
-    verified: freelancerInfo?.verified || freelancer.id_verified || false, // Changed from id_verified to verified
+    verified: freelancerInfo?.verified || freelancer.verified || false, // Changed from id_verified to verified
   };
   
   return (
