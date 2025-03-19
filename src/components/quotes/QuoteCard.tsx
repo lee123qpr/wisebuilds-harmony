@@ -4,10 +4,11 @@ import { format } from 'date-fns';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, Check, Clock, DollarSign, Eye, X } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Eye } from 'lucide-react';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
+import QuoteStatusBadge from './table/QuoteStatusBadge';
 
 interface QuoteCardProps {
   quote: QuoteWithFreelancer;
@@ -118,34 +119,6 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
       </CardContent>
     </Card>
   );
-};
-
-const QuoteStatusBadge = ({ status }: { status: string }) => {
-  switch (status) {
-    case 'pending':
-      return (
-        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200 flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          Pending
-        </Badge>
-      );
-    case 'accepted':
-      return (
-        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
-          <Check className="h-3 w-3" />
-          Accepted
-        </Badge>
-      );
-    case 'declined':
-      return (
-        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 flex items-center gap-1">
-          <X className="h-3 w-3" />
-          Declined
-        </Badge>
-      );
-    default:
-      return null;
-  }
 };
 
 export default QuoteCard;

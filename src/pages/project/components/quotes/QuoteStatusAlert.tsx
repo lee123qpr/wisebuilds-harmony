@@ -1,9 +1,10 @@
 
 import React from 'react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Quote } from '@/types/quotes';
 
 interface QuoteStatusAlertProps {
-  status: string;
+  status: Quote['status'];
 }
 
 const QuoteStatusAlert: React.FC<QuoteStatusAlertProps> = ({ status }) => {

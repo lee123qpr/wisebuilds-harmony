@@ -1,12 +1,10 @@
 
 import React from 'react';
 import { format } from 'date-fns';
-import { useParams } from 'react-router-dom';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { useFreelancerQuote } from '@/hooks/quotes/useFreelancerQuote';
-import QuoteStatusBadge from '@/components/quotes/details/QuoteStatusBadge';
+import QuoteStatusBadge from '@/components/quotes/table/QuoteStatusBadge';
 import PriceSection from '@/components/quotes/details/PriceSection';
 import TimelineSection from '@/components/quotes/details/TimelineSection';
 import PaymentSection from '@/components/quotes/details/PaymentSection';
