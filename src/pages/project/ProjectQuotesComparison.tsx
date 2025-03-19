@@ -32,7 +32,7 @@ const ProjectQuotesComparison = () => {
   // Show toast when new quotes arrive (if not initial load)
   useEffect(() => {
     if (quotes && quotes.length > 0 && !isLoading) {
-      console.log('Quotes data available:', quotes.length, 'quotes');
+      console.log('Quotes data available:', quotes.length, 'quotes', quotes);
     }
   }, [quotes, isLoading]);
 

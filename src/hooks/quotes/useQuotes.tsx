@@ -23,6 +23,8 @@ export const useQuotes = ({
     queryFn: async (): Promise<QuoteWithFreelancer[]> => {
       if (!user) return [];
       
+      console.log('Fetching quotes for', forClient ? 'client' : 'freelancer', 'with projectId:', projectId);
+      
       // First, get the quotes
       let query = supabase
         .from('quotes')
@@ -48,6 +50,8 @@ export const useQuotes = ({
         throw quotesError;
       }
       
+      console.log('Quotes data from database:', quotesData);
+      
       if (!quotesData || quotesData.length === 0) {
         return [];
       }
@@ -65,6 +69,8 @@ export const useQuotes = ({
         // Continue without profiles rather than failing completely
       }
       
+      console.log('Freelancer profiles data:', freelancerProfiles);
+      
       // Create a map of freelancer profiles by ID for quick lookup
       const profileMap = (freelancerProfiles || []).reduce((map, profile) => {
         map[profile.id] = profile;
@@ -72,7 +78,7 @@ export const useQuotes = ({
       }, {} as Record<string, any>);
       
       // Combine quotes with freelancer profiles
-      return quotesData.map(quote => {
+      const result = quotesData.map(quote => {
         const freelancerProfile = profileMap[quote.freelancer_id] || {};
         
         return {
@@ -90,6 +96,9 @@ export const useQuotes = ({
           }
         };
       });
+      
+      console.log('Returning processed quotes with profiles:', result);
+      return result;
     },
     enabled: !!user,
     refetchInterval: refreshInterval, // Regularly refresh data

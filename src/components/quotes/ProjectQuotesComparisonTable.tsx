@@ -24,7 +24,9 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
   }, [quotes]);
 
   const handleViewDetails = (quoteId: string) => {
-    navigate(`/project/${sortedQuotes[0].project_id}/quotes/${quoteId}`);
+    if (sortedQuotes.length > 0) {
+      navigate(`/project/${sortedQuotes[0].project_id}/quotes/${quoteId}`);
+    }
   };
 
   return (
