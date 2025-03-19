@@ -65,8 +65,9 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
               display_name: freelancerInfo.full_name,
               profile_photo: freelancerInfo.profile_image,
               job_title: 'Freelancer',
-              verified: freelancerInfo.verified,
-              location: freelancerInfo.location
+              location: freelancerInfo.location,
+              id_verified: freelancerInfo.verified, // Use id_verified instead of verified
+              // Don't add properties that don't exist in the type
             };
           }
         } catch (err) {

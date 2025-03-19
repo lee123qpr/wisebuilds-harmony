@@ -67,7 +67,7 @@ const QuoteTableRow: React.FC<QuoteTableRowProps> = ({ quote, onViewDetails }) =
     job_title: freelancer.job_title || 'Freelancer',
     rating: freelancer.rating || freelancerInfo?.rating || 0,
     location: freelancerInfo?.location || freelancer.location || '',
-    verified: freelancerInfo?.verified || freelancer.verified || false,
+    id_verified: freelancerInfo?.verified || freelancer.id_verified || false,
   };
   
   return (

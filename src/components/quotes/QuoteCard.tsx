@@ -89,7 +89,7 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
               <div>
                 <h3 className="font-medium flex items-center gap-1">
                   {freelancerName}
-                  {(freelancer.verified || freelancerInfo?.verified) && 
+                  {(freelancer.id_verified || freelancerInfo?.verified) && 
                     <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
                   }
                 </h3>
