@@ -34,8 +34,6 @@ export const buildQuotesQuery = (
     console.log('Bypassing client/freelancer filter to see all quotes for this project');
   }
   
-  console.log('Query parameters:', query);
-  
   return query;
 };
 
@@ -43,19 +41,26 @@ export const buildQuotesQuery = (
  * Fetches freelancer profiles for a list of quotes
  */
 export const fetchFreelancerProfiles = async (freelancerIds: string[]) => {
-  if (!freelancerIds.length) return [];
+  if (!freelancerIds || !freelancerIds.length) {
+    console.log('No freelancer IDs provided to fetch profiles');
+    return [];
+  }
+  
+  // Remove any duplicates from the array
+  const uniqueFreelancerIds = [...new Set(freelancerIds)];
+  console.log('Fetching profiles for freelancers:', uniqueFreelancerIds);
   
   const { data: freelancerProfiles, error: profilesError } = await supabase
     .from('freelancer_profiles')
     .select('id, first_name, last_name, display_name, profile_photo, job_title, rating')
-    .in('id', freelancerIds);
+    .in('id', uniqueFreelancerIds);
   
   if (profilesError) {
     console.error('Error fetching freelancer profiles:', profilesError);
     return [];
   }
   
-  console.log('Freelancer profiles data:', freelancerProfiles);
+  console.log('Fetched freelancer profiles:', freelancerProfiles?.length || 0);
   return freelancerProfiles || [];
 };
 
@@ -63,8 +68,14 @@ export const fetchFreelancerProfiles = async (freelancerIds: string[]) => {
  * Creates a map of freelancer profiles by ID for quick lookup
  */
 export const createProfileMap = (profiles: any[]): Record<string, any> => {
-  return (profiles || []).reduce((map, profile) => {
-    map[profile.id] = profile;
+  if (!profiles || !profiles.length) {
+    return {};
+  }
+  
+  return profiles.reduce((map, profile) => {
+    if (profile && profile.id) {
+      map[profile.id] = profile;
+    }
     return map;
   }, {} as Record<string, any>);
 };

@@ -20,6 +20,11 @@ export const logQuoteFetchDiagnostics = (
  * Verifies project ownership
  */
 export const verifyProjectOwnership = async (projectId: string, userId: string) => {
+  if (!projectId || !userId) {
+    console.warn('Missing projectId or userId for ownership verification');
+    return false;
+  }
+
   const { data: projectData, error: projectError } = await supabase
     .from('projects')
     .select('id, user_id')
@@ -51,12 +56,21 @@ export const logSystemQuotesSample = async () => {
     .select('*')
     .limit(10);
     
-  if (!systemError && systemQuotes && systemQuotes.length > 0) {
+  if (systemError) {
+    console.error('Error fetching system quotes sample:', systemError);
+    return;
+  }
+  
+  if (systemQuotes && systemQuotes.length > 0) {
     console.log('Sample of quotes in the system:', systemQuotes);
     const projects = [...new Set(systemQuotes.map(q => q.project_id))];
     const clients = [...new Set(systemQuotes.map(q => q.client_id))];
+    const freelancers = [...new Set(systemQuotes.map(q => q.freelancer_id))];
     console.log('Projects with quotes:', projects);
     console.log('Clients with quotes:', clients);
+    console.log('Freelancers with quotes:', freelancers);
+  } else {
+    console.log('No quotes found in the system');
   }
   
   console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
@@ -66,9 +80,14 @@ export const logSystemQuotesSample = async () => {
  * Checks for all quotes related to a project regardless of client/freelancer
  */
 export const checkAllProjectQuotes = async (projectId: string) => {
+  if (!projectId) {
+    console.warn('Missing projectId for checkAllProjectQuotes');
+    return null;
+  }
+  
   console.log('Checking ALL quotes for this project regardless of client_id...');
   
-  // Fix: Don't try to join with freelancer, just get the quotes
+  // Get all quotes for this project without any client/freelancer filtering
   const { data: allQuotesData, error: allQuotesError } = await supabase
     .from('quotes')
     .select('*')
@@ -80,7 +99,7 @@ export const checkAllProjectQuotes = async (projectId: string) => {
   }
   
   if (allQuotesData && allQuotesData.length > 0) {
-    console.log('Found quotes for this project but with different filter criteria:', allQuotesData);
+    console.log('Found quotes for this project:', allQuotesData.length, 'quotes');
     console.log('Quote client_ids:', allQuotesData.map(q => q.client_id));
     console.log('Quote freelancer_ids:', allQuotesData.map(q => q.freelancer_id));
   } else {

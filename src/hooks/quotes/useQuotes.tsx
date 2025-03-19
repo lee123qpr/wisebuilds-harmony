@@ -39,59 +39,59 @@ export const useQuotes = ({
       // Log diagnostics for quote fetching
       logQuoteFetchDiagnostics(projectId, forClient, user.id, includeAllQuotes);
       
-      // Verify project ownership if needed
-      if (forClient && projectId) {
-        await verifyProjectOwnership(projectId, user.id);
-      }
-      
-      // Build and execute the main quotes query
-      const query = buildQuotesQuery(projectId, forClient, user.id, includeAllQuotes);
-      const { data: quotesData, error: quotesError } = await query;
-      
-      if (quotesError) {
-        console.error('Error fetching quotes:', quotesError);
-        throw quotesError;
-      }
-      
-      console.log('Quotes data directly from database:', quotesData);
-      
-      // If no quotes were found with the initial query
-      if (!quotesData || quotesData.length === 0) {
-        // Check if there are any quotes for this project
-        if (projectId) {
-          const allProjectQuotes = await checkAllProjectQuotes(projectId);
-          
-          // If includeAllQuotes is true, use these results instead
-          if (includeAllQuotes && allProjectQuotes && allProjectQuotes.length > 0) {
-            console.log('Using all quotes found due to includeAllQuotes=true');
-            
-            // We need to fetch freelancer profiles separately now
-            const freelancerIds = allProjectQuotes.map(quote => quote.freelancer_id);
-            const freelancerProfiles = await fetchFreelancerProfiles(freelancerIds);
-            const profileMap = createProfileMap(freelancerProfiles);
-            
-            return formatQuotesWithProfiles(allProjectQuotes, profileMap);
-          }
+      try {
+        // Build and execute the main quotes query
+        const query = buildQuotesQuery(projectId, forClient, user.id, includeAllQuotes);
+        const { data: quotesData, error: quotesError } = await query;
+        
+        if (quotesError) {
+          console.error('Error fetching quotes:', quotesError);
+          throw quotesError;
         }
         
-        // Log system-wide quotes for diagnostics
-        await logSystemQuotesSample();
-        return [];
+        console.log('Quotes data directly from database:', quotesData);
+        
+        // If no quotes were found with the initial query
+        if (!quotesData || quotesData.length === 0) {
+          // Check if there are any quotes for this project
+          if (projectId) {
+            const allProjectQuotes = await checkAllProjectQuotes(projectId);
+            
+            // If includeAllQuotes is true, use these results instead
+            if (includeAllQuotes && allProjectQuotes && allProjectQuotes.length > 0) {
+              console.log('Using all quotes found due to includeAllQuotes=true');
+              
+              // We need to fetch freelancer profiles separately now
+              const freelancerIds = allProjectQuotes.map(quote => quote.freelancer_id);
+              const freelancerProfiles = await fetchFreelancerProfiles(freelancerIds);
+              const profileMap = createProfileMap(freelancerProfiles);
+              
+              return formatQuotesWithProfiles(allProjectQuotes, profileMap);
+            }
+          }
+          
+          // Log system-wide quotes for diagnostics
+          await logSystemQuotesSample();
+          return [];
+        }
+        
+        // Fetch freelancer profiles for these quotes
+        const freelancerIds = quotesData.map(quote => quote.freelancer_id);
+        const freelancerProfiles = await fetchFreelancerProfiles(freelancerIds);
+        
+        // Create a map of freelancer profiles by ID for quick lookup
+        const profileMap = createProfileMap(freelancerProfiles);
+        
+        // Combine quotes with freelancer profiles
+        const result = formatQuotesWithProfiles(quotesData, profileMap);
+        
+        console.log('Final processed quotes with profiles:', result);
+        console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
+        return result;
+      } catch (error) {
+        console.error('Error in useQuotes query function:', error);
+        throw error;
       }
-      
-      // Fetch freelancer profiles for these quotes
-      const freelancerIds = quotesData.map(quote => quote.freelancer_id);
-      const freelancerProfiles = await fetchFreelancerProfiles(freelancerIds);
-      
-      // Create a map of freelancer profiles by ID for quick lookup
-      const profileMap = createProfileMap(freelancerProfiles);
-      
-      // Combine quotes with freelancer profiles
-      const result = formatQuotesWithProfiles(quotesData, profileMap);
-      
-      console.log('Final processed quotes with profiles:', result);
-      console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
-      return result;
     },
     enabled: !!user,
     refetchInterval: refreshInterval,
@@ -101,9 +101,11 @@ export const useQuotes = ({
 
   // Set up real-time listener for quotes table
   useEffect(() => {
+    if (!projectId || !user?.id) return;
+    
     const channel = setupQuotesRealtimeListener(
-      projectId || '', 
-      user?.id, 
+      projectId, 
+      user.id, 
       forClient, 
       queryResult.refetch
     );
