@@ -65,11 +65,11 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
           setClientName(clientInfo.email);
         } else {
           // Last resort fallback
-          setClientName('Client');
+          setClientName('Unknown Client');
         }
       } catch (error) {
         console.error('Error fetching client information:', error);
-        setClientName('Client');
+        setClientName('Unknown Client');
       } finally {
         setIsLoadingClientInfo(false);
       }

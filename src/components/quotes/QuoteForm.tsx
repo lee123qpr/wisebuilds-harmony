@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
@@ -119,7 +118,7 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <ProjectInfo 
           projectTitle={projectTitle} 
-          clientName={clientName}
+          clientName={clientName || 'Unknown Client'}
           quoteSubmitted={isSubmitted}
           submissionDate={submissionDate}
         />

@@ -39,7 +39,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
         </div>
         <div>
           <p className="text-sm font-medium text-slate-700">
-            Client: <span className="font-semibold">{clientName}</span>
+            Client: <span className="font-semibold">{clientName || 'Unknown Client'}</span>
           </p>
         </div>
       </div>
