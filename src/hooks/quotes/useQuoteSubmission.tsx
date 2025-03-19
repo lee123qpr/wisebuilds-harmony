@@ -42,15 +42,60 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
     return !!existingQuote;
   };
 
+  // Verify client ID matches the project owner
+  const verifyAndGetClientId = async (): Promise<string> => {
+    // If clientId is empty or not provided, get the project owner's ID
+    if (!clientId) {
+      console.log('No client ID provided, fetching project owner ID');
+      const { data: project, error: projectError } = await supabase
+        .from('projects')
+        .select('user_id')
+        .eq('id', projectId)
+        .single();
+      
+      if (projectError) {
+        console.error('Error fetching project owner:', projectError);
+        throw new Error('Could not determine project owner');
+      }
+      
+      console.log('Using project owner ID as client ID:', project.user_id);
+      return project.user_id;
+    }
+    
+    // Ensure the provided clientId actually owns the project
+    const { data: project, error: projectError } = await supabase
+      .from('projects')
+      .select('user_id')
+      .eq('id', projectId)
+      .single();
+    
+    if (projectError) {
+      console.error('Error verifying project owner:', projectError);
+      throw new Error('Could not verify project ownership');
+    }
+    
+    // If the provided clientId doesn't match the project owner, use the correct one
+    if (project.user_id !== clientId) {
+      console.warn('Provided client ID does not match project owner, using correct ID');
+      console.log('Provided:', clientId, 'Actual owner:', project.user_id);
+      return project.user_id;
+    }
+    
+    return clientId;
+  };
+
   // Create quote
   const createQuote = async (formData: QuoteFormData, freelancerId: string): Promise<Quote> => {
+    // Get the verified client ID
+    const verifiedClientId = await verifyAndGetClientId();
+    
     const { data, error } = await supabase
       .from('quotes')
       .insert([
         {
           project_id: projectId,
           freelancer_id: freelancerId,
-          client_id: clientId,
+          client_id: verifiedClientId,
           fixed_price: formData.fixed_price,
           estimated_price: formData.estimated_price,
           day_rate: formData.day_rate,

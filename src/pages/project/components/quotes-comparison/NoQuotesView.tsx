@@ -41,6 +41,23 @@ const NoQuotesView: React.FC<NoQuotesViewProps> = ({
           When freelancers submit quotes for your project, they will appear here for comparison.
         </p>
         
+        {directQuotesCount !== null && directQuotesCount > 0 && (
+          <Alert variant="warning" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Database Inconsistency Detected</AlertTitle>
+            <AlertDescription>
+              <p className="mb-2">
+                There {directQuotesCount === 1 ? 'is' : 'are'} {directQuotesCount} quote{directQuotesCount === 1 ? '' : 's'} in the database, 
+                but {directQuotesCount === 1 ? 'it is' : 'they are'} not showing up here. 
+                This may be due to incorrect client IDs or duplicate IDs.
+              </p>
+              <p className="text-sm text-muted-foreground">
+                Use the diagnostic tools below to fix this issue.
+              </p>
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <Alert className="mb-4">
           <AlertCircle className="h-4 w-4" />
           <AlertTitle>Diagnostic Information</AlertTitle>

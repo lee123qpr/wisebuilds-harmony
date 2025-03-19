@@ -25,6 +25,7 @@ const ProjectQuotesComparison = () => {
   const [directQuotesCount, setDirectQuotesCount] = useState<number | null>(null);
   const [isCheckingDirectly, setIsCheckingDirectly] = useState(false);
   const [isFixingClientIDs, setIsFixingClientIDs] = useState(false);
+  const [hasDuplicateIdProblem, setHasDuplicateIdProblem] = useState(false);
   
   console.log("ProjectQuotesComparison - Current projectId from URL params:", projectId);
   console.log("ProjectQuotesComparison - Current user:", user?.id);
@@ -48,7 +49,12 @@ const ProjectQuotesComparison = () => {
   useEffect(() => {
     console.log('ProjectQuotesComparison component mounted or manual refresh triggered, fetching latest quotes');
     refetch();
-  }, [refetch, manualRefreshCount]);
+    
+    // If we have a projectId, check for duplicate ID problems on initial load
+    if (projectId && user) {
+      checkForDuplicateIdProblems();
+    }
+  }, [refetch, manualRefreshCount, projectId, user]);
 
   useEffect(() => {
     if (quotes) {
@@ -60,6 +66,32 @@ const ProjectQuotesComparison = () => {
     toast.info('Refreshing quotes...');
     console.log('Manual refresh triggered');
     setManualRefreshCount(prev => prev + 1);
+  };
+
+  // New function to check for duplicate ID problems
+  const checkForDuplicateIdProblems = async () => {
+    if (!projectId || !user) return;
+    
+    try {
+      const { data: allQuotes, error: checkError } = await supabase
+        .from('quotes')
+        .select('id, client_id, freelancer_id')
+        .eq('project_id', projectId);
+      
+      if (checkError) {
+        console.error('Error checking for duplicate ID problems:', checkError);
+        return;
+      }
+      
+      const duplicateIdQuotes = allQuotes?.filter(q => q.client_id === q.freelancer_id) || [];
+      setHasDuplicateIdProblem(duplicateIdQuotes.length > 0);
+      
+      if (duplicateIdQuotes.length > 0) {
+        console.warn('Found quotes with duplicate client/freelancer IDs:', duplicateIdQuotes);
+      }
+    } catch (err) {
+      console.error('Error checking for duplicate IDs:', err);
+    }
   };
 
   const checkQuotesDirectly = async () => {
@@ -86,9 +118,21 @@ const ProjectQuotesComparison = () => {
       
       if (allQuotes && allQuotes.length > 0) {
         const clientIds = [...new Set(allQuotes.map(q => q.client_id))];
+        const freelancerIds = [...new Set(allQuotes.map(q => q.freelancer_id))];
         console.log('Quote client IDs in database:', clientIds);
+        console.log('Quote freelancer IDs in database:', freelancerIds);
         console.log('Current user ID:', user.id);
-        console.log('Quotes that match current user:', allQuotes.filter(q => q.client_id === user.id).length);
+        
+        // Check for duplicate ID problems
+        const duplicateIdQuotes = allQuotes.filter(q => q.client_id === q.freelancer_id);
+        setHasDuplicateIdProblem(duplicateIdQuotes.length > 0);
+        
+        if (duplicateIdQuotes.length > 0) {
+          console.warn('Found quotes with duplicate client/freelancer IDs:', duplicateIdQuotes);
+          toast.warning(`Found ${duplicateIdQuotes.length} quotes with identical client/freelancer IDs`, {
+            description: "This can cause quotes to not appear correctly"
+          });
+        }
       }
     } catch (err) {
       console.error('Error in direct check:', err);
@@ -102,44 +146,73 @@ const ProjectQuotesComparison = () => {
     
     setIsFixingClientIDs(true);
     try {
-      const { data: incorrectQuotes, error: checkError } = await supabase
-        .from('quotes')
-        .select('id, client_id')
-        .eq('project_id', projectId)
-        .neq('client_id', user.id);
+      // First get the project data to find the owner
+      const { data: projectData, error: projectError } = await supabase
+        .from('projects')
+        .select('user_id')
+        .eq('id', projectId)
+        .single();
       
-      if (checkError) {
-        console.error('Error checking for incorrect quotes:', checkError);
-        toast.error('Error checking quotes');
+      if (projectError) {
+        console.error('Error fetching project data:', projectError);
+        toast.error('Error fetching project data');
         return;
       }
       
-      if (!incorrectQuotes || incorrectQuotes.length === 0) {
-        toast.info('No quotes need fixing', {
-          description: 'All quotes for this project already have the correct client ID'
+      const projectOwnerId = projectData.user_id;
+      console.log('Project owner ID:', projectOwnerId);
+      
+      if (!projectOwnerId) {
+        toast.error('Could not determine project owner');
+        return;
+      }
+      
+      // Fix duplicate ID problems (where client_id == freelancer_id)
+      const { data: duplicateFixResults, error: duplicateFixError } = await supabase
+        .from('quotes')
+        .update({ client_id: projectOwnerId })
+        .eq('project_id', projectId)
+        .filter('client_id', 'eq', 'freelancer_id')
+        .select();
+      
+      if (duplicateFixError) {
+        console.error('Error fixing duplicate IDs:', duplicateFixError);
+        toast.error('Error fixing duplicate IDs');
+        return;
+      }
+      
+      const duplicateFixCount = duplicateFixResults?.length || 0;
+      
+      // Now fix any quotes that don't have the correct client_id
+      const { data: clientFixResults, error: clientFixError } = await supabase
+        .from('quotes')
+        .update({ client_id: projectOwnerId })
+        .eq('project_id', projectId)
+        .neq('client_id', projectOwnerId)
+        .select();
+      
+      if (clientFixError) {
+        console.error('Error fixing client IDs:', clientFixError);
+        toast.error('Error fixing client IDs');
+        return;
+      }
+      
+      const clientFixCount = clientFixResults?.length || 0;
+      const totalFixedCount = duplicateFixCount + clientFixCount;
+      
+      if (totalFixedCount > 0) {
+        toast.success(`Fixed ${totalFixedCount} quotes`, {
+          description: `Updated ${duplicateFixCount} duplicate IDs and ${clientFixCount} incorrect client IDs`,
         });
-        return;
+        // Set this to false as we've fixed the problem
+        setHasDuplicateIdProblem(false);
+      } else {
+        toast.info('No quotes needed fixing');
       }
       
-      console.log('Found quotes with incorrect client IDs:', incorrectQuotes);
-      
-      const { data: updateResult, error: updateError } = await supabase
-        .from('quotes')
-        .update({ client_id: user.id })
-        .eq('project_id', projectId)
-        .neq('client_id', user.id);
-      
-      if (updateError) {
-        console.error('Error updating quotes:', updateError);
-        toast.error('Error fixing quotes');
-        return;
-      }
-      
-      toast.success('Quotes fixed successfully', {
-        description: `Updated ${incorrectQuotes.length} quotes to use your client ID`
-      });
-      
+      // Refetch quotes to show the updated results
       refetch();
+      
     } catch (err) {
       console.error('Error fixing client IDs:', err);
       toast.error('Error fixing quotes');
@@ -206,8 +279,8 @@ const ProjectQuotesComparison = () => {
           />
         )}
 
-        {/* Only show diagnostic tools if there are no quotes */}
-        {!hasQuotes && (
+        {/* Always show diagnostic tools if we have a duplicate ID problem */}
+        {(hasDuplicateIdProblem || !hasQuotes) && (
           <DiagnosticTools
             projectId={projectId}
             isCheckingDirectly={isCheckingDirectly}
