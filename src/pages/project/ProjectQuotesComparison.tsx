@@ -1,7 +1,7 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
@@ -10,12 +10,14 @@ import MainLayout from '@/components/layout/MainLayout';
 import QuoteCard from '@/components/quotes/QuoteCard';
 import ProjectQuotesComparisonTable from '@/components/quotes/ProjectQuotesComparisonTable';
 import { useToast } from '@/hooks/use-toast';
+import { toast } from 'sonner';
 
 const ProjectQuotesComparison = () => {
   const { projectId } = useParams();
-  const { toast } = useToast();
+  const { toast: legacyToast } = useToast();
+  const [manualRefreshCount, setManualRefreshCount] = useState(0);
   const { project, loading: projectLoading } = useProjectDetails(projectId);
-  const { data: quotes, isLoading: quotesLoading, refetch } = useQuotes({ 
+  const { data: quotes, isLoading: quotesLoading, refetch, isRefetching } = useQuotes({ 
     projectId: projectId,
     forClient: true,
     refreshInterval: 10000 // Refresh every 10 seconds
@@ -23,11 +25,11 @@ const ProjectQuotesComparison = () => {
 
   const isLoading = projectLoading || quotesLoading;
 
-  // Force refetch when the component mounts
+  // Force refetch when the component mounts or manual refresh happens
   useEffect(() => {
-    console.log('Quotes comparison page mounted, fetching latest quotes');
+    console.log('Quotes comparison page mounted or manual refresh triggered, fetching latest quotes');
     refetch();
-  }, [refetch]);
+  }, [refetch, manualRefreshCount]);
 
   // Show toast when new quotes arrive (if not initial load)
   useEffect(() => {
@@ -35,6 +37,12 @@ const ProjectQuotesComparison = () => {
       console.log('Quotes data available:', quotes.length, 'quotes', quotes);
     }
   }, [quotes, isLoading]);
+
+  const handleManualRefresh = () => {
+    toast.info('Refreshing quotes...');
+    console.log('Manual refresh triggered');
+    setManualRefreshCount(prev => prev + 1);
+  };
 
   if (isLoading) {
     return (
@@ -89,16 +97,28 @@ const ProjectQuotesComparison = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" asChild>
-            <Link to={`/project/${projectId}`}>
-              <ArrowLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold">Quotes Comparison</h1>
-            <p className="text-muted-foreground">Project: {project.title}</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" asChild>
+              <Link to={`/project/${projectId}`}>
+                <ArrowLeft className="h-4 w-4" />
+              </Link>
+            </Button>
+            <div>
+              <h1 className="text-2xl font-bold">Quotes Comparison</h1>
+              <p className="text-muted-foreground">Project: {project.title}</p>
+            </div>
           </div>
+          <Button 
+            variant="outline" 
+            size="sm" 
+            onClick={handleManualRefresh}
+            disabled={isRefetching}
+            className="flex items-center gap-2"
+          >
+            <RefreshCw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
+            Refresh Quotes
+          </Button>
         </div>
 
         {hasQuotes ? (
@@ -125,10 +145,17 @@ const ProjectQuotesComparison = () => {
             <CardContent>
               <p className="text-muted-foreground">
                 When freelancers submit quotes for your project, they will appear here for comparison.
+                If you believe quotes have been submitted but are not showing, try refreshing the page.
               </p>
-              <Button className="mt-4" asChild>
-                <Link to={`/project/${projectId}`}>Back to Project</Link>
-              </Button>
+              <div className="flex gap-4 mt-4">
+                <Button variant="outline" onClick={handleManualRefresh}>
+                  <RefreshCw className="h-4 w-4 mr-2" />
+                  Refresh Quotes
+                </Button>
+                <Button asChild>
+                  <Link to={`/project/${projectId}`}>Back to Project</Link>
+                </Button>
+              </div>
             </CardContent>
           </Card>
         )}

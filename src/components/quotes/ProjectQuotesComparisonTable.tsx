@@ -1,13 +1,14 @@
 
 import React, { useMemo } from 'react';
 import { format } from 'date-fns';
-import { Check, X, Clock } from 'lucide-react';
+import { Check, X, Clock, AlertCircle } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { QuoteWithFreelancer } from '@/types/quotes';
+import { toast } from 'sonner';
 
 interface ProjectQuotesComparisonTableProps {
   quotes: QuoteWithFreelancer[];
@@ -18,16 +19,41 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
   
   // Sort quotes by creation date (newest first)
   const sortedQuotes = useMemo(() => {
+    console.log('Sorting quotes in table component:', quotes);
     return [...quotes].sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
   }, [quotes]);
 
   const handleViewDetails = (quoteId: string) => {
-    if (sortedQuotes.length > 0) {
-      navigate(`/project/${sortedQuotes[0].project_id}/quotes/${quoteId}`);
+    try {
+      if (sortedQuotes.length > 0) {
+        const projectId = sortedQuotes[0].project_id;
+        console.log(`Navigating to quote details: /project/${projectId}/quotes/${quoteId}`);
+        navigate(`/project/${projectId}/quotes/${quoteId}`);
+      } else {
+        console.error('Cannot navigate: No quotes available');
+        toast.error('Cannot view quote details', {
+          description: 'No project information available'
+        });
+      }
+    } catch (error) {
+      console.error('Error navigating to quote details:', error);
+      toast.error('Error viewing quote details');
     }
   };
+
+  if (quotes.length === 0) {
+    return (
+      <div className="border rounded-md p-8 bg-gray-50 text-center">
+        <AlertCircle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
+        <h3 className="text-lg font-medium mb-2">No quotes to compare</h3>
+        <p className="text-muted-foreground">
+          There are no quotes available for comparison at this time.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="overflow-x-auto">

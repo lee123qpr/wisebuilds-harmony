@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
+import { toast } from 'sonner';
 
 interface UseQuotesProps {
   projectId?: string;
@@ -24,6 +25,7 @@ export const useQuotes = ({
       if (!user) return [];
       
       console.log('Fetching quotes for', forClient ? 'client' : 'freelancer', 'with projectId:', projectId);
+      console.log('User ID:', user.id);
       
       // First, get the quotes
       let query = supabase
@@ -33,13 +35,16 @@ export const useQuotes = ({
       // If projectId is provided, filter by that project
       if (projectId) {
         query = query.eq('project_id', projectId);
+        console.log('Filtering by project_id:', projectId);
       }
       
       // Filter by client_id or freelancer_id depending on forClient
       if (forClient) {
         query = query.eq('client_id', user.id);
+        console.log('Filtering by client_id:', user.id);
       } else {
         query = query.eq('freelancer_id', user.id);
+        console.log('Filtering by freelancer_id:', user.id);
       }
       
       // Execute the quotes query
@@ -53,6 +58,19 @@ export const useQuotes = ({
       console.log('Quotes data from database:', quotesData);
       
       if (!quotesData || quotesData.length === 0) {
+        // Try one more query without the client_id filter to see if there are any quotes at all for this project
+        if (forClient && projectId) {
+          console.log('No quotes found with client_id filter. Trying without client filter...');
+          const { data: allQuotesData, error: allQuotesError } = await supabase
+            .from('quotes')
+            .select('*')
+            .eq('project_id', projectId);
+            
+          if (!allQuotesError && allQuotesData && allQuotesData.length > 0) {
+            console.log('Found quotes for this project but not associated with this client:', allQuotesData);
+            console.log('Check if the client_id in the quotes matches the current user id:', user.id);
+          }
+        }
         return [];
       }
       
@@ -126,16 +144,24 @@ export const useQuotes = ({
           console.log('Real-time quote update received:', payload);
           // Force refetch the data when quotes change
           queryResult.refetch();
+          // Show toast notification for new quote
+          if (payload.eventType === 'INSERT' && forClient) {
+            toast.success('New quote received!', {
+              description: 'A freelancer has submitted a new quote for your project.'
+            });
+          }
         }
       )
-      .subscribe();
+      .subscribe((status) => {
+        console.log('Realtime subscription status:', status);
+      });
 
     // Cleanup function to remove the listener when component unmounts
     return () => {
       console.log('Removing real-time listener for quotes');
       supabase.removeChannel(channel);
     };
-  }, [projectId, user, queryResult.refetch]);
+  }, [projectId, user, queryResult.refetch, forClient]);
 
   return queryResult;
 };
