@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Project } from './useProjects';
@@ -15,7 +16,7 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   const navigate = useNavigate();
   
   // Get real-time quote count
-  const { data: quotes } = useQuotes({ 
+  const { data: quotes, isLoading: isLoadingQuotes } = useQuotes({ 
     projectId: project.id,
     forClient: true,
     refreshInterval: 10000 // Refresh every 10 seconds
@@ -30,8 +31,8 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   // Number of chats
   const chatCount = project.chat_count || 0;
   
-  // Number of quotes - get from live data if available
-  const quoteCount = quotes ? quotes.length : (project.quote_count || 0);
+  // Number of quotes - always use the live data from the quotes hook when available
+  const quoteCount = !isLoadingQuotes && quotes ? quotes.length : (project.quote_count || 0);
   
   const handleClick = () => {
     navigate(`/project/${project.id}`);
