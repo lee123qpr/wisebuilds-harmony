@@ -45,9 +45,13 @@ const ViewQuoteDetails = () => {
 
   const handleAcceptQuote = async () => {
     try {
+      console.log('ViewQuoteDetails - Accepting quote');
       await acceptQuote();
-      // Manually trigger a refetch to ensure the UI is updated
-      setTimeout(() => refetch(), 500);
+      // Ensure UI is updated with the latest data
+      setTimeout(() => {
+        console.log('Refetching after accept');
+        refetch();
+      }, 1000);
     } catch (error) {
       console.error('Error accepting quote:', error);
     }
@@ -55,9 +59,13 @@ const ViewQuoteDetails = () => {
 
   const handleRejectQuote = async () => {
     try {
+      console.log('ViewQuoteDetails - Rejecting quote');
       await rejectQuote();
-      // Manually trigger a refetch to ensure the UI is updated
-      setTimeout(() => refetch(), 500);
+      // Ensure UI is updated with the latest data
+      setTimeout(() => {
+        console.log('Refetching after reject');
+        refetch();
+      }, 1000);
     } catch (error) {
       console.error('Error rejecting quote:', error);
     }

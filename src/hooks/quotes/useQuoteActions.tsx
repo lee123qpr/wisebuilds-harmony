@@ -41,7 +41,7 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
       return data;
     },
     onSuccess: () => {
-      // Invalidate relevant queries with correct keys
+      // Invalidate queries to ensure fresh data is fetched
       queryClient.invalidateQueries({ queryKey: ['quote', projectId, quoteId] });
       queryClient.invalidateQueries({ queryKey: ['quotes', projectId] });
       

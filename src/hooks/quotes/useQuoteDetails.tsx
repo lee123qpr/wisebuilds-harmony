@@ -93,7 +93,7 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
               rating: freelancerInfo.rating || null,
               reviews_count: freelancerInfo.reviews_count || 0,
               qualifications: null,
-              id_verified: freelancerInfo.verified || false  // Changed from verified to id_verified
+              id_verified: freelancerInfo.verified || false
             };
           }
         } catch (err) {
@@ -128,8 +128,9 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
       };
     },
     enabled: !!user && !!projectId && !!quoteId,
-    refetchInterval: 10000, // Refresh every 10 seconds
-    staleTime: 0, // Consider data always stale to ensure we get fresh data on navigation
+    refetchInterval: 5000, // Refresh every 5 seconds for more responsive UI
+    staleTime: 0, // Consider data always stale to ensure we get fresh data
+    refetchOnWindowFocus: true, // Refetch when window gains focus
   });
 
   return {

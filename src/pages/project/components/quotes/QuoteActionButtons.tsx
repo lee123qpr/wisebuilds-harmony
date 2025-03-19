@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, MessageSquare } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,18 +32,24 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
   isRejecting
 }) => {
   const navigate = useNavigate();
+  const [acceptDialogOpen, setAcceptDialogOpen] = useState(false);
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
   
   if (quoteStatus !== 'pending') {
     return null;
   }
 
-  // Handlers to ensure the action completes before dialog closes
+  // Handlers with proper dialog management
   const handleAccept = async () => {
+    console.log('Handling accept in QuoteActionButtons');
     await onAccept();
+    setAcceptDialogOpen(false);
   };
 
   const handleReject = async () => {
+    console.log('Handling reject in QuoteActionButtons');
     await onReject();
+    setRejectDialogOpen(false);
   };
 
   return (
@@ -57,7 +63,7 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
         Message Freelancer
       </Button>
       
-      <Dialog>
+      <Dialog open={rejectDialogOpen} onOpenChange={setRejectDialogOpen}>
         <DialogTrigger asChild>
           <Button variant="destructive" className="flex items-center gap-2">
             <X className="h-4 w-4" />
@@ -72,9 +78,9 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex justify-end gap-2">
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
+            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+              Cancel
+            </Button>
             <Button 
               variant="destructive" 
               onClick={handleReject} 
@@ -86,7 +92,7 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
         </DialogContent>
       </Dialog>
       
-      <Dialog>
+      <Dialog open={acceptDialogOpen} onOpenChange={setAcceptDialogOpen}>
         <DialogTrigger asChild>
           <Button className="flex items-center gap-2">
             <Check className="h-4 w-4" />
@@ -101,9 +107,9 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex justify-end gap-2">
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
+            <Button variant="outline" onClick={() => setAcceptDialogOpen(false)}>
+              Cancel
+            </Button>
             <Button 
               onClick={handleAccept} 
               disabled={isAccepting}
