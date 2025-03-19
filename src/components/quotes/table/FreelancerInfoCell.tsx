@@ -4,6 +4,8 @@ import { ExternalLink } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
+import { Skeleton } from '@/components/ui/skeleton';
+import { VerificationBadge } from '@/components/common/VerificationBadge';
 
 interface FreelancerInfoCellProps {
   freelancer: {
@@ -14,15 +16,36 @@ interface FreelancerInfoCellProps {
     job_title?: string;
     rating?: number;
     location?: string;
+    verified?: boolean;
   };
   freelancerId: string;
+  isLoading?: boolean;
 }
 
-const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({ freelancer, freelancerId }) => {
+const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({ 
+  freelancer, 
+  freelancerId,
+  isLoading = false
+}) => {
   const freelancerName = freelancer.display_name || 
     (freelancer.first_name && freelancer.last_name 
       ? `${freelancer.first_name} ${freelancer.last_name}`
       : 'Freelancer');
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col gap-2">
+        <div className="flex items-center gap-2">
+          <Skeleton className="h-10 w-10 rounded-full" />
+          <div>
+            <Skeleton className="h-4 w-32 mb-1" />
+            <Skeleton className="h-3 w-24" />
+          </div>
+        </div>
+        <Skeleton className="h-9 w-full" />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-2">
@@ -32,7 +55,10 @@ const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({ freelancer, fre
           <AvatarFallback>{(freelancerName?.substring(0, 2) || 'FR').toUpperCase()}</AvatarFallback>
         </Avatar>
         <div>
-          <div className="font-medium">{freelancerName}</div>
+          <div className="font-medium flex items-center gap-1">
+            {freelancerName}
+            {freelancer.verified && <VerificationBadge size="sm" />}
+          </div>
           <div className="text-xs text-muted-foreground">{freelancer.job_title || 'Freelancer'}</div>
           
           {/* Show more freelancer details */}
@@ -43,7 +69,7 @@ const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({ freelancer, fre
           )}
           
           {/* Check if the freelancer has a rating and show it */}
-          {freelancer.rating && (
+          {freelancer.rating && Number(freelancer.rating) > 0 && (
             <div className="text-xs text-amber-600 font-medium mt-1">
               ★ {Number(freelancer.rating).toFixed(1)} rating
             </div>

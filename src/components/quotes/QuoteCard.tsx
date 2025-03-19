@@ -1,14 +1,17 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar, Clock, DollarSign, Eye } from 'lucide-react';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
 import QuoteStatusBadge from './table/QuoteStatusBadge';
+import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
+import { Skeleton } from '@/components/ui/skeleton';
+import { FreelancerInfo } from '@/types/messaging';
+import { VerificationBadge } from '@/components/common/VerificationBadge';
 
 interface QuoteCardProps {
   quote: QuoteWithFreelancer;
@@ -16,16 +19,41 @@ interface QuoteCardProps {
 
 const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
   const navigate = useNavigate();
+  const [freelancerInfo, setFreelancerInfo] = useState<FreelancerInfo | null>(null);
+  const [isLoadingFreelancer, setIsLoadingFreelancer] = useState(false);
   
   // Format the created date
   const formattedDate = format(new Date(quote.created_at), 'MMM d, yyyy');
   
   // Get freelancer info
   const freelancer = quote.freelancer_profile || {};
+  
+  // Fetch freelancer info if profile is empty
+  useEffect(() => {
+    const hasEmptyProfile = !freelancer.display_name && !freelancer.first_name && !freelancer.last_name;
+    
+    if (hasEmptyProfile && !freelancerInfo && !isLoadingFreelancer) {
+      const fetchFreelancerInfo = async () => {
+        setIsLoadingFreelancer(true);
+        try {
+          const info = await getFreelancerInfo(quote.freelancer_id);
+          setFreelancerInfo(info);
+        } catch (error) {
+          console.error('Error fetching freelancer info:', error);
+        } finally {
+          setIsLoadingFreelancer(false);
+        }
+      };
+      
+      fetchFreelancerInfo();
+    }
+  }, [quote.freelancer_id, freelancer, freelancerInfo, isLoadingFreelancer]);
+  
+  // Create a combined freelancer name from both sources
   const freelancerName = freelancer.display_name || 
     (freelancer.first_name && freelancer.last_name 
       ? `${freelancer.first_name} ${freelancer.last_name}`
-      : 'Freelancer');
+      : freelancerInfo?.full_name || 'Freelancer');
   
   // Get quote price info
   const priceType = quote.fixed_price 
@@ -44,14 +72,29 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
     <Card className="overflow-hidden">
       <CardHeader className="bg-slate-50 p-4 flex flex-row items-center justify-between">
         <div className="flex items-center gap-3">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={freelancer.profile_photo} alt={freelancerName} />
-            <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
-          </Avatar>
-          <div>
-            <h3 className="font-medium">{freelancerName}</h3>
-            <p className="text-sm text-muted-foreground">{freelancer.job_title || 'Freelancer'}</p>
-          </div>
+          {isLoadingFreelancer ? (
+            <>
+              <Skeleton className="h-10 w-10 rounded-full" />
+              <div>
+                <Skeleton className="h-4 w-32 mb-1" />
+                <Skeleton className="h-3 w-24" />
+              </div>
+            </>
+          ) : (
+            <>
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={freelancer.profile_photo || freelancerInfo?.profile_image} alt={freelancerName} />
+                <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
+              </Avatar>
+              <div>
+                <h3 className="font-medium flex items-center gap-1">
+                  {freelancerName}
+                  {(freelancer.verified || freelancerInfo?.verified) && <VerificationBadge size="sm" />}
+                </h3>
+                <p className="text-sm text-muted-foreground">{freelancer.job_title || 'Freelancer'}</p>
+              </div>
+            </>
+          )}
         </div>
         <QuoteStatusBadge status={quote.status} />
       </CardHeader>

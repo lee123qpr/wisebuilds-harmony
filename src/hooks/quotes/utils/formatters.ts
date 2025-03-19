@@ -19,6 +19,8 @@ export const formatQuotesWithProfiles = (
     
     const freelancerProfile = profileMap[quote.freelancer_id] || {};
     
+    console.log('Formatting quote for freelancer:', quote.freelancer_id, 'with profile:', freelancerProfile);
+    
     return {
       ...quote,
       status: quote.status as QuoteWithFreelancer['status'],
@@ -31,7 +33,23 @@ export const formatQuotesWithProfiles = (
         profile_photo: freelancerProfile.profile_photo || '',
         job_title: freelancerProfile.job_title || '',
         rating: freelancerProfile.rating || 0,
+        location: freelancerProfile.location || '',
+        verified: freelancerProfile.verified || false,
       }
     };
   }).filter(Boolean) as QuoteWithFreelancer[];
+};
+
+/**
+ * Helper function to check if a freelancer profile is empty
+ */
+export const isEmptyFreelancerProfile = (profile: any): boolean => {
+  if (!profile) return true;
+  
+  // Check if all essential fields are empty
+  return (
+    (!profile.first_name || profile.first_name.trim() === '') &&
+    (!profile.last_name || profile.last_name.trim() === '') &&
+    (!profile.display_name || profile.display_name.trim() === '')
+  );
 };
