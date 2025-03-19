@@ -18,7 +18,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     };
   }
   
-  // Try to get client info from client_profiles
+  // Try to get client info from client_profiles first
   const { data: clientProfile, error: clientError } = await supabase
     .from('client_profiles')
     .select('contact_name, company_name, phone_number, website, company_address, logo_url, email')
@@ -32,9 +32,10 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   console.log('Client profile data from database:', clientProfile);
   
   // If profile exists with essential data, return it
-  if (clientProfile && (clientProfile.contact_name || clientProfile.company_name)) {
+  if (clientProfile && clientProfile.contact_name) {
+    console.log('Returning client info from profile with contact name:', clientProfile.contact_name);
     return {
-      contact_name: clientProfile.contact_name || 'Client',
+      contact_name: clientProfile.contact_name,
       company_name: clientProfile.company_name,
       logo_url: clientProfile.logo_url,
       phone_number: clientProfile.phone_number,
@@ -58,7 +59,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     if (userError || !userData) {
       console.error('Error fetching user data from edge function:', userError);
       
-      // If we have partial client profile data (but no contact_name), use that
+      // If we have partial client profile data, use that
       if (clientProfile) {
         return {
           contact_name: clientProfile.contact_name || 'Client',
@@ -89,7 +90,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
                     
     console.log('Extracted full name:', fullName);
     
-    // Combine data from both sources
+    // Combine data from both sources, prioritizing full name from auth
     return {
       contact_name: fullName || clientProfile?.contact_name || 'Client',
       company_name: clientProfile?.company_name || null,

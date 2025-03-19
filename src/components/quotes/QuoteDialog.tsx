@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import {
   Dialog,
@@ -54,28 +53,24 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
         
         // Get client info from our utility function
         const clientInfo = await getClientInfo(clientId);
-        console.log('Client info received:', clientInfo);
+        console.log('Client info received in QuoteDialog:', clientInfo);
         
-        if (clientInfo) {
-          // Display priority: contact_name > company_name > email > fallback
-          if (clientInfo.contact_name && clientInfo.contact_name !== 'Client') {
-            // If company name also exists, combine them
-            if (clientInfo.company_name) {
-              setClientName(`${clientInfo.contact_name} (${clientInfo.company_name})`);
-            } else {
-              setClientName(clientInfo.contact_name);
-            }
-          } else if (clientInfo.company_name) {
-            setClientName(clientInfo.company_name);
-          } else if (clientInfo.email) {
-            setClientName(clientInfo.email);
-          } else {
-            // Only use fallback if we have absolutely no client information
-            setClientName('Client');
-          }
+        if (clientInfo && clientInfo.contact_name && clientInfo.contact_name !== 'Client') {
+          // Use contact_name as the primary client identifier
+          setClientName(clientInfo.contact_name);
+          console.log('Setting client name to contact_name:', clientInfo.contact_name);
+        } else if (clientInfo && clientInfo.company_name) {
+          // Fallback to company_name if no contact_name
+          setClientName(clientInfo.company_name);
+          console.log('Setting client name to company_name:', clientInfo.company_name);
+        } else if (clientInfo && clientInfo.email) {
+          // Fallback to email if no contact_name or company_name
+          setClientName(clientInfo.email);
+          console.log('Setting client name to email:', clientInfo.email);
         } else {
-          // No client info found at all
+          // Fallback to 'Client' if no identifying information
           setClientName('Client');
+          console.log('No client info available, setting client name to "Client"');
         }
       } catch (error) {
         console.error('Error fetching client information:', error);
