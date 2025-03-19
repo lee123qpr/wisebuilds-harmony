@@ -1,13 +1,14 @@
 
 import { useCallback } from 'react';
 import { toast } from 'sonner';
+import { UseMutateFunction, QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
 
 interface UseQuoteActionHandlersProps {
   projectId?: string;
   quoteId?: string;
-  acceptQuote: () => Promise<void>;
-  rejectQuote: () => Promise<void>;
-  refetch: () => Promise<void>;
+  acceptQuote: UseMutateFunction<any, Error, void, unknown>;
+  rejectQuote: UseMutateFunction<any, Error, void, unknown>;
+  refetch: (options?: RefetchOptions) => Promise<QueryObserverResult<any, Error>>;
 }
 
 export const useQuoteActionHandlers = ({
@@ -28,7 +29,7 @@ export const useQuoteActionHandlers = ({
       console.log('ViewQuoteDetails - Accepting quote');
       
       // Execute the quote acceptance
-      await acceptQuote();
+      acceptQuote();
       
       // Immediately refetch data after accepting
       console.log('Triggering refetch after accept');
@@ -63,7 +64,7 @@ export const useQuoteActionHandlers = ({
       console.log('ViewQuoteDetails - Rejecting quote');
       
       // Execute the quote rejection
-      await rejectQuote();
+      rejectQuote();
       
       // Immediately refetch data after rejecting
       console.log('Triggering refetch after reject');
