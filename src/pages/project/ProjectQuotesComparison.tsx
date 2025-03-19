@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, RefreshCw, AlertCircle, HelpCircle, Search } from 'lucide-react';
@@ -26,7 +25,7 @@ const ProjectQuotesComparison = () => {
   const { user } = useAuth();
   const [directQuotesCount, setDirectQuotesCount] = useState<number | null>(null);
   const [isCheckingDirectly, setIsCheckingDirectly] = useState(false);
-  const [showAllQuotes, setShowAllQuotes] = useState(false);
+  const [showAllQuotes, setShowAllQuotes] = useState(true);
   const [isFixingClientIDs, setIsFixingClientIDs] = useState(false);
   
   console.log("ProjectQuotesComparison - Current projectId from URL params:", projectId);
@@ -44,18 +43,16 @@ const ProjectQuotesComparison = () => {
     projectId: projectId,
     forClient: true,
     refreshInterval: 10000, // Refresh every 10 seconds
-    includeAllQuotes: showAllQuotes // Use the new parameter
+    includeAllQuotes: showAllQuotes // This should be true by default now
   });
 
   const isLoading = projectLoading || quotesLoading;
 
-  // Force refetch when the component mounts or manual refresh happens
   useEffect(() => {
     console.log('ProjectQuotesComparison component mounted or manual refresh triggered, fetching latest quotes');
     refetch();
   }, [refetch, manualRefreshCount, showAllQuotes]);
 
-  // Show toast when new quotes arrive (if not initial load)
   useEffect(() => {
     if (quotes) {
       console.log('Quotes data available in component:', quotes.length, 'quotes', quotes);
@@ -68,7 +65,6 @@ const ProjectQuotesComparison = () => {
     setManualRefreshCount(prev => prev + 1);
   };
 
-  // Function to check directly in the database
   const checkQuotesDirectly = async () => {
     if (!projectId || !user) return;
     
@@ -76,7 +72,6 @@ const ProjectQuotesComparison = () => {
     try {
       console.log('Checking quotes directly in the database for project:', projectId);
       
-      // Check all quotes for this project regardless of client_id
       const { data: allQuotes, error: allQuotesError } = await supabase
         .from('quotes')
         .select('id, project_id, client_id, freelancer_id, status, created_at')
@@ -98,7 +93,6 @@ const ProjectQuotesComparison = () => {
         console.log('Current user ID:', user.id);
         console.log('Quotes that match current user:', allQuotes.filter(q => q.client_id === user.id).length);
         
-        // Automatically enable "Show all quotes" if we find quotes that don't match the current user
         if (allQuotes.filter(q => q.client_id === user.id).length === 0 && !showAllQuotes) {
           toast.info('Found quotes with different client IDs', {
             description: 'Showing all quotes for this project regardless of client ID'
@@ -113,13 +107,11 @@ const ProjectQuotesComparison = () => {
     }
   };
 
-  // Function to fix client IDs on quotes
   const fixClientIds = async () => {
     if (!projectId || !user) return;
     
     setIsFixingClientIDs(true);
     try {
-      // First, check if there are any quotes with incorrect client IDs
       const { data: incorrectQuotes, error: checkError } = await supabase
         .from('quotes')
         .select('id, client_id')
@@ -141,7 +133,6 @@ const ProjectQuotesComparison = () => {
       
       console.log('Found quotes with incorrect client IDs:', incorrectQuotes);
       
-      // Update all quotes for this project to use the current user's ID
       const { data: updateResult, error: updateError } = await supabase
         .from('quotes')
         .update({ client_id: user.id })
@@ -158,9 +149,7 @@ const ProjectQuotesComparison = () => {
         description: `Updated ${incorrectQuotes.length} quotes to use your client ID`
       });
       
-      // Refresh after fixing
       refetch();
-      
     } catch (err) {
       console.error('Error fixing client IDs:', err);
       toast.error('Error fixing quotes');
@@ -263,16 +252,10 @@ const ProjectQuotesComparison = () => {
             </Button>
             <div>
               <h1 className="text-2xl font-bold">Quotes Comparison</h1>
-              <p className="text-muted-foreground">Project: {project.title}</p>
+              <p className="text-muted-foreground">Project: {project?.title}</p>
             </div>
           </div>
           <div className="flex items-center gap-3">
-            {showAllQuotes && (
-              <div className="flex items-center gap-2 bg-yellow-50 p-1.5 px-3 rounded-md border border-yellow-200">
-                <Search className="h-4 w-4 text-yellow-600" />
-                <span className="text-xs text-yellow-700">Viewing all quotes (unfiltered)</span>
-              </div>
-            )}
             <Button 
               variant="outline" 
               size="sm" 
@@ -290,16 +273,6 @@ const ProjectQuotesComparison = () => {
           <div className="space-y-8">
             <div className="flex justify-between items-center mb-4">
               <h2 className="text-xl font-semibold">Quotes for Your Project</h2>
-              <div className="flex items-center gap-2">
-                <Label htmlFor="show-all-quotes" className="text-sm">
-                  Show all quotes
-                </Label>
-                <Switch 
-                  id="show-all-quotes"
-                  checked={showAllQuotes}
-                  onCheckedChange={setShowAllQuotes}
-                />
-              </div>
             </div>
             <ProjectQuotesComparisonTable quotes={quotes} />
             

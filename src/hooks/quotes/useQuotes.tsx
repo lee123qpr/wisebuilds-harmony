@@ -22,7 +22,7 @@ export const useQuotes = ({
   projectId, 
   forClient = false,
   refreshInterval = 30000,
-  includeAllQuotes = false
+  includeAllQuotes = true  // Default to showing all quotes for clients
 }: UseQuotesProps = {}) => {
   const { user } = useAuth();
   
@@ -40,8 +40,11 @@ export const useQuotes = ({
       logQuoteFetchDiagnostics(projectId, forClient, user.id, includeAllQuotes);
       
       try {
+        // For clients, we want to show all quotes for their project by default
+        const shouldIncludeAllQuotes = forClient || includeAllQuotes;
+        
         // Build and execute the main quotes query
-        const query = buildQuotesQuery(projectId, forClient, user.id, includeAllQuotes);
+        const query = buildQuotesQuery(projectId, forClient, user.id, shouldIncludeAllQuotes);
         const { data: quotesData, error: quotesError } = await query;
         
         if (quotesError) {
@@ -57,8 +60,8 @@ export const useQuotes = ({
           if (projectId) {
             const allProjectQuotes = await checkAllProjectQuotes(projectId);
             
-            // If includeAllQuotes is true, use these results instead
-            if (includeAllQuotes && allProjectQuotes && allProjectQuotes.length > 0) {
+            // If we should include all quotes, use these results instead
+            if (shouldIncludeAllQuotes && allProjectQuotes && allProjectQuotes.length > 0) {
               console.log('Using all quotes found due to includeAllQuotes=true');
               
               // We need to fetch freelancer profiles separately now

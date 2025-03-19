@@ -20,13 +20,20 @@ export const buildQuotesQuery = (
     console.log('Filtering by project_id:', projectId);
   }
   
-  // Filter by client_id or freelancer_id depending on forClient
-  // Unless includeAllQuotes is true, which bypasses the client filter for diagnostics
-  if (!includeAllQuotes && userId) {
+  // For clients, we show all quotes for their project by default
+  // For freelancers, we only show their own quotes
+  if (userId) {
     if (forClient) {
-      query = query.eq('client_id', userId);
-      console.log('Filtering by client_id:', userId);
+      // When viewing as a client, don't filter by client_id unless explicitly asked not to show all quotes
+      // This ensures clients see all quotes for their projects by default
+      if (!includeAllQuotes) {
+        query = query.eq('client_id', userId);
+        console.log('Filtering by client_id:', userId);
+      } else {
+        console.log('Showing all quotes for this project regardless of client_id');
+      }
     } else {
+      // For freelancers, only show their own quotes
       query = query.eq('freelancer_id', userId);
       console.log('Filtering by freelancer_id:', userId);
     }
