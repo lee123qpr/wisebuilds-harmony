@@ -15,7 +15,7 @@ interface FreelancerInfoCellProps {
     profile_photo?: string;
     job_title?: string;
     rating?: number;
-    verified?: boolean;  // Changed from id_verified to verified
+    verified?: boolean;
     location?: string;
   };
   freelancerId: string;
@@ -77,14 +77,14 @@ const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({
         </div>
       </div>
       
-      {/* Add freelancer profile link */}
+      {/* Fix freelancer profile link */}
       <Button
         variant="outline"
         size="sm"
         className="mt-1 w-full text-xs flex items-center gap-1 justify-center"
         asChild
       >
-        <Link to={`/freelancer/${freelancerId}`}>
+        <Link to={`/freelancer/${freelancerId}`} target="_blank" rel="noopener noreferrer">
           <ExternalLink className="h-3 w-3" />
           View Freelancer Profile
         </Link>
