@@ -1,12 +1,12 @@
 
 import React, { useMemo } from 'react';
 import { format } from 'date-fns';
-import { Check, X, Clock, AlertCircle, FileText, AlertTriangle } from 'lucide-react';
+import { Check, X, Clock, AlertCircle, FileText, AlertTriangle, ExternalLink } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -86,7 +86,7 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
       <Table className="border">
         <TableHeader className="bg-slate-50">
           <TableRow>
-            <TableHead className="w-[200px]">Freelancer</TableHead>
+            <TableHead className="w-[250px]">Freelancer</TableHead>
             <TableHead>Quote Type</TableHead>
             <TableHead>Amount</TableHead>
             <TableHead>Start Date</TableHead>
@@ -123,15 +123,44 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
             return (
               <TableRow key={quote.id} className={differentClientId ? "bg-yellow-50" : ""}>
                 <TableCell className="font-medium">
-                  <div className="flex items-center gap-2">
-                    <Avatar className="h-8 w-8">
-                      <AvatarImage src={freelancer.profile_photo} alt={freelancerName} />
-                      <AvatarFallback>{(freelancerName?.substring(0, 2) || 'FR').toUpperCase()}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <div className="font-medium">{freelancerName}</div>
-                      <div className="text-xs text-muted-foreground">{freelancer.job_title || 'Freelancer'}</div>
+                  <div className="flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={freelancer.profile_photo} alt={freelancerName} />
+                        <AvatarFallback>{(freelancerName?.substring(0, 2) || 'FR').toUpperCase()}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <div className="font-medium">{freelancerName}</div>
+                        <div className="text-xs text-muted-foreground">{freelancer.job_title || 'Freelancer'}</div>
+                        
+                        {/* Show more freelancer details */}
+                        {freelancer.location && (
+                          <div className="text-xs text-muted-foreground mt-1">
+                            {freelancer.location}
+                          </div>
+                        )}
+                        
+                        {/* Check if the freelancer has a rating and show it */}
+                        {freelancer.rating && (
+                          <div className="text-xs text-amber-600 font-medium mt-1">
+                            ★ {Number(freelancer.rating).toFixed(1)} rating
+                          </div>
+                        )}
+                      </div>
                     </div>
+                    
+                    {/* Add freelancer profile link */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="mt-1 w-full text-xs flex items-center gap-1 justify-center"
+                      asChild
+                    >
+                      <Link to={`/freelancer/${quote.freelancer_id}`}>
+                        <ExternalLink className="h-3 w-3" />
+                        View Freelancer Profile
+                      </Link>
+                    </Button>
                   </div>
                 </TableCell>
                 <TableCell>{priceType}</TableCell>
