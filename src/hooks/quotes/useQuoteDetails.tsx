@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { QuoteWithFreelancer } from '@/types/quotes';
+import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
 
 interface UseQuoteDetailsProps {
   projectId?: string;
@@ -53,6 +54,26 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
         console.error('Error fetching freelancer profile:', freelancerError);
       }
       
+      // If no freelancer profile found, get fallback info
+      let freelancerData = freelancer;
+      if (!freelancerData || Object.keys(freelancerData).length === 0) {
+        try {
+          const freelancerInfo = await getFreelancerInfo(quote.freelancer_id);
+          if (freelancerInfo) {
+            freelancerData = {
+              id: quote.freelancer_id,
+              display_name: freelancerInfo.full_name,
+              profile_photo: freelancerInfo.profile_image,
+              job_title: 'Freelancer',
+              verified: freelancerInfo.verified,
+              location: freelancerInfo.location
+            };
+          }
+        } catch (err) {
+          console.error('Error fetching fallback freelancer info:', err);
+        }
+      }
+      
       // Fetch the project
       const { data: project, error: projectError } = await supabase
         .from('projects')
@@ -75,7 +96,7 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
           ...quote,
           status,
         } as QuoteWithFreelancer,
-        freelancer,
+        freelancer: freelancerData,
         project,
       };
     },
