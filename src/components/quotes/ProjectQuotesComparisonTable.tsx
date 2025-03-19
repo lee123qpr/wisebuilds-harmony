@@ -1,16 +1,14 @@
 
 import React, { useMemo } from 'react';
-import { format } from 'date-fns';
-import { Check, X, Clock, AlertCircle, FileText, AlertTriangle, ExternalLink } from 'lucide-react';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { useNavigate, Link } from 'react-router-dom';
+import { AlertTriangle } from 'lucide-react';
+import { Table, TableBody } from '@/components/ui/table';
+import { useNavigate } from 'react-router-dom';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { toast } from 'sonner';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useAuth } from '@/context/AuthContext';
+import QuoteTableHeader from './table/QuoteTableHeader';
+import QuoteTableRow from './table/QuoteTableRow';
+import EmptyQuotesState from './table/EmptyQuotesState';
 
 interface ProjectQuotesComparisonTableProps {
   quotes: QuoteWithFreelancer[];
@@ -57,15 +55,7 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
   };
 
   if (!Array.isArray(quotes) || quotes.length === 0) {
-    return (
-      <div className="border rounded-md p-8 bg-gray-50 text-center">
-        <AlertCircle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
-        <h3 className="text-lg font-medium mb-2">No quotes to compare</h3>
-        <p className="text-muted-foreground">
-          There are no quotes available for comparison at this time.
-        </p>
-      </div>
-    );
+    return <EmptyQuotesState />;
   }
 
   // Check if any quotes have a different client_id than the current user
@@ -84,171 +74,19 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
         )}
       </div>
       <Table className="border">
-        <TableHeader className="bg-slate-50">
-          <TableRow>
-            <TableHead className="w-[250px]">Freelancer</TableHead>
-            <TableHead>Quote Type</TableHead>
-            <TableHead>Amount</TableHead>
-            <TableHead>Start Date</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
-          </TableRow>
-        </TableHeader>
+        <QuoteTableHeader />
         <TableBody>
-          {sortedQuotes.map((quote) => {
-            console.log('Rendering quote row for:', quote.id, quote);
-            
-            // Check if this quote belongs to the current user
-            const differentClientId = quote.client_id !== user?.id;
-            
-            // Get freelancer info - handle potentially undefined properties safely
-            const freelancer = quote.freelancer_profile || {};
-            const freelancerName = freelancer.display_name || 
-              (freelancer.first_name && freelancer.last_name 
-                ? `${freelancer.first_name} ${freelancer.last_name}`
-                : 'Freelancer');
-            
-            // Get price info
-            const priceType = quote.fixed_price 
-              ? 'Fixed Price' 
-              : quote.estimated_price 
-                ? 'Estimated Price' 
-                : quote.day_rate 
-                  ? 'Day Rate' 
-                  : 'Not specified';
-            
-            const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
-            
-            return (
-              <TableRow key={quote.id} className={differentClientId ? "bg-yellow-50" : ""}>
-                <TableCell className="font-medium">
-                  <div className="flex flex-col gap-2">
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-10 w-10">
-                        <AvatarImage src={freelancer.profile_photo} alt={freelancerName} />
-                        <AvatarFallback>{(freelancerName?.substring(0, 2) || 'FR').toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{freelancerName}</div>
-                        <div className="text-xs text-muted-foreground">{freelancer.job_title || 'Freelancer'}</div>
-                        
-                        {/* Show more freelancer details */}
-                        {freelancer.location && (
-                          <div className="text-xs text-muted-foreground mt-1">
-                            {freelancer.location}
-                          </div>
-                        )}
-                        
-                        {/* Check if the freelancer has a rating and show it */}
-                        {freelancer.rating && (
-                          <div className="text-xs text-amber-600 font-medium mt-1">
-                            ★ {Number(freelancer.rating).toFixed(1)} rating
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    
-                    {/* Add freelancer profile link */}
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="mt-1 w-full text-xs flex items-center gap-1 justify-center"
-                      asChild
-                    >
-                      <Link to={`/freelancer/${quote.freelancer_id}`}>
-                        <ExternalLink className="h-3 w-3" />
-                        View Freelancer Profile
-                      </Link>
-                    </Button>
-                  </div>
-                </TableCell>
-                <TableCell>{priceType}</TableCell>
-                <TableCell className="font-medium">{priceValue}</TableCell>
-                <TableCell>
-                  {quote.available_start_date 
-                    ? format(new Date(quote.available_start_date), 'MMM d, yyyy')
-                    : 'Not specified'}
-                </TableCell>
-                <TableCell>
-                  {quote.estimated_duration && quote.duration_unit
-                    ? `${quote.estimated_duration} ${quote.duration_unit}`
-                    : 'Not specified'}
-                </TableCell>
-                <TableCell>
-                  <QuoteStatusBadge status={quote.status} />
-                </TableCell>
-                <TableCell className="text-right">
-                  {differentClientId ? (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">
-                            <AlertTriangle className="h-3 w-3 mr-1" />
-                            Different Client ID
-                          </Badge>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>This quote is associated with a different client ID</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  ) : (
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <Button 
-                            variant="outline" 
-                            size="sm"
-                            onClick={() => handleViewDetails(quote.id)}
-                            className="flex items-center gap-1"
-                          >
-                            <FileText className="h-3.5 w-3.5" />
-                            View Details
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p>View complete quote details and take action</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  )}
-                </TableCell>
-              </TableRow>
-            );
-          })}
+          {sortedQuotes.map((quote) => (
+            <QuoteTableRow 
+              key={quote.id} 
+              quote={quote}
+              onViewDetails={handleViewDetails}
+            />
+          ))}
         </TableBody>
       </Table>
     </div>
   );
-};
-
-const QuoteStatusBadge = ({ status }: { status: string }) => {
-  switch (status) {
-    case 'pending':
-      return (
-        <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200 flex items-center gap-1">
-          <Clock className="h-3 w-3" />
-          Pending
-        </Badge>
-      );
-    case 'accepted':
-      return (
-        <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
-          <Check className="h-3 w-3" />
-          Accepted
-        </Badge>
-      );
-    case 'declined':
-      return (
-        <Badge variant="outline" className="bg-red-100 text-red-800 border-red-200 flex items-center gap-1">
-          <X className="h-3 w-3" />
-          Declined
-        </Badge>
-      );
-    default:
-      return null;
-  }
 };
 
 export default ProjectQuotesComparisonTable;

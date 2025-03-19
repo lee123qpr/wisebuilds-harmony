@@ -36,5 +36,6 @@ export interface QuoteWithFreelancer extends Quote {
     job_title?: string;
     rating?: number;
     verified?: boolean;
+    location?: string;
   };
 }
