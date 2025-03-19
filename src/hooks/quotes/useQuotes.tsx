@@ -3,6 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
 
 interface UseQuotesProps {
   projectId?: string;
@@ -17,7 +18,7 @@ export const useQuotes = ({
 }: UseQuotesProps = {}) => {
   const { user } = useAuth();
   
-  return useQuery({
+  const queryResult = useQuery({
     queryKey: ['quotes', projectId, user?.id, forClient],
     queryFn: async (): Promise<QuoteWithFreelancer[]> => {
       if (!user) return [];
@@ -86,7 +87,6 @@ export const useQuotes = ({
             profile_photo: freelancerProfile.profile_photo,
             job_title: freelancerProfile.job_title,
             rating: freelancerProfile.rating,
-            // Remove the verified field since it doesn't exist in the database
           }
         };
       });
@@ -95,4 +95,38 @@ export const useQuotes = ({
     refetchInterval: refreshInterval, // Regularly refresh data
     refetchOnWindowFocus: true, // Also refresh when window gets focus
   });
+
+  // Set up real-time listener for quotes table
+  useEffect(() => {
+    if (!user || !projectId) return;
+
+    console.log('Setting up real-time listener for quotes table');
+    
+    // Create a channel for real-time updates
+    const channel = supabase
+      .channel('quotes-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'quotes',
+          filter: projectId ? `project_id=eq.${projectId}` : undefined,
+        },
+        (payload) => {
+          console.log('Real-time quote update received:', payload);
+          // Force refetch the data when quotes change
+          queryResult.refetch();
+        }
+      )
+      .subscribe();
+
+    // Cleanup function to remove the listener when component unmounts
+    return () => {
+      console.log('Removing real-time listener for quotes');
+      supabase.removeChannel(channel);
+    };
+  }, [projectId, user, queryResult.refetch]);
+
+  return queryResult;
 };

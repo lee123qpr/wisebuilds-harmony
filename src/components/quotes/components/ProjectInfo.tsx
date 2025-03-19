@@ -34,7 +34,7 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
         </div>
         <div>
           <h2 className="text-xl font-semibold text-slate-800">
-            {projectTitle}
+            {projectTitle || 'Project'}
           </h2>
           {quoteSubmitted && submissionDate && (
             <p className="text-sm text-slate-500">

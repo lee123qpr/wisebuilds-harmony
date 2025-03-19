@@ -1,26 +1,40 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import MainLayout from '@/components/layout/MainLayout';
 import QuoteCard from '@/components/quotes/QuoteCard';
 import ProjectQuotesComparisonTable from '@/components/quotes/ProjectQuotesComparisonTable';
+import { useToast } from '@/hooks/use-toast';
 
 const ProjectQuotesComparison = () => {
   const { projectId } = useParams();
+  const { toast } = useToast();
   const { project, loading: projectLoading } = useProjectDetails(projectId);
-  const { data: quotes, isLoading: quotesLoading } = useQuotes({ 
+  const { data: quotes, isLoading: quotesLoading, refetch } = useQuotes({ 
     projectId: projectId,
     forClient: true,
     refreshInterval: 10000 // Refresh every 10 seconds
   });
 
   const isLoading = projectLoading || quotesLoading;
+
+  // Force refetch when the component mounts
+  useEffect(() => {
+    console.log('Quotes comparison page mounted, fetching latest quotes');
+    refetch();
+  }, [refetch]);
+
+  // Show toast when new quotes arrive (if not initial load)
+  useEffect(() => {
+    if (quotes && quotes.length > 0 && !isLoading) {
+      console.log('Quotes data available:', quotes.length, 'quotes');
+    }
+  }, [quotes, isLoading]);
 
   if (isLoading) {
     return (
@@ -69,6 +83,8 @@ const ProjectQuotesComparison = () => {
   }
 
   const hasQuotes = quotes && quotes.length > 0;
+  
+  console.log('Rendering quotes comparison with', quotes?.length || 0, 'quotes');
 
   return (
     <MainLayout>
