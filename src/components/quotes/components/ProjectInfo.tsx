@@ -5,16 +5,16 @@ import { Building, User, Calendar, Briefcase } from 'lucide-react';
 interface ProjectInfoProps {
   projectTitle: string;
   clientName: string;
+  quoteSubmitted?: boolean;
+  submissionDate?: string;
 }
 
-const ProjectInfo: React.FC<ProjectInfoProps> = ({ projectTitle, clientName }) => {
-  // Format today's date properly
-  const currentDate = new Date().toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
-  });
-
+const ProjectInfo: React.FC<ProjectInfoProps> = ({ 
+  projectTitle, 
+  clientName,
+  quoteSubmitted = false,
+  submissionDate
+}) => {
   return (
     <div className="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
       <div className="flex items-start gap-3 mb-3">
@@ -25,9 +25,11 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({ projectTitle, clientName }) =
           <h2 className="text-xl font-semibold text-slate-800">
             {projectTitle}
           </h2>
-          <p className="text-sm text-slate-500">
-            Quote will be created today, {currentDate}
-          </p>
+          {quoteSubmitted && submissionDate && (
+            <p className="text-sm text-slate-500">
+              Quote submitted on {submissionDate}
+            </p>
+          )}
         </div>
       </div>
       

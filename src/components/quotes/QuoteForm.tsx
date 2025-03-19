@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { format } from 'date-fns';
@@ -42,6 +42,8 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
   const { user } = useAuth();
   const [priceType, setPriceType] = useState<'fixed' | 'estimated' | 'day_rate'>('fixed');
   const [quoteFiles, setQuoteFiles] = useState<UploadedFile[]>([]);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submissionDate, setSubmissionDate] = useState<string>('');
   
   const { submitQuote, isSubmitting, isSuccess } = useQuoteSubmission({ 
     projectId, 
@@ -66,13 +68,15 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
   // Watch for price type changes to update UI
   const watchPriceType = form.watch('priceType');
   
-  React.useEffect(() => {
+  useEffect(() => {
     setPriceType(watchPriceType);
   }, [watchPriceType]);
   
   // Handle successful submission
-  React.useEffect(() => {
+  useEffect(() => {
     if (isSuccess) {
+      setIsSubmitted(true);
+      setSubmissionDate(format(new Date(), 'MMMM d, yyyy h:mm a'));
       onSubmitSuccess();
     }
   }, [isSuccess, onSubmitSuccess]);
@@ -113,7 +117,12 @@ const QuoteForm: React.FC<QuoteFormProps> = ({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-        <ProjectInfo projectTitle={projectTitle} clientName={clientName} />
+        <ProjectInfo 
+          projectTitle={projectTitle} 
+          clientName={clientName}
+          quoteSubmitted={isSubmitted}
+          submissionDate={submissionDate}
+        />
         
         <PriceTypeSelector form={form} />
         
