@@ -42,7 +42,7 @@ const NoQuotesView: React.FC<NoQuotesViewProps> = ({
         </p>
         
         {directQuotesCount !== null && directQuotesCount > 0 && (
-          <Alert variant="warning" className="mb-4">
+          <Alert variant="default" className="mb-4 border-amber-500 bg-amber-50 dark:border-amber-600 dark:bg-amber-950/50 text-amber-800 dark:text-amber-200">
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Database Inconsistency Detected</AlertTitle>
             <AlertDescription>

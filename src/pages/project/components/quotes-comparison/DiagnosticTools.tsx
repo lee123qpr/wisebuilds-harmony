@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { HelpCircle, AlertCircle, Info, Tool } from 'lucide-react';
+import { HelpCircle, AlertCircle, Info, Wrench } from 'lucide-react';
 import { 
   Accordion, 
   AccordionContent, 
@@ -77,7 +77,7 @@ const DiagnosticTools: React.FC<DiagnosticToolsProps> = ({
           disabled={isCheckingDirectly}
           className="flex-1"
         >
-          <Tool className="h-4 w-4 mr-2" />
+          <Wrench className="h-4 w-4 mr-2" />
           {isCheckingDirectly ? 'Checking...' : 'Run Database Diagnostic Check'}
         </Button>
       </div>
