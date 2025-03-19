@@ -30,7 +30,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
       <div>
         <CardTitle className="flex items-center gap-1">
           {freelancerName}
-          {freelancer?.id_verified && 
+          {freelancer?.verified && 
             <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
           }
         </CardTitle>

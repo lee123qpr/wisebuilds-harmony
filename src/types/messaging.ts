@@ -26,7 +26,7 @@ export interface MessageWithSender {
   sender_name?: string;
   sender_profile_image?: string;
   is_current_user?: boolean;
-  attachments?: any;
+  attachments?: MessageAttachment[];
 }
 
 export interface FreelancerInfo {
@@ -40,6 +40,7 @@ export interface FreelancerInfo {
   rating?: number | null;
   reviews_count?: number;
   verified?: boolean;
+  id_verified?: boolean;
   location?: string | null;
 }
 
@@ -47,6 +48,39 @@ export interface ClientInfo {
   company_name?: string;
   contact_name?: string;
   profile_image?: string | null;
+  logo_url?: string | null;
   email?: string | null;
   phone_number?: string | null;
+}
+
+// Add the missing Message, Conversation, and MessageAttachment types
+export interface Message {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  message: string;
+  created_at: string;
+  is_read: boolean;
+  attachments?: MessageAttachment[];
+}
+
+export interface Conversation {
+  id: string;
+  client_id: string;
+  freelancer_id: string;
+  project_id: string;
+  created_at?: string;
+  last_message_time: string;
+  project_title?: string;
+  client_info?: ClientInfo;
+  freelancer_info?: FreelancerInfo;
+}
+
+export interface MessageAttachment {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  url: string;
+  path: string;
 }

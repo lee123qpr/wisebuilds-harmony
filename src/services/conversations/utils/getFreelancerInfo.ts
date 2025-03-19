@@ -55,7 +55,8 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
         jobs_completed: profileData.jobs_completed || 0,
         rating: profileData.rating || rating,
         reviews_count: reviews?.length || 0,
-        verified: !!verificationData || !!profileData.id_verified, // Check both verification sources
+        verified: !!verificationData || !!profileData.id_verified, // Use id_verified internally but export as verified
+        id_verified: !!verificationData || !!profileData.id_verified, // Keep this for compatibility
         location: profileData.location || null
       };
     }
@@ -76,6 +77,7 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
         profile_image: null,
         email: null,
         verified: false,
+        id_verified: false,
         location: null
       };
     }
@@ -90,6 +92,7 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       rating: null,
       reviews_count: 0,
       verified: false,
+      id_verified: false,
       location: null
     };
   } catch (error) {
@@ -101,6 +104,7 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       profile_image: null,
       email: null,
       verified: false,
+      id_verified: false,
       location: null
     };
   }

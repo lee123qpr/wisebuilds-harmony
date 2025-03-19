@@ -50,7 +50,7 @@ export const fetchConversations = async (userId: string, isBusinessClient: boole
           // Add client_info for compatibility with existing components
           client_info: {
             contact_name: freelancerInfo.full_name || 'Unknown Freelancer',
-            company_name: freelancerInfo.business_name,
+            company_name: null, // Freelancers don't have company_name
             logo_url: freelancerInfo.profile_image,
             email: freelancerInfo.email
           }
