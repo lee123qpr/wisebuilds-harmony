@@ -34,6 +34,24 @@ export const useQuotes = ({
       console.log('User ID:', user.id);
       console.log('User metadata:', user.user_metadata);
       
+      // First, let's check if the project exists and belongs to the user if forClient is true
+      if (forClient && projectId) {
+        const { data: projectData, error: projectError } = await supabase
+          .from('projects')
+          .select('id, user_id')
+          .eq('id', projectId)
+          .single();
+          
+        if (projectError) {
+          console.error('Error verifying project ownership:', projectError);
+        } else {
+          console.log('Project data:', projectData);
+          if (projectData.user_id !== user.id) {
+            console.warn('Project does not belong to current user. Project user_id:', projectData.user_id, 'Current user_id:', user.id);
+          }
+        }
+      }
+      
       // First, get the quotes
       let query = supabase
         .from('quotes')
@@ -81,6 +99,12 @@ export const useQuotes = ({
               console.log('Found quotes for this project but not associated with this client');
               console.log('Quote client_ids:', allQuotesData.map(q => q.client_id));
               console.log('Current user id:', user.id);
+              
+              // Check if any quotes match by user_id instead of client_id (might be a data issue)
+              const matchesByUserId = allQuotesData.filter(q => q.client_id === user.id).length;
+              if (matchesByUserId > 0) {
+                console.log(`Found ${matchesByUserId} quotes matching user_id instead of client_id`);
+              }
             } else {
               console.log('No quotes found for this project at all');
             }
@@ -91,10 +115,16 @@ export const useQuotes = ({
           const { data: systemQuotes, error: systemError } = await supabase
             .from('quotes')
             .select('*')
-            .limit(5);
+            .limit(10);
             
           if (!systemError) {
             console.log('Sample of quotes in the system:', systemQuotes);
+            if (systemQuotes && systemQuotes.length > 0) {
+              const projects = [...new Set(systemQuotes.map(q => q.project_id))];
+              const clients = [...new Set(systemQuotes.map(q => q.client_id))];
+              console.log('Projects with quotes:', projects);
+              console.log('Clients with quotes:', clients);
+            }
           }
         }
         console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
@@ -149,6 +179,7 @@ export const useQuotes = ({
     enabled: !!user,
     refetchInterval: refreshInterval, // Regularly refresh data
     refetchOnWindowFocus: true, // Also refresh when window gets focus
+    staleTime: 5000, // Consider data stale after 5 seconds
   });
 
   // Set up real-time listener for quotes table
@@ -159,7 +190,7 @@ export const useQuotes = ({
     
     // Create a channel for real-time updates
     const channel = supabase
-      .channel('quotes-changes')
+      .channel(`quotes-changes-${projectId}`)
       .on(
         'postgres_changes',
         {

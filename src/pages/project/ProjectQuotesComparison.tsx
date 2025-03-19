@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, AlertCircle, HelpCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
@@ -12,14 +12,21 @@ import ProjectQuotesComparisonTable from '@/components/quotes/ProjectQuotesCompa
 import { useToast } from '@/hooks/use-toast';
 import { toast } from 'sonner';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 const ProjectQuotesComparison = () => {
   const { projectId } = useParams();
   const { toast: legacyToast } = useToast();
   const [manualRefreshCount, setManualRefreshCount] = useState(0);
   const { project, loading: projectLoading } = useProjectDetails(projectId);
+  const { user } = useAuth();
+  const [directQuotesCount, setDirectQuotesCount] = useState<number | null>(null);
+  const [isCheckingDirectly, setIsCheckingDirectly] = useState(false);
   
   console.log("ProjectQuotesComparison - Current projectId from URL params:", projectId);
+  console.log("ProjectQuotesComparison - Current user:", user?.id);
   
   const { 
     data: quotes, 
@@ -53,6 +60,42 @@ const ProjectQuotesComparison = () => {
     toast.info('Refreshing quotes...');
     console.log('Manual refresh triggered');
     setManualRefreshCount(prev => prev + 1);
+  };
+
+  // Function to check directly in the database
+  const checkQuotesDirectly = async () => {
+    if (!projectId || !user) return;
+    
+    setIsCheckingDirectly(true);
+    try {
+      console.log('Checking quotes directly in the database for project:', projectId);
+      
+      // Check all quotes for this project regardless of client_id
+      const { data: allQuotes, error: allQuotesError } = await supabase
+        .from('quotes')
+        .select('id, project_id, client_id, freelancer_id, status')
+        .eq('project_id', projectId);
+      
+      if (allQuotesError) {
+        console.error('Error checking quotes directly:', allQuotesError);
+        toast.error('Error checking quotes directly');
+        return;
+      }
+      
+      console.log('Direct database check results:', allQuotes);
+      setDirectQuotesCount(allQuotes?.length || 0);
+      
+      if (allQuotes && allQuotes.length > 0) {
+        const clientIds = [...new Set(allQuotes.map(q => q.client_id))];
+        console.log('Quote client IDs in database:', clientIds);
+        console.log('Current user ID:', user.id);
+        console.log('Quotes that match current user:', allQuotes.filter(q => q.client_id === user.id).length);
+      }
+    } catch (err) {
+      console.error('Error in direct check:', err);
+    } finally {
+      setIsCheckingDirectly(false);
+    }
   };
 
   if (isLoading) {
@@ -196,10 +239,48 @@ const ProjectQuotesComparison = () => {
                 <AlertDescription>
                   <div className="space-y-2 mt-2">
                     <p><strong>Project ID:</strong> {projectId}</p>
+                    <p><strong>User ID:</strong> {user?.id}</p>
                     <p><strong>Quotes count:</strong> {quotes?.length || 0}</p>
+                    {directQuotesCount !== null && (
+                      <p><strong>Direct DB quotes count:</strong> {directQuotesCount}</p>
+                    )}
                   </div>
                 </AlertDescription>
               </Alert>
+              
+              <div className="mb-4">
+                <Button 
+                  variant="secondary"
+                  onClick={checkQuotesDirectly}
+                  disabled={isCheckingDirectly}
+                  className="w-full"
+                >
+                  {isCheckingDirectly ? 'Checking...' : 'Run Database Diagnostic Check'}
+                </Button>
+              </div>
+              
+              <Accordion type="single" collapsible className="mb-4">
+                <AccordionItem value="troubleshooting">
+                  <AccordionTrigger className="text-sm">
+                    <div className="flex items-center gap-2">
+                      <HelpCircle className="h-4 w-4" />
+                      Troubleshooting Information
+                    </div>
+                  </AccordionTrigger>
+                  <AccordionContent>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <p>Common reasons for quotes not appearing:</p>
+                      <ul className="list-disc pl-5 space-y-1">
+                        <li>No quotes have been submitted yet</li>
+                        <li>Quotes were submitted to a different project ID</li>
+                        <li>Quotes have a different client_id than your user ID</li>
+                        <li>Database permissions prevent fetching the quotes</li>
+                      </ul>
+                      <p className="mt-2">Try using the diagnostic button above to check directly in the database.</p>
+                    </div>
+                  </AccordionContent>
+                </AccordionItem>
+              </Accordion>
             </CardContent>
             <CardFooter className="flex gap-4">
               <Button variant="default" onClick={handleManualRefresh} disabled={isRefetching}>

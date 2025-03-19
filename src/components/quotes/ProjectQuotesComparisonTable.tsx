@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { format } from 'date-fns';
-import { Check, X, Clock, AlertCircle } from 'lucide-react';
+import { Check, X, Clock, AlertCircle, FileText } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { toast } from 'sonner';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 interface ProjectQuotesComparisonTableProps {
   quotes: QuoteWithFreelancer[];
@@ -20,6 +21,10 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
   // Sort quotes by creation date (newest first)
   const sortedQuotes = useMemo(() => {
     console.log('Sorting quotes in table component. Received quotes:', quotes);
+    if (!Array.isArray(quotes)) {
+      console.error('Expected quotes to be an array but got:', typeof quotes);
+      return [];
+    }
     return [...quotes].sort((a, b) => 
       new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
@@ -49,7 +54,7 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
     }
   };
 
-  if (quotes.length === 0) {
+  if (!Array.isArray(quotes) || quotes.length === 0) {
     return (
       <div className="border rounded-md p-8 bg-gray-50 text-center">
         <AlertCircle className="h-10 w-10 text-yellow-500 mx-auto mb-4" />
@@ -128,13 +133,24 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
                   <QuoteStatusBadge status={quote.status} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    onClick={() => handleViewDetails(quote.id)}
-                  >
-                    View Details
-                  </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button 
+                          variant="outline" 
+                          size="sm"
+                          onClick={() => handleViewDetails(quote.id)}
+                          className="flex items-center gap-1"
+                        >
+                          <FileText className="h-3.5 w-3.5" />
+                          View Details
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>View complete quote details and take action</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 </TableCell>
               </TableRow>
             );
