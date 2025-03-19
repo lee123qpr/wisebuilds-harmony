@@ -37,6 +37,15 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
     return null;
   }
 
+  // Handlers to ensure the action completes before dialog closes
+  const handleAccept = async () => {
+    await onAccept();
+  };
+
+  const handleReject = async () => {
+    await onReject();
+  };
+
   return (
     <div className="flex justify-end space-x-2 pt-2">
       <Button
@@ -66,15 +75,13 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <DialogClose asChild>
-              <Button 
-                variant="destructive" 
-                onClick={onReject} 
-                disabled={isRejecting}
-              >
-                {isRejecting ? 'Rejecting...' : 'Reject Quote'}
-              </Button>
-            </DialogClose>
+            <Button 
+              variant="destructive" 
+              onClick={handleReject} 
+              disabled={isRejecting}
+            >
+              {isRejecting ? 'Rejecting...' : 'Reject Quote'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -97,14 +104,12 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
             <DialogClose asChild>
               <Button variant="outline">Cancel</Button>
             </DialogClose>
-            <DialogClose asChild>
-              <Button 
-                onClick={onAccept} 
-                disabled={isAccepting}
-              >
-                {isAccepting ? 'Accepting...' : 'Accept Quote'}
-              </Button>
-            </DialogClose>
+            <Button 
+              onClick={handleAccept} 
+              disabled={isAccepting}
+            >
+              {isAccepting ? 'Accepting...' : 'Accept Quote'}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

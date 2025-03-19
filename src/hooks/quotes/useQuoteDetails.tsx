@@ -16,7 +16,8 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
   const {
     data,
     isLoading,
-    error
+    error,
+    refetch
   } = useQuery({
     queryKey: ['quote', projectId, quoteId, user?.id],
     queryFn: async () => {
@@ -42,6 +43,8 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
       if (!quote) {
         return null;
       }
+      
+      console.log('Quote data from database:', quote);
       
       // Fetch the freelancer profile
       const { data: freelancer, error: freelancerError } = await supabase
@@ -126,6 +129,7 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
     },
     enabled: !!user && !!projectId && !!quoteId,
     refetchInterval: 10000, // Refresh every 10 seconds
+    staleTime: 0, // Consider data always stale to ensure we get fresh data on navigation
   });
 
   return {
@@ -134,5 +138,6 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
     project: data?.project || null,
     isLoading,
     error,
+    refetch,
   };
 };

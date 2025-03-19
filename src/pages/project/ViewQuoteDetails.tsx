@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,18 +16,17 @@ import FreelancerProfileCard from './components/quotes/FreelancerProfileCard';
 import QuoteActionButtons from './components/quotes/QuoteActionButtons';
 import QuoteStatusAlert from './components/quotes/QuoteStatusAlert';
 import QuoteDetailsHeader from './components/quotes/QuoteDetailsHeader';
-import { useToast } from '@/hooks/use-toast';
 
 const ViewQuoteDetails = () => {
   const { projectId, quoteId } = useParams();
-  const { toast } = useToast();
   
   const { 
     quote, 
     freelancer, 
     project, 
     isLoading, 
-    error 
+    error,
+    refetch 
   } = useQuoteDetails({ projectId, quoteId });
   
   const { 
@@ -37,37 +36,30 @@ const ViewQuoteDetails = () => {
     isRejecting 
   } = useQuoteActions({ projectId, quoteId });
 
+  // Force refetch data when component mounts or when URL params change
+  useEffect(() => {
+    if (projectId && quoteId) {
+      refetch();
+    }
+  }, [projectId, quoteId, refetch]);
+
   const handleAcceptQuote = async () => {
     try {
       await acceptQuote();
-      toast({
-        title: 'Quote Accepted',
-        description: 'The freelancer has been notified about your decision.',
-      });
+      // Manually trigger a refetch to ensure the UI is updated
+      setTimeout(() => refetch(), 500);
     } catch (error) {
       console.error('Error accepting quote:', error);
-      toast({
-        title: 'Failed to accept quote',
-        description: 'Please try again later.',
-        variant: 'destructive',
-      });
     }
   };
 
   const handleRejectQuote = async () => {
     try {
       await rejectQuote();
-      toast({
-        title: 'Quote Rejected',
-        description: 'The freelancer has been notified about your decision.',
-      });
+      // Manually trigger a refetch to ensure the UI is updated
+      setTimeout(() => refetch(), 500);
     } catch (error) {
       console.error('Error rejecting quote:', error);
-      toast({
-        title: 'Failed to reject quote',
-        description: 'Please try again later.',
-        variant: 'destructive',
-      });
     }
   };
 
@@ -136,7 +128,7 @@ const ViewQuoteDetails = () => {
             <DescriptionSection quote={quote} />
           </CardContent>
           
-          <CardFooter>
+          <CardFooter className="flex flex-col items-stretch">
             {quote.status === 'pending' && (
               <QuoteActionButtons 
                 quoteStatus={quote.status}
@@ -148,7 +140,9 @@ const ViewQuoteDetails = () => {
               />
             )}
             
-            <QuoteStatusAlert status={quote.status} />
+            {quote.status !== 'pending' && (
+              <QuoteStatusAlert status={quote.status} />
+            )}
           </CardFooter>
         </Card>
       </div>
