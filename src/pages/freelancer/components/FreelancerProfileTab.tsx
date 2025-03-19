@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { CheckCircle, CheckCircle2, Mail, Phone, Calendar, Briefcase, MapPin, Link } from 'lucide-react';
+import { CheckCircle, CheckCircle2, Mail, Phone, Calendar, Briefcase, MapPin, Link as LinkIcon } from 'lucide-react';
 import { FreelancerProfile } from '@/types/applications';
 import { format, parseISO } from 'date-fns';
 import ProfileRatingStars from './ProfileRatingStars';
@@ -25,6 +25,29 @@ const FreelancerProfileTab: React.FC<FreelancerProfileTabProps> = ({ profile }) 
     } catch (e) {
       return 'Recently joined';
     }
+  };
+
+  const formatPreviousEmployers = () => {
+    if (!profile.previous_employers || profile.previous_employers.length === 0) {
+      return null;
+    }
+
+    return (
+      <div className="space-y-4">
+        {profile.previous_employers.map((employer, index) => (
+          <div key={index} className="border p-3 rounded-md">
+            <div className="font-medium">{employer.employerName}</div>
+            <div className="text-sm">{employer.position}</div>
+            <div className="text-sm text-muted-foreground">
+              {format(new Date(employer.startDate), 'MMM yyyy')} - 
+              {employer.current ? 
+                ' Present' : 
+                employer.endDate ? ` ${format(new Date(employer.endDate), 'MMM yyyy')}` : ''}
+            </div>
+          </div>
+        ))}
+      </div>
+    );
   };
 
   return (
@@ -150,7 +173,7 @@ const FreelancerProfileTab: React.FC<FreelancerProfileTabProps> = ({ profile }) 
                 <div>
                   <p className="text-sm font-medium text-muted-foreground">Website</p>
                   <div className="flex items-center">
-                    <Link className="h-4 w-4 mr-2 text-muted-foreground" />
+                    <LinkIcon className="h-4 w-4 mr-2 text-muted-foreground" />
                     <a href={profile.website} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
                       {profile.website.replace(/^https?:\/\//, '')}
                     </a>
@@ -203,11 +226,11 @@ const FreelancerProfileTab: React.FC<FreelancerProfileTabProps> = ({ profile }) 
             </div>
           )}
           
-          {/* Previous Employers - Placeholder since this isn't in the FreelancerProfile type */}
-          {profile.previous_employers && (
+          {/* Previous Employers */}
+          {profile.previous_employers && profile.previous_employers.length > 0 && (
             <div>
               <h3 className="text-md font-medium mb-3">Previous Employers</h3>
-              <p className="text-sm text-muted-foreground">Work history information</p>
+              {formatPreviousEmployers()}
             </div>
           )}
 
