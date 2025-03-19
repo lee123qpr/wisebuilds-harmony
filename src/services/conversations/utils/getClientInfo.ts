@@ -7,6 +7,8 @@ import { ClientInfo } from '@/types/messaging';
  */
 export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   console.log('getClientInfo called with clientId:', clientId);
+  console.log('clientId type:', typeof clientId);
+  console.log('clientId valid UUID?:', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId));
   
   if (!clientId) {
     console.error('No clientId provided to getClientInfo');
@@ -19,27 +21,36 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   }
   
   // Try to get client info from client_profiles first
-  const { data: clientProfile, error: clientError } = await supabase
-    .from('client_profiles')
-    .select('contact_name, company_name, logo_url, email')
-    .eq('id', clientId)
-    .maybeSingle();
-  
-  if (clientError) {
-    console.error('Error fetching client profile:', clientError);
-  }
-  
-  console.log('Client profile data from database:', clientProfile);
-  
-  // If profile exists with contact_name, return it immediately
-  if (clientProfile && clientProfile.contact_name) {
-    console.log('Returning client name from profile:', clientProfile.contact_name);
-    return {
-      contact_name: clientProfile.contact_name,
-      company_name: clientProfile.company_name,
-      logo_url: clientProfile.logo_url,
-      email: clientProfile.email
-    };
+  try {
+    console.log('Querying client_profiles table for ID:', clientId);
+    const { data: clientProfile, error: clientError } = await supabase
+      .from('client_profiles')
+      .select('contact_name, company_name, logo_url, email')
+      .eq('id', clientId)
+      .maybeSingle();
+    
+    if (clientError) {
+      console.error('Error fetching client profile:', clientError);
+      console.error('Error code:', clientError.code);
+      console.error('Error message:', clientError.message);
+    }
+    
+    console.log('Client profile data from database:', clientProfile);
+    
+    // If profile exists with contact_name, return it immediately
+    if (clientProfile && clientProfile.contact_name) {
+      console.log('Returning client name from profile:', clientProfile.contact_name);
+      return {
+        contact_name: clientProfile.contact_name,
+        company_name: clientProfile.company_name,
+        logo_url: clientProfile.logo_url,
+        email: clientProfile.email
+      };
+    } else {
+      console.log('No contact_name found in client profile or profile not found');
+    }
+  } catch (dbError) {
+    console.error('Exception when querying client_profiles:', dbError);
   }
   
   // If no complete profile, try to get user data from auth using edge function
@@ -53,8 +64,10 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
       }
     );
     
-    if (userError || !userData) {
+    if (userError) {
       console.error('Error fetching user data from edge function:', userError);
+      console.error('Error message:', userError.message);
+      console.error('Error details:', userError);
       return {
         contact_name: 'Client',
         company_name: null,
@@ -65,9 +78,20 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     
     console.log('User data received from edge function:', userData);
     
+    if (!userData) {
+      console.error('No user data returned from edge function');
+      return {
+        contact_name: 'Client',
+        company_name: null,
+        logo_url: null,
+        email: null
+      };
+    }
+    
     // Extract full name from metadata or use a default value
     const fullName = userData.full_name || 
                     (userData.user_metadata?.full_name) || 
+                    (userData.user_metadata?.name) ||
                     (userData.email ? userData.email.split('@')[0] : 'Client');
                     
     console.log('Extracted full name:', fullName);
@@ -81,6 +105,8 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     };
   } catch (error) {
     console.error('Error calling edge function:', error);
+    console.error('Error type:', typeof error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     
     // No data available
     return {

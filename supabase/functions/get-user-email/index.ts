@@ -15,18 +15,35 @@ serve(async (req) => {
   }
 
   try {
+    // Check if Supabase environment variables are available
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    console.log('Supabase URL available:', !!supabaseUrl);
+    console.log('Supabase Service Role Key available:', !!supabaseServiceRoleKey);
+    
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Missing required environment variables');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error' }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500 
+        }
+      );
+    }
+
     // Create a Supabase client with the Admin key
     const supabaseAdmin = createClient(
-      // Supabase API URL - env var exported by default.
-      Deno.env.get('SUPABASE_URL') ?? '',
-      // Supabase API SERVICE ROLE KEY - env var exported by default.
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? '',
+      supabaseUrl,
+      supabaseServiceRoleKey
     );
 
     // Extract the request body
     const { userId } = await req.json();
     
     if (!userId) {
+      console.error('No userId provided in request');
       return new Response(
         JSON.stringify({ error: 'User ID is required' }),
         { 
@@ -36,7 +53,7 @@ serve(async (req) => {
       );
     }
 
-    console.log('Fetching user data for:', userId);
+    console.log('Fetching user data for userId:', userId);
 
     // Get the user's data from auth.users table
     const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
@@ -52,11 +69,26 @@ serve(async (req) => {
       );
     }
 
-    console.log('User data fetched:', data ? 'success' : 'no data');
+    console.log('User data fetched successfully:', !!data);
+    console.log('User object available:', !!data?.user);
     
-    // Get the full name from user metadata
-    const fullName = data?.user?.user_metadata?.full_name || null;
+    if (data?.user) {
+      console.log('Email available:', !!data.user.email);
+      console.log('User metadata available:', !!data.user.user_metadata);
+      if (data.user.user_metadata) {
+        console.log('User metadata keys:', Object.keys(data.user.user_metadata));
+        console.log('Full name in metadata:', data.user.user_metadata.full_name);
+      }
+    }
+    
+    // Get the full name from user metadata or other sources
+    const fullName = data?.user?.user_metadata?.full_name || 
+                    data?.user?.user_metadata?.name ||
+                    null;
     const email = data?.user?.email || null;
+    
+    console.log('Extracted full name:', fullName);
+    console.log('Extracted email:', email);
     
     // Return the user information
     return new Response(

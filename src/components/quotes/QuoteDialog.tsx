@@ -48,6 +48,10 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
         return;
       }
       
+      console.log('QuoteDialog clientId:', clientId);
+      console.log('QuoteDialog clientId type:', typeof clientId);
+      console.log('Is valid UUID?:', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId));
+      
       setIsLoadingClientInfo(true);
       try {
         console.log('Fetching client info for ID:', clientId);
@@ -73,6 +77,8 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
         }
       } catch (error) {
         console.error('Error fetching client information:', error);
+        console.error('Error type:', typeof error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
         setClientName('Client');
       } finally {
         setIsLoadingClientInfo(false);

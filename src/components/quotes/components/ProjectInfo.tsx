@@ -15,8 +15,16 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
   quoteSubmitted = false,
   submissionDate
 }) => {
-  // Ensure clientName is never empty or undefined for display
-  const displayName = clientName && clientName !== 'undefined' ? clientName : 'Client';
+  // Enhanced validation to ensure clientName is displayed properly
+  const displayName = clientName && 
+                     clientName !== 'undefined' && 
+                     clientName !== 'null' && 
+                     clientName.trim() !== '' 
+                       ? clientName 
+                       : 'Client';
+  
+  console.log('ProjectInfo received clientName:', clientName);
+  console.log('ProjectInfo displaying name:', displayName);
   
   return (
     <div className="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
