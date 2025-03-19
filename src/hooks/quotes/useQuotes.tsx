@@ -98,7 +98,7 @@ export const useQuotes = ({
           console.log('Checking ALL quotes for this project regardless of client_id...');
           const { data: allQuotesData, error: allQuotesError } = await supabase
             .from('quotes')
-            .select('*, client:client_id(*), freelancer:freelancer_id(*)')
+            .select('*, freelancer:freelancer_id(*)')
             .eq('project_id', projectId);
             
           if (!allQuotesError && allQuotesData && allQuotesData.length > 0) {
@@ -113,20 +113,22 @@ export const useQuotes = ({
               
               // We've already joined the freelancer info in the query, just need to format it
               const formattedQuotes = allQuotesData.map(quote => {
+                const freelancerProfile = quote.freelancer || {};
+                
                 return {
                   ...quote,
                   status: quote.status as QuoteWithFreelancer['status'],
                   duration_unit: quote.duration_unit as QuoteWithFreelancer['duration_unit'],
                   quote_files: Array.isArray(quote.quote_files) ? quote.quote_files : [],
-                  freelancer_profile: quote.freelancer ? {
-                    id: quote.freelancer.id,
-                    first_name: quote.freelancer.first_name,
-                    last_name: quote.freelancer.last_name,
-                    display_name: quote.freelancer.display_name,
-                    profile_photo: quote.freelancer.profile_photo,
-                    job_title: quote.freelancer.job_title,
-                    rating: quote.freelancer.rating,
-                  } : {}
+                  freelancer_profile: {
+                    id: freelancerProfile.id,
+                    first_name: freelancerProfile.first_name,
+                    last_name: freelancerProfile.last_name,
+                    display_name: freelancerProfile.display_name,
+                    profile_photo: freelancerProfile.profile_photo,
+                    job_title: freelancerProfile.job_title,
+                    rating: freelancerProfile.rating,
+                  }
                 };
               });
               
