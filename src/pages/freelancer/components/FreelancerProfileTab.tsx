@@ -31,7 +31,7 @@ const FreelancerProfileTab: React.FC<FreelancerProfileTabProps> = ({ profile }) 
         <CardHeader>
           <CardTitle className="text-lg">Professional Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 overflow-hidden">
           {/* Basic Information */}
           <BasicInformationSection profile={profile} />
           

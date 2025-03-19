@@ -12,9 +12,9 @@ const IndemnityInsuranceSection: React.FC<IndemnityInsuranceSectionProps> = ({ p
   }
 
   return (
-    <div className="border p-4 rounded-md bg-gray-50">
+    <div className="border p-4 rounded-md bg-gray-50 break-words overflow-hidden">
       <h3 className="text-md font-medium mb-3">Professional Indemnity Insurance</h3>
-      <p className="text-sm">
+      <p className="text-sm max-w-full overflow-hidden text-wrap">
         {profile.indemnity_insurance.hasInsurance 
           ? `Insured - Coverage: ${profile.indemnity_insurance.coverLevel || 'Not specified'}`
           : 'Not insured'}
