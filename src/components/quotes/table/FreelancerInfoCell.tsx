@@ -16,7 +16,7 @@ interface FreelancerInfoCellProps {
     job_title?: string;
     rating?: number;
     location?: string;
-    verified?: boolean;
+    id_verified?: boolean;  // Changed from verified to id_verified
   };
   freelancerId: string;
   isLoading?: boolean;
@@ -57,7 +57,7 @@ const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({
         <div>
           <div className="font-medium flex items-center gap-1">
             {freelancerName}
-            {freelancer.verified && <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />}
+            {freelancer.id_verified && <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />}
           </div>
           <div className="text-xs text-muted-foreground">{freelancer.job_title || 'Freelancer'}</div>
           

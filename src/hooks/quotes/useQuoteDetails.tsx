@@ -90,7 +90,7 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
               rating: freelancerInfo.rating || null,
               reviews_count: freelancerInfo.reviews_count || 0,
               qualifications: null,
-              verified: freelancerInfo.verified || false
+              id_verified: freelancerInfo.verified || false  // Changed from verified to id_verified
             };
           }
         } catch (err) {
