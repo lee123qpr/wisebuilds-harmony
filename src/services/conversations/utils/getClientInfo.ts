@@ -8,6 +8,16 @@ import { ClientInfo } from '@/types/messaging';
 export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   console.log('getClientInfo called with clientId:', clientId);
   
+  if (!clientId) {
+    console.error('No clientId provided to getClientInfo');
+    return {
+      contact_name: 'Client',
+      company_name: null,
+      logo_url: null,
+      email: null
+    };
+  }
+  
   // Try to get client info from client_profiles
   const { data: clientProfile, error: clientError } = await supabase
     .from('client_profiles')
