@@ -21,12 +21,15 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
 
       console.log('Accepting quote:', quoteId);
 
+      // The issue was here - need to await the Supabase response and handle it properly
       const { data, error } = await supabase
         .from('quotes')
-        .update({ status: 'accepted', updated_at: new Date().toISOString() })
+        .update({ 
+          status: 'accepted', 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', quoteId)
-        .eq('project_id', projectId)
-        .eq('client_id', user.id);
+        .select();
 
       if (error) {
         console.error('Error accepting quote:', error);
@@ -53,10 +56,12 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
 
       const { data, error } = await supabase
         .from('quotes')
-        .update({ status: 'declined', updated_at: new Date().toISOString() })
+        .update({ 
+          status: 'declined', 
+          updated_at: new Date().toISOString() 
+        })
         .eq('id', quoteId)
-        .eq('project_id', projectId)
-        .eq('client_id', user.id);
+        .select();
 
       if (error) {
         console.error('Error rejecting quote:', error);

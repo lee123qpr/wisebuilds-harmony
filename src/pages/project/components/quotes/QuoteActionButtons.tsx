@@ -11,6 +11,7 @@ import {
   DialogTitle,
   DialogFooter,
   DialogTrigger,
+  DialogClose
 } from '@/components/ui/dialog';
 
 interface QuoteActionButtonsProps {
@@ -61,15 +62,19 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
               Are you sure you want to reject this quote? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {}}>Cancel</Button>
-            <Button 
-              variant="destructive" 
-              onClick={onReject} 
-              disabled={isRejecting}
-            >
-              {isRejecting ? 'Rejecting...' : 'Reject Quote'}
-            </Button>
+          <DialogFooter className="flex justify-end gap-2">
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button 
+                variant="destructive" 
+                onClick={onReject} 
+                disabled={isRejecting}
+              >
+                {isRejecting ? 'Rejecting...' : 'Reject Quote'}
+              </Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -88,14 +93,18 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
               Are you sure you want to accept this quote? This will notify the freelancer and create a contract.
             </DialogDescription>
           </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => {}}>Cancel</Button>
-            <Button 
-              onClick={onAccept} 
-              disabled={isAccepting}
-            >
-              {isAccepting ? 'Accepting...' : 'Accept Quote'}
-            </Button>
+          <DialogFooter className="flex justify-end gap-2">
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <DialogClose asChild>
+              <Button 
+                onClick={onAccept} 
+                disabled={isAccepting}
+              >
+                {isAccepting ? 'Accepting...' : 'Accept Quote'}
+              </Button>
+            </DialogClose>
           </DialogFooter>
         </DialogContent>
       </Dialog>
