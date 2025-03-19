@@ -44,7 +44,15 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
           throw new Error('Failed to update quote status');
         }
 
-        // Double-check that the status was actually updated by fetching the latest version
+        // The update returns an array with the updated row(s), so we need to check the first item
+        const updatedQuote = data[0];
+        
+        if (updatedQuote.status !== 'accepted') {
+          console.error('Quote status was not updated correctly', updatedQuote);
+          throw new Error(`Quote status verification failed: expected 'accepted' but got '${updatedQuote.status}'`);
+        }
+
+        // Double-check again with a separate query to ensure the database state is as expected
         const { data: verificationData, error: verificationError } = await supabase
           .from('quotes')
           .select('*')
@@ -57,8 +65,8 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
         }
         
         if (verificationData.status !== 'accepted') {
-          console.error('Quote status was not updated correctly', verificationData);
-          throw new Error(`Quote status verification failed: expected 'accepted' but got '${verificationData.status}'`);
+          console.error('Quote status was not updated correctly after verification', verificationData);
+          throw new Error(`Quote status verification failed after separate query: expected 'accepted' but got '${verificationData.status}'`);
         }
 
         console.log('Quote accepted successfully, updated data:', verificationData);
@@ -88,7 +96,7 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
     }
   });
 
-  // Reject quote mutation - similar improvements as accept
+  // Reject quote mutation - apply the same fix as in accept mutation
   const rejectMutation = useMutation({
     mutationFn: async () => {
       if (!user || !projectId || !quoteId) {
@@ -112,13 +120,21 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
           throw error;
         }
 
-        // Verify the update was successful
+        // Verify the update was successful - check the array
         if (!data || data.length === 0) {
           console.error('No data returned from reject update operation');
           throw new Error('Failed to update quote status to declined');
         }
         
-        // Double-check that the status was actually updated
+        // The update returns an array with the updated row(s)
+        const updatedQuote = data[0];
+        
+        if (updatedQuote.status !== 'declined') {
+          console.error('Quote status was not updated correctly', updatedQuote);
+          throw new Error(`Quote status verification failed: expected 'declined' but got '${updatedQuote.status}'`);
+        }
+        
+        // Double-check with a separate query
         const { data: verificationData, error: verificationError } = await supabase
           .from('quotes')
           .select('*')
@@ -131,8 +147,8 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
         }
         
         if (verificationData.status !== 'declined') {
-          console.error('Quote status was not updated correctly', verificationData);
-          throw new Error(`Quote status verification failed: expected 'declined' but got '${verificationData.status}'`);
+          console.error('Quote status was not updated correctly after verification', verificationData);
+          throw new Error(`Quote status verification failed after separate query: expected 'declined' but got '${verificationData.status}'`);
         }
 
         console.log('Quote rejected successfully, updated data:', verificationData);
