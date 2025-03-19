@@ -1,7 +1,8 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
-import { Card, CardHeader, CardContent, CardFooter } from '@/components/ui/card';
+import { useParams, Link } from 'react-router-dom';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
 import MainLayout from '@/components/layout/MainLayout';
 import { useQuoteDetails } from '@/hooks/quotes/useQuoteDetails';
 import { useQuoteActions } from '@/hooks/quotes/useQuoteActions';
