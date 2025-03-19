@@ -8,7 +8,7 @@ import { useEffect } from 'react';
 // Import utility functions
 import { logQuoteFetchDiagnostics, verifyProjectOwnership, logSystemQuotesSample, checkAllProjectQuotes } from './utils/diagnostics';
 import { buildQuotesQuery, fetchFreelancerProfiles, createProfileMap } from './utils/queries';
-import { formatQuotesWithProfiles, formatDirectQuotesWithFreelancers } from './utils/formatters';
+import { formatQuotesWithProfiles } from './utils/formatters';
 import { setupQuotesRealtimeListener, removeRealtimeListener } from './utils/realtime';
 
 interface UseQuotesProps {
@@ -64,7 +64,13 @@ export const useQuotes = ({
           // If includeAllQuotes is true, use these results instead
           if (includeAllQuotes && allProjectQuotes && allProjectQuotes.length > 0) {
             console.log('Using all quotes found due to includeAllQuotes=true');
-            return formatDirectQuotesWithFreelancers(allProjectQuotes);
+            
+            // We need to fetch freelancer profiles separately now
+            const freelancerIds = allProjectQuotes.map(quote => quote.freelancer_id);
+            const freelancerProfiles = await fetchFreelancerProfiles(freelancerIds);
+            const profileMap = createProfileMap(freelancerProfiles);
+            
+            return formatQuotesWithProfiles(allProjectQuotes, profileMap);
           }
         }
         

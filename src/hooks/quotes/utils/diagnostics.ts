@@ -67,9 +67,11 @@ export const logSystemQuotesSample = async () => {
  */
 export const checkAllProjectQuotes = async (projectId: string) => {
   console.log('Checking ALL quotes for this project regardless of client_id...');
+  
+  // Fix: Don't try to join with freelancer, just get the quotes
   const { data: allQuotesData, error: allQuotesError } = await supabase
     .from('quotes')
-    .select('*, freelancer:freelancer_id(*)')
+    .select('*')
     .eq('project_id', projectId);
     
   if (allQuotesError) {
