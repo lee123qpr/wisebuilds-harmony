@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, RefreshCw, AlertCircle, HelpCircle } from 'lucide-react';
+import { ArrowLeft, RefreshCw, AlertCircle, HelpCircle, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
@@ -15,6 +15,8 @@ import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
 
 const ProjectQuotesComparison = () => {
   const { projectId } = useParams();
@@ -24,9 +26,12 @@ const ProjectQuotesComparison = () => {
   const { user } = useAuth();
   const [directQuotesCount, setDirectQuotesCount] = useState<number | null>(null);
   const [isCheckingDirectly, setIsCheckingDirectly] = useState(false);
+  const [showAllQuotes, setShowAllQuotes] = useState(false);
+  const [isFixingClientIDs, setIsFixingClientIDs] = useState(false);
   
   console.log("ProjectQuotesComparison - Current projectId from URL params:", projectId);
   console.log("ProjectQuotesComparison - Current user:", user?.id);
+  console.log("ProjectQuotesComparison - Show all quotes mode:", showAllQuotes);
   
   const { 
     data: quotes, 
@@ -38,7 +43,8 @@ const ProjectQuotesComparison = () => {
   } = useQuotes({ 
     projectId: projectId,
     forClient: true,
-    refreshInterval: 10000 // Refresh every 10 seconds
+    refreshInterval: 10000, // Refresh every 10 seconds
+    includeAllQuotes: showAllQuotes // Use the new parameter
   });
 
   const isLoading = projectLoading || quotesLoading;
@@ -47,7 +53,7 @@ const ProjectQuotesComparison = () => {
   useEffect(() => {
     console.log('ProjectQuotesComparison component mounted or manual refresh triggered, fetching latest quotes');
     refetch();
-  }, [refetch, manualRefreshCount]);
+  }, [refetch, manualRefreshCount, showAllQuotes]);
 
   // Show toast when new quotes arrive (if not initial load)
   useEffect(() => {
@@ -73,8 +79,9 @@ const ProjectQuotesComparison = () => {
       // Check all quotes for this project regardless of client_id
       const { data: allQuotes, error: allQuotesError } = await supabase
         .from('quotes')
-        .select('id, project_id, client_id, freelancer_id, status')
-        .eq('project_id', projectId);
+        .select('id, project_id, client_id, freelancer_id, status, created_at')
+        .eq('project_id', projectId)
+        .order('created_at', { ascending: false });
       
       if (allQuotesError) {
         console.error('Error checking quotes directly:', allQuotesError);
@@ -90,11 +97,75 @@ const ProjectQuotesComparison = () => {
         console.log('Quote client IDs in database:', clientIds);
         console.log('Current user ID:', user.id);
         console.log('Quotes that match current user:', allQuotes.filter(q => q.client_id === user.id).length);
+        
+        // Automatically enable "Show all quotes" if we find quotes that don't match the current user
+        if (allQuotes.filter(q => q.client_id === user.id).length === 0 && !showAllQuotes) {
+          toast.info('Found quotes with different client IDs', {
+            description: 'Showing all quotes for this project regardless of client ID'
+          });
+          setShowAllQuotes(true);
+        }
       }
     } catch (err) {
       console.error('Error in direct check:', err);
     } finally {
       setIsCheckingDirectly(false);
+    }
+  };
+
+  // Function to fix client IDs on quotes
+  const fixClientIds = async () => {
+    if (!projectId || !user) return;
+    
+    setIsFixingClientIDs(true);
+    try {
+      // First, check if there are any quotes with incorrect client IDs
+      const { data: incorrectQuotes, error: checkError } = await supabase
+        .from('quotes')
+        .select('id, client_id')
+        .eq('project_id', projectId)
+        .neq('client_id', user.id);
+      
+      if (checkError) {
+        console.error('Error checking for incorrect quotes:', checkError);
+        toast.error('Error checking quotes');
+        return;
+      }
+      
+      if (!incorrectQuotes || incorrectQuotes.length === 0) {
+        toast.info('No quotes need fixing', {
+          description: 'All quotes for this project already have the correct client ID'
+        });
+        return;
+      }
+      
+      console.log('Found quotes with incorrect client IDs:', incorrectQuotes);
+      
+      // Update all quotes for this project to use the current user's ID
+      const { data: updateResult, error: updateError } = await supabase
+        .from('quotes')
+        .update({ client_id: user.id })
+        .eq('project_id', projectId)
+        .neq('client_id', user.id);
+      
+      if (updateError) {
+        console.error('Error updating quotes:', updateError);
+        toast.error('Error fixing quotes');
+        return;
+      }
+      
+      toast.success('Quotes fixed successfully', {
+        description: `Updated ${incorrectQuotes.length} quotes to use your client ID`
+      });
+      
+      // Refresh after fixing
+      refetch();
+      
+    } catch (err) {
+      console.error('Error fixing client IDs:', err);
+      toast.error('Error fixing quotes');
+    } finally {
+      setIsFixingClientIDs(false);
     }
   };
 
@@ -195,20 +266,41 @@ const ProjectQuotesComparison = () => {
               <p className="text-muted-foreground">Project: {project.title}</p>
             </div>
           </div>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={handleManualRefresh}
-            disabled={isRefetching}
-            className="flex items-center gap-2"
-          >
-            <RefreshCw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
-            Refresh Quotes
-          </Button>
+          <div className="flex items-center gap-3">
+            {showAllQuotes && (
+              <div className="flex items-center gap-2 bg-yellow-50 p-1.5 px-3 rounded-md border border-yellow-200">
+                <Search className="h-4 w-4 text-yellow-600" />
+                <span className="text-xs text-yellow-700">Viewing all quotes (unfiltered)</span>
+              </div>
+            )}
+            <Button 
+              variant="outline" 
+              size="sm" 
+              onClick={handleManualRefresh}
+              disabled={isRefetching}
+              className="flex items-center gap-2"
+            >
+              <RefreshCw className={`h-4 w-4 ${isRefetching ? 'animate-spin' : ''}`} />
+              Refresh Quotes
+            </Button>
+          </div>
         </div>
 
         {hasQuotes ? (
           <div className="space-y-8">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-xl font-semibold">Quotes for Your Project</h2>
+              <div className="flex items-center gap-2">
+                <Label htmlFor="show-all-quotes" className="text-sm">
+                  Show all quotes
+                </Label>
+                <Switch 
+                  id="show-all-quotes"
+                  checked={showAllQuotes}
+                  onCheckedChange={setShowAllQuotes}
+                />
+              </div>
+            </div>
             <ProjectQuotesComparisonTable quotes={quotes} />
             
             <div className="mt-8">
@@ -244,19 +336,47 @@ const ProjectQuotesComparison = () => {
                     {directQuotesCount !== null && (
                       <p><strong>Direct DB quotes count:</strong> {directQuotesCount}</p>
                     )}
+                    <p><strong>Show all quotes mode:</strong> {showAllQuotes ? 'Enabled' : 'Disabled'}</p>
                   </div>
                 </AlertDescription>
               </Alert>
               
-              <div className="mb-4">
+              <div className="space-y-2 mb-4">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="show-all-quotes" className="font-medium">
+                    Show quotes regardless of client ID
+                  </Label>
+                  <Switch 
+                    id="show-all-quotes"
+                    checked={showAllQuotes}
+                    onCheckedChange={setShowAllQuotes}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  This will show all quotes for this project, even if they're associated with a different client ID
+                </p>
+              </div>
+              
+              <div className="flex gap-2 mb-4">
                 <Button 
                   variant="secondary"
                   onClick={checkQuotesDirectly}
                   disabled={isCheckingDirectly}
-                  className="w-full"
+                  className="flex-1"
                 >
                   {isCheckingDirectly ? 'Checking...' : 'Run Database Diagnostic Check'}
                 </Button>
+                
+                {directQuotesCount && directQuotesCount > 0 && (
+                  <Button 
+                    variant="default"
+                    onClick={fixClientIds}
+                    disabled={isFixingClientIDs}
+                    className="flex-1"
+                  >
+                    {isFixingClientIDs ? 'Fixing...' : 'Fix Quote Client IDs'}
+                  </Button>
+                )}
               </div>
               
               <Accordion type="single" collapsible className="mb-4">
@@ -276,7 +396,12 @@ const ProjectQuotesComparison = () => {
                         <li>Quotes have a different client_id than your user ID</li>
                         <li>Database permissions prevent fetching the quotes</li>
                       </ul>
-                      <p className="mt-2">Try using the diagnostic button above to check directly in the database.</p>
+                      <p className="mt-2">Steps to troubleshoot:</p>
+                      <ol className="list-decimal pl-5 space-y-1">
+                        <li>Use the "Run Database Diagnostic Check" to see if there are quotes in the database</li>
+                        <li>Enable "Show all quotes" to bypass the client ID filter</li>
+                        <li>If quotes appear, use "Fix Quote Client IDs" to update them to your user ID</li>
+                      </ol>
                     </div>
                   </AccordionContent>
                 </AccordionItem>

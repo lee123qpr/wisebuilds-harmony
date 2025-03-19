@@ -1,7 +1,7 @@
 
 import React, { useMemo } from 'react';
 import { format } from 'date-fns';
-import { Check, X, Clock, AlertCircle, FileText } from 'lucide-react';
+import { Check, X, Clock, AlertCircle, FileText, AlertTriangle } from 'lucide-react';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +10,7 @@ import { useNavigate } from 'react-router-dom';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { toast } from 'sonner';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { useAuth } from '@/context/AuthContext';
 
 interface ProjectQuotesComparisonTableProps {
   quotes: QuoteWithFreelancer[];
@@ -17,6 +18,7 @@ interface ProjectQuotesComparisonTableProps {
 
 const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> = ({ quotes }) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Sort quotes by creation date (newest first)
   const sortedQuotes = useMemo(() => {
@@ -66,9 +68,21 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
     );
   }
 
+  // Check if any quotes have a different client_id than the current user
+  const hasIncorrectClientIds = sortedQuotes.some(quote => quote.client_id !== user?.id);
+
   return (
     <div className="overflow-x-auto">
-      <p className="text-sm text-muted-foreground mb-2">Showing {quotes.length} quote(s)</p>
+      <div className="flex justify-between items-center mb-2">
+        <p className="text-sm text-muted-foreground">Showing {quotes.length} quote(s)</p>
+        
+        {hasIncorrectClientIds && (
+          <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1 rounded-md border border-yellow-200">
+            <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            <span className="text-xs text-yellow-700">Some quotes have different client IDs</span>
+          </div>
+        )}
+      </div>
       <Table className="border">
         <TableHeader className="bg-slate-50">
           <TableRow>
@@ -84,6 +98,9 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
         <TableBody>
           {sortedQuotes.map((quote) => {
             console.log('Rendering quote row for:', quote.id, quote);
+            
+            // Check if this quote belongs to the current user
+            const differentClientId = quote.client_id !== user?.id;
             
             // Get freelancer info
             const freelancer = quote.freelancer_profile || {};
@@ -104,7 +121,7 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
             const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
             
             return (
-              <TableRow key={quote.id}>
+              <TableRow key={quote.id} className={differentClientId ? "bg-yellow-50" : ""}>
                 <TableCell className="font-medium">
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
@@ -133,24 +150,40 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
                   <QuoteStatusBadge status={quote.status} />
                 </TableCell>
                 <TableCell className="text-right">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button 
-                          variant="outline" 
-                          size="sm"
-                          onClick={() => handleViewDetails(quote.id)}
-                          className="flex items-center gap-1"
-                        >
-                          <FileText className="h-3.5 w-3.5" />
-                          View Details
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>View complete quote details and take action</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
+                  {differentClientId ? (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Badge variant="outline" className="bg-yellow-100 text-yellow-800 border-yellow-200">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Different Client ID
+                          </Badge>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>This quote is associated with a different client ID</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  ) : (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button 
+                            variant="outline" 
+                            size="sm"
+                            onClick={() => handleViewDetails(quote.id)}
+                            className="flex items-center gap-1"
+                          >
+                            <FileText className="h-3.5 w-3.5" />
+                            View Details
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p>View complete quote details and take action</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
                 </TableCell>
               </TableRow>
             );
