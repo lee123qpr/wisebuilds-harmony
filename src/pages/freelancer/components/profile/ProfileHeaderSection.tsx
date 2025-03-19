@@ -81,7 +81,7 @@ const ProfileHeaderSection: React.FC<ProfileHeaderSectionProps> = ({ profile }) 
         {profile.bio && (
           <div className="bg-slate-50 p-4 rounded-md mb-4">
             <p className="font-medium mb-1">Bio:</p>
-            <p className="text-sm">{profile.bio}</p>
+            <p className="text-sm break-words overflow-hidden text-wrap">{profile.bio}</p>
           </div>
         )}
         
@@ -91,7 +91,7 @@ const ProfileHeaderSection: React.FC<ProfileHeaderSectionProps> = ({ profile }) 
             {profile.email && (
               <div className="flex items-center">
                 <Mail className="h-4 w-4 mr-2 text-muted-foreground" />
-                <a href={`mailto:${profile.email}`} className="text-sm text-blue-600 hover:underline">{profile.email}</a>
+                <a href={`mailto:${profile.email}`} className="text-sm text-blue-600 hover:underline break-all">{profile.email}</a>
               </div>
             )}
             
