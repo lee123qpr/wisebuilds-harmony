@@ -21,7 +21,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   // Try to get client info from client_profiles first
   const { data: clientProfile, error: clientError } = await supabase
     .from('client_profiles')
-    .select('contact_name')
+    .select('contact_name, company_name, logo_url, email')
     .eq('id', clientId)
     .maybeSingle();
   
@@ -36,9 +36,9 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     console.log('Returning client full name from profile:', clientProfile.contact_name);
     return {
       contact_name: clientProfile.contact_name,
-      company_name: null,
-      logo_url: null,
-      email: null
+      company_name: clientProfile.company_name,
+      logo_url: clientProfile.logo_url,
+      email: clientProfile.email
     };
   }
   
@@ -77,7 +77,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
       contact_name: fullName,
       company_name: null,
       logo_url: null,
-      email: null
+      email: userData.email
     };
   } catch (error) {
     console.error('Error calling edge function:', error);

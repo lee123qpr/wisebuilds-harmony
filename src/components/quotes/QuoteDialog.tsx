@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import {
   Dialog,
@@ -55,9 +56,20 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
         const clientInfo = await getClientInfo(clientId);
         console.log('Client info received in QuoteDialog:', clientInfo);
         
-        // Use contact_name as the client name, defaulting to 'Client' if not available
-        setClientName(clientInfo.contact_name || 'Client');
-        console.log('Setting client name to:', clientInfo.contact_name || 'Client');
+        if (clientInfo.contact_name && clientInfo.contact_name !== 'Client') {
+          setClientName(clientInfo.contact_name);
+          console.log('Setting client name to:', clientInfo.contact_name);
+        } else if (clientInfo.company_name) {
+          setClientName(clientInfo.company_name);
+          console.log('Using company name instead:', clientInfo.company_name);
+        } else if (clientInfo.email) {
+          // Use email as last resort
+          setClientName(clientInfo.email.split('@')[0]);
+          console.log('Using email name as fallback:', clientInfo.email.split('@')[0]);
+        } else {
+          setClientName('Client');
+          console.log('No client info found, using default: Client');
+        }
       } catch (error) {
         console.error('Error fetching client information:', error);
         setClientName('Client');
