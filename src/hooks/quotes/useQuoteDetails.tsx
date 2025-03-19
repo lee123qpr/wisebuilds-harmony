@@ -132,7 +132,7 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
     refetchInterval: 2000, // Refresh every 2 seconds for more responsive UI
     staleTime: 0, // Consider data always stale to ensure we get fresh data
     refetchOnWindowFocus: true, // Refetch when window gains focus
-    cacheTime: 0, // Disable caching completely to always fetch fresh data
+    gcTime: 0, // Use gcTime instead of cacheTime (renamed in React Query v5)
   });
 
   return {
