@@ -27,7 +27,7 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
 
       console.log('Fetching quote details:', quoteId);
       
-      // Fetch the quote directly from database without caching
+      // Fetch the quote directly from database with no caching
       const { data: quote, error: quoteError } = await supabase
         .from('quotes')
         .select('*')

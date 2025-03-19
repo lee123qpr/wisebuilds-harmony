@@ -16,6 +16,7 @@ import FreelancerProfileCard from './components/quotes/FreelancerProfileCard';
 import QuoteActionButtons from './components/quotes/QuoteActionButtons';
 import QuoteStatusAlert from './components/quotes/QuoteStatusAlert';
 import QuoteDetailsHeader from './components/quotes/QuoteDetailsHeader';
+import { toast } from 'sonner';
 
 const ViewQuoteDetails = () => {
   const { projectId, quoteId } = useParams();
@@ -36,65 +37,108 @@ const ViewQuoteDetails = () => {
     isRejecting 
   } = useQuoteActions({ projectId, quoteId });
 
-  // Force refetch data when component mounts or when URL params change
+  // Initial and periodic data fetching
   useEffect(() => {
-    if (projectId && quoteId) {
-      console.log('Initial data fetch for quote:', quoteId);
-      refetch();
-    }
+    if (!projectId || !quoteId) return;
+    
+    console.log('Setting up quote details fetch and polling');
+    
+    // Initial fetch
+    refetch();
     
     // Set up polling for updates
     const intervalId = setInterval(() => {
-      if (projectId && quoteId) {
-        console.log('Polling for quote updates');
-        refetch();
-      }
+      console.log('Polling for quote updates');
+      refetch();
     }, 2000); // Poll every 2 seconds
     
-    return () => clearInterval(intervalId);
+    return () => {
+      console.log('Cleaning up quote polling interval');
+      clearInterval(intervalId);
+    };
   }, [projectId, quoteId, refetch]);
 
+  // Handle accepting a quote with robust error handling
   const handleAcceptQuote = useCallback(async () => {
-    if (!projectId || !quoteId) return;
+    if (!projectId || !quoteId) {
+      toast.error('Missing project or quote information');
+      return;
+    }
     
     try {
       console.log('ViewQuoteDetails - Accepting quote');
+      
+      // Execute the quote acceptance
       await acceptQuote();
       
       // Immediately refetch data after accepting
       console.log('Triggering refetch after accept');
       await refetch();
       
-      // Refetch again after a short delay to ensure DB changes are reflected
+      // Repeated refetches at intervals to ensure we get the updated status
       setTimeout(async () => {
-        console.log('Delayed refetch after accept');
+        console.log('Delayed refetch after accept (1s)');
         await refetch();
+        
+        setTimeout(async () => {
+          console.log('Delayed refetch after accept (3s)');
+          await refetch();
+        }, 2000);
       }, 1000);
     } catch (error) {
       console.error('Error accepting quote:', error);
+      toast.error('Failed to accept quote', { 
+        description: 'There was an error updating the quote status. Please try again.' 
+      });
     }
   }, [projectId, quoteId, acceptQuote, refetch]);
 
+  // Handle rejecting a quote with robust error handling
   const handleRejectQuote = useCallback(async () => {
-    if (!projectId || !quoteId) return;
+    if (!projectId || !quoteId) {
+      toast.error('Missing project or quote information');
+      return;
+    }
     
     try {
       console.log('ViewQuoteDetails - Rejecting quote');
+      
+      // Execute the quote rejection
       await rejectQuote();
       
       // Immediately refetch data after rejecting
       console.log('Triggering refetch after reject');
       await refetch();
       
-      // Refetch again after a short delay to ensure DB changes are reflected
+      // Repeated refetches at intervals
       setTimeout(async () => {
-        console.log('Delayed refetch after reject');
+        console.log('Delayed refetch after reject (1s)');
         await refetch();
+        
+        setTimeout(async () => {
+          console.log('Delayed refetch after reject (3s)');
+          await refetch();
+        }, 2000);
       }, 1000);
     } catch (error) {
       console.error('Error rejecting quote:', error);
+      toast.error('Failed to reject quote', { 
+        description: 'There was an error updating the quote status. Please try again.' 
+      });
     }
   }, [projectId, quoteId, rejectQuote, refetch]);
+
+  // Manual refresh button handler
+  const handleManualRefresh = async () => {
+    console.log('Manual refresh triggered');
+    try {
+      await refetch();
+      toast.success('Data refreshed');
+    } catch (error) {
+      console.error('Error refreshing data:', error);
+      toast.error('Failed to refresh data');
+    }
+  };
 
   if (isLoading) {
     return (
@@ -146,10 +190,10 @@ const ViewQuoteDetails = () => {
         />
 
         {/* Debug information for status */}
-        <div className="mb-4 p-2 bg-gray-100 rounded text-xs">
-          <p>Current Quote Status: {quote.status}</p>
+        <div className="mb-4 p-2 bg-gray-100 rounded text-xs font-mono">
+          <p>Current Quote Status: <span className="font-bold">{quote.status}</span></p>
           <p>Last Updated: {new Date(quote.updated_at).toLocaleString()}</p>
-          <Button size="sm" variant="outline" onClick={() => refetch()} className="mt-1">
+          <Button size="sm" variant="outline" onClick={handleManualRefresh} className="mt-1">
             Refresh Data
           </Button>
         </div>

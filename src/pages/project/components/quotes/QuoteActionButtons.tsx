@@ -37,7 +37,7 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
     return null;
   }
 
-  // Handlers with proper dialog management
+  // Handler for accepting a quote
   const handleAccept = async () => {
     try {
       console.log('Handling accept in QuoteActionButtons');
@@ -46,10 +46,11 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
       setAcceptDialogOpen(false);
     } catch (error) {
       console.error('Error in handleAccept:', error);
-      // Keep dialog open on error
+      // Keep dialog open on error so user can try again
     }
   };
 
+  // Handler for rejecting a quote
   const handleReject = async () => {
     try {
       console.log('Handling reject in QuoteActionButtons');
