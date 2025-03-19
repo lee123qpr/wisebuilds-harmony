@@ -42,7 +42,11 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
 
   useEffect(() => {
     const fetchClientInfo = async () => {
-      if (!clientId) return;
+      if (!clientId) {
+        console.error('No clientId provided to QuoteDialog');
+        setClientName('Client');
+        return;
+      }
       
       setIsLoadingClientInfo(true);
       try {
@@ -54,7 +58,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
         
         if (clientInfo) {
           // Display priority: contact_name > company_name > email > fallback
-          if (clientInfo.contact_name && clientInfo.contact_name !== 'Unknown Client') {
+          if (clientInfo.contact_name && clientInfo.contact_name !== 'Client') {
             // If company name also exists, combine them
             if (clientInfo.company_name) {
               setClientName(`${clientInfo.contact_name} (${clientInfo.company_name})`);
@@ -67,15 +71,15 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
             setClientName(clientInfo.email);
           } else {
             // Only use fallback if we have absolutely no client information
-            setClientName('Unknown Client');
+            setClientName('Client');
           }
         } else {
           // No client info found at all
-          setClientName('Unknown Client');
+          setClientName('Client');
         }
       } catch (error) {
         console.error('Error fetching client information:', error);
-        setClientName('Unknown Client');
+        setClientName('Client');
       } finally {
         setIsLoadingClientInfo(false);
       }
