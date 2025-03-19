@@ -17,6 +17,7 @@ import { useFreelancerQuote } from '@/hooks/quotes/useFreelancerQuote';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
+import { getClientInfo } from '@/services/conversations/utils/getClientInfo';
 
 interface QuoteDialogProps {
   projectId: string;
@@ -33,6 +34,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
 }) => {
   const [open, setOpen] = React.useState(false);
   const [clientName, setClientName] = useState<string>('');
+  const [isLoadingClientInfo, setIsLoadingClientInfo] = useState<boolean>(false);
   const { data: existingQuote, isLoading: isCheckingQuote, refetch } = useFreelancerQuote({ projectId });
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -40,38 +42,36 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
 
   useEffect(() => {
     const fetchClientInfo = async () => {
+      if (!clientId) return;
+      
+      setIsLoadingClientInfo(true);
       try {
-        // Try to get client information from the client_profiles table
-        const { data: clientProfile, error: clientError } = await supabase
-          .from('client_profiles')
-          .select('contact_name, company_name')
-          .eq('id', clientId)
-          .maybeSingle();
-
-        if (clientProfile && clientProfile.contact_name) {
-          setClientName(clientProfile.contact_name);
-          return;
-        }
-
-        // If no client profile, fetch from edge function
-        const { data: userData, error: userError } = await supabase.functions.invoke(
-          'get-user-email',
-          {
-            body: { userId: clientId }
+        // Use the getClientInfo utility which provides comprehensive client info fetching
+        const clientInfo = await getClientInfo(clientId);
+        
+        if (clientInfo && clientInfo.contact_name && clientInfo.contact_name !== 'Unknown Client') {
+          // If we have a proper contact name, use it
+          setClientName(clientInfo.contact_name);
+          
+          // If there's also a company name, add it
+          if (clientInfo.company_name) {
+            setClientName(`${clientInfo.contact_name} (${clientInfo.company_name})`);
           }
-        );
-
-        if (userData && userData.full_name) {
-          setClientName(userData.full_name);
-        } else if (userData && userData.email) {
-          // Use the part before @ as a fallback name
-          setClientName(userData.email.split('@')[0]);
+        } else if (clientInfo && clientInfo.company_name) {
+          // Fall back to company name if available but no contact name
+          setClientName(clientInfo.company_name);
+        } else if (clientInfo && clientInfo.email) {
+          // Fall back to email if available
+          setClientName(clientInfo.email);
         } else {
+          // Last resort fallback
           setClientName('Client');
         }
       } catch (error) {
         console.error('Error fetching client information:', error);
         setClientName('Client');
+      } finally {
+        setIsLoadingClientInfo(false);
       }
     };
 
@@ -85,7 +85,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
     toast({
       title: "Quote successfully submitted!",
       description: "Your quote has been sent to the client.",
-      variant: "success" // Now we can use success variant
+      variant: "success"
     });
     refetch(); // Refresh the quote data
     if (onQuoteSubmitted) {
@@ -125,13 +125,19 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
         </DialogHeader>
         <ScrollArea className="max-h-[60vh]">
           <div className="p-1">
-            <QuoteForm
-              projectId={projectId}
-              projectTitle={projectTitle}
-              clientName={clientName}
-              onSubmitSuccess={handleSubmitSuccess}
-              onCancel={() => setOpen(false)}
-            />
+            {isLoadingClientInfo ? (
+              <div className="py-2 text-center text-sm text-muted-foreground">
+                Loading client information...
+              </div>
+            ) : (
+              <QuoteForm
+                projectId={projectId}
+                projectTitle={projectTitle}
+                clientName={clientName}
+                onSubmitSuccess={handleSubmitSuccess}
+                onCancel={() => setOpen(false)}
+              />
+            )}
           </div>
         </ScrollArea>
       </DialogContent>
