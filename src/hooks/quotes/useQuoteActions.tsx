@@ -23,6 +23,23 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
       console.log('Accepting quote with ID:', quoteId);
 
       try {
+        // First, verify the quote exists and check its current status
+        const { data: quoteCheck, error: checkError } = await supabase
+          .from('quotes')
+          .select('*')
+          .eq('id', quoteId)
+          .single();
+          
+        if (checkError) {
+          console.error('Error checking quote:', checkError);
+          throw new Error(`Failed to verify quote: ${checkError.message}`);
+        }
+          
+        if (!quoteCheck) {
+          console.error('Quote not found');
+          throw new Error('Quote not found');
+        }
+          
         // Update the quote status to accepted
         const { data, error } = await supabase
           .from('quotes')
@@ -31,16 +48,34 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
             updated_at: new Date().toISOString() 
           })
           .eq('id', quoteId)
-          .select('*');
+          .select();
 
         if (error) {
           console.error('Error accepting quote:', error);
           throw error;
         }
 
-        // Verify the update was successful by checking the returned data
+        // Verify the update was successful
         if (!data || data.length === 0) {
           console.error('No data returned from update operation');
+          
+          // Perform an additional check to see if the update actually worked
+          const { data: verifyData, error: verifyError } = await supabase
+            .from('quotes')
+            .select('*')
+            .eq('id', quoteId)
+            .single();
+            
+          if (verifyError) {
+            console.error('Error verifying update:', verifyError);
+            throw new Error(`Failed to verify update: ${verifyError.message}`);
+          }
+            
+          if (verifyData && verifyData.status === 'accepted') {
+            console.log('Update was successful despite no returned data');
+            return verifyData;
+          }
+            
           throw new Error('Failed to update quote status');
         }
 
@@ -52,25 +87,8 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
           throw new Error(`Quote status verification failed: expected 'accepted' but got '${updatedQuote.status}'`);
         }
 
-        // Double-check again with a separate query to ensure the database state is as expected
-        const { data: verificationData, error: verificationError } = await supabase
-          .from('quotes')
-          .select('*')
-          .eq('id', quoteId)
-          .single();
-          
-        if (verificationError) {
-          console.error('Error verifying quote update:', verificationError);
-          throw verificationError;
-        }
-        
-        if (verificationData.status !== 'accepted') {
-          console.error('Quote status was not updated correctly after verification', verificationData);
-          throw new Error(`Quote status verification failed after separate query: expected 'accepted' but got '${verificationData.status}'`);
-        }
-
-        console.log('Quote accepted successfully, updated data:', verificationData);
-        return verificationData;
+        console.log('Quote accepted successfully, updated data:', updatedQuote);
+        return updatedQuote;
       } catch (err) {
         console.error('Error in acceptMutation:', err);
         throw err;
@@ -106,6 +124,24 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
       console.log('Rejecting quote:', quoteId);
 
       try {
+        // First, verify the quote exists and check its current status
+        const { data: quoteCheck, error: checkError } = await supabase
+          .from('quotes')
+          .select('*')
+          .eq('id', quoteId)
+          .single();
+          
+        if (checkError) {
+          console.error('Error checking quote:', checkError);
+          throw new Error(`Failed to verify quote: ${checkError.message}`);
+        }
+          
+        if (!quoteCheck) {
+          console.error('Quote not found');
+          throw new Error('Quote not found');
+        }
+          
+        // Update the quote status to declined
         const { data, error } = await supabase
           .from('quotes')
           .update({ 
@@ -113,16 +149,34 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
             updated_at: new Date().toISOString() 
           })
           .eq('id', quoteId)
-          .select('*');
+          .select();
 
         if (error) {
           console.error('Error rejecting quote:', error);
           throw error;
         }
 
-        // Verify the update was successful - check the array
+        // Verify the update was successful
         if (!data || data.length === 0) {
           console.error('No data returned from reject update operation');
+          
+          // Perform an additional check to see if the update actually worked
+          const { data: verifyData, error: verifyError } = await supabase
+            .from('quotes')
+            .select('*')
+            .eq('id', quoteId)
+            .single();
+            
+          if (verifyError) {
+            console.error('Error verifying update:', verifyError);
+            throw new Error(`Failed to verify update: ${verifyError.message}`);
+          }
+            
+          if (verifyData && verifyData.status === 'declined') {
+            console.log('Update was successful despite no returned data');
+            return verifyData;
+          }
+            
           throw new Error('Failed to update quote status to declined');
         }
         
@@ -134,25 +188,8 @@ export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) =>
           throw new Error(`Quote status verification failed: expected 'declined' but got '${updatedQuote.status}'`);
         }
         
-        // Double-check with a separate query
-        const { data: verificationData, error: verificationError } = await supabase
-          .from('quotes')
-          .select('*')
-          .eq('id', quoteId)
-          .single();
-          
-        if (verificationError) {
-          console.error('Error verifying quote update:', verificationError);
-          throw verificationError;
-        }
-        
-        if (verificationData.status !== 'declined') {
-          console.error('Quote status was not updated correctly after verification', verificationData);
-          throw new Error(`Quote status verification failed after separate query: expected 'declined' but got '${verificationData.status}'`);
-        }
-
-        console.log('Quote rejected successfully, updated data:', verificationData);
-        return verificationData;
+        console.log('Quote rejected successfully, updated data:', updatedQuote);
+        return updatedQuote;
       } catch (err) {
         console.error('Error in rejectMutation:', err);
         throw err;
