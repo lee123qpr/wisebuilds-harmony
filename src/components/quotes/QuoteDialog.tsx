@@ -46,25 +46,31 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
       
       setIsLoadingClientInfo(true);
       try {
-        // Use the getClientInfo utility which provides comprehensive client info fetching
-        const clientInfo = await getClientInfo(clientId);
+        console.log('Fetching client info for ID:', clientId);
         
-        if (clientInfo && clientInfo.contact_name && clientInfo.contact_name !== 'Unknown Client') {
-          // If we have a proper contact name, use it
-          setClientName(clientInfo.contact_name);
-          
-          // If there's also a company name, add it
-          if (clientInfo.company_name) {
-            setClientName(`${clientInfo.contact_name} (${clientInfo.company_name})`);
+        // Get client info from our utility function
+        const clientInfo = await getClientInfo(clientId);
+        console.log('Client info received:', clientInfo);
+        
+        if (clientInfo) {
+          // Display priority: contact_name > company_name > email > fallback
+          if (clientInfo.contact_name && clientInfo.contact_name !== 'Unknown Client') {
+            // If company name also exists, combine them
+            if (clientInfo.company_name) {
+              setClientName(`${clientInfo.contact_name} (${clientInfo.company_name})`);
+            } else {
+              setClientName(clientInfo.contact_name);
+            }
+          } else if (clientInfo.company_name) {
+            setClientName(clientInfo.company_name);
+          } else if (clientInfo.email) {
+            setClientName(clientInfo.email);
+          } else {
+            // Only use fallback if we have absolutely no client information
+            setClientName('Unknown Client');
           }
-        } else if (clientInfo && clientInfo.company_name) {
-          // Fall back to company name if available but no contact name
-          setClientName(clientInfo.company_name);
-        } else if (clientInfo && clientInfo.email) {
-          // Fall back to email if available
-          setClientName(clientInfo.email);
         } else {
-          // Last resort fallback
+          // No client info found at all
           setClientName('Unknown Client');
         }
       } catch (error) {
@@ -76,6 +82,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
     };
 
     if (open && clientId) {
+      console.log('Dialog opened, fetching client info for clientId:', clientId);
       fetchClientInfo();
     }
   }, [clientId, open]);
