@@ -29,6 +29,29 @@ export interface FreelancerProfile {
   day_rate?: string;
   email?: string;
   phone_number?: string;
+  website?: string;
   member_since?: string;
   jobs_completed?: number;
+  experience?: string;
+  availability?: string;
+  qualifications?: string[];
+  accreditations?: string[];
+  previous_employers?: {
+    employerName: string;
+    position: string;
+    startDate: string;
+    endDate?: string;
+    current: boolean;
+  }[];
+  indemnity_insurance?: {
+    hasInsurance: boolean;
+    coverLevel?: string;
+  };
+  previousWork?: {
+    name: string;
+    url: string;
+    type: string;
+    size: number;
+    path: string;
+  }[];
 }

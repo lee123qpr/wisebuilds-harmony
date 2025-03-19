@@ -39,13 +39,22 @@ export const useFreelancerProfileData = (freelancerId: string | undefined) => {
         const firstName = userMetadata.first_name || userMetadata.firstname || '';
         const lastName = userMetadata.last_name || userMetadata.lastname || '';
         const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
-        const displayName = firstName && lastName 
-          ? `${firstName} ${lastName}` 
-          : userMetadata.full_name || 'Anonymous Freelancer';
+        const displayName = userMetadata.full_name || 
+          (firstName && lastName ? `${firstName} ${lastName}` : 'Anonymous Freelancer');
         const jobTitle = userMetadata.job_title || userMetadata.profession || '';
         const location = userMetadata.location || '';
         const bio = userMetadata.bio || '';
         const skills = userMetadata.skills || [];
+        const hourlyRate = userMetadata.hourly_rate || '';
+        const dayRate = userMetadata.day_rate || '';
+        const availability = userMetadata.availability || '';
+        const experience = userMetadata.experience || '';
+        const website = userMetadata.website || '';
+        const qualifications = userMetadata.qualifications || [];
+        const accreditations = userMetadata.accreditations || [];
+        const previousEmployers = userMetadata.previous_employers || [];
+        const indemnityInsurance = userMetadata.indemnity_insurance || { hasInsurance: false };
+        const previousWork = userMetadata.previous_work || [];
         
         // Get any reviews for this user
         const { data: reviews, error: reviewsError } = await supabase
@@ -77,7 +86,17 @@ export const useFreelancerProfileData = (freelancerId: string | undefined) => {
           location: location,
           bio: bio,
           skills: skills,
-          profile_photo: userMetadata.avatar_url,
+          hourly_rate: hourlyRate,
+          day_rate: dayRate,
+          availability: availability,
+          experience: experience,
+          website: website,
+          qualifications: qualifications,
+          accreditations: accreditations,
+          previous_employers: previousEmployers,
+          indemnity_insurance: indemnityInsurance,
+          previousWork: previousWork,
+          profile_photo: userMetadata.profile_image_url || userMetadata.avatar_url,
           rating: rating,
           reviews_count: reviews?.length || 0,
           member_since: userData?.user?.created_at || userMetadata.created_at,

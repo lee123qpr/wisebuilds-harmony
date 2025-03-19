@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Star, User } from 'lucide-react';
+import { Star, User, FileText } from 'lucide-react';
 import { useFreelancerProfileData } from '@/hooks/freelancer/useFreelancerProfileData';
 import FreelancerProfileHeader from './components/FreelancerProfileHeader';
 import FreelancerProfileLoading from './components/FreelancerProfileLoading';
@@ -38,11 +38,11 @@ const FreelancerProfileView: React.FC = () => {
               </TabsTrigger>
             </TabsList>
             
-            <TabsContent value="profile">
+            <TabsContent value="profile" className="m-0">
               <FreelancerProfileTab profile={profile} />
             </TabsContent>
             
-            <TabsContent value="reviews">
+            <TabsContent value="reviews" className="m-0">
               <FreelancerReviewsTab profile={profile} />
             </TabsContent>
           </Tabs>
