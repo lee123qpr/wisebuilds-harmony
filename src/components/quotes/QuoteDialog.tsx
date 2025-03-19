@@ -32,7 +32,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
   onQuoteSubmitted,
 }) => {
   const [open, setOpen] = React.useState(false);
-  const [clientName, setClientName] = useState<string>('');
+  const [clientName, setClientName] = useState<string>('Client');
   const [isLoadingClientInfo, setIsLoadingClientInfo] = useState<boolean>(false);
   const { data: existingQuote, isLoading: isCheckingQuote, refetch } = useFreelancerQuote({ projectId });
   const navigate = useNavigate();
@@ -51,27 +51,13 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
       try {
         console.log('Fetching client info for ID:', clientId);
         
-        // Get client info from our utility function
+        // Get client info focusing on the full name
         const clientInfo = await getClientInfo(clientId);
         console.log('Client info received in QuoteDialog:', clientInfo);
         
-        if (clientInfo && clientInfo.contact_name && clientInfo.contact_name !== 'Client') {
-          // Use contact_name as the primary client identifier
-          setClientName(clientInfo.contact_name);
-          console.log('Setting client name to contact_name:', clientInfo.contact_name);
-        } else if (clientInfo && clientInfo.company_name) {
-          // Fallback to company_name if no contact_name
-          setClientName(clientInfo.company_name);
-          console.log('Setting client name to company_name:', clientInfo.company_name);
-        } else if (clientInfo && clientInfo.email) {
-          // Fallback to email if no contact_name or company_name
-          setClientName(clientInfo.email);
-          console.log('Setting client name to email:', clientInfo.email);
-        } else {
-          // Fallback to 'Client' if no identifying information
-          setClientName('Client');
-          console.log('No client info available, setting client name to "Client"');
-        }
+        // Use contact_name as the client name, defaulting to 'Client' if not available
+        setClientName(clientInfo.contact_name || 'Client');
+        console.log('Setting client name to:', clientInfo.contact_name || 'Client');
       } catch (error) {
         console.error('Error fetching client information:', error);
         setClientName('Client');
