@@ -42,27 +42,10 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
     return !!existingQuote;
   };
 
-  // Verify client ID matches the project owner
-  const verifyAndGetClientId = async (): Promise<string> => {
-    // If clientId is empty or not provided, get the project owner's ID
-    if (!clientId) {
-      console.log('No client ID provided, fetching project owner ID');
-      const { data: project, error: projectError } = await supabase
-        .from('projects')
-        .select('user_id')
-        .eq('id', projectId)
-        .single();
-      
-      if (projectError) {
-        console.error('Error fetching project owner:', projectError);
-        throw new Error('Could not determine project owner');
-      }
-      
-      console.log('Using project owner ID as client ID:', project.user_id);
-      return project.user_id;
-    }
+  // Get project owner's ID (the true client ID)
+  const getProjectOwnerId = async (): Promise<string> => {
+    console.log('Fetching project owner ID for project:', projectId);
     
-    // Ensure the provided clientId actually owns the project
     const { data: project, error: projectError } = await supabase
       .from('projects')
       .select('user_id')
@@ -70,24 +53,31 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
       .single();
     
     if (projectError) {
-      console.error('Error verifying project owner:', projectError);
-      throw new Error('Could not verify project ownership');
+      console.error('Error fetching project owner:', projectError);
+      throw new Error('Could not determine project owner');
     }
     
-    // If the provided clientId doesn't match the project owner, use the correct one
-    if (project.user_id !== clientId) {
-      console.warn('Provided client ID does not match project owner, using correct ID');
-      console.log('Provided:', clientId, 'Actual owner:', project.user_id);
-      return project.user_id;
-    }
-    
-    return clientId;
+    console.log('Project owner ID verified:', project.user_id);
+    return project.user_id;
   };
 
-  // Create quote
+  // Create quote with verified client ID
   const createQuote = async (formData: QuoteFormData, freelancerId: string): Promise<Quote> => {
-    // Get the verified client ID
-    const verifiedClientId = await verifyAndGetClientId();
+    if (freelancerId === clientId) {
+      console.warn('Potential ID conflict: freelancer ID and provided client ID are the same');
+    }
+    
+    // Always get the actual project owner ID, regardless of what was passed in
+    const projectOwnerId = await getProjectOwnerId();
+    
+    console.log('Using verified client ID for quote:', projectOwnerId);
+    console.log('Freelancer ID for quote:', freelancerId);
+    
+    // Safety check - never allow the same ID for both fields
+    if (freelancerId === projectOwnerId) {
+      console.error('Critical ID conflict: freelancer ID and project owner ID are identical');
+      throw new Error('Cannot create quote: you appear to be both the client and freelancer');
+    }
     
     const { data, error } = await supabase
       .from('quotes')
@@ -95,7 +85,7 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
         {
           project_id: projectId,
           freelancer_id: freelancerId,
-          client_id: verifiedClientId,
+          client_id: projectOwnerId, // Always use the project owner as the client ID
           fixed_price: formData.fixed_price,
           estimated_price: formData.estimated_price,
           day_rate: formData.day_rate,
@@ -139,7 +129,7 @@ export const useQuoteSubmission = ({ projectId, clientId }: UseQuoteSubmissionPr
         throw new Error('You have already submitted a quote for this project');
       }
       
-      // Create a new quote
+      // Create a new quote using the verified project owner as client
       return await createQuote(formData, user.id);
     },
     onSuccess: () => {
