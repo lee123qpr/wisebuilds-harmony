@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { PostgrestFilterBuilder } from '@supabase/supabase-js';
 
 /**
  * Builds the base query for fetching quotes
@@ -10,7 +9,7 @@ export const buildQuotesQuery = (
   forClient: boolean = false, 
   userId?: string,
   includeAllQuotes: boolean = false
-): PostgrestFilterBuilder<any, any, any> => {
+) => {
   let query = supabase
     .from('quotes')
     .select('*');
