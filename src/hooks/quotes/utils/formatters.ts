@@ -43,7 +43,7 @@ export const formatDirectQuotesWithFreelancers = (
       duration_unit: quote.duration_unit as QuoteWithFreelancer['duration_unit'],
       quote_files: Array.isArray(quote.quote_files) ? quote.quote_files : [],
       freelancer_profile: {
-        id: freelancerProfile.id,
+        id: freelancerProfile.id || '',
         first_name: freelancerProfile.first_name || '',
         last_name: freelancerProfile.last_name || '',
         display_name: freelancerProfile.display_name || '',
