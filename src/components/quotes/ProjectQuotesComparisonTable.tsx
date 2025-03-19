@@ -102,7 +102,7 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
             // Check if this quote belongs to the current user
             const differentClientId = quote.client_id !== user?.id;
             
-            // Get freelancer info
+            // Get freelancer info - handle potentially undefined properties safely
             const freelancer = quote.freelancer_profile || {};
             const freelancerName = freelancer.display_name || 
               (freelancer.first_name && freelancer.last_name 
@@ -126,7 +126,7 @@ const ProjectQuotesComparisonTable: React.FC<ProjectQuotesComparisonTableProps> 
                   <div className="flex items-center gap-2">
                     <Avatar className="h-8 w-8">
                       <AvatarImage src={freelancer.profile_photo} alt={freelancerName} />
-                      <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                      <AvatarFallback>{(freelancerName?.substring(0, 2) || 'FR').toUpperCase()}</AvatarFallback>
                     </Avatar>
                     <div>
                       <div className="font-medium">{freelancerName}</div>

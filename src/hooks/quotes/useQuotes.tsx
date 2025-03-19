@@ -4,20 +4,25 @@ import { supabase } from '@/integrations/supabase/client';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
-import { toast } from 'sonner';
+
+// Import utility functions
+import { logQuoteFetchDiagnostics, verifyProjectOwnership, logSystemQuotesSample, checkAllProjectQuotes } from './utils/diagnostics';
+import { buildQuotesQuery, fetchFreelancerProfiles, createProfileMap } from './utils/queries';
+import { formatQuotesWithProfiles, formatDirectQuotesWithFreelancers } from './utils/formatters';
+import { setupQuotesRealtimeListener, removeRealtimeListener } from './utils/realtime';
 
 interface UseQuotesProps {
   projectId?: string;
   forClient?: boolean;
   refreshInterval?: number;
-  includeAllQuotes?: boolean; // New parameter to optionally bypass client filtering
+  includeAllQuotes?: boolean;
 }
 
 export const useQuotes = ({ 
   projectId, 
   forClient = false,
   refreshInterval = 30000,
-  includeAllQuotes = false // Default to false to maintain backward compatibility
+  includeAllQuotes = false
 }: UseQuotesProps = {}) => {
   const { user } = useAuth();
   
@@ -31,58 +36,16 @@ export const useQuotes = ({
         return [];
       }
       
-      console.log('------------- QUOTE FETCH DIAGNOSTICS START -------------');
-      console.log('Fetching quotes for', forClient ? 'client' : 'freelancer', 'with projectId:', projectId);
-      console.log('User ID:', user.id);
-      console.log('User metadata:', user.user_metadata);
-      console.log('Include all quotes (bypass client filter):', includeAllQuotes);
+      // Log diagnostics for quote fetching
+      logQuoteFetchDiagnostics(projectId, forClient, user.id, includeAllQuotes);
       
-      // First, let's check if the project exists and belongs to the user if forClient is true
+      // Verify project ownership if needed
       if (forClient && projectId) {
-        const { data: projectData, error: projectError } = await supabase
-          .from('projects')
-          .select('id, user_id')
-          .eq('id', projectId)
-          .single();
-          
-        if (projectError) {
-          console.error('Error verifying project ownership:', projectError);
-        } else {
-          console.log('Project data:', projectData);
-          if (projectData.user_id !== user.id) {
-            console.warn('Project does not belong to current user. Project user_id:', projectData.user_id, 'Current user_id:', user.id);
-          }
-        }
+        await verifyProjectOwnership(projectId, user.id);
       }
       
-      // First, get the quotes
-      let query = supabase
-        .from('quotes')
-        .select('*');
-      
-      // If projectId is provided, filter by that project
-      if (projectId) {
-        query = query.eq('project_id', projectId);
-        console.log('Filtering by project_id:', projectId);
-      }
-      
-      // Filter by client_id or freelancer_id depending on forClient
-      // Unless includeAllQuotes is true, which bypasses the client filter for diagnostics
-      if (!includeAllQuotes) {
-        if (forClient) {
-          query = query.eq('client_id', user.id);
-          console.log('Filtering by client_id:', user.id);
-        } else {
-          query = query.eq('freelancer_id', user.id);
-          console.log('Filtering by freelancer_id:', user.id);
-        }
-      } else {
-        console.log('Bypassing client/freelancer filter to see all quotes for this project');
-      }
-      
-      console.log('Query parameters:', query);
-      
-      // Execute the quotes query
+      // Build and execute the main quotes query
+      const query = buildQuotesQuery(projectId, forClient, user.id, includeAllQuotes);
       const { data: quotesData, error: quotesError } = await query;
       
       if (quotesError) {
@@ -92,164 +55,56 @@ export const useQuotes = ({
       
       console.log('Quotes data directly from database:', quotesData);
       
+      // If no quotes were found with the initial query
       if (!quotesData || quotesData.length === 0) {
-        // Always check all quotes for this project for diagnostic purposes
+        // Check if there are any quotes for this project
         if (projectId) {
-          console.log('Checking ALL quotes for this project regardless of client_id...');
-          const { data: allQuotesData, error: allQuotesError } = await supabase
-            .from('quotes')
-            .select('*, freelancer:freelancer_id(*)')
-            .eq('project_id', projectId);
-            
-          if (!allQuotesError && allQuotesData && allQuotesData.length > 0) {
-            console.log('Found quotes for this project but with different filter criteria:', allQuotesData);
-            console.log('Quote client_ids:', allQuotesData.map(q => q.client_id));
-            console.log('Quote freelancer_ids:', allQuotesData.map(q => q.freelancer_id));
-            console.log('Current user id:', user.id);
-            
-            // If includeAllQuotes is true, use these results instead
-            if (includeAllQuotes) {
-              console.log('Using all quotes found due to includeAllQuotes=true');
-              
-              // We've already joined the freelancer info in the query, just need to format it
-              const formattedQuotes = allQuotesData.map(quote => {
-                const freelancerProfile = quote.freelancer || {};
-                
-                return {
-                  ...quote,
-                  status: quote.status as QuoteWithFreelancer['status'],
-                  duration_unit: quote.duration_unit as QuoteWithFreelancer['duration_unit'],
-                  quote_files: Array.isArray(quote.quote_files) ? quote.quote_files : [],
-                  freelancer_profile: {
-                    id: freelancerProfile.id,
-                    first_name: freelancerProfile.first_name,
-                    last_name: freelancerProfile.last_name,
-                    display_name: freelancerProfile.display_name,
-                    profile_photo: freelancerProfile.profile_photo,
-                    job_title: freelancerProfile.job_title,
-                    rating: freelancerProfile.rating,
-                  }
-                };
-              });
-              
-              console.log('Returning all quotes for project:', formattedQuotes);
-              console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
-              return formattedQuotes;
-            }
-          } else {
-            console.log('No quotes found for this project at all');
-          }
-        }
-        
-        // Try one more query to check ALL quotes in the system
-        console.log('Checking if there are ANY quotes in the system:');
-        const { data: systemQuotes, error: systemError } = await supabase
-          .from('quotes')
-          .select('*')
-          .limit(10);
+          const allProjectQuotes = await checkAllProjectQuotes(projectId);
           
-        if (!systemError) {
-          console.log('Sample of quotes in the system:', systemQuotes);
-          if (systemQuotes && systemQuotes.length > 0) {
-            const projects = [...new Set(systemQuotes.map(q => q.project_id))];
-            const clients = [...new Set(systemQuotes.map(q => q.client_id))];
-            console.log('Projects with quotes:', projects);
-            console.log('Clients with quotes:', clients);
+          // If includeAllQuotes is true, use these results instead
+          if (includeAllQuotes && allProjectQuotes && allProjectQuotes.length > 0) {
+            console.log('Using all quotes found due to includeAllQuotes=true');
+            return formatDirectQuotesWithFreelancers(allProjectQuotes);
           }
         }
         
-        console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
+        // Log system-wide quotes for diagnostics
+        await logSystemQuotesSample();
         return [];
       }
       
-      // Now get the freelancer profiles for these quotes
+      // Fetch freelancer profiles for these quotes
       const freelancerIds = quotesData.map(quote => quote.freelancer_id);
-      
-      const { data: freelancerProfiles, error: profilesError } = await supabase
-        .from('freelancer_profiles')
-        .select('id, first_name, last_name, display_name, profile_photo, job_title, rating')
-        .in('id', freelancerIds);
-      
-      if (profilesError) {
-        console.error('Error fetching freelancer profiles:', profilesError);
-        // Continue without profiles rather than failing completely
-      }
-      
-      console.log('Freelancer profiles data:', freelancerProfiles);
+      const freelancerProfiles = await fetchFreelancerProfiles(freelancerIds);
       
       // Create a map of freelancer profiles by ID for quick lookup
-      const profileMap = (freelancerProfiles || []).reduce((map, profile) => {
-        map[profile.id] = profile;
-        return map;
-      }, {} as Record<string, any>);
+      const profileMap = createProfileMap(freelancerProfiles);
       
       // Combine quotes with freelancer profiles
-      const result = quotesData.map(quote => {
-        const freelancerProfile = profileMap[quote.freelancer_id] || {};
-        
-        return {
-          ...quote,
-          status: quote.status as QuoteWithFreelancer['status'],
-          duration_unit: quote.duration_unit as QuoteWithFreelancer['duration_unit'],
-          quote_files: Array.isArray(quote.quote_files) ? quote.quote_files : [],
-          freelancer_profile: {
-            first_name: freelancerProfile.first_name,
-            last_name: freelancerProfile.last_name,
-            display_name: freelancerProfile.display_name,
-            profile_photo: freelancerProfile.profile_photo,
-            job_title: freelancerProfile.job_title,
-            rating: freelancerProfile.rating,
-          }
-        };
-      });
+      const result = formatQuotesWithProfiles(quotesData, profileMap);
       
       console.log('Final processed quotes with profiles:', result);
       console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
       return result;
     },
     enabled: !!user,
-    refetchInterval: refreshInterval, // Regularly refresh data
-    refetchOnWindowFocus: true, // Also refresh when window gets focus
-    staleTime: 5000, // Consider data stale after 5 seconds
+    refetchInterval: refreshInterval,
+    refetchOnWindowFocus: true,
+    staleTime: 5000,
   });
 
   // Set up real-time listener for quotes table
   useEffect(() => {
-    if (!user || !projectId) return;
-
-    console.log('Setting up real-time listener for quotes table with projectId:', projectId);
-    
-    // Create a channel for real-time updates
-    const channel = supabase
-      .channel(`quotes-changes-${projectId}`)
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'quotes',
-          filter: projectId ? `project_id=eq.${projectId}` : undefined,
-        },
-        (payload) => {
-          console.log('Real-time quote update received:', payload);
-          // Force refetch the data when quotes change
-          queryResult.refetch();
-          // Show toast notification for new quote
-          if (payload.eventType === 'INSERT' && forClient) {
-            toast.success('New quote received!', {
-              description: 'A freelancer has submitted a new quote for your project.'
-            });
-          }
-        }
-      )
-      .subscribe((status) => {
-        console.log('Realtime subscription status:', status);
-      });
+    const channel = setupQuotesRealtimeListener(
+      projectId || '', 
+      user?.id, 
+      forClient, 
+      queryResult.refetch
+    );
 
     // Cleanup function to remove the listener when component unmounts
     return () => {
-      console.log('Removing real-time listener for quotes');
-      supabase.removeChannel(channel);
+      removeRealtimeListener(channel);
     };
   }, [projectId, user, queryResult.refetch, forClient]);
 
