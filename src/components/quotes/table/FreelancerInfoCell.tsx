@@ -77,14 +77,14 @@ const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({
         </div>
       </div>
       
-      {/* Fix freelancer profile link */}
+      {/* Freelancer profile link - same tab navigation */}
       <Button
         variant="outline"
         size="sm"
         className="mt-1 w-full text-xs flex items-center gap-1 justify-center"
         asChild
       >
-        <Link to={`/freelancer/${freelancerId}`} target="_blank" rel="noopener noreferrer">
+        <Link to={`/freelancer/${freelancerId}`}>
           <ExternalLink className="h-3 w-3" />
           View Freelancer Profile
         </Link>
