@@ -60,14 +60,37 @@ export const useQuoteDetails = ({ projectId, quoteId }: UseQuoteDetailsProps) =>
         try {
           const freelancerInfo = await getFreelancerInfo(quote.freelancer_id);
           if (freelancerInfo) {
+            // We need to create a partial freelancer profile with the info we have
+            // since the database expects a full freelancer_profiles row
             freelancerData = {
               id: quote.freelancer_id,
-              display_name: freelancerInfo.full_name,
-              profile_photo: freelancerInfo.profile_image,
+              // Required fields with defaults
+              accreditations: null,
+              availability: '',
+              bio: '',
+              created_at: new Date().toISOString(),
+              display_name: freelancerInfo.full_name || 'Freelancer',
+              email: freelancerInfo.email || '',
+              experience: '',
+              first_name: '',
+              hourly_rate: '',
               job_title: 'Freelancer',
-              location: freelancerInfo.location,
-              id_verified: freelancerInfo.verified, // Use id_verified instead of verified
-              // Don't add properties that don't exist in the type
+              last_name: '',
+              location: freelancerInfo.location || '',
+              member_since: freelancerInfo.member_since || new Date().toISOString(),
+              phone_number: freelancerInfo.phone_number || '',
+              profile_photo: freelancerInfo.profile_image || '',
+              skills: null,
+              updated_at: new Date().toISOString(),
+              website: '',
+              indemnity_insurance: null,
+              previous_employers: null,
+              previous_work: null,
+              jobs_completed: freelancerInfo.jobs_completed || 0,
+              rating: freelancerInfo.rating || null,
+              reviews_count: freelancerInfo.reviews_count || 0,
+              qualifications: null,
+              verified: freelancerInfo.verified || false
             };
           }
         } catch (err) {

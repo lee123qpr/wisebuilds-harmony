@@ -47,11 +47,9 @@ export const getFreelancerInfo = async (freelancerId: string): Promise<Freelance
       
       return {
         full_name: profileData.display_name || `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim(),
-        // Don't try to access business_name as it doesn't exist
         profile_image: profileData.profile_photo || null,
         phone_number: profileData.phone_number || null,
         email: profileData.email || null,
-        // Use id_verified instead of email_verified
         email_verified: false, // Default to false since not available in profile
         member_since: profileData.created_at || null,
         jobs_completed: profileData.jobs_completed || 0,
