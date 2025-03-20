@@ -76,7 +76,7 @@ const BusinessDashboard = () => {
           
           <TabsContent value="projects" className="space-y-6">
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">Project Management</h2>
+              <h2 className="text-2xl font-semibold">My Projects</h2>
               <NewProjectDialog />
             </div>
             
