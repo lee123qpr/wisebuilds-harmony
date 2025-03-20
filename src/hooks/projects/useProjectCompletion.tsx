@@ -1,0 +1,104 @@
+
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
+
+interface UseProjectCompletionProps {
+  quoteId: string;
+  projectId: string;
+}
+
+export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletionProps) => {
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
+  
+  const markProjectCompletedMutation = useMutation({
+    mutationFn: async () => {
+      if (!user?.id || !quoteId) {
+        throw new Error('User ID or Quote ID missing');
+      }
+      
+      // Determine whether this is a freelancer or client based on user metadata
+      const isFreelancer = user.user_metadata?.user_type === 'freelancer';
+      
+      // Update the appropriate completion field based on user type
+      const updateField = isFreelancer ? 'freelancer_completed' : 'client_completed';
+      
+      const { data, error } = await supabase
+        .from('quotes')
+        .update({ [updateField]: true })
+        .eq('id', quoteId)
+        .select('*')
+        .single();
+        
+      if (error) throw error;
+      
+      // Check if both parties have marked as complete
+      if (data.freelancer_completed && data.client_completed) {
+        // Set the completed_at timestamp
+        const { error: completionError } = await supabase
+          .from('quotes')
+          .update({ completed_at: new Date().toISOString() })
+          .eq('id', quoteId);
+          
+        if (completionError) throw completionError;
+        
+        // Update project status to completed
+        const { error: projectError } = await supabase
+          .from('projects')
+          .update({ status: 'completed' })
+          .eq('id', projectId);
+          
+        if (projectError) throw projectError;
+      }
+      
+      return data;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      
+      const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+      const otherParty = isFreelancer ? 'client' : 'freelancer';
+      
+      if (data.freelancer_completed && data.client_completed) {
+        toast.success('Project marked as complete!', {
+          description: 'You can now leave a review for this project.'
+        });
+      } else {
+        toast.success('Completion request sent', {
+          description: `Waiting for the ${otherParty} to confirm completion.`
+        });
+      }
+    },
+    onError: (error) => {
+      console.error('Error marking project as complete:', error);
+      toast.error('Failed to mark project as complete', {
+        description: error instanceof Error ? error.message : 'Please try again'
+      });
+    }
+  });
+  
+  const checkCompletionStatus = async () => {
+    if (!quoteId) return null;
+    
+    const { data, error } = await supabase
+      .from('quotes')
+      .select('freelancer_completed, client_completed, completed_at')
+      .eq('id', quoteId)
+      .single();
+      
+    if (error) {
+      console.error('Error checking completion status:', error);
+      return null;
+    }
+    
+    return data;
+  };
+  
+  return {
+    markProjectCompleted: markProjectCompletedMutation.mutate,
+    isMarkingComplete: markProjectCompletedMutation.isPending,
+    checkCompletionStatus,
+  };
+};

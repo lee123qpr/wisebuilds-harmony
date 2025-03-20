@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
 import EmptyStateCard from './EmptyStateCard';
@@ -10,13 +10,16 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
+import ProjectCompleteButton from '@/components/projects/ProjectCompleteButton';
+import ProjectCompletionStatus from '@/components/projects/ProjectCompletionStatus';
+import { supabase } from '@/integrations/supabase/client';
 
 const ActiveJobsTab: React.FC = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
   // Fetch quotes with accepted status for this freelancer
-  const { data: acceptedQuotes, isLoading } = useQuotes({
+  const { data: acceptedQuotes, isLoading, refetch } = useQuotes({
     forClient: false,
     includeAllQuotes: false,
     refreshInterval: 10000
@@ -24,6 +27,42 @@ const ActiveJobsTab: React.FC = () => {
   
   // Filter for only accepted quotes
   const activeJobs = acceptedQuotes?.filter(quote => quote.status === 'accepted') || [];
+  
+  // Get client names for the projects
+  const [clientNames, setClientNames] = useState<Record<string, string>>({});
+  
+  useEffect(() => {
+    const fetchClientNames = async () => {
+      const clientIds = activeJobs.map(job => job.client_id).filter(Boolean);
+      if (!clientIds.length) return;
+      
+      // Fetch client profiles for client names
+      for (const clientId of clientIds) {
+        const { data } = await supabase.functions.invoke(
+          'get-user-profile',
+          { body: { userId: clientId } }
+        );
+        
+        if (data) {
+          const metadata = data.user_metadata || {};
+          const displayName = metadata.contact_name || metadata.full_name || 'Client';
+          
+          setClientNames(prev => ({
+            ...prev,
+            [clientId]: displayName
+          }));
+        }
+      }
+    };
+    
+    if (activeJobs.length > 0) {
+      fetchClientNames();
+    }
+  }, [activeJobs]);
+  
+  const handleStatusUpdate = () => {
+    refetch();
+  };
   
   if (isLoading) {
     return (
@@ -90,6 +129,8 @@ const ActiveJobsTab: React.FC = () => {
           const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
           const formattedPrice = priceValue === 'Not specified' ? priceValue : `£${priceValue}`;
           
+          const clientName = clientNames[quote.client_id] || 'Client';
+          
           return (
             <Card key={quote.id} className="w-full">
               <CardHeader className="pb-2">
@@ -123,6 +164,16 @@ const ActiveJobsTab: React.FC = () => {
                     )}
                   </div>
                   
+                  {/* Project completion status */}
+                  <ProjectCompletionStatus
+                    quoteId={quote.id}
+                    projectId={quote.project_id}
+                    freelancerId={quote.freelancer_id}
+                    clientId={quote.client_id}
+                    freelancerName={user?.user_metadata?.display_name || 'Freelancer'}
+                    clientName={clientName}
+                  />
+                  
                   <div className="flex flex-wrap gap-2 mt-4">
                     <Button 
                       variant="outline" 
@@ -142,6 +193,13 @@ const ActiveJobsTab: React.FC = () => {
                       <MessageSquare className="h-4 w-4" />
                       Message Client
                     </Button>
+                    
+                    <ProjectCompleteButton
+                      quoteId={quote.id}
+                      projectId={quote.project_id}
+                      projectTitle={projectTitle}
+                      onStatusUpdate={handleStatusUpdate}
+                    />
                   </div>
                 </div>
               </CardContent>

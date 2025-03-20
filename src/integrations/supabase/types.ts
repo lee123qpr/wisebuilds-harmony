@@ -563,7 +563,9 @@ export type Database = {
       quotes: {
         Row: {
           available_start_date: string | null
+          client_completed: boolean
           client_id: string
+          completed_at: string | null
           created_at: string
           day_rate: string | null
           description: string | null
@@ -571,6 +573,7 @@ export type Database = {
           estimated_duration: string | null
           estimated_price: string | null
           fixed_price: string | null
+          freelancer_completed: boolean
           freelancer_id: string
           id: string
           payment_terms: string | null
@@ -582,7 +585,9 @@ export type Database = {
         }
         Insert: {
           available_start_date?: string | null
+          client_completed?: boolean
           client_id: string
+          completed_at?: string | null
           created_at?: string
           day_rate?: string | null
           description?: string | null
@@ -590,6 +595,7 @@ export type Database = {
           estimated_duration?: string | null
           estimated_price?: string | null
           fixed_price?: string | null
+          freelancer_completed?: boolean
           freelancer_id: string
           id?: string
           payment_terms?: string | null
@@ -601,7 +607,9 @@ export type Database = {
         }
         Update: {
           available_start_date?: string | null
+          client_completed?: boolean
           client_id?: string
+          completed_at?: string | null
           created_at?: string
           day_rate?: string | null
           description?: string | null
@@ -609,6 +617,7 @@ export type Database = {
           estimated_duration?: string | null
           estimated_price?: string | null
           fixed_price?: string | null
+          freelancer_completed?: boolean
           freelancer_id?: string
           id?: string
           payment_terms?: string | null
@@ -624,6 +633,60 @@ export type Database = {
             columns: ["project_id"]
             isOneToOne: false
             referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reviews: {
+        Row: {
+          created_at: string
+          id: string
+          is_freelancer_review: boolean
+          project_id: string
+          quote_id: string
+          rating: number
+          review_text: string | null
+          reviewee_id: string
+          reviewer_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_freelancer_review: boolean
+          project_id: string
+          quote_id: string
+          rating: number
+          review_text?: string | null
+          reviewee_id: string
+          reviewer_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_freelancer_review?: boolean
+          project_id?: string
+          quote_id?: string
+          rating?: number
+          review_text?: string | null
+          reviewee_id?: string
+          reviewer_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reviews_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reviews_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
             referencedColumns: ["id"]
           },
         ]
