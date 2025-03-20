@@ -50,51 +50,69 @@ export const useRejectQuoteMutation = ({
         
         console.log('Current quote status before update:', quoteCheck.status);
         
-        // Use a direct update instead of RPC to avoid TypeScript errors
-        const { data: directUpdateResult, error: directUpdateError } = await supabase
+        // Update the quote status directly
+        const { data: updateResult, error: updateError } = await supabase
           .from('quotes')
-          .update({ status: 'declined', updated_at: new Date().toISOString() })
+          .update({ 
+            status: 'declined', 
+            updated_at: new Date().toISOString() 
+          })
           .eq('id', quoteId)
           .select('*')
           .maybeSingle();
         
-        if (directUpdateError) {
-          console.error('Error in direct update operation:', directUpdateError);
-          throw new Error(`Database update failed: ${directUpdateError.message}`);
+        if (updateError) {
+          console.error('Error in update operation:', updateError);
+          throw new Error(`Database update failed: ${updateError.message}`);
         }
         
-        console.log('Direct update result:', directUpdateResult);
+        console.log('Update result:', updateResult);
         
-        // Add a significant delay to ensure full database consistency
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Implement a retry mechanism for verification
+        let verifiedQuote = null;
+        let retryCount = 0;
+        const maxRetries = 3;
         
-        // Double-check by fetching the quote again to absolutely verify the change
-        const { data: verifiedQuote, error: verifyError } = await supabase
-          .from('quotes')
-          .select('*')
-          .eq('id', quoteId)
-          .maybeSingle();
+        while (retryCount < maxRetries) {
+          // Add a significant delay to ensure database consistency
+          await new Promise(resolve => setTimeout(resolve, 1000));
           
-        if (verifyError) {
-          console.error('Error in verification fetch:', verifyError);
-          throw new Error(`Failed to verify status change: ${verifyError.message}`);
+          // Double-check by fetching the quote again to verify the change
+          const { data: fetchedQuote, error: verifyError } = await supabase
+            .from('quotes')
+            .select('*')
+            .eq('id', quoteId)
+            .maybeSingle();
+            
+          if (verifyError) {
+            console.error('Error in verification fetch:', verifyError);
+            retryCount++;
+            continue;
+          }
+          
+          if (!fetchedQuote) {
+            console.error('Verification fetch returned no quote');
+            retryCount++;
+            continue;
+          }
+          
+          console.log(`Verification attempt ${retryCount + 1}: Quote status = ${fetchedQuote.status}`);
+          
+          if (fetchedQuote.status === 'declined') {
+            // Verification successful
+            verifiedQuote = fetchedQuote;
+            break;
+          }
+          
+          retryCount++;
         }
         
         if (!verifiedQuote) {
-          console.error('Verification fetch returned no quote');
-          throw new Error('Failed to retrieve quote for verification');
-        }
-        
-        console.log('Verified quote after update:', verifiedQuote);
-        console.log('Final verified status:', verifiedQuote.status);
-        
-        if (verifiedQuote.status !== 'declined') {
-          console.error('Quote status verification failed', {
+          console.error('Quote status verification failed after multiple attempts', {
             quoteId,
             originalStatus: quoteCheck.status,
-            verifiedStatus: verifiedQuote.status
           });
-          throw new Error(`Status verification failed: expected 'declined' but got '${verifiedQuote.status}'`);
+          throw new Error(`Status verification failed: expected 'declined' but verification timed out`);
         }
         
         console.log('Quote rejected successfully, verified data:', verifiedQuote);

@@ -17,7 +17,7 @@ export const useQuoteActionHandlers = ({
   rejectQuote,
   refetch
 }: UseQuoteActionHandlersProps) => {
-  // Handle accepting a quote with robust error handling
+  // Handle accepting a quote with robust error handling and retry logic
   const handleAcceptQuote = useCallback(async () => {
     if (!projectId || !quoteId) {
       return Promise.reject(new Error('Missing project or quote information'));
@@ -41,11 +41,29 @@ export const useQuoteActionHandlers = ({
       });
       
       // Wait for a moment before refetching to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2500));
       
-      // Refetch after the operation completes and database has updated
+      // Refetch with multiple attempts if needed
       console.log('Triggering refetch after accept');
-      await refetch({ throwOnError: true });
+      let refetchAttempts = 0;
+      const maxRefetchAttempts = 3;
+      
+      while (refetchAttempts < maxRefetchAttempts) {
+        try {
+          await refetch({ throwOnError: true });
+          console.log('Refetch successful after accept');
+          break;
+        } catch (refetchError) {
+          console.error(`Refetch attempt ${refetchAttempts + 1} failed:`, refetchError);
+          refetchAttempts++;
+          if (refetchAttempts >= maxRefetchAttempts) {
+            console.warn('Max refetch attempts reached, but operation likely succeeded');
+            break;
+          }
+          // Wait before trying again
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
       
       return Promise.resolve();
     } catch (error) {
@@ -54,7 +72,7 @@ export const useQuoteActionHandlers = ({
     }
   }, [projectId, quoteId, acceptQuote, refetch]);
 
-  // Handle rejecting a quote with robust error handling
+  // Handle rejecting a quote with robust error handling and retry logic
   const handleRejectQuote = useCallback(async () => {
     if (!projectId || !quoteId) {
       return Promise.reject(new Error('Missing project or quote information'));
@@ -78,11 +96,29 @@ export const useQuoteActionHandlers = ({
       });
       
       // Wait for a moment before refetching to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 2000));
+      await new Promise(resolve => setTimeout(resolve, 2500));
       
-      // Refetch after the operation completes and database has updated
+      // Refetch with multiple attempts if needed
       console.log('Triggering refetch after reject');
-      await refetch({ throwOnError: true });
+      let refetchAttempts = 0;
+      const maxRefetchAttempts = 3;
+      
+      while (refetchAttempts < maxRefetchAttempts) {
+        try {
+          await refetch({ throwOnError: true });
+          console.log('Refetch successful after reject');
+          break;
+        } catch (refetchError) {
+          console.error(`Refetch attempt ${refetchAttempts + 1} failed:`, refetchError);
+          refetchAttempts++;
+          if (refetchAttempts >= maxRefetchAttempts) {
+            console.warn('Max refetch attempts reached, but operation likely succeeded');
+            break;
+          }
+          // Wait before trying again
+          await new Promise(resolve => setTimeout(resolve, 1000));
+        }
+      }
       
       return Promise.resolve();
     } catch (error) {
