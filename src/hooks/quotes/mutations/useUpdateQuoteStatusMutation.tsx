@@ -40,8 +40,10 @@ export const useUpdateQuoteStatusMutation = ({
       }
       
       // If we got a result back from the RPC, it means the update was successful
+      // We need to properly type cast it to Quote
       if (updateResult) {
         console.log('Update successful:', updateResult);
+        // Using type assertion with 'as' after checking data validity
         return updateResult as Quote;
       }
       
