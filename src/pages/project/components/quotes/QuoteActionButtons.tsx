@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, MessageSquare } from 'lucide-react';
@@ -65,9 +66,10 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
 
   // Handle navigating to messages with the freelancer
   const handleMessageFreelancer = () => {
-    // Navigate to messages tab with the freelancer ID
-    navigate(`/messages/${freelancerId}`);
+    // Navigate to dashboard messages tab with the freelancer ID as a query parameter
     console.log(`Navigating to messages with freelancer ${freelancerId}`);
+    // For business clients, navigate to their messages tab with the freelancer ID
+    navigate(`/dashboard/business?tab=messages&freelancerId=${freelancerId}`);
   };
 
   return (
