@@ -7,12 +7,14 @@ interface ProfileRatingStarsProps {
   userId: string;
   rating?: number | null;
   reviewsCount?: number;
+  showEmpty?: boolean;
 }
 
 const ProfileRatingStars: React.FC<ProfileRatingStarsProps> = ({ 
   userId,
   rating, 
-  reviewsCount
+  reviewsCount,
+  showEmpty = true
 }) => {
   // If userId is provided, fetch live review data
   const { averageRating, reviewCount } = useClientReviews(userId);
@@ -23,10 +25,10 @@ const ProfileRatingStars: React.FC<ProfileRatingStarsProps> = ({
   const displayCount = reviewsCount !== undefined ? reviewsCount : reviewCount;
   
   // Add console log to debug rating data
-  console.log('ProfileRatingStars data:', { userId, rating, reviewsCount, averageRating, reviewCount, displayRating, displayCount });
+  console.log('ProfileRatingStars data:', { userId, rating, reviewsCount, averageRating, reviewCount, displayRating, displayCount, showEmpty });
   
   // Use the common RatingStars component with appropriate size for profiles
-  return <RatingStars rating={displayRating} reviewCount={displayCount} size="sm" showEmpty={true} />;
+  return <RatingStars rating={displayRating} reviewCount={displayCount} size="sm" showEmpty={showEmpty} />;
 };
 
 export default ProfileRatingStars;
