@@ -17,6 +17,9 @@ export interface Quote {
   status: 'pending' | 'accepted' | 'declined';
   created_at: string;
   updated_at: string;
+  freelancer_completed?: boolean;
+  client_completed?: boolean;
+  completed_at?: string | null;
 }
 
 export interface QuoteWithProject extends Quote {
