@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Check, X, MessageSquare } from 'lucide-react';
@@ -12,6 +11,7 @@ import {
   DialogFooter,
   DialogTrigger,
 } from '@/components/ui/dialog';
+import { toast } from 'sonner';
 
 interface QuoteActionButtonsProps {
   quoteStatus: string;
@@ -42,11 +42,17 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
   const handleAccept = async () => {
     try {
       console.log('Handling accept in QuoteActionButtons');
+      // Don't close dialog until operation completes
       await onAccept();
-      console.log('Accept completed, closing dialog');
+      console.log('Accept completed successfully');
+      toast.success('Quote accepted successfully');
+      // Only close dialog after successful operation
       setAcceptDialogOpen(false);
     } catch (error) {
       console.error('Error in handleAccept:', error);
+      toast.error('Failed to accept the quote', {
+        description: 'Please try again or contact support'
+      });
       // Keep dialog open on error so user can try again
     }
   };
@@ -55,11 +61,17 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
   const handleReject = async () => {
     try {
       console.log('Handling reject in QuoteActionButtons');
+      // Don't close dialog until operation completes
       await onReject();
-      console.log('Reject completed, closing dialog');
+      console.log('Reject completed successfully');
+      toast.success('Quote rejected successfully');
+      // Only close dialog after successful operation
       setRejectDialogOpen(false);
     } catch (error) {
       console.error('Error in handleReject:', error);
+      toast.error('Failed to reject the quote', {
+        description: 'Please try again or contact support'
+      });
       // Keep dialog open on error
     }
   };
@@ -98,7 +110,11 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setRejectDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setRejectDialogOpen(false)}
+              disabled={isRejecting}
+            >
               Cancel
             </Button>
             <Button 
@@ -127,7 +143,11 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter className="flex justify-end gap-2">
-            <Button variant="outline" onClick={() => setAcceptDialogOpen(false)}>
+            <Button 
+              variant="outline" 
+              onClick={() => setAcceptDialogOpen(false)}
+              disabled={isAccepting}
+            >
               Cancel
             </Button>
             <Button 

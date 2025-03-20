@@ -22,14 +22,19 @@ export const useQuoteActionHandlers = ({
   const handleAcceptQuote = useCallback(async () => {
     if (!projectId || !quoteId) {
       toast.error('Missing project or quote information');
-      return;
+      return Promise.reject(new Error('Missing project or quote information'));
     }
     
     try {
       console.log('ViewQuoteDetails - Accepting quote');
       
       // Execute the quote acceptance
-      acceptQuote();
+      await new Promise<void>((resolve, reject) => {
+        acceptQuote(undefined, {
+          onSuccess: () => resolve(),
+          onError: (error) => reject(error)
+        });
+      });
       
       // Immediately refetch data after accepting
       console.log('Triggering refetch after accept');
@@ -45,11 +50,11 @@ export const useQuoteActionHandlers = ({
           await refetch();
         }, 2000);
       }, 1000);
+      
+      return Promise.resolve();
     } catch (error) {
       console.error('Error accepting quote:', error);
-      toast.error('Failed to accept quote', { 
-        description: 'There was an error updating the quote status. Please try again.' 
-      });
+      return Promise.reject(error);
     }
   }, [projectId, quoteId, acceptQuote, refetch]);
 
@@ -57,14 +62,19 @@ export const useQuoteActionHandlers = ({
   const handleRejectQuote = useCallback(async () => {
     if (!projectId || !quoteId) {
       toast.error('Missing project or quote information');
-      return;
+      return Promise.reject(new Error('Missing project or quote information'));
     }
     
     try {
       console.log('ViewQuoteDetails - Rejecting quote');
       
       // Execute the quote rejection
-      rejectQuote();
+      await new Promise<void>((resolve, reject) => {
+        rejectQuote(undefined, {
+          onSuccess: () => resolve(),
+          onError: (error) => reject(error)
+        });
+      });
       
       // Immediately refetch data after rejecting
       console.log('Triggering refetch after reject');
@@ -80,11 +90,11 @@ export const useQuoteActionHandlers = ({
           await refetch();
         }, 2000);
       }, 1000);
+      
+      return Promise.resolve();
     } catch (error) {
       console.error('Error rejecting quote:', error);
-      toast.error('Failed to reject quote', { 
-        description: 'There was an error updating the quote status. Please try again.' 
-      });
+      return Promise.reject(error);
     }
   }, [projectId, quoteId, rejectQuote, refetch]);
 
