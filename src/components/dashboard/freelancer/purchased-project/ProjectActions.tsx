@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { MessageSquare, ArrowRight, Quote } from 'lucide-react';
@@ -27,6 +27,11 @@ const ProjectActions: React.FC<ProjectActionsProps> = ({
   quoteStatus
 }) => {
   const navigate = useNavigate();
+
+  // Prevent unnecessary re-renders by memoizing handlers
+  const handleNavigateToActiveJobs = React.useCallback(() => {
+    navigate('/dashboard/freelancer?tab=activeJobs');
+  }, [navigate]);
   
   return (
     <div className="flex flex-wrap gap-2 mt-4">
@@ -73,7 +78,7 @@ const ProjectActions: React.FC<ProjectActionsProps> = ({
           variant="default" 
           size="sm" 
           className="gap-2 bg-green-600 hover:bg-green-700"
-          onClick={() => navigate('/dashboard/freelancer?tab=activeJobs')}
+          onClick={handleNavigateToActiveJobs}
         >
           View Active Job
         </Button>

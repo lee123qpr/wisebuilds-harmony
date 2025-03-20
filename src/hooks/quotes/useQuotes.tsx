@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { useAuth } from '@/context/AuthContext';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 
 // Import utility functions
 import { logQuoteFetchDiagnostics, verifyProjectOwnership, logSystemQuotesSample, checkAllProjectQuotes } from './utils/diagnostics';
@@ -25,8 +25,18 @@ export const useQuotes = ({
   includeAllQuotes = true  // Default to showing all quotes for clients
 }: UseQuotesProps = {}) => {
   const { user } = useAuth();
+  const didLogRef = useRef(false);
   
-  console.log("useQuotes hook called with:", { projectId, forClient, user: user?.id, includeAllQuotes });
+  // Only log on initial render to reduce console spam
+  if (!didLogRef.current) {
+    console.log("useQuotes hook called with:", { 
+      projectId, 
+      forClient, 
+      user: user?.id, 
+      includeAllQuotes 
+    });
+    didLogRef.current = true;
+  }
   
   const queryResult = useQuery({
     queryKey: ['quotes', projectId, user?.id, forClient, includeAllQuotes],
@@ -36,12 +46,19 @@ export const useQuotes = ({
         return [];
       }
       
-      // Log diagnostics for quote fetching
-      logQuoteFetchDiagnostics(projectId, forClient, user.id, includeAllQuotes);
+      // Log diagnostics for quote fetching but only if we have a projectId
+      if (projectId) {
+        logQuoteFetchDiagnostics(projectId, forClient, user.id, includeAllQuotes);
+      }
       
       try {
         // For clients, we want to show all quotes for their project by default
         const shouldIncludeAllQuotes = forClient || includeAllQuotes;
+        
+        // If no projectId, return early for dashboard views that don't need specific quotes
+        if (!projectId) {
+          return [];
+        }
         
         // Build and execute the main quotes query
         const query = buildQuotesQuery(projectId, forClient, user.id, shouldIncludeAllQuotes);
@@ -51,8 +68,6 @@ export const useQuotes = ({
           console.error('Error fetching quotes:', quotesError);
           throw quotesError;
         }
-        
-        console.log('Quotes data directly from database:', quotesData);
         
         // If no quotes were found with the initial query
         if (!quotesData || quotesData.length === 0) {
@@ -73,8 +88,6 @@ export const useQuotes = ({
             }
           }
           
-          // Log system-wide quotes for diagnostics
-          await logSystemQuotesSample();
           return [];
         }
         
@@ -88,21 +101,19 @@ export const useQuotes = ({
         // Combine quotes with freelancer profiles
         const result = formatQuotesWithProfiles(quotesData, profileMap);
         
-        console.log('Final processed quotes with profiles:', result);
-        console.log('------------- QUOTE FETCH DIAGNOSTICS END -------------');
         return result;
       } catch (error) {
         console.error('Error in useQuotes query function:', error);
         throw error;
       }
     },
-    enabled: !!user,
+    enabled: !!user && !!projectId, // Only run query if we have both user and projectId
     refetchInterval: refreshInterval,
     refetchOnWindowFocus: true,
     staleTime: 5000,
   });
 
-  // Set up real-time listener for quotes table
+  // Set up real-time listener for quotes table only if we have both projectId and userId
   useEffect(() => {
     if (!projectId || !user?.id) return;
     

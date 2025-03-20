@@ -69,8 +69,6 @@ export const useApplicationsWithQuotes = () => {
           return [];
         }
         
-        console.log('Received application data:', applicationData);
-        
         // Transform the data to match the ApplicationWithProject interface
         const applicationProjects = applicationData.map((app) => ({
           ...app.projects,
@@ -78,29 +76,29 @@ export const useApplicationsWithQuotes = () => {
           application_created_at: app.created_at
         }));
         
-        // Fetch quote status for each project
-        const projectsWithQuoteStatus = await Promise.all(
-          applicationProjects.map(async (project) => {
-            try {
-              const { data: quoteData } = await supabase
-                .from('quotes')
-                .select('status')
-                .eq('project_id', project.id)
-                .eq('freelancer_id', user.id)
-                .maybeSingle();
-                
-              return {
-                ...project,
-                quote_status: quoteData?.status
-              };
-            } catch (error) {
-              console.error('Error fetching quote status:', error);
-              return project;
-            }
-          })
-        );
+        // Fetch all quotes for this user in a single query instead of multiple queries
+        const { data: quotesData, error: quotesError } = await supabase
+          .from('quotes')
+          .select('status, project_id')
+          .eq('freelancer_id', user.id)
+          .in('project_id', applicationProjects.map(p => p.id));
+          
+        if (quotesError) {
+          console.error('Error fetching quotes:', quotesError);
+        }
         
-        console.log('Processed applications with quote status:', projectsWithQuoteStatus);
+        // Create a map of project_id -> quote status for faster lookup
+        const quoteStatusMap = (quotesData || []).reduce((map, quote) => {
+          map[quote.project_id] = quote.status;
+          return map;
+        }, {});
+        
+        // Merge quote status into the application data
+        const projectsWithQuoteStatus = applicationProjects.map(project => ({
+          ...project,
+          quote_status: quoteStatusMap[project.id]
+        }));
+        
         return projectsWithQuoteStatus as ApplicationWithProject[];
       } catch (error) {
         console.error('Error fetching applications:', error);
@@ -108,7 +106,7 @@ export const useApplicationsWithQuotes = () => {
       }
     },
     enabled: !!user,
-    refetchOnMount: true,
+    staleTime: 60000, // 1 minute cache
     refetchOnWindowFocus: true
   });
   

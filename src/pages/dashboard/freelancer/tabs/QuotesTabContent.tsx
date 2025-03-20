@@ -1,6 +1,5 @@
 
 import React, { useState, useEffect } from 'react';
-import { useQuotes } from '@/hooks/quotes/useQuotes';
 import { useAuth } from '@/context/AuthContext';
 import QuotesTab from '@/components/dashboard/freelancer/QuotesTab';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,35 +7,36 @@ import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 const QuotesTabContent: React.FC = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showNotification, setShowNotification] = useState(true);
-  
-  // Fetch all quotes for this freelancer
-  const { data: quotes, isLoading: isLoadingQuotes } = useQuotes({
-    forClient: false,
-    includeAllQuotes: false
-  });
-  
-  // Count of accepted quotes
-  const acceptedQuotes = quotes?.filter(q => q.status === 'accepted') || [];
-  const hasAcceptedQuotes = acceptedQuotes.length > 0;
+  const queryClient = useQueryClient();
   
   // Load notification state from localStorage
   useEffect(() => {
-    const dismissedKey = `quotes-notification-dismissed-${user?.id}`;
+    if (!user?.id) return;
+    
+    const dismissedKey = `quotes-notification-dismissed-${user.id}`;
     const isDismissed = localStorage.getItem(dismissedKey) === 'true';
     
     if (isDismissed) {
       setShowNotification(false);
     }
-  }, [user?.id]);
+    
+    // Prefetch quotes data for this tab
+    queryClient.prefetchQuery({
+      queryKey: ['quotes', undefined, user.id, false, false]
+    });
+  }, [user?.id, queryClient]);
   
   // Handle dismiss of notification
   const handleDismissNotification = () => {
-    const dismissedKey = `quotes-notification-dismissed-${user?.id}`;
+    if (!user?.id) return;
+    
+    const dismissedKey = `quotes-notification-dismissed-${user.id}`;
     localStorage.setItem(dismissedKey, 'true');
     setShowNotification(false);
     
@@ -49,7 +49,7 @@ const QuotesTabContent: React.FC = () => {
   
   return (
     <div className="space-y-4">
-      {hasAcceptedQuotes && showNotification && (
+      {showNotification && (
         <Card className="bg-green-50 border-green-200">
           <CardContent className="p-4">
             <div className="flex justify-between items-start">
@@ -57,7 +57,7 @@ const QuotesTabContent: React.FC = () => {
                 <Info className="h-5 w-5 text-green-600 mt-0.5" />
                 <div>
                   <h3 className="font-medium text-green-800">
-                    You have been hired for {acceptedQuotes.length} project{acceptedQuotes.length > 1 ? 's' : ''}!
+                    You have been hired for projects!
                   </h3>
                   <p className="text-green-700 mt-1">
                     You can see your active jobs in the "Active Jobs" tab.

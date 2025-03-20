@@ -30,7 +30,7 @@ const QuotesTab: React.FC = () => {
     return <QuotesEmptyState />;
   }
   
-  // Count accepted quotes for the info alert
+  // Count accepted quotes for the info alert - do this without making another API call
   const acceptedCount = applications?.filter(p => p.quote_status === 'accepted').length || 0;
   
   return (
