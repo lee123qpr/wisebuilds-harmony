@@ -7,12 +7,16 @@ import { format } from 'date-fns';
 import { FreelancerProfile } from '@/types/applications';
 import VerificationBadge from '@/components/common/VerificationBadge';
 import RatingStars from '@/components/common/RatingStars';
+import { useClientReviews } from '@/pages/dashboard/hooks/useClientReviews';
 
 interface FreelancerProfileHeaderProps {
   profile: FreelancerProfile;
 }
 
 const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profile }) => {
+  // Get accurate rating data from the client reviews hook
+  const { averageRating, reviewCount } = useClientReviews(profile.id);
+  
   // Format the member_since date if available
   const formattedMemberSince = profile.member_since 
     ? format(new Date(profile.member_since), 'MMMM yyyy')
@@ -47,11 +51,11 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
               <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
             </div>
             
-            {/* Display rating stars - ensure it's always visible */}
+            {/* Display rating stars - using data from the useClientReviews hook */}
             <div>
               <RatingStars 
-                rating={profile.rating || 0} 
-                reviewCount={profile.reviews_count} 
+                rating={averageRating} 
+                reviewCount={reviewCount} 
                 size="lg" 
                 showEmpty={true}
               />
