@@ -34,20 +34,10 @@ export const useQuoteActionHandlers = ({
         });
       });
       
-      // Immediately refetch data after accepting
+      // The mutation already does invalidation, so we don't need additional refetches
+      // But we'll do one just to be sure UI is updated
       console.log('Triggering refetch after accept');
       await refetch();
-      
-      // Repeated refetches at intervals to ensure we get the updated status
-      setTimeout(async () => {
-        console.log('Delayed refetch after accept (1s)');
-        await refetch();
-        
-        setTimeout(async () => {
-          console.log('Delayed refetch after accept (3s)');
-          await refetch();
-        }, 2000);
-      }, 1000);
       
       return Promise.resolve();
     } catch (error) {
@@ -73,20 +63,10 @@ export const useQuoteActionHandlers = ({
         });
       });
       
-      // Immediately refetch data after rejecting
+      // The mutation already does invalidation, so we don't need additional refetches
+      // But we'll do one just to be sure UI is updated
       console.log('Triggering refetch after reject');
       await refetch();
-      
-      // Repeated refetches at intervals
-      setTimeout(async () => {
-        console.log('Delayed refetch after reject (1s)');
-        await refetch();
-        
-        setTimeout(async () => {
-          console.log('Delayed refetch after reject (3s)');
-          await refetch();
-        }, 2000);
-      }, 1000);
       
       return Promise.resolve();
     } catch (error) {

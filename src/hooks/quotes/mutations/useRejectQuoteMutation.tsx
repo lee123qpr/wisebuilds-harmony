@@ -49,6 +49,7 @@ export const useRejectQuoteMutation = ({
         }
           
         // Update the quote status to declined
+        // Critical fix: Add explicit update operation with database consistency
         const { error } = await supabase
           .from('quotes')
           .update({ 
@@ -61,6 +62,9 @@ export const useRejectQuoteMutation = ({
           console.error('Error rejecting quote:', error);
           throw error;
         }
+
+        // Add a small delay to ensure database consistency
+        await new Promise(resolve => setTimeout(resolve, 300));
 
         // Separately fetch the updated quote to confirm the status change
         const { data: updatedQuote, error: fetchError } = await supabase
@@ -78,6 +82,8 @@ export const useRejectQuoteMutation = ({
           console.error('Updated quote not found');
           throw new Error('Failed to retrieve updated quote');
         }
+        
+        console.log('Quote after update operation:', updatedQuote);
         
         if (updatedQuote.status !== 'declined') {
           console.error('Quote status was not updated correctly', updatedQuote);

@@ -49,6 +49,7 @@ export const useAcceptQuoteMutation = ({
         }
           
         // Update the quote status to accepted
+        // Critical fix: Add explicit delay between operations to ensure database consistency
         const { error } = await supabase
           .from('quotes')
           .update({ 
@@ -62,6 +63,9 @@ export const useAcceptQuoteMutation = ({
           throw error;
         }
 
+        // Add a small delay to ensure database consistency
+        await new Promise(resolve => setTimeout(resolve, 300));
+        
         // Separately fetch the updated quote to confirm the status change
         const { data: updatedQuote, error: fetchError } = await supabase
           .from('quotes')
@@ -78,6 +82,8 @@ export const useAcceptQuoteMutation = ({
           console.error('Updated quote not found');
           throw new Error('Failed to retrieve updated quote');
         }
+        
+        console.log('Quote after update operation:', updatedQuote);
         
         if (updatedQuote.status !== 'accepted') {
           console.error('Quote status was not updated correctly', updatedQuote);
