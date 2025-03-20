@@ -13,9 +13,9 @@ const FreelancerContactInfo: React.FC<FreelancerContactInfoProps> = ({ profile }
   }
 
   return (
-    <div className="bg-white p-4 rounded-md border border-slate-200">
-      <p className="font-medium mb-3 text-slate-700">Contact information:</p>
-      <div className="space-y-2">
+    <div className="bg-white p-4 rounded-md border border-slate-200 shadow-sm">
+      <p className="font-medium mb-3 text-slate-700">Contact information</p>
+      <div className="space-y-3">
         {profile?.email && (
           <div className="flex items-center">
             <Mail className="h-4 w-4 mr-2 text-blue-500" />

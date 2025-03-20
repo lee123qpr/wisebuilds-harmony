@@ -3,7 +3,7 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Users } from 'lucide-react';
+import { Users, ArrowLeft } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { useProjectApplications } from '@/hooks/useProjectApplications';
@@ -52,20 +52,22 @@ const ProjectApplications = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        <div className="mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center gap-3">
-              <BackButton to={`/project/${projectId}`} />
-              <h1 className="text-2xl font-bold">Project Applications</h1>
-            </div>
+        {/* Improved header section with cleaner layout */}
+        <div className="mb-6 border-b pb-6">
+          <div className="flex items-center mb-3">
+            <BackButton to={`/project/${projectId}`} className="mr-4" />
+            <h1 className="text-2xl font-bold">Project Applications</h1>
           </div>
 
           {projectLoading ? (
-            <Skeleton className="h-8 w-full max-w-md" />
+            <div className="mt-4">
+              <Skeleton className="h-8 w-full max-w-md mb-2" />
+              <Skeleton className="h-4 w-3/4 max-w-md" />
+            </div>
           ) : (
-            <div>
-              <h2 className="text-xl font-semibold">{project?.title}</h2>
-              <p className="text-muted-foreground">Review freelancers who have applied to this project</p>
+            <div className="mt-1">
+              <h2 className="text-xl font-semibold text-slate-800">{project?.title}</h2>
+              <p className="text-slate-500 mt-1">Review freelancers who have applied for this position</p>
             </div>
           )}
         </div>
