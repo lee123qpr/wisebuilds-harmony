@@ -5,7 +5,7 @@ import { useClientReviews } from '@/pages/dashboard/hooks/useClientReviews';
 
 interface ProfileRatingStarsProps {
   userId: string;
-  rating?: number;
+  rating?: number | null;
   reviewsCount?: number;
 }
 
@@ -18,7 +18,8 @@ const ProfileRatingStars: React.FC<ProfileRatingStarsProps> = ({
   const { averageRating, reviewCount } = useClientReviews(userId);
   
   // Use the provided rating/count or the live data
-  const displayRating = rating !== undefined ? rating : averageRating;
+  // But ensure null values from props don't override valid values from the hook
+  const displayRating = (rating !== undefined && rating !== null) ? rating : averageRating;
   const displayCount = reviewsCount !== undefined ? reviewsCount : reviewCount;
   
   // Add console log to debug rating data

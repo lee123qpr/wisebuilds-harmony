@@ -18,7 +18,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   showEmpty = false,
   className
 }) => {
-  // Convert rating to a number for calculations
+  // Convert rating to a number for calculations, ensuring null and undefined become 0
   const numericRating = rating !== null && rating !== undefined ? Number(rating) : 0;
   
   // Return null if rating is falsy and showEmpty is false
