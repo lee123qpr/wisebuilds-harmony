@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { ClientInfo } from '@/types/messaging';
 
 /**
- * Gets client information from client_profiles
+ * Gets client full name from either client_profiles or auth user data
  */
 export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
   console.log('getClientInfo called with clientId:', clientId);
@@ -37,69 +37,76 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     
     console.log('Client profile data from database:', clientProfile);
     
-    // If profile exists, return it
-    if (clientProfile) {
-      // Get email separately if not in profile
-      let email = clientProfile.email;
-      
-      if (!email) {
-        // Get user email via edge function
-        const { data: userData, error: userError } = await supabase.functions.invoke(
-          'get-user-email',
-          {
-            body: { userId: clientId }
-          }
-        );
-        
-        if (!userError) {
-          email = userData?.email;
-        }
-      }
-      
-      console.log('Returning client info from profile:', {
-        contact_name: clientProfile.contact_name || 'Client',
-        company_name: clientProfile.company_name,
-        logo_url: clientProfile.logo_url,
-        email: email
-      });
-      
+    // If profile exists with contact_name, return it immediately
+    if (clientProfile && clientProfile.contact_name) {
+      console.log('Returning client name from profile:', clientProfile.contact_name);
       return {
-        contact_name: clientProfile.contact_name || 'Client',
+        contact_name: clientProfile.contact_name,
         company_name: clientProfile.company_name,
         logo_url: clientProfile.logo_url,
-        email: email
+        email: clientProfile.email
       };
     } else {
-      console.log('No profile found, getting email only');
-      
-      // If no profile, just get email
-      const { data: userData, error: userError } = await supabase.functions.invoke(
-        'get-user-email',
-        {
-          body: { userId: clientId }
-        }
-      );
-      
-      if (userError) {
-        console.error('Error fetching user email:', userError);
-        return {
-          contact_name: 'Client',
-          company_name: null,
-          logo_url: null,
-          email: null
-        };
+      console.log('No contact_name found in client profile or profile not found');
+    }
+  } catch (dbError) {
+    console.error('Exception when querying client_profiles:', dbError);
+  }
+  
+  // If no complete profile, try to get user data from auth using edge function
+  try {
+    console.log('Attempting to fetch user data from edge function for userId:', clientId);
+    
+    const { data: userData, error: userError } = await supabase.functions.invoke(
+      'get-user-email',
+      {
+        body: { userId: clientId }
       }
-      
-      // Return with just the email
+    );
+    
+    if (userError) {
+      console.error('Error fetching user data from edge function:', userError);
+      console.error('Error message:', userError.message);
+      console.error('Error details:', userError);
       return {
         contact_name: 'Client',
         company_name: null,
         logo_url: null,
-        email: userData?.email || null
+        email: null
       };
     }
-  } catch (dbError) {
-    console.error('Exception when querying client_profiles:', dbError);
+    
+    console.log('User data received from edge function:', userData);
+    
+    if (!userData) {
+      console.error('No user data returned from edge function');
+      return {
+        contact_name: 'Client',
+        company_name: null,
+        logo_url: null,
+        email: null
+      };
+    }
+    
+    // Extract full name from metadata or use a default value
+    const fullName = userData.full_name || 
+                    (userData.user_metadata?.full_name) || 
+                    (userData.user_metadata?.name) ||
+                    (userData.email ? userData.email.split('@')[0] : 'Client');
+                    
+    console.log('Extracted full name:', fullName);
+    
+    // Return the full name
+    return {
+      contact_name: fullName,
+      company_name: null,
+      logo_url: null,
+      email: userData.email
+    };
+  } catch (error) {
+    console.error('Error calling edge function:', error);
+    console.error('Error type:', typeof error);
+    console.error('Error details:', JSON.stringify(error, null, 2));
     
     // No data available
     return {
