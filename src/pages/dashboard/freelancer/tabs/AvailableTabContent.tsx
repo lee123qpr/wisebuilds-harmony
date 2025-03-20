@@ -8,6 +8,7 @@ import { RefreshCw, AlertTriangle, Info, Briefcase } from 'lucide-react';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
 import { useState } from 'react';
 import { ProjectLead } from '@/types/projects';
+import { Badge } from '@/components/ui/badge';
 
 const AvailableTabContent: React.FC = () => {
   // Use our hook with filtering disabled (false) to fetch all available projects
@@ -70,7 +71,12 @@ const AvailableTabContent: React.FC = () => {
       <div className="flex justify-between items-center">
         <div className="flex items-center gap-2">
           <Briefcase className="h-5 w-5 text-primary" />
-          <h2 className="text-2xl font-bold tracking-tight">Available Projects</h2>
+          <h2 className="text-2xl font-bold tracking-tight">
+            Available Projects
+            <Badge variant="secondary" className="ml-2 text-sm font-medium">
+              {isLoading ? '...' : projects.length}
+            </Badge>
+          </h2>
         </div>
         
         <div className="flex gap-3">
