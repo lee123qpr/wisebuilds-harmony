@@ -103,7 +103,7 @@ export const useRejectQuoteMutation = ({
       queryClient.invalidateQueries({ queryKey: ['quote'] });
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       
-      // Show success toast
+      // Show success toast only once
       toast.success('Quote rejected successfully', {
         description: 'The freelancer has been notified.'
       });

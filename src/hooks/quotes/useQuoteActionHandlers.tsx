@@ -1,6 +1,5 @@
 
 import { useCallback } from 'react';
-import { toast } from 'sonner';
 import { UseMutateFunction, QueryObserverResult, RefetchOptions } from '@tanstack/react-query';
 
 interface UseQuoteActionHandlersProps {
@@ -21,7 +20,6 @@ export const useQuoteActionHandlers = ({
   // Handle accepting a quote with robust error handling
   const handleAcceptQuote = useCallback(async () => {
     if (!projectId || !quoteId) {
-      toast.error('Missing project or quote information');
       return Promise.reject(new Error('Missing project or quote information'));
     }
     
@@ -61,7 +59,6 @@ export const useQuoteActionHandlers = ({
   // Handle rejecting a quote with robust error handling
   const handleRejectQuote = useCallback(async () => {
     if (!projectId || !quoteId) {
-      toast.error('Missing project or quote information');
       return Promise.reject(new Error('Missing project or quote information'));
     }
     
@@ -103,10 +100,8 @@ export const useQuoteActionHandlers = ({
     console.log('Manual refresh triggered');
     try {
       await refetch();
-      toast.success('Data refreshed');
     } catch (error) {
       console.error('Error refreshing data:', error);
-      toast.error('Failed to refresh data');
     }
   };
 

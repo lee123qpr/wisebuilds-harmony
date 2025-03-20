@@ -11,7 +11,6 @@ import {
   DialogFooter,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { toast } from 'sonner';
 
 interface QuoteActionButtonsProps {
   quoteStatus: string;
@@ -45,14 +44,10 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
       // Don't close dialog until operation completes
       await onAccept();
       console.log('Accept completed successfully');
-      toast.success('Quote accepted successfully');
       // Only close dialog after successful operation
       setAcceptDialogOpen(false);
     } catch (error) {
       console.error('Error in handleAccept:', error);
-      toast.error('Failed to accept the quote', {
-        description: 'Please try again or contact support'
-      });
       // Keep dialog open on error so user can try again
     }
   };
@@ -64,14 +59,10 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
       // Don't close dialog until operation completes
       await onReject();
       console.log('Reject completed successfully');
-      toast.success('Quote rejected successfully');
       // Only close dialog after successful operation
       setRejectDialogOpen(false);
     } catch (error) {
       console.error('Error in handleReject:', error);
-      toast.error('Failed to reject the quote', {
-        description: 'Please try again or contact support'
-      });
       // Keep dialog open on error
     }
   };
