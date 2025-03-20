@@ -39,8 +39,10 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
     ? format(new Date(project.created_at), 'MMM d, yyyy')
     : 'Unknown date';
   
-  // Display client name if available
+  // Display client information from clientInfo if available
   const clientName = clientInfo?.contact_name || 'Client';
+  const clientEmail = clientInfo?.email;
+  const clientPhone = clientInfo?.phone_number;
   
   return (
     <Card className="w-full">
@@ -56,6 +58,8 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
               formattedDate={formattedDate}
               clientName={clientName}
               isLoadingClientInfo={isLoadingClientInfo}
+              clientEmail={clientEmail}
+              clientPhone={clientPhone}
             />
             
             <QuoteDetailsView 

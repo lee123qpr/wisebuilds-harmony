@@ -30,10 +30,17 @@ const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({
   
   const { clientInfo, isLoading: isLoadingClientInfo } = useContactInfo(projectId);
   const [clientName, setClientName] = useState<string>('Client');
+  const [clientEmail, setClientEmail] = useState<string | null>(null);
+  const [clientPhone, setClientPhone] = useState<string | null>(null);
 
   useEffect(() => {
-    if (clientInfo && clientInfo.contact_name) {
-      setClientName(clientInfo.contact_name);
+    if (clientInfo) {
+      if (clientInfo.contact_name) {
+        setClientName(clientInfo.contact_name);
+      }
+      
+      setClientEmail(clientInfo.email);
+      setClientPhone(clientInfo.phone_number);
     }
   }, [clientInfo]);
 
@@ -64,6 +71,8 @@ const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({
           <ProjectInfo 
             projectTitle={projectTitle} 
             clientName={clientName}
+            clientEmail={clientEmail}
+            clientPhone={clientPhone}
             quoteSubmitted={true}
             submissionDate={createdDate}
           />
