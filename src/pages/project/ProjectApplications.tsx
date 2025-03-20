@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { Users, ArrowLeft } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { useProjectApplications } from '@/hooks/useProjectApplications';
@@ -18,7 +17,6 @@ const ProjectApplications = () => {
   const { project, loading: projectLoading } = useProjectDetails(projectId);
   const { applications, isLoading, error } = useProjectApplications(projectId);
 
-  // Loading skeleton for application cards
   const ApplicationCardSkeleton = () => (
     <Card className="mb-6">
       <CardContent className="p-6">
@@ -52,7 +50,6 @@ const ProjectApplications = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        {/* Header section with improved project title visibility */}
         <div className="mb-6 border-b pb-6">
           <div className="flex items-center mb-3">
             <BackButton to={`/project/${projectId}`} className="mr-4" />
