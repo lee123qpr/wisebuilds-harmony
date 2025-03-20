@@ -3,6 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { CardFooter } from '@/components/ui/card';
+import BackButton from '@/components/common/BackButton';
 
 interface FormActionsProps {
   isSubmitting: boolean;
@@ -17,14 +18,10 @@ export const FormActions: React.FC<FormActionsProps> = ({
   
   return (
     <CardFooter className="flex justify-between">
-      <Button 
-        type="button" 
-        variant="outline" 
-        onClick={() => navigate('/dashboard/freelancer')}
+      <BackButton 
+        to="/dashboard/freelancer"
         disabled={isSubmitting || isLoading}
-      >
-        Cancel
-      </Button>
+      />
       <Button 
         type="submit" 
         disabled={isSubmitting || isLoading}

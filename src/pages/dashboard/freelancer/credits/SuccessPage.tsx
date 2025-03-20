@@ -3,8 +3,9 @@ import React, { useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useCredits } from '@/hooks/useCredits';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, ArrowLeft } from 'lucide-react';
-import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { CheckCircle } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import BackButton from '@/components/common/BackButton';
 
 const SuccessPage = () => {
   const [searchParams] = useSearchParams();
@@ -38,14 +39,11 @@ const SuccessPage = () => {
                 View My Credits
               </Button>
               
-              <Button 
-                variant="outline" 
-                onClick={() => navigate('/dashboard/freelancer')}
-                className="w-full"
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Back to Dashboard
-              </Button>
+              <BackButton 
+                to="/dashboard/freelancer"
+                variant="outline"
+                className="w-full justify-center"
+              />
             </div>
           </div>
         </div>

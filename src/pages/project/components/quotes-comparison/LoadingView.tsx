@@ -1,9 +1,7 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import BackButton from '@/components/common/BackButton';
 
 interface LoadingViewProps {
   projectId: string;
@@ -13,11 +11,7 @@ const LoadingView: React.FC<LoadingViewProps> = ({ projectId }) => {
   return (
     <div className="container py-8">
       <div className="flex items-center gap-4 mb-8">
-        <Button variant="ghost" size="icon" asChild>
-          <Link to={`/project/${projectId}`}>
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
+        <BackButton to={`/project/${projectId}`} />
         <h1 className="text-2xl font-bold">Quotes Comparison</h1>
       </div>
       <Card>

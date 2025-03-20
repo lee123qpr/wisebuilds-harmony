@@ -3,13 +3,14 @@ import React from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Users } from 'lucide-react';
+import { Users } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { useProjectApplications } from '@/hooks/useProjectApplications';
 import FreelancerApplicationCard from '@/components/applications/FreelancerApplicationCard';
 import { Skeleton } from '@/components/ui/skeleton';
 import { formatRole } from '@/utils/projectFormatters';
+import BackButton from '@/components/common/BackButton';
 
 const ProjectApplications = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -52,9 +53,7 @@ const ProjectApplications = () => {
     <MainLayout>
       <div className="container py-8">
         <div className="flex items-center gap-2 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/project/${projectId}`)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <BackButton to={`/project/${projectId}`} />
           <h1 className="text-2xl font-bold">Project Applications</h1>
         </div>
 

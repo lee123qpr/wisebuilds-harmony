@@ -16,8 +16,7 @@ import {
   ProjectStatusSkeleton, 
   ProjectDocumentsSkeleton 
 } from '@/components/projects/skeletons/ProjectSkeletons';
-import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import BackButton from '@/components/common/BackButton';
 
 const ViewProject = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -64,15 +63,7 @@ const ViewProject = () => {
     <MainLayout>
       <div className="container py-8">
         <div className="mb-6">
-          <Button 
-            variant="ghost" 
-            size="sm" 
-            onClick={handleGoBack} 
-            className="gap-2"
-          >
-            <ArrowLeft className="h-4 w-4" />
-            Go Back
-          </Button>
+          <BackButton onClick={handleGoBack} />
         </div>
 
         {loading ? (

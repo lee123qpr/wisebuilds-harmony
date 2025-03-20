@@ -5,7 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save, Loader2 } from 'lucide-react';
+import { Save, Loader2 } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
@@ -13,6 +13,7 @@ import { ProjectFormValues, projectSchema } from './components/schema';
 import ProjectForm from './components/ProjectForm';
 import ProjectLoadingSkeleton from './components/ProjectLoadingSkeleton';
 import { supabase } from '@/integrations/supabase/client';
+import BackButton from '@/components/common/BackButton';
 
 const EditProject = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -113,14 +114,7 @@ const EditProject = () => {
     <MainLayout>
       <div className="container py-8">
         <div className="flex items-center gap-2 mb-6">
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={() => navigate(`/project/${projectId}`)}
-            disabled={submitting}
-          >
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <BackButton to={`/project/${projectId}`} />
           <h1 className="text-2xl font-bold">Edit Project</h1>
         </div>
 

@@ -3,7 +3,7 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from 'lucide-react';
+import BackButton from '@/components/common/BackButton';
 
 const ProjectNotFound = () => {
   const navigate = useNavigate();
@@ -11,9 +11,7 @@ const ProjectNotFound = () => {
   return (
     <div className="container py-8">
       <div className="flex items-center gap-2 mb-6">
-        <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/business')}>
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
+        <BackButton to="/dashboard/business" />
         <h1 className="text-2xl font-bold">Project not found</h1>
       </div>
       <Card>

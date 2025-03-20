@@ -1,10 +1,10 @@
 
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { PenSquare, ArrowLeft, Trash2 } from 'lucide-react';
+import { PenSquare, Trash2 } from 'lucide-react';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 import { ProjectDeleteHandler } from '@/components/projects/ProjectDeleteHandler';
+import BackButton from '@/components/common/BackButton';
 
 interface ProjectHeaderProps {
   projectId: string;
@@ -12,19 +12,16 @@ interface ProjectHeaderProps {
 }
 
 const ProjectHeader = ({ projectId, refreshProjects }: ProjectHeaderProps) => {
-  const navigate = useNavigate();
-
   return (
     <div className="flex items-center gap-4 mb-6">
-      <Button variant="ghost" size="icon" onClick={() => navigate('/dashboard/business')}>
-        <ArrowLeft className="h-4 w-4" />
-      </Button>
+      <BackButton to="/dashboard/business" />
       <div className="ml-auto flex gap-2">
         <Button 
           variant="outline" 
-          onClick={() => navigate(`/project/${projectId}/edit`)}
+          onClick={() => {}}
+          className="flex items-center gap-2"
         >
-          <PenSquare className="h-4 w-4 mr-2" />
+          <PenSquare className="h-4 w-4" />
           Edit
         </Button>
         
@@ -32,8 +29,8 @@ const ProjectHeader = ({ projectId, refreshProjects }: ProjectHeaderProps) => {
           {(handleDelete) => (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="destructive">
-                  <Trash2 className="h-4 w-4 mr-2" />
+                <Button variant="destructive" className="flex items-center gap-2">
+                  <Trash2 className="h-4 w-4" />
                   Delete
                 </Button>
               </AlertDialogTrigger>

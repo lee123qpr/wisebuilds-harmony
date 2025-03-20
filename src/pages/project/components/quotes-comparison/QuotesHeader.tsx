@@ -1,8 +1,8 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import BackButton from '@/components/common/BackButton';
 
 interface QuotesHeaderProps {
   projectId: string;
@@ -20,11 +20,7 @@ const QuotesHeader: React.FC<QuotesHeaderProps> = ({
   return (
     <div className="flex items-center justify-between mb-8">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link to={`/project/${projectId}`}>
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
+        <BackButton to={`/project/${projectId}`} />
         <div>
           <h1 className="text-2xl font-bold">Quotes Comparison</h1>
           <p className="text-muted-foreground">Project: {projectTitle}</p>

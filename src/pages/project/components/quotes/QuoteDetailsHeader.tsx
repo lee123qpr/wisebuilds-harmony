@@ -1,8 +1,6 @@
 
 import React from 'react';
-import { Link } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import BackButton from '@/components/common/BackButton';
 
 interface QuoteDetailsHeaderProps {
   projectId: string;
@@ -15,11 +13,7 @@ const QuoteDetailsHeader: React.FC<QuoteDetailsHeaderProps> = ({
 }) => {
   return (
     <div className="flex items-center gap-4 mb-6">
-      <Button variant="ghost" size="icon" asChild>
-        <Link to={`/project/${projectId}/quotes`}>
-          <ArrowLeft className="h-4 w-4" />
-        </Link>
-      </Button>
+      <BackButton to={`/project/${projectId}/quotes`} />
       <div>
         <h1 className="text-2xl font-bold">Quote Details</h1>
         <p className="text-muted-foreground">

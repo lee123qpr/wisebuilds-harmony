@@ -1,8 +1,9 @@
+
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, Save } from 'lucide-react';
+import { Save } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import FileUpload from '@/components/projects/FileUpload';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
@@ -10,6 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectDocument } from '@/components/projects/useProjects';
 import { Json } from '@/integrations/supabase/types';
+import BackButton from '@/components/common/BackButton';
 
 const ProjectDocuments = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -85,9 +87,7 @@ const ProjectDocuments = () => {
     <MainLayout>
       <div className="container py-8">
         <div className="flex items-center gap-2 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/project/${projectId}`)}>
-            <ArrowLeft className="h-4 w-4" />
-          </Button>
+          <BackButton to={`/project/${projectId}`} />
           <h1 className="text-2xl font-bold">Project Documents</h1>
         </div>
 
