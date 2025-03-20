@@ -33,7 +33,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onSignOut, isLoading }) => {
           {/* User Info */}
           {!isLoadingProfile && (
             <div className="hidden md:flex flex-col items-end">
-              <p className="text-sm font-medium">{displayName || user?.email || 'User'}</p>
+              <p className="text-sm font-medium">{displayName || user?.user_metadata?.full_name || 'User'}</p>
               <p className="text-xs text-muted-foreground capitalize">{userType}</p>
             </div>
           )}
