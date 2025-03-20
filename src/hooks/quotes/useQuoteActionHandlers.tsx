@@ -17,115 +17,65 @@ export const useQuoteActionHandlers = ({
   rejectQuote,
   refetch
 }: UseQuoteActionHandlersProps) => {
-  // Handle accepting a quote with robust error handling and retry logic
-  const handleAcceptQuote = useCallback(async () => {
+  // Generic quote action handler to reduce code duplication
+  const handleQuoteAction = useCallback(async (
+    actionFn: UseMutateFunction<any, Error, void, unknown>,
+    actionName: string
+  ) => {
     if (!projectId || !quoteId) {
       return Promise.reject(new Error('Missing project or quote information'));
     }
     
     try {
-      console.log('ViewQuoteDetails - Accepting quote');
+      console.log(`ViewQuoteDetails - ${actionName} quote`);
       
-      // Execute the quote acceptance with await
+      // Execute the quote action with await
       await new Promise<void>((resolve, reject) => {
-        acceptQuote(undefined, {
+        actionFn(undefined, {
           onSuccess: () => {
-            console.log('Quote acceptance mutation succeeded');
+            console.log(`Quote ${actionName} mutation succeeded`);
             resolve();
           },
           onError: (error) => {
-            console.error('Quote acceptance mutation failed:', error);
+            console.error(`Quote ${actionName} mutation failed:`, error);
             reject(error);
           }
         });
       });
       
-      // Wait for a moment before refetching to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 2500));
+      // Wait before refetching to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
-      // Refetch with multiple attempts if needed
-      console.log('Triggering refetch after accept');
-      let refetchAttempts = 0;
-      const maxRefetchAttempts = 3;
-      
-      while (refetchAttempts < maxRefetchAttempts) {
+      // Perform a single refetch with retry
+      let refetchSuccess = false;
+      for (let attempt = 0; attempt < 3 && !refetchSuccess; attempt++) {
         try {
           await refetch({ throwOnError: true });
-          console.log('Refetch successful after accept');
-          break;
+          console.log(`Refetch successful after ${actionName}`);
+          refetchSuccess = true;
         } catch (refetchError) {
-          console.error(`Refetch attempt ${refetchAttempts + 1} failed:`, refetchError);
-          refetchAttempts++;
-          if (refetchAttempts >= maxRefetchAttempts) {
-            console.warn('Max refetch attempts reached, but operation likely succeeded');
-            break;
+          console.error(`Refetch attempt ${attempt + 1} failed:`, refetchError);
+          if (attempt < 2) {
+            await new Promise(resolve => setTimeout(resolve, 1000));
           }
-          // Wait before trying again
-          await new Promise(resolve => setTimeout(resolve, 1000));
         }
       }
       
       return Promise.resolve();
     } catch (error) {
-      console.error('Error accepting quote:', error);
+      console.error(`Error ${actionName} quote:`, error);
       return Promise.reject(error);
     }
-  }, [projectId, quoteId, acceptQuote, refetch]);
+  }, [projectId, quoteId, refetch]);
 
-  // Handle rejecting a quote with robust error handling and retry logic
-  const handleRejectQuote = useCallback(async () => {
-    if (!projectId || !quoteId) {
-      return Promise.reject(new Error('Missing project or quote information'));
-    }
-    
-    try {
-      console.log('ViewQuoteDetails - Rejecting quote');
-      
-      // Execute the quote rejection with await
-      await new Promise<void>((resolve, reject) => {
-        rejectQuote(undefined, {
-          onSuccess: () => {
-            console.log('Quote rejection mutation succeeded');
-            resolve();
-          },
-          onError: (error) => {
-            console.error('Quote rejection mutation failed:', error);
-            reject(error);
-          }
-        });
-      });
-      
-      // Wait for a moment before refetching to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 2500));
-      
-      // Refetch with multiple attempts if needed
-      console.log('Triggering refetch after reject');
-      let refetchAttempts = 0;
-      const maxRefetchAttempts = 3;
-      
-      while (refetchAttempts < maxRefetchAttempts) {
-        try {
-          await refetch({ throwOnError: true });
-          console.log('Refetch successful after reject');
-          break;
-        } catch (refetchError) {
-          console.error(`Refetch attempt ${refetchAttempts + 1} failed:`, refetchError);
-          refetchAttempts++;
-          if (refetchAttempts >= maxRefetchAttempts) {
-            console.warn('Max refetch attempts reached, but operation likely succeeded');
-            break;
-          }
-          // Wait before trying again
-          await new Promise(resolve => setTimeout(resolve, 1000));
-        }
-      }
-      
-      return Promise.resolve();
-    } catch (error) {
-      console.error('Error rejecting quote:', error);
-      return Promise.reject(error);
-    }
-  }, [projectId, quoteId, rejectQuote, refetch]);
+  // Specialized handlers using the generic handler
+  const handleAcceptQuote = useCallback(() => {
+    return handleQuoteAction(acceptQuote, 'accepting');
+  }, [acceptQuote, handleQuoteAction]);
+
+  const handleRejectQuote = useCallback(() => {
+    return handleQuoteAction(rejectQuote, 'rejecting');
+  }, [rejectQuote, handleQuoteAction]);
 
   // Manual refresh button handler
   const handleManualRefresh = async () => {

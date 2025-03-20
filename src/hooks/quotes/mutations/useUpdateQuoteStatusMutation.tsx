@@ -2,27 +2,30 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Quote } from '@/types/quotes';
 
-interface UseAcceptQuoteMutationProps {
+type QuoteStatus = 'pending' | 'accepted' | 'declined';
+
+interface UseUpdateQuoteStatusMutationProps {
   projectId?: string;
   quoteId?: string;
   userId?: string;
 }
 
-export const useAcceptQuoteMutation = ({ 
-  projectId, 
-  quoteId, 
-  userId 
-}: UseAcceptQuoteMutationProps) => {
+export const useUpdateQuoteStatusMutation = ({
+  projectId,
+  quoteId,
+  userId
+}: UseUpdateQuoteStatusMutationProps) => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async () => {
+    mutationFn: async ({ status }: { status: QuoteStatus }) => {
       if (!userId || !projectId || !quoteId) {
         throw new Error('Missing required parameters');
       }
 
-      console.log('Accepting quote with ID:', quoteId);
+      console.log(`Updating quote ${quoteId} status to: ${status}`);
 
       try {
         // First, directly fetch the quote to check its current status
@@ -42,9 +45,9 @@ export const useAcceptQuoteMutation = ({
           throw new Error('Quote not found');
         }
           
-        // If quote is already accepted, just return it
-        if (quoteCheck.status === 'accepted') {
-          console.log('Quote is already accepted, no update needed');
+        // If quote already has the target status, just return it
+        if (quoteCheck.status === status) {
+          console.log(`Quote is already ${status}, no update needed`);
           return quoteCheck;
         }
         
@@ -54,7 +57,7 @@ export const useAcceptQuoteMutation = ({
         const { data: updateResult, error: updateError } = await supabase
           .from('quotes')
           .update({ 
-            status: 'accepted', 
+            status, 
             updated_at: new Date().toISOString() 
           })
           .eq('id', quoteId)
@@ -74,7 +77,7 @@ export const useAcceptQuoteMutation = ({
         const maxRetries = 3;
         
         while (retryCount < maxRetries) {
-          // Add a significant delay to ensure database consistency
+          // Add a delay to ensure database consistency
           await new Promise(resolve => setTimeout(resolve, 1000));
           
           // Double-check by fetching the quote again to verify the change
@@ -98,7 +101,7 @@ export const useAcceptQuoteMutation = ({
           
           console.log(`Verification attempt ${retryCount + 1}: Quote status = ${fetchedQuote.status}`);
           
-          if (fetchedQuote.status === 'accepted') {
+          if (fetchedQuote.status === status) {
             // Verification successful
             verifiedQuote = fetchedQuote;
             break;
@@ -111,32 +114,35 @@ export const useAcceptQuoteMutation = ({
           console.error('Quote status verification failed after multiple attempts', {
             quoteId,
             originalStatus: quoteCheck.status,
+            targetStatus: status
           });
-          throw new Error(`Status verification failed: expected 'accepted' but verification timed out`);
+          throw new Error(`Status verification failed: expected '${status}' but verification timed out`);
         }
         
-        console.log('Quote accepted successfully, verified data:', verifiedQuote);
-        return verifiedQuote;
+        console.log(`Quote status updated to ${status} successfully, verified data:`, verifiedQuote);
+        return verifiedQuote as Quote;
       } catch (err) {
-        console.error('Error in acceptMutation:', err);
+        console.error(`Error in ${status} mutation:`, err);
         throw err;
       }
     },
-    onSuccess: (data) => {
-      console.log('Accept mutation completed successfully:', data);
+    onSuccess: (data, variables) => {
+      console.log(`${variables.status} mutation completed successfully:`, data);
       
       // Invalidate all related queries with correct keys
       queryClient.invalidateQueries({ queryKey: ['quote'] });
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       
       // Show success toast only once
-      toast.success('Quote accepted successfully', {
+      const actionText = variables.status === 'accepted' ? 'accepted' : 'rejected';
+      toast.success(`Quote ${actionText} successfully`, {
         description: 'The freelancer has been notified.'
       });
     },
-    onError: (error) => {
-      console.error('Error in accept mutation:', error);
-      toast.error('Failed to accept quote', {
+    onError: (error, variables) => {
+      console.error(`Error in ${variables.status} mutation:`, error);
+      const actionText = variables.status === 'accepted' ? 'accept' : 'reject';
+      toast.error(`Failed to ${actionText} quote`, {
         description: error instanceof Error ? error.message : 'Please try again later.'
       });
     }

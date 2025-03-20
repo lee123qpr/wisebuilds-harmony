@@ -1,7 +1,6 @@
 
 import { useAuth } from '@/context/AuthContext';
-import { useAcceptQuoteMutation } from './mutations/useAcceptQuoteMutation';
-import { useRejectQuoteMutation } from './mutations/useRejectQuoteMutation';
+import { useUpdateQuoteStatusMutation } from './mutations/useUpdateQuoteStatusMutation';
 
 interface UseQuoteActionsProps {
   projectId?: string;
@@ -11,24 +10,18 @@ interface UseQuoteActionsProps {
 export const useQuoteActions = ({ projectId, quoteId }: UseQuoteActionsProps) => {
   const { user } = useAuth();
   
-  const acceptMutation = useAcceptQuoteMutation({ 
+  const updateQuoteStatusMutation = useUpdateQuoteStatusMutation({ 
     projectId, 
     quoteId, 
     userId: user?.id 
   });
   
-  const rejectMutation = useRejectQuoteMutation({ 
-    projectId, 
-    quoteId, 
-    userId: user?.id 
-  });
-
   return {
-    acceptQuote: acceptMutation.mutate,
-    rejectQuote: rejectMutation.mutate,
-    isAccepting: acceptMutation.isPending,
-    isRejecting: rejectMutation.isPending,
-    acceptError: acceptMutation.error,
-    rejectError: rejectMutation.error,
+    acceptQuote: () => updateQuoteStatusMutation.mutate({ status: 'accepted' }),
+    rejectQuote: () => updateQuoteStatusMutation.mutate({ status: 'declined' }),
+    isAccepting: updateQuoteStatusMutation.isPending && updateQuoteStatusMutation.variables?.status === 'accepted',
+    isRejecting: updateQuoteStatusMutation.isPending && updateQuoteStatusMutation.variables?.status === 'declined',
+    acceptError: updateQuoteStatusMutation.error,
+    rejectError: updateQuoteStatusMutation.error,
   };
 };
