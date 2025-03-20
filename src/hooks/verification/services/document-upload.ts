@@ -29,9 +29,9 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     
     console.log('Attempting to upload file:', fileName);
     
-    // Upload the file to the id-documents bucket
+    // Upload the file to the verification_documents bucket
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('id-documents')
+      .from('verification_documents')
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
@@ -46,7 +46,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     const path = uploadData?.path;
     console.log('File uploaded successfully to:', path);
     
-    // Create or update the verification record without trying to join with users table
+    // Create or update the verification record
     const verificationRecord = {
       user_id: userId,
       id_document_path: filePath,
@@ -71,7 +71,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
         // to avoid orphaned files in storage
         try {
           await supabase.storage
-            .from('id-documents')
+            .from('verification_documents')
             .remove([filePath]);
           console.log('Cleaned up uploaded file after insert error');
         } catch (cleanupError) {
@@ -105,7 +105,7 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       // Clean up the uploaded file if database operation fails
       try {
         await supabase.storage
-          .from('id-documents')
+          .from('verification_documents')
           .remove([filePath]);
         console.log('Cleaned up uploaded file after database error');
       } catch (cleanupError) {

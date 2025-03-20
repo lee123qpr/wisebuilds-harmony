@@ -1,27 +1,50 @@
 
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { setupVerificationSystem } from './setupVerification';
+import { useAuth } from '@/context/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useVerificationSetup = () => {
-  const [setupComplete, setSetupComplete] = useState<boolean>(false);
-  const { toast } = useToast();
+  const { user } = useAuth();
+  const [setupComplete, setSetupComplete] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const runSetup = async () => {
-      const success = await setupVerificationSystem();
-      setSetupComplete(success);
-      if (!success) {
-        toast({
-          variant: 'destructive',
-          title: 'Setup Error',
-          description: 'There was a problem setting up the verification system. Please try again later.',
-        });
+    async function setupVerificationSystem() {
+      setIsLoading(true);
+      try {
+        // Check if the verification_documents bucket exists
+        const { data: bucketData, error: bucketError } = await supabase.storage
+          .getBucket('verification_documents');
+        
+        if (bucketError || !bucketData) {
+          console.log('Verification system not set up, initializing...');
+          
+          // Call the setup-verification Edge Function
+          const { data, error } = await supabase.functions.invoke('setup-verification');
+          
+          if (error) {
+            console.error('Error setting up verification system:', error);
+            return;
+          }
+          
+          console.log('Verification system setup result:', data);
+          setSetupComplete(true);
+        } else {
+          console.log('Verification system already set up');
+          setSetupComplete(true);
+        }
+      } catch (error) {
+        console.error('Error in verification setup:', error);
+      } finally {
+        setIsLoading(false);
       }
-    };
+    }
     
-    runSetup();
-  }, [toast]);
+    setupVerificationSystem();
+  }, [user]);
 
-  return { setupComplete };
+  return {
+    setupComplete,
+    isLoading
+  };
 };
