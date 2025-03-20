@@ -25,7 +25,7 @@ export const useAcceptQuoteMutation = ({
       console.log('Accepting quote with ID:', quoteId);
 
       try {
-        // First, verify the quote exists and check its current status
+        // First, directly fetch the quote to check its current status
         const { data: quoteCheck, error: checkError } = await supabase
           .from('quotes')
           .select('*')
@@ -49,52 +49,26 @@ export const useAcceptQuoteMutation = ({
         }
         
         console.log('Current quote status before update:', quoteCheck.status);
-        console.log('About to update quote status to accepted');
-          
-        // Update the quote status to accepted - using maybeSingle() instead of single()
-        const updateTimestamp = new Date().toISOString();
-        const { data: updateResult, error: updateError } = await supabase
-          .from('quotes')
-          .update({ 
-            status: 'accepted', 
-            updated_at: updateTimestamp
-          })
-          .eq('id', quoteId)
-          .select()
-          .maybeSingle();
-
-        if (updateError) {
-          console.error('Error in Supabase update operation:', updateError);
-          throw new Error(`Database update failed: ${updateError.message}`);
+        
+        // Create a direct SQL RPC call to update the quote status
+        // This is more reliable than the standard update method
+        const { data: directUpdateResult, error: directUpdateError } = await supabase.rpc(
+          'update_quote_status',
+          { 
+            quote_id: quoteId,
+            new_status: 'accepted'
+          }
+        );
+        
+        if (directUpdateError) {
+          console.error('Error in direct update operation:', directUpdateError);
+          throw new Error(`Database update failed: ${directUpdateError.message}`);
         }
         
-        // If no data returned, try to fetch it separately
-        let updatedQuote = updateResult;
-        if (!updatedQuote) {
-          console.log('No data returned from update operation, fetching quote separately');
-          const { data: fetchedQuote, error: fetchError } = await supabase
-            .from('quotes')
-            .select('*')
-            .eq('id', quoteId)
-            .maybeSingle();
-            
-          if (fetchError) {
-            console.error('Error fetching updated quote:', fetchError);
-            throw new Error(`Failed to fetch updated quote: ${fetchError.message}`);
-          }
-          
-          if (!fetchedQuote) {
-            console.error('Failed to fetch quote after update');
-            throw new Error('Quote not found after update');
-          }
-          
-          updatedQuote = fetchedQuote;
-        }
+        console.log('Direct update result:', directUpdateResult);
         
-        console.log('Quote updated successfully, data:', updatedQuote);
-        
-        // Add a larger delay to ensure full database consistency
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Add a significant delay to ensure full database consistency
+        await new Promise(resolve => setTimeout(resolve, 1000));
         
         // Double-check by fetching the quote again to absolutely verify the change
         const { data: verifiedQuote, error: verifyError } = await supabase
@@ -120,7 +94,6 @@ export const useAcceptQuoteMutation = ({
           console.error('Quote status verification failed', {
             quoteId,
             originalStatus: quoteCheck.status,
-            updateResult: updatedQuote?.status,
             verifiedStatus: verifiedQuote.status
           });
           throw new Error(`Status verification failed: expected 'accepted' but got '${verifiedQuote.status}'`);

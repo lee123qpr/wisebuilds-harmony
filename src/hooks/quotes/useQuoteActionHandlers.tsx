@@ -41,7 +41,7 @@ export const useQuoteActionHandlers = ({
       });
       
       // Wait for a moment before refetching to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Refetch after the operation completes and database has updated
       console.log('Triggering refetch after accept');
@@ -78,7 +78,7 @@ export const useQuoteActionHandlers = ({
       });
       
       // Wait for a moment before refetching to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Refetch after the operation completes and database has updated
       console.log('Triggering refetch after reject');
