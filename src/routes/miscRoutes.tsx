@@ -2,8 +2,8 @@
 import { Route, Navigate } from "react-router-dom";
 import NotFound from "../pages/NotFound";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
-import { BusinessMessagesTab } from "../components/dashboard/business/MessagesTab";
-import { MessagesTab } from "../components/dashboard/freelancer/MessagesTab";
+import BusinessMessagesTab from "../components/dashboard/business/MessagesTab";
+import MessagesTab from "../components/dashboard/freelancer/MessagesTab";
 
 export const miscRoutes = (
   <>
