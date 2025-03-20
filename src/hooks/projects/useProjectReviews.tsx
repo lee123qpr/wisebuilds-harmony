@@ -18,6 +18,8 @@ export const useProjectReviews = ({
   return useQuery({
     queryKey: ['reviews', { projectId, quoteId, reviewerId, revieweeId }],
     queryFn: async () => {
+      console.log('Fetching reviews with filters:', { projectId, quoteId, reviewerId, revieweeId });
+      
       // Build the query based on provided filters
       let query = supabase
         .from('reviews')
@@ -62,9 +64,11 @@ export const useProjectReviews = ({
       const { data, error } = await query;
       
       if (error) {
+        console.error('Error fetching reviews:', error);
         throw error;
       }
       
+      console.log('Reviews fetched successfully:', data || []);
       return data || [];
     },
     enabled: !!(projectId || quoteId || reviewerId || revieweeId)

@@ -16,14 +16,19 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
   const markProjectCompletedMutation = useMutation({
     mutationFn: async () => {
       if (!user?.id || !quoteId) {
+        console.error('Error marking project as complete: User ID or Quote ID missing');
         throw new Error('User ID or Quote ID missing');
       }
+      
+      console.log('Marking project as complete:', { projectId, quoteId, userId: user.id });
       
       // Determine whether this is a freelancer or client based on user metadata
       const isFreelancer = user.user_metadata?.user_type === 'freelancer';
       
       // Update the appropriate completion field based on user type
       const updateField = isFreelancer ? 'freelancer_completed' : 'client_completed';
+      
+      console.log(`Setting ${updateField} to true for quote ${quoteId}`);
       
       const { data, error } = await supabase
         .from('quotes')
@@ -32,31 +37,47 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
         .select('*')
         .single();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating quote:', error);
+        throw error;
+      }
+      
+      console.log('Quote updated successfully:', data);
       
       // Check if both parties have marked as complete
       if (data.freelancer_completed && data.client_completed) {
+        console.log('Both parties have marked as complete, setting completed_at timestamp');
+        
         // Set the completed_at timestamp
         const { error: completionError } = await supabase
           .from('quotes')
           .update({ completed_at: new Date().toISOString() })
           .eq('id', quoteId);
           
-        if (completionError) throw completionError;
+        if (completionError) {
+          console.error('Error setting completed_at:', completionError);
+          throw completionError;
+        }
         
         // Update project status to completed
+        console.log('Updating project status to completed');
         const { error: projectError } = await supabase
           .from('projects')
           .update({ status: 'completed' })
           .eq('id', projectId);
           
-        if (projectError) throw projectError;
+        if (projectError) {
+          console.error('Error updating project status:', projectError);
+          throw projectError;
+        }
       }
       
       return data;
     },
     onSuccess: (data) => {
+      console.log('Project completion mutation succeeded:', data);
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
       
       const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
       const otherParty = isFreelancer ? 'client' : 'freelancer';
@@ -82,18 +103,26 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
   const checkCompletionStatus = async () => {
     if (!quoteId) return null;
     
-    const { data, error } = await supabase
-      .from('quotes')
-      .select('freelancer_completed, client_completed, completed_at')
-      .eq('id', quoteId)
-      .single();
+    console.log('Checking completion status for quote:', quoteId);
+    
+    try {
+      const { data, error } = await supabase
+        .from('quotes')
+        .select('freelancer_completed, client_completed, completed_at')
+        .eq('id', quoteId)
+        .single();
+        
+      if (error) {
+        console.error('Error checking completion status:', error);
+        return null;
+      }
       
-    if (error) {
-      console.error('Error checking completion status:', error);
+      console.log('Completion status:', data);
+      return data;
+    } catch (err) {
+      console.error('Exception checking completion status:', err);
       return null;
     }
-    
-    return data;
   };
   
   return {

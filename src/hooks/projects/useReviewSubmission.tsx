@@ -19,8 +19,11 @@ export const useReviewSubmission = () => {
   const submitReviewMutation = useMutation({
     mutationFn: async ({ projectId, quoteId, revieweeId, rating, reviewText }: ReviewData) => {
       if (!user?.id) {
+        console.error('Error submitting review: User not authenticated');
         throw new Error('User not authenticated');
       }
+      
+      console.log('Submitting review:', { projectId, quoteId, revieweeId, rating, reviewText });
       
       const isFreelancer = user.user_metadata?.user_type === 'freelancer';
       
@@ -38,11 +41,16 @@ export const useReviewSubmission = () => {
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error inserting review:', error);
+        throw error;
+      }
       
+      console.log('Review submitted successfully:', data);
       return data;
     },
     onSuccess: () => {
+      console.log('Review submission successful, invalidating queries');
       queryClient.invalidateQueries({ queryKey: ['reviews'] });
       toast.success('Review submitted successfully', {
         description: 'Thank you for your feedback!'
@@ -59,6 +67,8 @@ export const useReviewSubmission = () => {
   const checkReviewExists = async (quoteId: string) => {
     if (!user?.id || !quoteId) return false;
     
+    console.log('Checking if review exists for quote:', quoteId);
+    
     const { data, error } = await supabase
       .from('reviews')
       .select('id')
@@ -71,6 +81,7 @@ export const useReviewSubmission = () => {
       return false;
     }
     
+    console.log('Review exists check result:', !!data);
     return !!data;
   };
   

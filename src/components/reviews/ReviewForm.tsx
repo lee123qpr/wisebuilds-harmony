@@ -5,6 +5,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Textarea } from '@/components/ui/textarea';
 import { useReviewSubmission } from '@/hooks/projects/useReviewSubmission';
 import RatingSelector from './RatingSelector';
+import { toast } from 'sonner';
 
 interface ReviewFormProps {
   projectId: string;
@@ -29,16 +30,39 @@ const ReviewForm: React.FC<ReviewFormProps> = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    await submitReview({
+    console.log('Submitting review form with data:', {
       projectId,
       quoteId,
       revieweeId,
       rating,
-      reviewText: reviewText.trim() || undefined
+      reviewText
     });
     
-    if (onReviewSubmitted) {
-      onReviewSubmitted();
+    if (!projectId || !quoteId || !revieweeId) {
+      toast.error('Missing required information', {
+        description: 'Project, quote, or reviewee information is missing.'
+      });
+      return;
+    }
+    
+    try {
+      await submitReview({
+        projectId,
+        quoteId,
+        revieweeId,
+        rating,
+        reviewText: reviewText.trim() || undefined
+      });
+      
+      // Reset form
+      setRating(5);
+      setReviewText('');
+      
+      if (onReviewSubmitted) {
+        onReviewSubmitted();
+      }
+    } catch (error) {
+      console.error('Error in handleSubmit:', error);
     }
   };
   
