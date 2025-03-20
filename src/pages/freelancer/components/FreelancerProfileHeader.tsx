@@ -47,9 +47,14 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
               <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
             </div>
             
-            {/* Display rating stars if available */}
+            {/* Display rating stars - ensure it's always visible */}
             <div>
-              <RatingStars rating={profile.rating || null} reviewCount={profile.reviews_count} size="lg" />
+              <RatingStars 
+                rating={profile.rating || 0} 
+                reviewCount={profile.reviews_count} 
+                size="lg" 
+                showEmpty={true}
+              />
             </div>
           </div>
           

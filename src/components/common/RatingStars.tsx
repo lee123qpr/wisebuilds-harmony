@@ -82,9 +82,9 @@ const RatingStars: React.FC<RatingStarsProps> = ({
       <div className="flex">
         {renderStars()}
       </div>
-      {numericRating > 0 && (
+      {(numericRating > 0 || showEmpty) && (
         <span className={`${textSizes[size]} font-medium ml-1.5`}>
-          {numericRating.toFixed(1)}
+          {numericRating > 0 ? numericRating.toFixed(1) : '0.0'}
         </span>
       )}
       {reviewCount > 0 && (
