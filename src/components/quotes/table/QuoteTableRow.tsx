@@ -35,11 +35,13 @@ const QuoteTableRow: React.FC<QuoteTableRowProps> = ({ quote, onViewDetails }) =
         ? 'Day Rate' 
         : 'Not specified';
   
-  const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
-  // Format the price value with a £ symbol if it's a number
-  const formattedPriceValue = typeof priceValue === 'number' 
-    ? `£${priceValue}` 
-    : priceValue;
+  // Get the raw price value
+  const rawPriceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
+  
+  // Format the price value with a £ symbol
+  const formattedPriceValue = rawPriceValue === 'Not specified' 
+    ? rawPriceValue 
+    : `£${rawPriceValue}`;
 
   // Fetch freelancer info if profile is empty
   useEffect(() => {
