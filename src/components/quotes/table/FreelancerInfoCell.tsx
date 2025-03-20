@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@/components/ui/skeleton';
 import VerificationBadge from '@/components/common/VerificationBadge';
+import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 
 interface FreelancerInfoCellProps {
   freelancer: {
@@ -68,12 +69,13 @@ const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({
             </div>
           )}
           
-          {/* Check if the freelancer has a rating and show it */}
-          {freelancer.rating && Number(freelancer.rating) > 0 && (
-            <div className="text-xs text-amber-600 font-medium mt-1">
-              ★ {Number(freelancer.rating).toFixed(1)} rating
-            </div>
-          )}
+          {/* Use consistent approach to display ratings */}
+          <div className="mt-1">
+            <ProfileRatingStars 
+              userId={freelancerId}
+              rating={freelancer.rating}
+            />
+          </div>
         </div>
       </div>
       

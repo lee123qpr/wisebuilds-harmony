@@ -3,15 +3,18 @@ import React from 'react';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
 import ReviewsList from '@/pages/dashboard/components/profile/ReviewsList';
 import { FreelancerProfile } from '@/types/applications';
-import { useClientReviews } from '@/pages/dashboard/hooks/useClientReviews';
-import RatingStars from '@/components/common/RatingStars';
+import ProfileRatingStars from './ProfileRatingStars';
 
 interface FreelancerReviewsTabProps {
   profile: FreelancerProfile;
 }
 
 const FreelancerReviewsTab: React.FC<FreelancerReviewsTabProps> = ({ profile }) => {
-  const { averageRating, reviewCount } = useClientReviews(profile.id);
+  console.log('FreelancerReviewsTab - profile data:', {
+    id: profile.id,
+    rating: profile.rating,
+    reviews_count: profile.reviews_count
+  });
 
   return (
     <Card>
@@ -23,7 +26,11 @@ const FreelancerReviewsTab: React.FC<FreelancerReviewsTabProps> = ({ profile }) 
               Feedback from clients who have worked with {profile.display_name || 'this freelancer'}
             </CardDescription>
           </div>
-          <RatingStars rating={averageRating} reviewCount={reviewCount} size="lg" showEmpty={true} />
+          <ProfileRatingStars 
+            userId={profile.id}
+            rating={profile.rating}
+            reviewsCount={profile.reviews_count}
+          />
         </div>
       </CardHeader>
       <CardContent>

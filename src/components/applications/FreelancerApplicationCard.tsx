@@ -41,7 +41,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
   };
 
   // Log profile data for debugging
-  console.log('Freelancer profile data:', { 
+  console.log('FreelancerApplicationCard - Freelancer profile data:', { 
     userId: application.user_id,
     profile: profile,
     rating: profile.rating,

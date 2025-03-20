@@ -6,17 +6,13 @@ import { Calendar, Briefcase, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { FreelancerProfile } from '@/types/applications';
 import VerificationBadge from '@/components/common/VerificationBadge';
-import RatingStars from '@/components/common/RatingStars';
-import { useClientReviews } from '@/pages/dashboard/hooks/useClientReviews';
+import ProfileRatingStars from './ProfileRatingStars';
 
 interface FreelancerProfileHeaderProps {
   profile: FreelancerProfile;
 }
 
 const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profile }) => {
-  // Get accurate rating data from the client reviews hook
-  const { averageRating, reviewCount } = useClientReviews(profile.id);
-  
   // Format the member_since date if available
   const formattedMemberSince = profile.member_since 
     ? format(new Date(profile.member_since), 'MMMM yyyy')
@@ -36,6 +32,12 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
     return 'FP'; // Default: Freelancer Profile
   };
 
+  console.log('FreelancerProfileHeader - profile details:', { 
+    id: profile.id,
+    rating: profile.rating,
+    reviews_count: profile.reviews_count
+  });
+
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
       <div className="flex flex-col md:flex-row gap-6">
@@ -51,13 +53,12 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
               <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
             </div>
             
-            {/* Display rating stars - using data from the useClientReviews hook */}
+            {/* Display rating stars using ProfileRatingStars for consistency */}
             <div>
-              <RatingStars 
-                rating={averageRating} 
-                reviewCount={reviewCount} 
-                size="lg" 
-                showEmpty={true}
+              <ProfileRatingStars 
+                userId={profile.id}
+                rating={profile.rating}
+                reviewsCount={profile.reviews_count}
               />
             </div>
           </div>

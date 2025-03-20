@@ -4,6 +4,7 @@ import { format } from 'date-fns';
 import { Card, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import VerificationBadge from '@/components/common/VerificationBadge';
+import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 
 interface FreelancerProfileCardProps {
   freelancer: any;
@@ -21,6 +22,12 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
       
   const formattedDate = format(new Date(quoteDate), 'MMMM d, yyyy');
 
+  console.log('FreelancerProfileCard - freelancer data:', {
+    id: freelancer?.id,
+    name: freelancerName,
+    rating: freelancer?.rating
+  });
+
   return (
     <div className="flex items-center gap-4">
       <Avatar className="h-12 w-12">
@@ -28,12 +35,22 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
         <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
       </Avatar>
       <div>
-        <CardTitle className="flex items-center gap-1">
-          {freelancerName}
-          {freelancer?.verified && 
-            <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
-          }
-        </CardTitle>
+        <div className="flex items-center gap-2">
+          <CardTitle className="flex items-center gap-1">
+            {freelancerName}
+            {freelancer?.verified && 
+              <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
+            }
+          </CardTitle>
+          
+          {freelancer?.id && (
+            <ProfileRatingStars 
+              userId={freelancer.id}
+              rating={freelancer.rating}
+              reviewsCount={freelancer.reviews_count}
+            />
+          )}
+        </div>
         <CardDescription>
           {freelancer?.job_title || 'Freelancer'} • Submitted on {formattedDate}
         </CardDescription>

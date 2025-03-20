@@ -2,10 +2,9 @@
 import React from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Briefcase } from 'lucide-react';
-import { useClientReviews } from '../../hooks/useClientReviews';
 import { useVerification } from '@/hooks/verification';
 import VerificationBadge from '@/components/common/VerificationBadge';
-import RatingStars from '@/components/common/RatingStars';
+import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 import { VerificationStatus as CommonVerificationStatus } from '@/components/common/VerificationBadge';
 
 interface ProfileInfoBadgesProps {
@@ -24,10 +23,9 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
   userId,
   idVerified
 }) => {
-  const { averageRating, reviewCount } = useClientReviews(userId);
   const { verificationStatus } = useVerification();
   
-  console.log('ProfileInfoBadges - Rating Data:', { averageRating, reviewCount, userId });
+  console.log('ProfileInfoBadges - User data:', { userId, emailVerified, jobsCompleted });
 
   // Convert the verificationStatus to the expected type
   const mappedVerificationStatus: CommonVerificationStatus = 
@@ -56,9 +54,9 @@ const ProfileInfoBadges: React.FC<ProfileInfoBadgesProps> = ({
           />
         )}
         
-        {averageRating !== null && (
+        {userId && (
           <div className="ml-auto">
-            <RatingStars rating={averageRating} reviewCount={reviewCount} size="sm" />
+            <ProfileRatingStars userId={userId} showEmpty={true} />
           </div>
         )}
       </div>
