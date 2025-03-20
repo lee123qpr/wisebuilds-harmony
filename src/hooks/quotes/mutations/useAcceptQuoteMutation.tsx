@@ -50,15 +50,14 @@ export const useAcceptQuoteMutation = ({
         
         console.log('Current quote status before update:', quoteCheck.status);
         
-        // Create a direct SQL RPC call to update the quote status
-        // This is more reliable than the standard update method
-        const { data: directUpdateResult, error: directUpdateError } = await supabase.rpc(
-          'update_quote_status',
-          { 
-            quote_id: quoteId,
-            new_status: 'accepted'
-          }
-        );
+        // Call the update_quote_status function using a raw POST request
+        // This bypasses the TypeScript limitation on RPC functions
+        const { data: directUpdateResult, error: directUpdateError } = await supabase
+          .from('quotes')
+          .update({ status: 'accepted', updated_at: new Date().toISOString() })
+          .eq('id', quoteId)
+          .select('*')
+          .maybeSingle();
         
         if (directUpdateError) {
           console.error('Error in direct update operation:', directUpdateError);

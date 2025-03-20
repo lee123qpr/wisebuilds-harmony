@@ -675,6 +675,13 @@ export type Database = {
         }
         Returns: boolean
       }
+      update_quote_status: {
+        Args: {
+          quote_id: string
+          new_status: string
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
