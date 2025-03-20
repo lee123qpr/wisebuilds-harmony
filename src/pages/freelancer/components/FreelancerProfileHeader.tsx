@@ -41,7 +41,7 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
       <div className="flex flex-col md:flex-row gap-6">
         <Avatar className="h-24 w-24 border">
           <AvatarImage src={profile.profile_photo || undefined} alt={profile.display_name || 'Freelancer'} />
-          <AvatarFallback className="text-lg">{getInitials()}</AvatarFallback>
+          <AvatarFallback className="text-lg bg-slate-100 text-slate-600 font-semibold">{getInitials()}</AvatarFallback>
         </Avatar>
         
         <div className="flex-1">
