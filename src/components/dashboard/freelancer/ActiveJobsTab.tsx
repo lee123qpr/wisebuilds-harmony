@@ -58,7 +58,15 @@ const ActiveJobsTab: React.FC = () => {
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
-        <h3 className="text-lg font-medium">Active Jobs ({activeJobs.length})</h3>
+        <div className="flex items-center gap-2">
+          <Briefcase className="h-5 w-5 text-primary" />
+          <h2 className="text-2xl font-bold tracking-tight">
+            Active Jobs
+            <Badge variant="secondary" className="ml-2 text-sm font-medium">
+              {activeJobs.length}
+            </Badge>
+          </h2>
+        </div>
       </div>
       
       <div className="grid grid-cols-1 gap-4">
