@@ -21,6 +21,9 @@ const ProfileRatingStars: React.FC<ProfileRatingStarsProps> = ({
   const displayRating = rating !== undefined ? rating : averageRating;
   const displayCount = reviewsCount !== undefined ? reviewsCount : reviewCount;
   
+  // Add console log to debug rating data
+  console.log('ProfileRatingStars data:', { userId, rating, reviewsCount, averageRating, reviewCount, displayRating, displayCount });
+  
   // Use the common RatingStars component with appropriate size for profiles
   return <RatingStars rating={displayRating} reviewCount={displayCount} size="sm" showEmpty={true} />;
 };

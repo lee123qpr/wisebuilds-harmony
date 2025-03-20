@@ -24,7 +24,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
   
   // Get profile info from the nested freelancer_profile and provide proper type checking
   const profile = application.freelancer_profile || {
-    id: '',  // Added id to fix TypeScript error
+    id: '',
     display_name: '',
     first_name: '',
     last_name: '',
@@ -39,6 +39,14 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
     member_since: '',
     jobs_completed: 0
   };
+
+  // Log profile data for debugging
+  console.log('Freelancer profile data:', { 
+    userId: application.user_id,
+    profile: profile,
+    rating: profile.rating,
+    reviews_count: profile.reviews_count
+  });
 
   const getInitials = () => {
     if (profile.display_name) {

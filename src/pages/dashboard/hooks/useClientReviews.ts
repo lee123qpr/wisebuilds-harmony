@@ -18,7 +18,7 @@ export const useClientReviews = (userId: string) => {
   const { data: reviews, isLoading } = useQuery({
     queryKey: ['client-reviews', userId],
     queryFn: async () => {
-      console.log('Fetching reviews for client ID:', userId);
+      console.log('Fetching reviews for user ID:', userId);
       
       if (!userId) {
         console.warn('No userId provided to useClientReviews');
@@ -53,16 +53,16 @@ export const useClientReviews = (userId: string) => {
       const calculatedAverage = parseFloat((totalRating / reviews.length).toFixed(1));
       console.log('Calculated average rating:', calculatedAverage, 'from', reviews.length, 'reviews');
       setAverageRating(calculatedAverage);
-    } else {
-      // If using mock reviews, set a mock average rating
-      console.log('Setting mock average rating');
-      setAverageRating(4.7);
+    } else if (userId) {
+      // If no reviews but userId exists, ensure we show a 0 rating
+      console.log('No reviews found for user', userId, 'setting rating to 0');
+      setAverageRating(0);
     }
-  }, [reviews]);
+  }, [reviews, userId]);
 
-  const reviewCount = reviews?.length || 3; // Default to 3 for mock reviews
+  const reviewCount = reviews?.length || 0;
   
-  console.log('useClientReviews hook returning:', { 
+  console.log('useClientReviews hook returning for user', userId, ':', { 
     reviewCount, 
     averageRating, 
     isLoading,
