@@ -9,12 +9,15 @@ import NewProjectDialog from '@/components/projects/NewProjectDialog';
 import ProjectsTable from '@/components/projects/ProjectsTable';
 import BusinessMessagesTab from '@/components/dashboard/business/MessagesTab';
 import BusinessQuotesTab from '@/components/dashboard/business/QuotesTab';
+import { supabase } from '@/integrations/supabase/client';
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
   const [searchParams] = useSearchParams();
   const tabParam = searchParams.get('tab');
   const [activeTab, setActiveTab] = useState('projects');
+  const [contactName, setContactName] = useState('Business Client');
+  const [isLoading, setIsLoading] = useState(true);
   
   // Set the active tab based on URL parameters
   useEffect(() => {
@@ -23,14 +26,42 @@ const BusinessDashboard = () => {
     }
   }, [tabParam]);
   
-  // Extract user information
-  const fullName = user?.user_metadata?.full_name || 'Business Client';
+  // Fetch client profile data to get the contact name
+  useEffect(() => {
+    const fetchClientProfile = async () => {
+      if (!user) return;
+      
+      try {
+        setIsLoading(true);
+        const { data, error } = await supabase
+          .from('client_profiles')
+          .select('contact_name')
+          .eq('id', user.id)
+          .maybeSingle();
+        
+        if (error) {
+          console.error('Error fetching client profile:', error);
+          return;
+        }
+        
+        if (data && data.contact_name) {
+          setContactName(data.contact_name);
+        }
+      } catch (error) {
+        console.error('Error in fetchClientProfile:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    
+    fetchClientProfile();
+  }, [user]);
 
   return (
     <MainLayout>
       <div className="container py-8">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">Welcome, {fullName}</h1>
+          <h1 className="text-3xl font-bold mb-2">Welcome, {isLoading ? 'Loading...' : contactName}</h1>
           <p className="text-muted-foreground">Your business dashboard</p>
         </div>
 
