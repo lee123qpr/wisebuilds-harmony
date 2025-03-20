@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
@@ -11,6 +11,7 @@ import PaymentSection from '@/components/quotes/details/PaymentSection';
 import DescriptionSection from '@/components/quotes/details/DescriptionSection';
 import QuoteDetailsSkeleton from '@/components/quotes/details/QuoteDetailsSkeleton';
 import ProjectInfo from './components/ProjectInfo';
+import { useContactInfo } from '@/hooks/leads/useContactInfo';
 
 interface ViewQuoteDetailsProps {
   projectId: string;
@@ -26,6 +27,15 @@ const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({
     isLoading, 
     error 
   } = useFreelancerQuote({ projectId });
+  
+  const { clientInfo, isLoading: isLoadingClientInfo } = useContactInfo(projectId);
+  const [clientName, setClientName] = useState<string>('Client');
+
+  useEffect(() => {
+    if (clientInfo && clientInfo.contact_name) {
+      setClientName(clientInfo.contact_name);
+    }
+  }, [clientInfo]);
 
   if (isLoading) {
     return <QuoteDetailsSkeleton />;
@@ -53,7 +63,7 @@ const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({
         <div className="space-y-4">
           <ProjectInfo 
             projectTitle={projectTitle} 
-            clientName="Client"
+            clientName={clientName}
             quoteSubmitted={true}
             submissionDate={createdDate}
           />

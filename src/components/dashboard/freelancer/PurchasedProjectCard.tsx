@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Calendar, Coins, MapPin, Briefcase, ArrowRight, Quote, MessageSquare } from 'lucide-react';
+import { Calendar, Coins, MapPin, Briefcase, ArrowRight, Quote, MessageSquare, User } from 'lucide-react';
 import { format } from 'date-fns';
 import HiringStatusBadge from '@/components/projects/HiringStatusBadge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import QuoteStatusBadge from '@/components/quotes/table/QuoteStatusBadge';
+import { useContactInfo } from '@/hooks/leads/useContactInfo';
 
 interface PurchasedProjectProps {
   project: any;
@@ -24,6 +25,7 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
   const [showQuoteDetails, setShowQuoteDetails] = useState(false);
   const { toast } = useToast();
   const { user } = useAuth();
+  const { clientInfo, isLoading: isLoadingClientInfo } = useContactInfo(project.id);
   
   // Check if the freelancer has already submitted a quote
   const { data: existingQuote, isLoading: isCheckingQuote } = useFreelancerQuote({
@@ -87,6 +89,9 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
     ? format(new Date(project.created_at), 'MMM d, yyyy')
     : 'Unknown date';
   
+  // Display client name if available
+  const clientName = clientInfo?.contact_name || 'Client';
+  
   return (
     <Card className="w-full">
       <CardHeader className="pb-2">
@@ -129,6 +134,14 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
                 </div>
               )}
             </div>
+            
+            {/* Client information */}
+            {!isLoadingClientInfo && (
+              <div className="flex items-center gap-1 text-sm text-blue-600">
+                <User className="h-4 w-4" />
+                <span>Client: <span className="font-semibold">{clientName}</span></span>
+              </div>
+            )}
             
             {/* Display quote details when available and showQuoteDetails is true */}
             {showQuoteDetails && hasSubmittedQuote && (

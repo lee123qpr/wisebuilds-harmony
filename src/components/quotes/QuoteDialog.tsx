@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import {
   Dialog,
@@ -18,6 +17,7 @@ import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { getClientInfo } from '@/services/conversations/utils/getClientInfo';
+import { useContactInfo } from '@/hooks/leads/useContactInfo';
 
 interface QuoteDialogProps {
   projectId: string;
@@ -39,6 +39,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
   const navigate = useNavigate();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { clientInfo, isLoading: isLoadingContactInfo } = useContactInfo(projectId);
 
   useEffect(() => {
     const fetchClientInfo = async () => {
@@ -49,26 +50,34 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
       }
       
       console.log('QuoteDialog clientId:', clientId);
-      console.log('QuoteDialog clientId type:', typeof clientId);
-      console.log('Is valid UUID?:', /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(clientId));
-      
       setIsLoadingClientInfo(true);
+      
       try {
-        console.log('Fetching client info for ID:', clientId);
+        // First try to get client info from useContactInfo hook if project ID is available
+        if (clientInfo) {
+          console.log('Using client info from useContactInfo:', clientInfo);
+          if (clientInfo.contact_name) {
+            setClientName(clientInfo.contact_name);
+            console.log('Setting client name from contact info:', clientInfo.contact_name);
+            setIsLoadingClientInfo(false);
+            return;
+          }
+        }
         
-        // Get client info focusing on the full name
-        const clientInfo = await getClientInfo(clientId);
-        console.log('Client info received in QuoteDialog:', clientInfo);
+        // Fallback to getClientInfo utility
+        console.log('Fetching client info for ID:', clientId);
+        const fetchedClientInfo = await getClientInfo(clientId);
+        console.log('Client info received in QuoteDialog:', fetchedClientInfo);
         
         // Use the contact_name directly, fall back to other options if not available
-        if (clientInfo && clientInfo.contact_name && clientInfo.contact_name !== 'Client') {
-          setClientName(clientInfo.contact_name);
-          console.log('Setting client name to contact_name:', clientInfo.contact_name);
-        } else if (clientInfo && clientInfo.company_name) {
-          setClientName(clientInfo.company_name);
-          console.log('Using company_name instead:', clientInfo.company_name);
-        } else if (clientInfo && clientInfo.email) {
-          const emailName = clientInfo.email.split('@')[0];
+        if (fetchedClientInfo && fetchedClientInfo.contact_name && fetchedClientInfo.contact_name !== 'Client') {
+          setClientName(fetchedClientInfo.contact_name);
+          console.log('Setting client name to contact_name:', fetchedClientInfo.contact_name);
+        } else if (fetchedClientInfo && fetchedClientInfo.company_name) {
+          setClientName(fetchedClientInfo.company_name);
+          console.log('Using company_name instead:', fetchedClientInfo.company_name);
+        } else if (fetchedClientInfo && fetchedClientInfo.email) {
+          const emailName = fetchedClientInfo.email.split('@')[0];
           setClientName(emailName);
           console.log('Using email as fallback:', emailName);
         } else {
@@ -77,8 +86,6 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
         }
       } catch (error) {
         console.error('Error fetching client information:', error);
-        console.error('Error type:', typeof error);
-        console.error('Error details:', JSON.stringify(error, null, 2));
         setClientName('Client');
       } finally {
         setIsLoadingClientInfo(false);
@@ -89,7 +96,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
       console.log('Dialog opened, fetching client info for clientId:', clientId);
       fetchClientInfo();
     }
-  }, [clientId, open]);
+  }, [clientId, open, clientInfo]);
 
   const handleSubmitSuccess = () => {
     setOpen(false);
