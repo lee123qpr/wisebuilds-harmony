@@ -4,7 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Users } from 'lucide-react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import { useProjectApplications } from '@/hooks/useProjectApplications';
 import FreelancerApplicationCard from '@/components/applications/FreelancerApplicationCard';
@@ -52,19 +52,23 @@ const ProjectApplications = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        <div className="flex items-center gap-2 mb-6">
-          <BackButton to={`/project/${projectId}`} />
-          <h1 className="text-2xl font-bold">Project Applications</h1>
-        </div>
-
-        {projectLoading ? (
-          <Skeleton className="h-12 w-full max-w-md mb-6" />
-        ) : (
-          <div className="mb-6">
-            <h2 className="text-xl font-semibold">{project?.title}</h2>
-            <p className="text-muted-foreground">Review freelancers who have applied to this project</p>
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-3">
+              <BackButton to={`/project/${projectId}`} />
+              <h1 className="text-2xl font-bold">Project Applications</h1>
+            </div>
           </div>
-        )}
+
+          {projectLoading ? (
+            <Skeleton className="h-8 w-full max-w-md" />
+          ) : (
+            <div>
+              <h2 className="text-xl font-semibold">{project?.title}</h2>
+              <p className="text-muted-foreground">Review freelancers who have applied to this project</p>
+            </div>
+          )}
+        </div>
 
         {isLoading ? (
           <div className="space-y-6">
@@ -96,14 +100,16 @@ const ProjectApplications = () => {
           </Card>
         ) : (
           <div className="space-y-6">
-            <div className="bg-blue-50 border border-blue-100 rounded-md p-4 mb-6">
-              <h3 className="text-blue-700 font-medium mb-1">
-                {project?.role ? `${formatRole(project.role)}s who want to work with you` : 'Professionals who want to work with you'}
-              </h3>
-              <p className="text-blue-600 text-sm">
-                These matches can be contacted right away and are most likely to get your project done!
-              </p>
-            </div>
+            <Card className="bg-blue-50 border border-blue-100 mb-6">
+              <CardContent className="p-4">
+                <h3 className="text-blue-700 font-medium mb-1">
+                  {project?.role ? `${formatRole(project.role)}s who want to work with you` : 'Professionals who want to work with you'}
+                </h3>
+                <p className="text-blue-600 text-sm">
+                  These matches can be contacted right away and are most likely to get your project done!
+                </p>
+              </CardContent>
+            </Card>
 
             {applications.map((application) => (
               <FreelancerApplicationCard

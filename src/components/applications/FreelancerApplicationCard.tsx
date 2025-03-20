@@ -22,7 +22,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
   const applicationDate = format(new Date(application.created_at), 'dd MMM yyyy');
 
   return (
-    <Card className="mb-6">
+    <Card className="border-slate-200 shadow-sm">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row gap-6">
           <FreelancerAvatar profile={profile} />
@@ -31,7 +31,6 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
                 <h3 className="text-xl font-semibold">{profile?.display_name || 'Freelancer'}</h3>
-                {/* Ensure rating is passed correctly */}
                 <RatingStars 
                   rating={profile?.rating || null} 
                   reviewCount={profile?.reviews_count || 0} 
@@ -44,7 +43,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
             </div>
             
             {application.message && (
-              <div className="bg-slate-50 p-4 rounded-md">
+              <div className="bg-slate-50 p-4 rounded-md border border-slate-100">
                 <p className="font-medium mb-1">Application message:</p>
                 <p className="text-sm">{application.message}</p>
               </div>

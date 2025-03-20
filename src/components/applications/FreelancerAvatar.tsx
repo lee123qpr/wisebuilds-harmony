@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import VerificationBadge, { VerificationStatus } from '@/components/common/VerificationBadge';
+import VerificationBadge from '@/components/common/VerificationBadge';
 import { FreelancerProfile } from '@/types/applications';
 
 interface FreelancerAvatarProps {
@@ -16,9 +16,11 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({ profile }) => {
 
   return (
     <div className="flex flex-col items-center space-y-2">
-      <Avatar className="h-24 w-24">
+      <Avatar className="h-24 w-24 border-2 border-slate-100">
         <AvatarImage src={profile?.profile_photo} alt={profile?.display_name} />
-        <AvatarFallback>{getInitials(profile?.display_name)}</AvatarFallback>
+        <AvatarFallback className="bg-slate-100 text-slate-600 text-xl font-semibold">
+          {getInitials(profile?.display_name)}
+        </AvatarFallback>
       </Avatar>
       
       <div className="flex flex-col items-center gap-1">
