@@ -35,22 +35,30 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   const quoteCount = !isLoadingQuotes && quotes ? quotes.length : (project.quote_count || 0);
   
   const handleClick = () => {
-    navigate(`/project/${project.id}`);
+    navigate(`/project/${project.id}`, { 
+      state: { from: 'businessDashboard' }
+    });
   };
   
   const handleInterestedClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the card click event from firing
-    navigate(`/project/${project.id}/applications`);
+    navigate(`/project/${project.id}/applications`, {
+      state: { from: 'businessDashboard' }
+    });
   };
   
   const handleChatsClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the card click event from firing
-    navigate(`/project/${project.id}`);
+    navigate(`/project/${project.id}`, {
+      state: { from: 'businessDashboard' }
+    });
   };
   
   const handleQuotesClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the card click event from firing
-    navigate(`/project/${project.id}/quotes`);
+    navigate(`/project/${project.id}/quotes`, {
+      state: { from: 'businessDashboard' }
+    });
   };
   
   return (

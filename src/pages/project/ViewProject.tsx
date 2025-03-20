@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import ProjectHeader from '@/components/projects/ProjectHeader';
 import ProjectDetails from '@/components/projects/ProjectDetails';
@@ -21,12 +21,16 @@ import BackButton from '@/components/common/BackButton';
 const ViewProject = () => {
   const { projectId } = useParams<{ projectId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { project, loading } = useProjectDetails(projectId);
   const { user } = useAuth();
   const [refreshContactInfo, setRefreshContactInfo] = React.useState(false);
   
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
   const isBusiness = user?.user_metadata?.user_type === 'business';
+  
+  // Check if we came from the business dashboard
+  const fromBusinessDashboard = location.state?.from === 'businessDashboard';
 
   const handlePurchaseSuccess = () => {
     setRefreshContactInfo(prev => !prev);
@@ -38,8 +42,10 @@ const ViewProject = () => {
   };
 
   const handleGoBack = () => {
-    // Go back to previous page
-    if (isFreelancer) {
+    if (fromBusinessDashboard) {
+      // Go directly to business dashboard if we came from there
+      navigate('/dashboard/business');
+    } else if (isFreelancer) {
       navigate('/dashboard/freelancer?tab=quotes');
     } else if (isBusiness) {
       navigate('/dashboard/business');
