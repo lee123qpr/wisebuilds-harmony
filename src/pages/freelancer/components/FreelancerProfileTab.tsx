@@ -3,7 +3,6 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { FreelancerProfile } from '@/types/applications';
 import { Mail, Phone } from 'lucide-react';
-import ProfileHeaderSection from './profile/ProfileHeaderSection';
 import BasicInformationSection from './profile/BasicInformationSection';
 import ContactInformationSection from './profile/ContactInformationSection';
 import ProfessionalDetailsSection from './profile/ProfessionalDetailsSection';
@@ -19,13 +18,6 @@ interface FreelancerProfileTabProps {
 const FreelancerProfileTab: React.FC<FreelancerProfileTabProps> = ({ profile }) => {
   return (
     <div className="space-y-6">
-      {/* Profile Card */}
-      <Card>
-        <CardContent className="p-6">
-          <ProfileHeaderSection profile={profile} />
-        </CardContent>
-      </Card>
-
       {/* Professional Details */}
       <Card>
         <CardHeader>
