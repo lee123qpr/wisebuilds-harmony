@@ -13,6 +13,7 @@ import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars
 import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
 import FreelancerMetadata from '@/components/applications/FreelancerMetadata';
 import FreelancerContactInfo from '@/components/applications/FreelancerContactInfo';
+import FreelancerApplicationActions from '@/components/applications/FreelancerApplicationActions';
 
 interface FreelancerApplicationCardProps {
   application: FreelancerApplication;
@@ -124,13 +125,10 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
             )}
             
             <div className="flex gap-3 pt-3">
-              <FreelancerProfileLink 
-                freelancerId={application.user_id} 
-                projectId={projectId}
-              >
-                View Profile
-              </FreelancerProfileLink>
-              <Button variant="outline">Contact</Button>
+              <FreelancerApplicationActions 
+                profile={profile} 
+                projectId={projectId} 
+              />
             </div>
           </div>
         </div>
