@@ -62,10 +62,6 @@ const ViewProject = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        <div className="mb-6">
-          <BackButton onClick={handleGoBack} />
-        </div>
-
         {loading ? (
           <>
             <ProjectHeaderSkeleton />
@@ -81,12 +77,16 @@ const ViewProject = () => {
           </>
         ) : (
           <>
-            {isBusiness && (
-              <ProjectHeader 
-                projectId={project!.id}
-                refreshProjects={handleProjectDeleted}
-              />
-            )}
+            <div className="flex items-center justify-between mb-6">
+              <BackButton onClick={handleGoBack} />
+              
+              {isBusiness && (
+                <ProjectHeader 
+                  projectId={project!.id}
+                  refreshProjects={handleProjectDeleted}
+                />
+              )}
+            </div>
 
             {isFreelancer && !isBusiness && (
               <div className="mb-4">

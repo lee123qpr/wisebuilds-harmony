@@ -19,7 +19,7 @@ const ProjectHeader = ({ projectId, refreshProjects }: ProjectHeaderProps) => {
   };
 
   return (
-    <div className="flex items-center justify-end gap-4 mb-6">
+    <div className="flex items-center gap-4">
       <Button 
         variant="outline" 
         onClick={handleEditProject}
