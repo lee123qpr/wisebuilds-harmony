@@ -4,16 +4,22 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/com
 import ReviewsList from '@/pages/dashboard/components/profile/ReviewsList';
 import { FreelancerProfile } from '@/types/applications';
 import ProfileRatingStars from './ProfileRatingStars';
+import { useClientReviews } from '@/pages/dashboard/hooks/useClientReviews';
 
 interface FreelancerReviewsTabProps {
   profile: FreelancerProfile;
 }
 
 const FreelancerReviewsTab: React.FC<FreelancerReviewsTabProps> = ({ profile }) => {
+  // Get the real or mock review data using the hook
+  const { averageRating, reviewCount } = useClientReviews(profile.id);
+  
   console.log('FreelancerReviewsTab - profile data:', {
     id: profile.id,
     rating: profile.rating,
-    reviews_count: profile.reviews_count
+    reviews_count: profile.reviews_count,
+    averageRating,
+    reviewCount
   });
 
   return (
@@ -28,8 +34,9 @@ const FreelancerReviewsTab: React.FC<FreelancerReviewsTabProps> = ({ profile }) 
           </div>
           <ProfileRatingStars 
             userId={profile.id}
-            rating={profile.rating}
-            reviewsCount={profile.reviews_count}
+            rating={averageRating}
+            reviewsCount={reviewCount}
+            showEmpty={true}
           />
         </div>
       </CardHeader>

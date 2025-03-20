@@ -15,45 +15,16 @@ interface ReviewsListProps {
   userId: string;
 }
 
-// Mock reviews to display if no real reviews exist
-const mockReviews: Review[] = [
-  {
-    id: 'mock-1',
-    rating: 5,
-    review_text: "Excellent work! Very professional and delivered the project ahead of schedule. Would definitely hire again.",
-    created_at: "2025-03-08T00:00:00.000Z", // Format as YYYY-MM-DD
-    reviewer_name: "Sarah Johnson"
-  },
-  {
-    id: 'mock-2',
-    rating: 4,
-    review_text: "Great communication throughout the project. The quality of work was very good, just needed a few minor revisions.",
-    created_at: "2025-02-13T00:00:00.000Z", // Format as YYYY-MM-DD
-    reviewer_name: "Michael Brown"
-  },
-  {
-    id: 'mock-3',
-    rating: 5,
-    review_text: "Outstanding attention to detail. Went above and beyond what was required. Highly recommended!",
-    created_at: "2025-01-14T00:00:00.000Z", // Format as YYYY-MM-DD
-    reviewer_name: "David Miller"
-  }
-];
-
 const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
   console.log('ReviewsList - Props:', { userId });
   
-  const { reviews, isLoading, reviewCount } = useClientReviews(userId);
+  const { reviews, isLoading, reviewCount, usesMockReviews } = useClientReviews(userId);
 
   if (isLoading) {
     return <div className="text-center py-8">Loading reviews...</div>;
   }
 
-  // Display mock reviews if no real reviews exist
-  const displayReviews = reviews?.length ? reviews : mockReviews;
-  const reviewSource = reviews?.length ? "Real reviews from your clients" : "Sample reviews (these are examples only)";
-
-  console.log('ReviewsList - Rendering reviews:', displayReviews);
+  console.log('ReviewsList - Rendering reviews:', reviews);
   
   // Helper function to format date as DD/MM/YYYY
   const formatDate = (dateString: string) => {
@@ -86,13 +57,13 @@ const ReviewsList: React.FC<ReviewsListProps> = ({ userId }) => {
 
   return (
     <div>
-      {!reviews?.length && (
+      {usesMockReviews && (
         <div className="mb-6 p-4 bg-slate-50 rounded-md text-sm text-slate-600">
-          {reviewSource}
+          Sample reviews (these are examples only)
         </div>
       )}
       <div className="space-y-6">
-        {displayReviews.map((review) => (
+        {reviews && reviews.map((review) => (
           <div
             key={review.id}
             className="border rounded-lg p-6 space-y-4"

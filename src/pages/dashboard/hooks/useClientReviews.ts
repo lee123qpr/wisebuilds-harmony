@@ -12,6 +12,31 @@ interface Review {
   reviewer_name?: string;
 }
 
+// Sample reviews to use when no real reviews exist
+const mockReviews: Review[] = [
+  {
+    id: 'mock-1',
+    rating: 5,
+    review_text: "Excellent work! Very professional and delivered the project ahead of schedule. Would definitely hire again.",
+    created_at: "2025-03-08T00:00:00.000Z",
+    reviewer_name: "Sarah Johnson"
+  },
+  {
+    id: 'mock-2',
+    rating: 4,
+    review_text: "Great communication throughout the project. The quality of work was very good, just needed a few minor revisions.",
+    created_at: "2025-02-13T00:00:00.000Z",
+    reviewer_name: "Michael Brown"
+  },
+  {
+    id: 'mock-3',
+    rating: 5,
+    review_text: "Outstanding attention to detail. Went above and beyond what was required. Highly recommended!",
+    created_at: "2025-01-14T00:00:00.000Z",
+    reviewer_name: "David Miller"
+  }
+];
+
 export const useClientReviews = (userId: string) => {
   const [averageRating, setAverageRating] = useState<number | null>(null);
 
@@ -47,32 +72,38 @@ export const useClientReviews = (userId: string) => {
     enabled: !!userId, // Only run the query if userId is provided
   });
 
+  // Determine if we should use mock reviews
+  const usesMockReviews = !reviews || reviews.length === 0;
+  const effectiveReviews = usesMockReviews ? mockReviews : reviews;
+
   useEffect(() => {
-    if (reviews && reviews.length > 0) {
-      const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-      const calculatedAverage = parseFloat((totalRating / reviews.length).toFixed(1));
-      console.log('Calculated average rating:', calculatedAverage, 'from', reviews.length, 'reviews');
+    if (effectiveReviews && effectiveReviews.length > 0) {
+      const totalRating = effectiveReviews.reduce((sum, review) => sum + review.rating, 0);
+      const calculatedAverage = parseFloat((totalRating / effectiveReviews.length).toFixed(1));
+      console.log('Calculated average rating:', calculatedAverage, 'from', effectiveReviews.length, 'reviews');
       setAverageRating(calculatedAverage);
     } else if (userId) {
       // If no reviews but userId exists, ensure we show a 0 rating
       console.log('No reviews found for user', userId, 'setting rating to 0');
       setAverageRating(0);
     }
-  }, [reviews, userId]);
+  }, [effectiveReviews, userId]);
 
-  const reviewCount = reviews?.length || 0;
+  const reviewCount = effectiveReviews?.length || 0;
   
   console.log('useClientReviews hook returning for user', userId, ':', { 
     reviewCount, 
     averageRating, 
     isLoading,
-    hasReviews: !!reviews?.length 
+    hasReviews: !!effectiveReviews?.length,
+    usesMockReviews
   });
 
   return {
-    reviews,
+    reviews: effectiveReviews,
     isLoading,
     averageRating,
-    reviewCount
+    reviewCount,
+    usesMockReviews
   };
 };
