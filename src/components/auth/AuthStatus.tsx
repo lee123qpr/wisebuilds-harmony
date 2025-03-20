@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
@@ -11,6 +11,7 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { useCredits } from '@/hooks/useCredits';
+import { supabase } from '@/integrations/supabase/client';
 
 const AuthStatus = () => {
   const { user, isLoading, signOut } = useAuth();
@@ -19,6 +20,54 @@ const AuthStatus = () => {
   const { creditBalance, isLoadingBalance } = useCredits();
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
   const isAdmin = user?.user_metadata?.user_type === 'admin';
+  const [displayName, setDisplayName] = useState('');
+  const [isLoadingProfile, setIsLoadingProfile] = useState(false);
+
+  // Fetch user profile data to get the most up-to-date display name
+  useEffect(() => {
+    const fetchUserProfile = async () => {
+      if (!user) return;
+      
+      setIsLoadingProfile(true);
+      const userType = user.user_metadata?.user_type;
+      
+      try {
+        if (userType === 'freelancer') {
+          // Fetch freelancer profile
+          const { data, error } = await supabase
+            .from('freelancer_profiles')
+            .select('display_name, first_name, last_name')
+            .eq('id', user.id)
+            .maybeSingle();
+          
+          if (error) throw error;
+          
+          if (data) {
+            setDisplayName(data.display_name || `${data.first_name || ''} ${data.last_name || ''}`.trim());
+          }
+        } else if (userType === 'business') {
+          // Fetch business profile
+          const { data, error } = await supabase
+            .from('client_profiles')
+            .select('contact_name, company_name')
+            .eq('id', user.id)
+            .maybeSingle();
+          
+          if (error) throw error;
+          
+          if (data) {
+            setDisplayName(data.contact_name || data.company_name || '');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user profile:', error);
+      } finally {
+        setIsLoadingProfile(false);
+      }
+    };
+    
+    fetchUserProfile();
+  }, [user]);
 
   const handleSignOut = async () => {
     try {
@@ -38,7 +87,7 @@ const AuthStatus = () => {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingProfile) {
     return (
       <div className="flex items-center">
         <Loader2 className="h-4 w-4 animate-spin" />
@@ -62,11 +111,15 @@ const AuthStatus = () => {
   }
 
   const userType = user?.user_metadata?.user_type || '';
-  const displayName = user?.user_metadata?.full_name || 
+  
+  // Fall back to metadata if profile data not available
+  const fallbackName = user?.user_metadata?.full_name || 
                       user?.user_metadata?.contact_name || 
                       user?.user_metadata?.company_name || 
                       user?.email || 
                       'User';
+  
+  const profileDisplayName = displayName || fallbackName;
   
   // Get dashboard link based on user type
   const getDashboardLink = () => {
@@ -99,7 +152,7 @@ const AuthStatus = () => {
   return (
     <div className="flex items-center space-x-3">
       <div className="hidden md:flex flex-col items-end">
-        <p className="text-sm font-medium">{displayName}</p>
+        <p className="text-sm font-medium">{profileDisplayName}</p>
         <p className="text-xs text-muted-foreground capitalize">{userType}</p>
       </div>
       
