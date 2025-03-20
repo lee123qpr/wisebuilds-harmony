@@ -31,7 +31,11 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({
             <div>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-1">
                 <h3 className="text-xl font-semibold">{profile?.display_name || 'Freelancer'}</h3>
-                <RatingStars rating={profile?.rating} reviewCount={profile?.reviews_count} />
+                {/* Ensure rating is passed correctly */}
+                <RatingStars 
+                  rating={profile?.rating || null} 
+                  reviewCount={profile?.reviews_count || 0} 
+                />
               </div>
               
               <p className="text-muted-foreground">{profile?.job_title || 'Freelancer'}</p>

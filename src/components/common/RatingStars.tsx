@@ -18,6 +18,12 @@ const RatingStars: React.FC<RatingStarsProps> = ({
     return null;
   }
 
+  // Ensure rating is a number
+  const numericRating = Number(rating);
+  
+  // Return null if rating is zero
+  if (numericRating === 0) return null;
+
   const starSizes = {
     sm: 'h-4 w-4',
     md: 'h-5 w-5',
@@ -31,7 +37,6 @@ const RatingStars: React.FC<RatingStarsProps> = ({
   };
 
   const renderStars = () => {
-    const numericRating = Number(rating);
     const stars = [];
     const fullStars = Math.floor(numericRating);
     const hasHalfStar = numericRating % 1 >= 0.5;
@@ -75,7 +80,7 @@ const RatingStars: React.FC<RatingStarsProps> = ({
         {renderStars()}
       </div>
       <span className={`${textSizes[size]} font-medium ml-1.5`}>
-        {Number(rating).toFixed(1)}
+        {numericRating.toFixed(1)}
       </span>
       {reviewCount > 0 && (
         <span className={`${textSizes[size]} text-muted-foreground ml-0.5`}>
