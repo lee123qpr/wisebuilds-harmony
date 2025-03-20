@@ -43,27 +43,26 @@ export const useQuoteActionHandlers = ({
         });
       });
       
-      // Wait before refetching to ensure database consistency
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Use a slightly longer delay to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 2500));
       
-      // Perform a single refetch with retry
-      let refetchSuccess = false;
-      for (let attempt = 0; attempt < 3 && !refetchSuccess; attempt++) {
-        try {
-          await refetch({ throwOnError: true });
-          console.log(`Refetch successful after ${actionName}`);
-          refetchSuccess = true;
-        } catch (refetchError) {
-          console.error(`Refetch attempt ${attempt + 1} failed:`, refetchError);
-          if (attempt < 2) {
-            await new Promise(resolve => setTimeout(resolve, 1000));
-          }
-        }
-      }
+      // Refetch data to update UI
+      await refetch();
+      console.log(`Refetch successful after ${actionName}`);
       
       return Promise.resolve();
     } catch (error) {
       console.error(`Error ${actionName} quote:`, error);
+      
+      // Try one more refetch even if the action failed
+      // This helps update the UI if the change actually went through despite reported errors
+      try {
+        await refetch();
+        console.log(`Refetch after error still completed`);
+      } catch (refetchError) {
+        console.error('Additional refetch also failed:', refetchError);
+      }
+      
       return Promise.reject(error);
     }
   }, [projectId, quoteId, refetch]);
