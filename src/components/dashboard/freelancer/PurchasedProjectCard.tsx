@@ -13,6 +13,7 @@ import { createConversation } from '@/services/conversations';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import QuoteStatusBadge from '@/components/quotes/table/QuoteStatusBadge';
 
 interface PurchasedProjectProps {
   project: any;
@@ -30,6 +31,7 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
   });
   
   const hasSubmittedQuote = !!existingQuote;
+  const quoteStatus = project.quote_status || existingQuote?.status;
   
   const handleViewDetails = () => {
     navigate(`/marketplace/${project.id}`);
@@ -90,7 +92,10 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
       <CardHeader className="pb-2">
         <div className="flex flex-wrap justify-between items-start gap-2">
           <CardTitle className="text-xl">{project.title}</CardTitle>
-          <HiringStatusBadge status={project.hiring_status} />
+          <div className="flex items-center gap-2">
+            {quoteStatus && <QuoteStatusBadge status={quoteStatus} />}
+            <HiringStatusBadge status={project.hiring_status} />
+          </div>
         </div>
       </CardHeader>
       
@@ -170,6 +175,17 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
                   clientId={project.user_id}
                   onQuoteSubmitted={handleRefresh}
                 />
+              )}
+              
+              {quoteStatus === 'accepted' && (
+                <Button 
+                  variant="default" 
+                  size="sm" 
+                  className="gap-2 bg-green-600 hover:bg-green-700"
+                  onClick={() => navigate('/dashboard/freelancer?tab=activeJobs')}
+                >
+                  View Active Job
+                </Button>
               )}
             </div>
           </div>
