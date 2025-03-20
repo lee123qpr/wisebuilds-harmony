@@ -8,6 +8,11 @@ interface QuoteDetailsDebugInfoProps {
   onRefresh: () => Promise<void>;
 }
 
+/**
+ * This component is deprecated and no longer in use.
+ * It was previously used to display debug information and a refresh button
+ * for the quote details page.
+ */
 const QuoteDetailsDebugInfo: React.FC<QuoteDetailsDebugInfoProps> = ({
   status,
   updatedAt,

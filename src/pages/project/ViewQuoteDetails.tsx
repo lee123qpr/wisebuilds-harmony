@@ -1,3 +1,4 @@
+
 import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
@@ -5,7 +6,6 @@ import { useQuoteDetails } from '@/hooks/quotes/useQuoteDetails';
 import { useQuoteActions } from '@/hooks/quotes/useQuoteActions';
 import { useQuoteActionHandlers } from '@/hooks/quotes/useQuoteActionHandlers';
 import QuoteDetailsHeader from './components/quotes/QuoteDetailsHeader';
-import QuoteDetailsDebugInfo from './components/quotes/QuoteDetailsDebugInfo';
 import QuoteDetailsCard from './components/quotes/QuoteDetailsCard';
 import QuoteDetailsLoading from './components/quotes/QuoteDetailsLoading';
 import QuoteDetailsError from './components/quotes/QuoteDetailsError';
@@ -90,13 +90,6 @@ const ViewQuoteDetails = () => {
         <QuoteDetailsHeader 
           projectId={projectId || ''} 
           projectTitle={project?.title}
-        />
-
-        {/* Debug information for status */}
-        <QuoteDetailsDebugInfo
-          status={quote.status}
-          updatedAt={quote.updated_at}
-          onRefresh={handleManualRefresh}
         />
 
         {/* Quote details card */}
