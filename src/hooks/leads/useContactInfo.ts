@@ -38,7 +38,7 @@ export const useContactInfo = (projectId: string) => {
       // Then get the client profile using the user_id
       const { data: clientProfile, error: clientError } = await supabase
         .from('client_profiles')
-        .select('contact_name, company_name, phone_number, website, company_address')
+        .select('contact_name, company_name, phone_number, website, company_address, email')
         .eq('id', project.user_id)
         .maybeSingle();
       
@@ -46,44 +46,43 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Client profile data:', clientProfile);
       
-      // Get user email and metadata via edge function
-      const { data: userData, error: userError } = await supabase.functions.invoke(
-        'get-user-email',
-        {
-          body: { userId: project.user_id } // Changed from user_id to userId to match the edge function parameter
-        }
-      );
+      // If no email in profile, get user email via edge function
+      let email = clientProfile?.email || null;
       
-      if (userError) throw userError;
-      
-      console.log('User data from edge function:', userData);
-      
-      // Extract the email and metadata from the response
-      const email = userData?.email || null;
-      const userMetadata = userData?.user_metadata || null;
-      
-      console.log('Extracted email:', email);
-      console.log('Extracted user metadata:', userMetadata);
-      
-      // Ensure phone number is properly formatted
-      let phoneNumber = clientProfile?.phone_number || userMetadata?.phone_number || null;
+      if (!email) {
+        // Get user email via edge function
+        const { data: userData, error: userError } = await supabase.functions.invoke(
+          'get-user-email',
+          {
+            body: { userId: project.user_id }
+          }
+        );
+        
+        if (userError) throw userError;
+        
+        console.log('User data from edge function:', userData);
+        
+        // Extract the email from the response
+        email = userData?.email || null;
+        console.log('Extracted email:', email);
+      }
       
       // Create a proper object with all the fields we need
-      // Priority: use client profile data first, then fall back to user metadata if available
+      // Prioritize profile data
       setClientInfo({
-        contact_name: clientProfile?.contact_name || userMetadata?.full_name || null,
+        contact_name: clientProfile?.contact_name || null,
         company_name: clientProfile?.company_name || null,
-        phone_number: phoneNumber,
+        phone_number: clientProfile?.phone_number || null,
         website: clientProfile?.website || null,
         company_address: clientProfile?.company_address || null,
         email: email,
         user_id: project.user_id,
-        user_metadata: userMetadata,
+        user_metadata: null, // Not using metadata
         // A profile is considered complete if we have at least name, email, and phone
         is_profile_complete: !!(
-          (clientProfile?.contact_name || userMetadata?.full_name) && 
+          clientProfile?.contact_name && 
           email && 
-          (clientProfile?.phone_number || userMetadata?.phone_number)
+          clientProfile?.phone_number
         )
       });
     } catch (error) {

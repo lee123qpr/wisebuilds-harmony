@@ -2,6 +2,7 @@
 import React from 'react';
 import { Calendar, Coins, MapPin, Briefcase, User } from 'lucide-react';
 import { format } from 'date-fns';
+import { Skeleton } from '@/components/ui/skeleton';
 
 interface ProjectMetadataProps {
   project: any;
@@ -47,10 +48,15 @@ const ProjectMetadata: React.FC<ProjectMetadataProps> = ({
       </div>
       
       {/* Client information */}
-      {!isLoadingClientInfo && (
+      {isLoadingClientInfo ? (
+        <div className="flex items-center gap-1 text-sm">
+          <User className="h-4 w-4" />
+          <Skeleton className="h-4 w-32" />
+        </div>
+      ) : (
         <div className="flex items-center gap-1 text-sm text-blue-600">
           <User className="h-4 w-4" />
-          <span>Client: <span className="font-semibold">{clientName}</span></span>
+          <span>Client: <span className="font-semibold">{clientName || 'Unknown Client'}</span></span>
         </div>
       )}
     </div>

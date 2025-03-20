@@ -23,9 +23,6 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
                        ? clientName 
                        : 'Client';
   
-  console.log('ProjectInfo received clientName:', clientName);
-  console.log('ProjectInfo displaying name:', displayName);
-  
   return (
     <div className="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
       <div className="flex items-start gap-3 mb-3">
