@@ -10,9 +10,7 @@ import LoadingView from './components/quotes-comparison/LoadingView';
 import ErrorView from './components/quotes-comparison/ErrorView';
 import NoQuotesView from './components/quotes-comparison/NoQuotesView';
 import ProjectNotFoundView from './components/quotes-comparison/ProjectNotFoundView';
-import DiagnosticTools from './components/quotes-comparison/DiagnosticTools';
 import QuotesHeader from './components/quotes-comparison/QuotesHeader';
-import QuotesContent from './components/quotes-comparison/QuotesContent';
 
 const ProjectQuotesComparison = () => {
   const { projectId } = useParams<{ projectId: string }>();
