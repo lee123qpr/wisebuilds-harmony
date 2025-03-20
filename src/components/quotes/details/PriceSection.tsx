@@ -16,7 +16,11 @@ const PriceSection: React.FC<PriceSectionProps> = ({ quote }) => {
         ? 'Day Rate' 
         : 'Not specified';
   
-  const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
+  // Format the price value with a pound sign if it's a number
+  const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate;
+  const formattedPrice = typeof priceValue === 'number' || !isNaN(Number(priceValue))
+    ? `£${priceValue}`
+    : 'Not specified';
 
   return (
     <div className="space-y-2">
@@ -27,7 +31,7 @@ const PriceSection: React.FC<PriceSectionProps> = ({ quote }) => {
           <span className="text-sm font-medium">{priceType}</span>
           
           <span className="text-sm text-slate-600">Amount:</span>
-          <span className="text-sm font-medium">{priceValue}</span>
+          <span className="text-sm font-medium">{formattedPrice}</span>
         </div>
       </div>
     </div>
