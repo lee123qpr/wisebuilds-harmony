@@ -36,6 +36,10 @@ const QuoteTableRow: React.FC<QuoteTableRowProps> = ({ quote, onViewDetails }) =
         : 'Not specified';
   
   const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
+  // Format the price value with a £ symbol if it's a number
+  const formattedPriceValue = typeof priceValue === 'number' 
+    ? `£${priceValue}` 
+    : priceValue;
 
   // Fetch freelancer info if profile is empty
   useEffect(() => {
@@ -80,7 +84,7 @@ const QuoteTableRow: React.FC<QuoteTableRowProps> = ({ quote, onViewDetails }) =
         />
       </TableCell>
       <TableCell>{priceType}</TableCell>
-      <TableCell className="font-medium">{priceValue}</TableCell>
+      <TableCell className="font-medium">{formattedPriceValue}</TableCell>
       <TableCell>
         {quote.available_start_date 
           ? format(new Date(quote.available_start_date), 'MMM d, yyyy')
