@@ -42,7 +42,7 @@ export const useAcceptQuoteMutation = ({
           throw new Error('Quote not found');
         }
           
-        // Update the quote status to accepted
+        // Update the quote status to accepted using a more direct approach
         const { data, error } = await supabase
           .from('quotes')
           .update({ 
@@ -57,7 +57,7 @@ export const useAcceptQuoteMutation = ({
           throw error;
         }
 
-        // Verify the update was successful
+        // Verify the update was successful or try a different approach
         if (!data || data.length === 0) {
           console.error('No data returned from update operation');
           

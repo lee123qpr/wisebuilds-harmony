@@ -42,7 +42,7 @@ export const useRejectQuoteMutation = ({
           throw new Error('Quote not found');
         }
           
-        // Update the quote status to declined
+        // Update the quote status to declined with a more direct approach
         const { data, error } = await supabase
           .from('quotes')
           .update({ 
