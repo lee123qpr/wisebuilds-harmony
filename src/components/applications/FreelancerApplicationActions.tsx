@@ -74,7 +74,7 @@ const FreelancerApplicationActions: React.FC<FreelancerApplicationActionsProps> 
       return;
     }
     
-    navigate(`/freelancer/profile/${profile.id}`);
+    navigate(`/freelancer/${profile.id}`);
   };
 
   return (
