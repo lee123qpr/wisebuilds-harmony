@@ -41,10 +41,7 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
   const handleAccept = async () => {
     try {
       console.log('Handling accept in QuoteActionButtons');
-      // Don't close dialog until operation completes
       await onAccept();
-      console.log('Accept completed successfully');
-      // Only close dialog after successful operation
       setAcceptDialogOpen(false);
     } catch (error) {
       console.error('Error in handleAccept:', error);
@@ -56,10 +53,7 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
   const handleReject = async () => {
     try {
       console.log('Handling reject in QuoteActionButtons');
-      // Don't close dialog until operation completes
       await onReject();
-      console.log('Reject completed successfully');
-      // Only close dialog after successful operation
       setRejectDialogOpen(false);
     } catch (error) {
       console.error('Error in handleReject:', error);

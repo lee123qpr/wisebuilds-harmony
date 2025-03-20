@@ -42,47 +42,42 @@ export const useRejectQuoteMutation = ({
           throw new Error('Quote not found');
         }
           
-        // Update the quote status to declined with a more direct approach
-        const { data, error } = await supabase
+        // If quote is already declined, just return it
+        if (quoteCheck.status === 'declined') {
+          console.log('Quote is already declined, no update needed');
+          return quoteCheck;
+        }
+          
+        // Update the quote status to declined
+        const { error } = await supabase
           .from('quotes')
           .update({ 
             status: 'declined', 
             updated_at: new Date().toISOString() 
           })
-          .eq('id', quoteId)
-          .select();
+          .eq('id', quoteId);
 
         if (error) {
           console.error('Error rejecting quote:', error);
           throw error;
         }
 
-        // Verify the update was successful
-        if (!data || data.length === 0) {
-          console.error('No data returned from reject update operation');
+        // Separately fetch the updated quote to confirm the status change
+        const { data: updatedQuote, error: fetchError } = await supabase
+          .from('quotes')
+          .select('*')
+          .eq('id', quoteId)
+          .single();
           
-          // Perform an additional check to see if the update actually worked
-          const { data: verifyData, error: verifyError } = await supabase
-            .from('quotes')
-            .select('*')
-            .eq('id', quoteId)
-            .single();
-            
-          if (verifyError) {
-            console.error('Error verifying update:', verifyError);
-            throw new Error(`Failed to verify update: ${verifyError.message}`);
-          }
-            
-          if (verifyData && verifyData.status === 'declined') {
-            console.log('Update was successful despite no returned data');
-            return verifyData;
-          }
-            
-          throw new Error('Failed to update quote status to declined');
+        if (fetchError) {
+          console.error('Error fetching updated quote:', fetchError);
+          throw new Error(`Failed to verify update: ${fetchError.message}`);
         }
         
-        // The update returns an array with the updated row(s)
-        const updatedQuote = data[0];
+        if (!updatedQuote) {
+          console.error('Updated quote not found');
+          throw new Error('Failed to retrieve updated quote');
+        }
         
         if (updatedQuote.status !== 'declined') {
           console.error('Quote status was not updated correctly', updatedQuote);

@@ -42,53 +42,48 @@ export const useAcceptQuoteMutation = ({
           throw new Error('Quote not found');
         }
           
-        // Update the quote status to accepted using a more direct approach
-        const { data, error } = await supabase
+        // If quote is already accepted, just return it
+        if (quoteCheck.status === 'accepted') {
+          console.log('Quote is already accepted, no update needed');
+          return quoteCheck;
+        }
+          
+        // Update the quote status to accepted
+        const { error } = await supabase
           .from('quotes')
           .update({ 
             status: 'accepted', 
             updated_at: new Date().toISOString() 
           })
-          .eq('id', quoteId)
-          .select();
+          .eq('id', quoteId);
 
         if (error) {
           console.error('Error accepting quote:', error);
           throw error;
         }
 
-        // Verify the update was successful or try a different approach
-        if (!data || data.length === 0) {
-          console.error('No data returned from update operation');
+        // Separately fetch the updated quote to confirm the status change
+        const { data: updatedQuote, error: fetchError } = await supabase
+          .from('quotes')
+          .select('*')
+          .eq('id', quoteId)
+          .single();
           
-          // Perform an additional check to see if the update actually worked
-          const { data: verifyData, error: verifyError } = await supabase
-            .from('quotes')
-            .select('*')
-            .eq('id', quoteId)
-            .single();
-            
-          if (verifyError) {
-            console.error('Error verifying update:', verifyError);
-            throw new Error(`Failed to verify update: ${verifyError.message}`);
-          }
-            
-          if (verifyData && verifyData.status === 'accepted') {
-            console.log('Update was successful despite no returned data');
-            return verifyData;
-          }
-            
-          throw new Error('Failed to update quote status');
+        if (fetchError) {
+          console.error('Error fetching updated quote:', fetchError);
+          throw new Error(`Failed to verify update: ${fetchError.message}`);
         }
-
-        // The update returns an array with the updated row(s), so we need to check the first item
-        const updatedQuote = data[0];
+        
+        if (!updatedQuote) {
+          console.error('Updated quote not found');
+          throw new Error('Failed to retrieve updated quote');
+        }
         
         if (updatedQuote.status !== 'accepted') {
           console.error('Quote status was not updated correctly', updatedQuote);
           throw new Error(`Quote status verification failed: expected 'accepted' but got '${updatedQuote.status}'`);
         }
-
+        
         console.log('Quote accepted successfully, updated data:', updatedQuote);
         return updatedQuote;
       } catch (err) {
@@ -99,7 +94,7 @@ export const useAcceptQuoteMutation = ({
     onSuccess: (data) => {
       console.log('Accept mutation completed successfully:', data);
       
-      // Invalidate all related queries to ensure fresh data is fetched
+      // Invalidate all related queries with correct keys
       queryClient.invalidateQueries({ queryKey: ['quote'] });
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       
