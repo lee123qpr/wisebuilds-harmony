@@ -11,6 +11,7 @@ import { Button } from '@/components/ui/button';
 import VerificationBadge from '@/components/common/VerificationBadge';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
+import FreelancerMetadata from '@/components/applications/FreelancerMetadata';
 
 interface FreelancerApplicationCardProps {
   application: FreelancerApplication;
@@ -32,6 +33,9 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
     rating: 0,
     reviews_count: 0,
     skills: [],
+    location: '',
+    member_since: '',
+    jobs_completed: 0
   };
 
   const getInitials = () => {
@@ -52,23 +56,30 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
     <Card className="mb-6">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row gap-6">
-          <Avatar className="h-24 w-24 border">
-            <AvatarImage src={profile.profile_photo || undefined} alt={profile.display_name || 'Freelancer'} />
-            <AvatarFallback className="text-lg bg-slate-100 text-slate-600 font-semibold">{getInitials()}</AvatarFallback>
-          </Avatar>
+          <div className="flex flex-col items-center">
+            <Avatar className="h-24 w-24 border">
+              <AvatarImage src={profile.profile_photo || undefined} alt={profile.display_name || 'Freelancer'} />
+              <AvatarFallback className="text-lg bg-slate-100 text-slate-600 font-semibold">{getInitials()}</AvatarFallback>
+            </Avatar>
+          </div>
           
-          <div className="flex-1 space-y-4">
+          <div className="flex-1 space-y-3">
             <div>
-              <div className="flex justify-between">
-                <h3 className="text-xl font-semibold">{profile.display_name || `${profile.first_name || ''} ${profile.last_name || ''}`}</h3>
+              <div className="flex justify-between items-start">
+                <div>
+                  <h3 className="text-xl font-semibold">{profile.display_name || `${profile.first_name || ''} ${profile.last_name || ''}`}</h3>
+                  <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
+                </div>
                 <ProfileRatingStars 
                   userId={application.user_id}
                   rating={profile.rating}
                   reviewsCount={profile.reviews_count}
                 />
               </div>
-              <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
-              <div className="flex gap-2 mt-2">
+              
+              <FreelancerMetadata profile={profile} />
+              
+              <div className="flex flex-wrap gap-2 mt-3">
                 <VerificationBadge 
                   type="email" 
                   status={profile.email_verified ? 'verified' : 'pending'} 
@@ -80,18 +91,24 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
               </div>
             </div>
             
-            <p>{application.message}</p>
-            
-            <div>
-              <h4 className="text-sm font-medium mb-2">Skills</h4>
-              <div className="flex flex-wrap gap-2">
-                {profile.skills && profile.skills.map((skill, index) => (
-                  <Badge key={index} variant="secondary">{skill}</Badge>
-                ))}
+            {application.message && (
+              <div className="mt-4">
+                <p className="text-sm text-gray-700">{application.message}</p>
               </div>
-            </div>
+            )}
             
-            <div className="flex gap-3 pt-2">
+            {profile.skills && profile.skills.length > 0 && (
+              <div className="mt-3">
+                <h4 className="text-sm font-medium mb-2">Skills</h4>
+                <div className="flex flex-wrap gap-2">
+                  {profile.skills.map((skill, index) => (
+                    <Badge key={index} variant="secondary">{skill}</Badge>
+                  ))}
+                </div>
+              </div>
+            )}
+            
+            <div className="flex gap-3 pt-3">
               <FreelancerProfileLink 
                 freelancerId={application.user_id} 
                 projectId={projectId}
