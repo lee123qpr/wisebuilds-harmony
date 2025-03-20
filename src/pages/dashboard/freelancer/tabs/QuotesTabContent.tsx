@@ -3,7 +3,6 @@ import React from 'react';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
 import { useAuth } from '@/context/AuthContext';
 import QuotesTab from '@/components/dashboard/freelancer/QuotesTab';
-import QuoteStatusBadge from '@/components/quotes/table/QuoteStatusBadge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Info } from 'lucide-react';

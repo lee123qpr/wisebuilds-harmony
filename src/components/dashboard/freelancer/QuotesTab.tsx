@@ -5,6 +5,8 @@ import QuotesEmptyState from './quotes/QuotesEmptyState';
 import QuotesInfoAlert from './quotes/QuotesInfoAlert';
 import QuoteStatsSummary from './quotes/QuoteStatsSummary';
 import QuotesList from './quotes/QuotesList';
+import { Bookmark } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const QuotesTab: React.FC = () => {
   const {
@@ -33,7 +35,15 @@ const QuotesTab: React.FC = () => {
   
   return (
     <div className="space-y-4">
-      <h2 className="text-2xl font-bold">My Quotes</h2>
+      <div className="flex items-center gap-2">
+        <Bookmark className="h-5 w-5 text-primary" />
+        <h2 className="text-2xl font-bold tracking-tight">
+          My Quotes
+          <Badge variant="secondary" className="ml-2 text-sm font-medium">
+            {applications?.length || 0}
+          </Badge>
+        </h2>
+      </div>
       <p className="text-muted-foreground mb-4">
         Projects you've purchased contact information for
       </p>
