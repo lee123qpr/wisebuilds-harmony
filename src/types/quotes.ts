@@ -28,6 +28,11 @@ export interface QuoteWithProject extends Quote {
 }
 
 export interface QuoteWithFreelancer extends Quote {
+  project?: {
+    title: string;
+    budget: string;
+    status: string;
+  };
   freelancer_profile?: {
     first_name?: string;
     last_name?: string;

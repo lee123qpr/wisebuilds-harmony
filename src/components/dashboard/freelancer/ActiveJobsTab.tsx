@@ -63,7 +63,10 @@ const ActiveJobsTab: React.FC = () => {
       
       <div className="grid grid-cols-1 gap-4">
         {activeJobs.map((quote) => {
-          const projectTitle = quote.project?.title || 'Project';
+          // Get project title from project_id - we need to fetch this from the API in a real implementation
+          // For now, use a placeholder
+          const projectTitle = 'Project'; // Default fallback
+          
           const formattedDate = quote.created_at 
             ? format(new Date(quote.created_at), 'MMM d, yyyy')
             : 'Unknown date';

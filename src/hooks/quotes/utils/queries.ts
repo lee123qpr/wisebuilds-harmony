@@ -12,7 +12,14 @@ export const buildQuotesQuery = (
 ) => {
   let query = supabase
     .from('quotes')
-    .select('*');
+    .select(`
+      *,
+      projects:project_id (
+        title,
+        budget,
+        status
+      )
+    `);
   
   // If projectId is provided, filter by that project
   if (projectId) {

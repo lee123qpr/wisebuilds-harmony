@@ -21,11 +21,19 @@ export const formatQuotesWithProfiles = (
     
     console.log('Formatting quote for freelancer:', quote.freelancer_id, 'with profile:', freelancerProfile);
     
+    // Extract project data if available
+    const project = quote.projects || {};
+    
     return {
       ...quote,
       status: quote.status as QuoteWithFreelancer['status'],
       duration_unit: quote.duration_unit as QuoteWithFreelancer['duration_unit'],
       quote_files: Array.isArray(quote.quote_files) ? quote.quote_files : [],
+      project: {
+        title: project.title || 'Project',
+        budget: project.budget || '',
+        status: project.status || '',
+      },
       freelancer_profile: {
         first_name: freelancerProfile.first_name || '',
         last_name: freelancerProfile.last_name || '',
