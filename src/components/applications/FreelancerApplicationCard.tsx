@@ -5,7 +5,7 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, Briefcase, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
-import { Application, FreelancerApplication } from '@/types/applications';
+import { FreelancerApplication } from '@/types/applications';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import VerificationBadge from '@/components/common/VerificationBadge';
@@ -20,8 +20,19 @@ interface FreelancerApplicationCardProps {
 const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ application, projectId }) => {
   const formattedDate = application.created_at ? format(new Date(application.created_at), 'MMMM dd, yyyy') : 'N/A';
   
-  // Get profile info from the nested freelancer_profile
-  const profile = application.freelancer_profile || {};
+  // Get profile info from the nested freelancer_profile and provide proper type checking
+  const profile = application.freelancer_profile || {
+    display_name: '',
+    first_name: '',
+    last_name: '',
+    profile_photo: '',
+    job_title: '',
+    email_verified: false,
+    verified: false,
+    rating: 0,
+    reviews_count: 0,
+    skills: [],
+  };
 
   const getInitials = () => {
     if (profile.display_name) {
