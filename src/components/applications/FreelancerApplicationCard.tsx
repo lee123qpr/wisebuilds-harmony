@@ -12,6 +12,7 @@ import VerificationBadge from '@/components/common/VerificationBadge';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
 import FreelancerMetadata from '@/components/applications/FreelancerMetadata';
+import FreelancerContactInfo from '@/components/applications/FreelancerContactInfo';
 
 interface FreelancerApplicationCardProps {
   application: FreelancerApplication;
@@ -23,6 +24,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
   
   // Get profile info from the nested freelancer_profile and provide proper type checking
   const profile = application.freelancer_profile || {
+    id: '',  // Added id to fix TypeScript error
     display_name: '',
     first_name: '',
     last_name: '',
@@ -61,6 +63,11 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
               <AvatarImage src={profile.profile_photo || undefined} alt={profile.display_name || 'Freelancer'} />
               <AvatarFallback className="text-lg bg-slate-100 text-slate-600 font-semibold">{getInitials()}</AvatarFallback>
             </Avatar>
+            
+            {/* Contact info section - only shown on applications page */}
+            <div className="w-full mt-4">
+              <FreelancerContactInfo profile={profile} />
+            </div>
           </div>
           
           <div className="flex-1 space-y-3">
