@@ -47,51 +47,70 @@ export const useRejectQuoteMutation = ({
           console.log('Quote is already declined, no update needed');
           return quoteCheck;
         }
+        
+        console.log('Current quote status before update:', quoteCheck.status);
+        console.log('About to update quote status to declined');
           
-        // Update the quote status to declined
-        // Critical fix: Add explicit update operation with database consistency
-        const { error } = await supabase
+        // Update the quote status to declined with explicit return of data
+        const updateTimestamp = new Date().toISOString();
+        const { data: updateResult, error: updateError } = await supabase
           .from('quotes')
           .update({ 
             status: 'declined', 
-            updated_at: new Date().toISOString() 
+            updated_at: updateTimestamp
           })
-          .eq('id', quoteId);
+          .eq('id', quoteId)
+          .select('*')
+          .single();
 
-        if (error) {
-          console.error('Error rejecting quote:', error);
-          throw error;
+        if (updateError) {
+          console.error('Error in Supabase update operation:', updateError);
+          throw new Error(`Database update failed: ${updateError.message}`);
         }
-
-        // Add a small delay to ensure database consistency
-        await new Promise(resolve => setTimeout(resolve, 300));
-
-        // Separately fetch the updated quote to confirm the status change
-        const { data: updatedQuote, error: fetchError } = await supabase
+        
+        if (!updateResult) {
+          console.error('Update operation returned no data');
+          throw new Error('Update operation did not return expected data');
+        }
+        
+        console.log('Direct update result:', updateResult);
+        console.log('Updated status from update operation:', updateResult.status);
+        
+        // Add a larger delay to ensure full database consistency
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Double-check by fetching the quote again to absolutely verify the change
+        const { data: verifiedQuote, error: verifyError } = await supabase
           .from('quotes')
           .select('*')
           .eq('id', quoteId)
           .single();
           
-        if (fetchError) {
-          console.error('Error fetching updated quote:', fetchError);
-          throw new Error(`Failed to verify update: ${fetchError.message}`);
+        if (verifyError) {
+          console.error('Error in verification fetch:', verifyError);
+          throw new Error(`Failed to verify status change: ${verifyError.message}`);
         }
         
-        if (!updatedQuote) {
-          console.error('Updated quote not found');
-          throw new Error('Failed to retrieve updated quote');
+        if (!verifiedQuote) {
+          console.error('Verification fetch returned no quote');
+          throw new Error('Failed to retrieve quote for verification');
         }
         
-        console.log('Quote after update operation:', updatedQuote);
+        console.log('Verified quote after update:', verifiedQuote);
+        console.log('Final verified status:', verifiedQuote.status);
         
-        if (updatedQuote.status !== 'declined') {
-          console.error('Quote status was not updated correctly', updatedQuote);
-          throw new Error(`Quote status verification failed: expected 'declined' but got '${updatedQuote.status}'`);
+        if (verifiedQuote.status !== 'declined') {
+          console.error('Quote status verification failed', {
+            quoteId,
+            originalStatus: quoteCheck.status,
+            updateResult: updateResult?.status,
+            verifiedStatus: verifiedQuote.status
+          });
+          throw new Error(`Status verification failed: expected 'declined' but got '${verifiedQuote.status}'`);
         }
         
-        console.log('Quote rejected successfully, updated data:', updatedQuote);
-        return updatedQuote;
+        console.log('Quote rejected successfully, verified data:', verifiedQuote);
+        return verifiedQuote;
       } catch (err) {
         console.error('Error in rejectMutation:', err);
         throw err;

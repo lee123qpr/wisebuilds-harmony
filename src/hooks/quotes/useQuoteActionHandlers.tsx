@@ -34,8 +34,7 @@ export const useQuoteActionHandlers = ({
         });
       });
       
-      // The mutation already does invalidation, so we don't need additional refetches
-      // But we'll do one just to be sure UI is updated
+      // Single refetch after the operation completes
       console.log('Triggering refetch after accept');
       await refetch();
       
@@ -63,8 +62,7 @@ export const useQuoteActionHandlers = ({
         });
       });
       
-      // The mutation already does invalidation, so we don't need additional refetches
-      // But we'll do one just to be sure UI is updated
+      // Single refetch after the operation completes
       console.log('Triggering refetch after reject');
       await refetch();
       
