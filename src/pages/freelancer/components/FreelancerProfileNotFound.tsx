@@ -3,25 +3,34 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import BackButton from '@/components/common/BackButton';
+import { UserX } from 'lucide-react';
+import MainLayout from '@/components/layout/MainLayout';
 
 const FreelancerProfileNotFound: React.FC = () => {
   const navigate = useNavigate();
   
   return (
-    <div className="container py-8">
-      <div className="mb-6">
-        <BackButton />
+    <MainLayout>
+      <div className="container max-w-5xl px-4 py-12 mx-auto">
+        <Card className="border-none shadow-md">
+          <CardContent className="flex flex-col items-center justify-center p-12 text-center">
+            <UserX className="h-20 w-20 text-slate-300 mb-6" />
+            <h1 className="text-2xl font-bold mb-2">Freelancer Profile Not Found</h1>
+            <p className="text-slate-500 mb-8 max-w-md">
+              The freelancer profile you're looking for doesn't exist or may have been removed.
+            </p>
+            <div className="flex gap-4">
+              <Button variant="outline" onClick={() => navigate(-1)}>
+                Go Back
+              </Button>
+              <Button onClick={() => navigate('/')}>
+                Return to Home
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
       </div>
-      <Card>
-        <CardContent className="p-6 text-center">
-          <p className="mb-4">Profile not found or could not be loaded.</p>
-          <Button variant="outline" onClick={() => navigate(-1)}>
-            Go Back
-          </Button>
-        </CardContent>
-      </Card>
-    </div>
+    </MainLayout>
   );
 };
 

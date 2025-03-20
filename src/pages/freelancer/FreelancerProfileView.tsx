@@ -6,6 +6,7 @@ import FreelancerProfileHeader from './components/FreelancerProfileHeader';
 import FreelancerProfileTabs from './components/FreelancerProfileTabs';
 import FreelancerProfileLoading from './components/FreelancerProfileLoading';
 import FreelancerProfileNotFound from './components/FreelancerProfileNotFound';
+import MainLayout from '@/components/layout/MainLayout';
 
 const FreelancerProfileView: React.FC = () => {
   const { freelancerId } = useParams<{ freelancerId: string }>();
@@ -20,10 +21,12 @@ const FreelancerProfileView: React.FC = () => {
   }
 
   return (
-    <div className="container max-w-5xl px-4 py-8 mx-auto">
-      <FreelancerProfileHeader profile={profile} />
-      <FreelancerProfileTabs profile={profile} />
-    </div>
+    <MainLayout>
+      <div className="container max-w-5xl px-4 py-8 mx-auto">
+        <FreelancerProfileHeader profile={profile} />
+        <FreelancerProfileTabs profile={profile} />
+      </div>
+    </MainLayout>
   );
 };
 

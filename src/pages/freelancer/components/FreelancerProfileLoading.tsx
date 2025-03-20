@@ -1,39 +1,52 @@
 
 import React from 'react';
-import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import MainLayout from '@/components/layout/MainLayout';
 
 const FreelancerProfileLoading: React.FC = () => {
   return (
-    <Card>
-      <CardContent className="p-6">
-        <div className="flex flex-col md:flex-row gap-6">
-          <div className="flex flex-col items-center space-y-4">
+    <MainLayout>
+      <div className="container max-w-5xl px-4 py-8 mx-auto">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+          <div className="flex flex-col md:flex-row gap-6">
             <Skeleton className="h-24 w-24 rounded-full" />
-            <Skeleton className="h-4 w-32" />
-            <Skeleton className="h-4 w-24" />
-          </div>
-          
-          <div className="flex-1 space-y-4">
-            <div>
-              <Skeleton className="h-6 w-48 mb-2" />
-              <Skeleton className="h-4 w-36 mb-4" />
-              <Skeleton className="h-4 w-28" />
-            </div>
-            
-            <Skeleton className="h-24 w-full rounded-md" />
-            
-            <div>
-              <Skeleton className="h-5 w-36 mb-2" />
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <Skeleton className="h-5 w-full" />
-                <Skeleton className="h-5 w-full" />
+            <div className="flex-1">
+              <Skeleton className="h-8 w-64 mb-2" />
+              <Skeleton className="h-4 w-48 mb-4" />
+              <div className="flex gap-4 mt-2">
+                <Skeleton className="h-4 w-36" />
+                <Skeleton className="h-4 w-36" />
+              </div>
+              <div className="flex gap-2 mt-4">
+                <Skeleton className="h-6 w-24" />
+                <Skeleton className="h-6 w-24" />
               </div>
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+        
+        <Skeleton className="h-10 w-48 mb-6" />
+        
+        <div className="space-y-6">
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <Skeleton className="h-6 w-48 mb-4" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-full mb-2" />
+            <Skeleton className="h-4 w-3/4" />
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm p-6">
+            <Skeleton className="h-6 w-48 mb-4" />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </MainLayout>
   );
 };
 
