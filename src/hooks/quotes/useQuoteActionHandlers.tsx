@@ -26,17 +26,26 @@ export const useQuoteActionHandlers = ({
     try {
       console.log('ViewQuoteDetails - Accepting quote');
       
-      // Execute the quote acceptance
+      // Execute the quote acceptance with await
       await new Promise<void>((resolve, reject) => {
         acceptQuote(undefined, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error)
+          onSuccess: () => {
+            console.log('Quote acceptance mutation succeeded');
+            resolve();
+          },
+          onError: (error) => {
+            console.error('Quote acceptance mutation failed:', error);
+            reject(error);
+          }
         });
       });
       
-      // Single refetch after the operation completes
+      // Wait for a moment before refetching to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Refetch after the operation completes and database has updated
       console.log('Triggering refetch after accept');
-      await refetch();
+      await refetch({ throwOnError: true });
       
       return Promise.resolve();
     } catch (error) {
@@ -54,17 +63,26 @@ export const useQuoteActionHandlers = ({
     try {
       console.log('ViewQuoteDetails - Rejecting quote');
       
-      // Execute the quote rejection
+      // Execute the quote rejection with await
       await new Promise<void>((resolve, reject) => {
         rejectQuote(undefined, {
-          onSuccess: () => resolve(),
-          onError: (error) => reject(error)
+          onSuccess: () => {
+            console.log('Quote rejection mutation succeeded');
+            resolve();
+          },
+          onError: (error) => {
+            console.error('Quote rejection mutation failed:', error);
+            reject(error);
+          }
         });
       });
       
-      // Single refetch after the operation completes
+      // Wait for a moment before refetching to ensure database consistency
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      // Refetch after the operation completes and database has updated
       console.log('Triggering refetch after reject');
-      await refetch();
+      await refetch({ throwOnError: true });
       
       return Promise.resolve();
     } catch (error) {

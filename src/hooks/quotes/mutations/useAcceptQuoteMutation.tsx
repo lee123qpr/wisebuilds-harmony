@@ -30,7 +30,7 @@ export const useAcceptQuoteMutation = ({
           .from('quotes')
           .select('*')
           .eq('id', quoteId)
-          .single();
+          .maybeSingle();
           
         if (checkError) {
           console.error('Error checking quote:', checkError);
@@ -51,7 +51,7 @@ export const useAcceptQuoteMutation = ({
         console.log('Current quote status before update:', quoteCheck.status);
         console.log('About to update quote status to accepted');
           
-        // Update the quote status to accepted with more explicit logging
+        // Update the quote status to accepted - using maybeSingle() instead of single()
         const updateTimestamp = new Date().toISOString();
         const { data: updateResult, error: updateError } = await supabase
           .from('quotes')
@@ -60,21 +60,38 @@ export const useAcceptQuoteMutation = ({
             updated_at: updateTimestamp
           })
           .eq('id', quoteId)
-          .select('*')
-          .single();
+          .select()
+          .maybeSingle();
 
         if (updateError) {
           console.error('Error in Supabase update operation:', updateError);
           throw new Error(`Database update failed: ${updateError.message}`);
         }
         
-        if (!updateResult) {
-          console.error('Update operation returned no data');
-          throw new Error('Update operation did not return expected data');
+        // If no data returned, try to fetch it separately
+        let updatedQuote = updateResult;
+        if (!updatedQuote) {
+          console.log('No data returned from update operation, fetching quote separately');
+          const { data: fetchedQuote, error: fetchError } = await supabase
+            .from('quotes')
+            .select('*')
+            .eq('id', quoteId)
+            .maybeSingle();
+            
+          if (fetchError) {
+            console.error('Error fetching updated quote:', fetchError);
+            throw new Error(`Failed to fetch updated quote: ${fetchError.message}`);
+          }
+          
+          if (!fetchedQuote) {
+            console.error('Failed to fetch quote after update');
+            throw new Error('Quote not found after update');
+          }
+          
+          updatedQuote = fetchedQuote;
         }
         
-        console.log('Direct update result:', updateResult);
-        console.log('Updated status from update operation:', updateResult.status);
+        console.log('Quote updated successfully, data:', updatedQuote);
         
         // Add a larger delay to ensure full database consistency
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -84,7 +101,7 @@ export const useAcceptQuoteMutation = ({
           .from('quotes')
           .select('*')
           .eq('id', quoteId)
-          .single();
+          .maybeSingle();
           
         if (verifyError) {
           console.error('Error in verification fetch:', verifyError);
@@ -103,7 +120,7 @@ export const useAcceptQuoteMutation = ({
           console.error('Quote status verification failed', {
             quoteId,
             originalStatus: quoteCheck.status,
-            updateResult: updateResult?.status,
+            updateResult: updatedQuote?.status,
             verifiedStatus: verifiedQuote.status
           });
           throw new Error(`Status verification failed: expected 'accepted' but got '${verifiedQuote.status}'`);
