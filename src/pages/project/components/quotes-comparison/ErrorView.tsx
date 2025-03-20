@@ -3,7 +3,6 @@ import React from 'react';
 import { AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertTitle, AlertDescription } from '@/components/ui/alert';
-import BackButton from '@/components/common/BackButton';
 
 interface ErrorViewProps {
   projectId: string;
@@ -15,7 +14,6 @@ const ErrorView: React.FC<ErrorViewProps> = ({ projectId, error, onRefresh }) =>
   return (
     <div className="container py-8">
       <div className="flex items-center gap-4 mb-8">
-        <BackButton to={`/project/${projectId}`} />
         <h1 className="text-2xl font-bold">Quotes Comparison</h1>
       </div>
       <Alert variant="destructive">

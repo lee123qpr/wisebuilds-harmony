@@ -1,7 +1,6 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import BackButton from '@/components/common/BackButton';
 
 interface LoadingViewProps {
   projectId: string;
@@ -11,7 +10,6 @@ const LoadingView: React.FC<LoadingViewProps> = ({ projectId }) => {
   return (
     <div className="container py-8">
       <div className="flex items-center gap-4 mb-8">
-        <BackButton to={`/project/${projectId}`} />
         <h1 className="text-2xl font-bold">Quotes Comparison</h1>
       </div>
       <Card>

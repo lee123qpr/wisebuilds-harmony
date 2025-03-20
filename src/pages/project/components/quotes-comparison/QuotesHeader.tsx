@@ -2,7 +2,6 @@
 import React from 'react';
 import { RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import BackButton from '@/components/common/BackButton';
 
 interface QuotesHeaderProps {
   projectId: string;
@@ -20,7 +19,6 @@ const QuotesHeader: React.FC<QuotesHeaderProps> = ({
   return (
     <div className="flex items-center justify-between mb-8">
       <div className="flex items-center gap-4">
-        <BackButton to={`/project/${projectId}`} />
         <div>
           <h1 className="text-2xl font-bold">Quotes Comparison</h1>
           <p className="text-muted-foreground">Project: {projectTitle}</p>

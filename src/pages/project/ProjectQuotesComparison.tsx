@@ -32,12 +32,12 @@ const ProjectQuotesComparison = () => {
     }
   };
   
-  const { data: quotes, isLoading: isLoadingQuotes, isError: isQuotesError } = useQuotes({
+  const { data: quotes, isLoading: isLoadingQuotes, isError: isQuotesError, error: quotesError, refetch } = useQuotes({
     projectId: projectId!,
     forClient: true
   });
   
-  const { project, loading: isLoadingProject, error: projectError } = useProjectDetails(projectId);
+  const { project, loading: isLoadingProject } = useProjectDetails(projectId);
   
   // Show loading state while data is being fetched
   if (isLoadingProject || isLoadingQuotes) {
@@ -45,14 +45,14 @@ const ProjectQuotesComparison = () => {
       <MainLayout>
         <div className="container py-8">
           <BackButton onClick={handleGoBack} />
-          <LoadingView />
+          <LoadingView projectId={projectId!} />
         </div>
       </MainLayout>
     );
   }
   
   // Show error if project doesn't exist
-  if (!project || projectError) {
+  if (!project) {
     return (
       <MainLayout>
         <div className="container py-8">
@@ -69,7 +69,11 @@ const ProjectQuotesComparison = () => {
       <MainLayout>
         <div className="container py-8">
           <BackButton onClick={handleGoBack} />
-          <ErrorView projectId={projectId!} />
+          <ErrorView 
+            projectId={projectId!} 
+            error={quotesError as Error | null} 
+            onRefresh={() => refetch()} 
+          />
         </div>
       </MainLayout>
     );
@@ -78,7 +82,15 @@ const ProjectQuotesComparison = () => {
   // Define the content based on whether there are quotes
   const Content = () => {
     if (!quotes || quotes.length === 0) {
-      return <NoQuotesView projectId={projectId!} projectTitle={project.title} />;
+      return (
+        <NoQuotesView 
+          projectId={projectId!}
+          userId={project.user_id}
+          directQuotesCount={null}
+          isRefetching={false}
+          onRefresh={() => refetch()}
+        />
+      );
     }
     
     return (
@@ -88,10 +100,7 @@ const ProjectQuotesComparison = () => {
           <CardDescription>Quotes received for {project.title}</CardDescription>
         </CardHeader>
         <CardContent>
-          <ProjectQuotesComparisonTable 
-            quotes={quotes} 
-            projectId={projectId!}
-          />
+          <ProjectQuotesComparisonTable quotes={quotes} />
         </CardContent>
       </Card>
     );
@@ -103,7 +112,12 @@ const ProjectQuotesComparison = () => {
         <div className="mb-6">
           <BackButton onClick={handleGoBack} />
         </div>
-        <QuotesHeader project={project} quotesCount={quotes?.length || 0} />
+        <QuotesHeader 
+          projectId={projectId!} 
+          projectTitle={project.title}
+          isRefetching={false}
+          onRefresh={() => refetch()}
+        />
         <Content />
       </div>
     </MainLayout>
