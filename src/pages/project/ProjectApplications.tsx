@@ -52,7 +52,7 @@ const ProjectApplications = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        {/* Improved header section with cleaner layout */}
+        {/* Header section with improved project title visibility */}
         <div className="mb-6 border-b pb-6">
           <div className="flex items-center mb-3">
             <BackButton to={`/project/${projectId}`} className="mr-4" />
@@ -66,8 +66,12 @@ const ProjectApplications = () => {
             </div>
           ) : (
             <div className="mt-1">
-              <h2 className="text-xl font-semibold text-slate-800">{project?.title}</h2>
-              <p className="text-slate-500 mt-1">Review freelancers who have applied for this position</p>
+              <h2 className="text-xl font-semibold text-slate-800 bg-slate-50 p-3 rounded-md border-l-4 border-blue-500">
+                {project?.title}
+              </h2>
+              <p className="text-slate-500 mt-3">
+                Review freelancers who have applied for this project
+              </p>
             </div>
           )}
         </div>
