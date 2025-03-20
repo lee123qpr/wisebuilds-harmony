@@ -63,11 +63,18 @@ const QuoteActionButtons: React.FC<QuoteActionButtonsProps> = ({
     }
   };
 
+  // Handle navigating to messages with the freelancer
+  const handleMessageFreelancer = () => {
+    // Navigate to messages tab with the freelancer ID
+    navigate(`/messages/${freelancerId}`);
+    console.log(`Navigating to messages with freelancer ${freelancerId}`);
+  };
+
   return (
     <div className="flex justify-end space-x-2 pt-2">
       <Button
         variant="outline"
-        onClick={() => navigate(`/messages/${freelancerId}`)}
+        onClick={handleMessageFreelancer}
         className="flex items-center gap-2"
       >
         <MessageSquare className="h-4 w-4" />
