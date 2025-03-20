@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ProjectLead } from '@/types/projects';
 import LeadSettingsAlert from './leads/LeadSettingsAlert';
@@ -42,7 +41,11 @@ const LeadsTab: React.FC<LeadsTabProps> = ({
   
   return (
     <div className="space-y-4">
-      <LeadsHeader onRefresh={handleRefresh} isLoading={isLoadingSettings || isLoadingLeads} />
+      <LeadsHeader 
+        onRefresh={handleRefresh} 
+        isLoading={isLoadingSettings || isLoadingLeads}
+        leadsCount={filteredLeads.length}
+      />
       
       {isLoadingLeads ? (
         <div className="bg-white rounded-lg border overflow-hidden">
@@ -118,3 +121,4 @@ const LeadsTab: React.FC<LeadsTabProps> = ({
 };
 
 export default LeadsTab;
+

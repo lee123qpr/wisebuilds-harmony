@@ -93,7 +93,8 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
       <LeadsHeader 
         onRefresh={handleRefresh} 
         isLoading={isLoadingSettings || isLoadingLeads || isRefreshing}
-        location={leadSettings.location} 
+        location={leadSettings.location}
+        leadsCount={filteredProjects.length}
       />
       
       {filteredProjects.length === 0 && !isLoadingLeads && !isRefreshing ? (

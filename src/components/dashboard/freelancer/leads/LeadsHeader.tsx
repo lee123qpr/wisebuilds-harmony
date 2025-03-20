@@ -3,14 +3,21 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { RefreshCw, Briefcase, Filter } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface LeadsHeaderProps {
   onRefresh: () => void;
   isLoading: boolean;
   location?: string;
+  leadsCount?: number;
 }
 
-const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading, location }) => {
+const LeadsHeader: React.FC<LeadsHeaderProps> = ({ 
+  onRefresh, 
+  isLoading, 
+  location,
+  leadsCount 
+}) => {
   const navigate = useNavigate();
 
   const handleRefresh = (e: React.MouseEvent) => {
@@ -22,7 +29,12 @@ const LeadsHeader: React.FC<LeadsHeaderProps> = ({ onRefresh, isLoading, locatio
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-2">
         <Briefcase className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold tracking-tight">My Leads</h2>
+        <h2 className="text-2xl font-bold tracking-tight">
+          My Leads
+          <Badge variant="secondary" className="ml-2 text-sm font-medium">
+            {isLoading ? '...' : leadsCount || 0}
+          </Badge>
+        </h2>
       </div>
       
       <div className="flex gap-3">
