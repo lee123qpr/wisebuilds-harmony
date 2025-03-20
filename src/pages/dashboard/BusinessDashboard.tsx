@@ -9,6 +9,7 @@ import NewProjectDialog from '@/components/projects/NewProjectDialog';
 import ProjectsTable from '@/components/projects/ProjectsTable';
 import BusinessMessagesTab from '@/components/dashboard/business/MessagesTab';
 import BusinessQuotesTab from '@/components/dashboard/business/QuotesTab';
+import BusinessJobsTab from '@/components/dashboard/business/BusinessJobsTab';
 import { supabase } from '@/integrations/supabase/client';
 
 const BusinessDashboard = () => {
@@ -102,7 +103,7 @@ const BusinessDashboard = () => {
                 <CardDescription>Active contracts with freelancers</CardDescription>
               </CardHeader>
               <CardContent>
-                <p className="text-center py-8 text-muted-foreground">You don't have any active contracts.</p>
+                <BusinessJobsTab />
               </CardContent>
             </Card>
           </TabsContent>
