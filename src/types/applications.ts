@@ -1,6 +1,25 @@
 
 import { Json } from "@/integrations/supabase/types";
 
+export interface Application {
+  id: string;
+  freelancer_id: string;
+  freelancer_first_name?: string;
+  freelancer_last_name?: string;
+  freelancer_display_name?: string;
+  freelancer_profile_photo?: string;
+  freelancer_job_title?: string;
+  freelancer_skills?: string[];
+  freelancer_verified?: boolean;
+  freelancer_email_verified?: boolean;
+  freelancer_rating?: number;
+  freelancer_reviews_count?: number;
+  project_id: string;
+  cover_letter?: string;
+  created_at: string;
+  updated_at?: string;
+}
+
 export interface FreelancerApplication {
   id: string;
   user_id: string;

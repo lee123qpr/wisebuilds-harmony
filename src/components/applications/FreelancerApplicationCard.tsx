@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
@@ -9,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import VerificationBadge from '@/components/common/VerificationBadge';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
+import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
 
 interface FreelancerApplicationCardProps {
   application: Application;
@@ -76,9 +78,12 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
             </div>
             
             <div className="flex gap-3 pt-2">
-              <Button as={Link} to={`/freelancer/${application.freelancer_id}`} state={{ from: 'projectApplications', projectId: projectId }}>
+              <FreelancerProfileLink 
+                freelancerId={application.freelancer_id} 
+                projectId={projectId}
+              >
                 View Profile
-              </Button>
+              </FreelancerProfileLink>
               <Button variant="outline">Contact</Button>
             </div>
           </div>

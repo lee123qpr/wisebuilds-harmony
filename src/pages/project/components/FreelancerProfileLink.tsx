@@ -18,15 +18,18 @@ const FreelancerProfileLink: React.FC<FreelancerProfileLinkProps> = ({
   ...props
 }) => {
   return (
-    <Button
-      as={Link}
+    <Link
       to={`/freelancer/${freelancerId}`}
       state={{ from: 'projectApplications', projectId }}
-      className={className}
-      {...props}
+      className="inline-block"
     >
-      {children}
-    </Button>
+      <Button
+        className={className}
+        {...props}
+      >
+        {children}
+      </Button>
+    </Link>
   );
 };
 
