@@ -1,28 +1,42 @@
 
 import React from 'react';
 import { TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+
+interface TabCounts {
+  accepted: number;
+  pending: number;
+  declined: number;
+}
 
 interface QuoteTabsNavProps {
-  tabCounts: {
-    accepted: number;
-    pending: number;
-    declined: number;
-  };
+  tabCounts: TabCounts;
 }
 
 const QuoteTabsNav: React.FC<QuoteTabsNavProps> = ({ tabCounts }) => {
   return (
-    <TabsList className="w-full">
-      <TabsTrigger value="accepted" className="flex-1">
-        Accepted ({tabCounts.accepted})
-      </TabsTrigger>
-      <TabsTrigger value="pending" className="flex-1">
-        Pending ({tabCounts.pending})
-      </TabsTrigger>
-      <TabsTrigger value="declined" className="flex-1">
-        Declined ({tabCounts.declined})
-      </TabsTrigger>
-    </TabsList>
+    <div className="border-b pb-2 mb-4">
+      <TabsList>
+        <TabsTrigger value="accepted">
+          Accepted
+          <Badge variant="secondary" className="ml-2">
+            {tabCounts.accepted}
+          </Badge>
+        </TabsTrigger>
+        <TabsTrigger value="pending">
+          Pending
+          <Badge variant="secondary" className="ml-2">
+            {tabCounts.pending}
+          </Badge>
+        </TabsTrigger>
+        <TabsTrigger value="declined">
+          Declined
+          <Badge variant="secondary" className="ml-2">
+            {tabCounts.declined}
+          </Badge>
+        </TabsTrigger>
+      </TabsList>
+    </div>
   );
 };
 

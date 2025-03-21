@@ -5,6 +5,7 @@ import EmptyStateCard from '../freelancer/EmptyStateCard';
 import { useConversations } from '@/hooks/messages/useConversations';
 import MessagesTabSkeleton from '../freelancer/messages/MessagesTabSkeleton';
 import MessagesLayout from '../freelancer/messages/MessagesLayout';
+import MessagesHeader from './messages/MessagesHeader';
 
 const BusinessMessagesTab: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -36,21 +37,27 @@ const BusinessMessagesTab: React.FC = () => {
   
   if (conversations.length === 0) {
     return (
-      <EmptyStateCard
-        title="No messages yet"
-        description="When freelancers contact you, your conversations will appear here."
-      />
+      <>
+        <MessagesHeader conversationCount={0} />
+        <EmptyStateCard
+          title="No messages yet"
+          description="When freelancers contact you, your conversations will appear here."
+        />
+      </>
     );
   }
   
   return (
-    <MessagesLayout
-      conversations={conversations}
-      selectedConversation={selectedConversation}
-      setSelectedConversation={setSelectedConversation}
-      fetchConversations={fetchConversations}
-      isLoading={isLoading}
-    />
+    <div className="space-y-4">
+      <MessagesHeader conversationCount={conversations.length} />
+      <MessagesLayout
+        conversations={conversations}
+        selectedConversation={selectedConversation}
+        setSelectedConversation={setSelectedConversation}
+        fetchConversations={fetchConversations}
+        isLoading={isLoading}
+      />
+    </div>
   );
 };
 

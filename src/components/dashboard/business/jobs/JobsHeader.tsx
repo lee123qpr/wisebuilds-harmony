@@ -12,16 +12,14 @@ const JobsHeader: React.FC<JobsHeaderProps> = ({ activeJobsCount, completedJobsC
   const totalJobs = activeJobsCount + completedJobsCount;
   
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex items-center gap-2">
-        <Briefcase className="h-5 w-5 text-primary" />
-        <h2 className="text-2xl font-bold tracking-tight">
-          My Hires
-          <Badge variant="secondary" className="ml-2 text-sm font-medium">
-            {totalJobs}
-          </Badge>
-        </h2>
-      </div>
+    <div className="flex items-center gap-2 mb-4">
+      <Briefcase className="h-6 w-6 text-primary" />
+      <h2 className="text-2xl font-bold tracking-tight">
+        My Hires
+      </h2>
+      <Badge variant="secondary" className="rounded-full bg-blue-100 text-blue-800 hover:bg-blue-100">
+        {totalJobs}
+      </Badge>
     </div>
   );
 };

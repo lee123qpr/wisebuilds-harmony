@@ -10,6 +10,7 @@ import LoadingSkeleton from './quotes/LoadingSkeleton';
 import NoQuotesMessage from './quotes/NoQuotesMessage';
 import QuoteTabsNav from './quotes/QuoteTabsNav';
 import QuotesList from './quotes/QuotesList';
+import QuotesHeader from './quotes/QuotesHeader';
 
 const QuotesTab: React.FC = () => {
   const { user } = useAuth();
@@ -48,8 +49,12 @@ const QuotesTab: React.FC = () => {
     return <NoQuotesMessage />;
   }
   
+  const totalQuotes = quotes.length;
+  
   return (
     <div className="space-y-4">
+      <QuotesHeader totalQuotes={totalQuotes} />
+      
       <Tabs defaultValue="accepted" value={activeTab} onValueChange={setActiveTab}>
         <QuoteTabsNav tabCounts={tabCounts} />
         

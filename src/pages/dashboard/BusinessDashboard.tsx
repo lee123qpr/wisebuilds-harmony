@@ -5,12 +5,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { useSearchParams } from 'react-router-dom';
-import NewProjectDialog from '@/components/projects/NewProjectDialog';
 import ProjectsTable from '@/components/projects/ProjectsTable';
 import BusinessMessagesTab from '@/components/dashboard/business/MessagesTab';
 import BusinessQuotesTab from '@/components/dashboard/business/QuotesTab';
 import BusinessJobsTab from '@/components/dashboard/business/BusinessJobsTab';
 import { supabase } from '@/integrations/supabase/client';
+import ProjectsHeader from '@/components/dashboard/business/projects/ProjectsHeader';
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
@@ -19,6 +19,7 @@ const BusinessDashboard = () => {
   const [activeTab, setActiveTab] = useState('projects');
   const [contactName, setContactName] = useState('Business Client');
   const [isLoading, setIsLoading] = useState(true);
+  const [projectCount, setProjectCount] = useState(0);
   
   // Set the active tab based on URL parameters
   useEffect(() => {
@@ -48,6 +49,14 @@ const BusinessDashboard = () => {
         if (data && data.contact_name) {
           setContactName(data.contact_name);
         }
+
+        // Get project count
+        const { count } = await supabase
+          .from('projects')
+          .select('*', { count: 'exact', head: true })
+          .eq('client_id', user.id);
+        
+        setProjectCount(count || 0);
       } catch (error) {
         console.error('Error in fetchClientProfile:', error);
       } finally {
@@ -75,21 +84,13 @@ const BusinessDashboard = () => {
           </TabsList>
           
           <TabsContent value="projects" className="space-y-6">
-            <div className="flex justify-between items-center mb-6">
-              <h2 className="text-2xl font-semibold">My Projects</h2>
-              <NewProjectDialog />
-            </div>
-            
+            <ProjectsHeader projectCount={projectCount} />
             <ProjectsTable />
           </TabsContent>
           
           <TabsContent value="my-hires" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>My Hires</CardTitle>
-                <CardDescription>Active contracts with freelancers</CardDescription>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <BusinessJobsTab />
               </CardContent>
             </Card>
@@ -97,11 +98,7 @@ const BusinessDashboard = () => {
           
           <TabsContent value="messages" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Messages</CardTitle>
-                <CardDescription>Conversations with freelancers</CardDescription>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <BusinessMessagesTab />
               </CardContent>
             </Card>
@@ -109,11 +106,7 @@ const BusinessDashboard = () => {
           
           <TabsContent value="quotes" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Quotes</CardTitle>
-                <CardDescription>Project quotes from freelancers</CardDescription>
-              </CardHeader>
-              <CardContent>
+              <CardContent className="pt-6">
                 <BusinessQuotesTab />
               </CardContent>
             </Card>
