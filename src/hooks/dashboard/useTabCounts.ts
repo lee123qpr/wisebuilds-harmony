@@ -33,37 +33,37 @@ export const useTabCounts = (activeTab: string) => {
     
     const fetchTabCounts = async () => {
       try {
-        // For available projects, use count only query
+        // For available projects, use count only query with simpler structure
         const availableResponse = await supabase
           .from('projects')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('status', 'open');
         
         const availableCount = availableResponse.count || 0;
         if (availableResponse.error) throw availableResponse.error;
           
-        // For leads, use count only query
+        // For leads, use count only query with simpler structure
         const leadsResponse = await supabase
           .from('project_applications')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id);
         
         const leadsCount = leadsResponse.count || 0;
         if (leadsResponse.error) throw leadsResponse.error;
           
-        // For quotes, use count only query
+        // For quotes, use count only query with simpler structure
         const quotesResponse = await supabase
           .from('quotes')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('freelancer_id', user.id);
         
         const quotesCount = quotesResponse.count || 0;
         if (quotesResponse.error) throw quotesResponse.error;
           
-        // For active jobs, use count only query
+        // For active jobs, use count only query with simpler structure
         const activeJobsResponse = await supabase
           .from('projects')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('status', 'in_progress')
           .eq('hired_freelancer_id', user.id);
         

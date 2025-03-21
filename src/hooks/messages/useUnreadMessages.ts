@@ -13,10 +13,10 @@ export const useUnreadMessages = () => {
 
     const fetchUnreadCount = async () => {
       try {
-        // Use a simpler query with count to avoid type instantiation issues
+        // Use a simpler query structure to avoid TypeScript type instantiation issues
         const response = await supabase
           .from('messages')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('recipient_id', user.id)
           .eq('is_read', false);
 
