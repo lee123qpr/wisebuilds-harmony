@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
-import ActiveJobsTabContent from './tabs/ActiveJobsTabContent';
+import ActiveJobsTab from '@/components/dashboard/freelancer/ActiveJobsTab';
 import QuotesTabContent from './tabs/QuotesTabContent';
 import LeadsTabContent from './tabs/LeadsTabContent';
 import AvailableTabContent from './tabs/AvailableTabContent';
@@ -95,7 +95,7 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       </TabsContent>
       
       <TabsContent value="active" className="pt-2">
-        <ActiveJobsTabContent />
+        <ActiveJobsTab />
       </TabsContent>
       
       <TabsContent value="messages" className="pt-2">

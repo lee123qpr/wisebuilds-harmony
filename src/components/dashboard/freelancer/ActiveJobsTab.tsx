@@ -10,33 +10,55 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import JobsList from './jobs/JobsList';
 import { useClientNames } from '@/hooks/clients/useClientNames';
+import { toast } from 'sonner';
 
 const ActiveJobsTab: React.FC = () => {
   const { user } = useAuth();
   const [activeTab, setActiveTab] = useState('active');
   
-  // Fetch quotes with accepted status for this freelancer (including completed ones)
-  const { data: allQuotes, isLoading, refetch } = useQuotes({
+  console.log("ActiveJobsTab rendering for user:", user?.id);
+  
+  // Fetch quotes with accepted status for this freelancer (both active and completed)
+  const { data: allQuotes, isLoading, error, refetch } = useQuotes({
     forClient: false,
-    includeAllQuotes: false,
+    includeAllQuotes: true, // Make sure we get all quotes
     refreshInterval: 10000
   });
+  
+  console.log("Fetched quotes:", allQuotes?.length, allQuotes);
+  
+  // Show error toast if there was an issue loading quotes
+  React.useEffect(() => {
+    if (error) {
+      console.error("Error loading quotes:", error);
+      toast.error("Failed to load jobs", {
+        description: "There was an error loading your jobs. Please try again."
+      });
+    }
+  }, [error]);
   
   // Filter for active and completed jobs
   // Active jobs are those that are accepted but not fully completed (both parties confirmed)
   const activeJobs = allQuotes?.filter(quote => 
-    quote.status === 'accepted' && (!quote.completed_at || !quote.client_completed || !quote.freelancer_completed)
+    quote.status === 'accepted' && 
+    (!quote.completed_at || !quote.client_completed || !quote.freelancer_completed)
   ) || [];
   
   // Completed jobs are those that are accepted and fully completed
   const completedJobs = allQuotes?.filter(quote => 
-    quote.status === 'accepted' && quote.completed_at && quote.client_completed && quote.freelancer_completed
+    quote.status === 'accepted' && 
+    quote.completed_at && 
+    quote.client_completed && 
+    quote.freelancer_completed
   ) || [];
+  
+  console.log("Filtered jobs - Active:", activeJobs.length, "Completed:", completedJobs.length);
   
   // Get client names for the projects
   const { clientNames } = useClientNames([...activeJobs, ...completedJobs]);
   
   const handleStatusUpdate = () => {
+    console.log("Status update requested, refetching quotes");
     refetch();
   };
 

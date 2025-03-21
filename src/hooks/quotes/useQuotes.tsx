@@ -46,50 +46,86 @@ export const useQuotes = ({
         return [];
       }
       
-      // Log diagnostics for quote fetching but only if we have a projectId
-      if (projectId) {
-        logQuoteFetchDiagnostics(projectId, forClient, user.id, includeAllQuotes);
-      }
+      // We need to be able to fetch all accepted quotes for the active jobs view
+      // without requiring a specific projectId
+      const userType = user.user_metadata?.user_type;
+      const isFreelancer = userType === 'freelancer';
       
       try {
-        // For clients, we want to show all quotes for their project by default
-        const shouldIncludeAllQuotes = forClient || includeAllQuotes;
+        let quotesData;
         
-        // If no projectId, return early for dashboard views that don't need specific quotes
+        // For dashboard views where we need all quotes for a user
         if (!projectId) {
-          return [];
-        }
-        
-        // Build and execute the main quotes query
-        const query = buildQuotesQuery(projectId, forClient, user.id, shouldIncludeAllQuotes);
-        const { data: quotesData, error: quotesError } = await query;
-        
-        if (quotesError) {
-          console.error('Error fetching quotes:', quotesError);
-          throw quotesError;
-        }
-        
-        // If no quotes were found with the initial query
-        if (!quotesData || quotesData.length === 0) {
-          // Check if there are any quotes for this project
-          if (projectId) {
-            const allProjectQuotes = await checkAllProjectQuotes(projectId);
-            
-            // If we should include all quotes, use these results instead
-            if (shouldIncludeAllQuotes && allProjectQuotes && allProjectQuotes.length > 0) {
-              console.log('Using all quotes found due to includeAllQuotes=true');
+          console.log("Fetching all quotes for user:", user.id, "isFreelancer:", isFreelancer);
+          
+          if (isFreelancer) {
+            // For freelancers, get their submitted quotes
+            const { data, error } = await supabase
+              .from('quotes')
+              .select('*, project:projects(*)')
+              .eq('freelancer_id', user.id)
+              .eq('status', 'accepted'); // Get only accepted quotes for active jobs
               
-              // We need to fetch freelancer profiles separately now
-              const freelancerIds = allProjectQuotes.map(quote => quote.freelancer_id);
-              const freelancerProfiles = await fetchFreelancerProfiles(freelancerIds);
-              const profileMap = createProfileMap(freelancerProfiles);
-              
-              return formatQuotesWithProfiles(allProjectQuotes, profileMap);
+            if (error) {
+              console.error('Error fetching quotes for freelancer:', error);
+              throw error;
             }
+            
+            console.log("Fetched quotes for freelancer:", data?.length);
+            quotesData = data;
+          } else {
+            // For clients, get quotes for their projects
+            const { data, error } = await supabase
+              .from('quotes')
+              .select('*, project:projects(*)')
+              .eq('client_id', user.id)
+              .eq('status', 'accepted'); // Get only accepted quotes for active jobs
+              
+            if (error) {
+              console.error('Error fetching quotes for client:', error);
+              throw error;
+            }
+            
+            console.log("Fetched quotes for client:", data?.length);
+            quotesData = data;
+          }
+        } else {
+          // If we have a projectId, use the existing query building logic
+          // Log diagnostics for quote fetching
+          logQuoteFetchDiagnostics(projectId, forClient, user.id, includeAllQuotes);
+          
+          // Build and execute the main quotes query
+          const query = buildQuotesQuery(projectId, forClient, user.id, includeAllQuotes);
+          const { data, error } = await query;
+          
+          if (error) {
+            console.error('Error fetching quotes:', error);
+            throw error;
           }
           
+          quotesData = data;
+          
+          // If no quotes were found with the initial query
+          if (!quotesData || quotesData.length === 0) {
+            // Check if there are any quotes for this project
+            if (projectId) {
+              const allProjectQuotes = await checkAllProjectQuotes(projectId);
+              
+              // If we should include all quotes, use these results instead
+              if (includeAllQuotes && allProjectQuotes && allProjectQuotes.length > 0) {
+                console.log('Using all quotes found due to includeAllQuotes=true');
+                quotesData = allProjectQuotes;
+              }
+            }
+          }
+        }
+        
+        if (!quotesData || quotesData.length === 0) {
+          console.log("No quotes found, returning empty array");
           return [];
         }
+        
+        console.log(`Found ${quotesData.length} quotes:`, quotesData);
         
         // Fetch freelancer profiles for these quotes
         const freelancerIds = quotesData.map(quote => quote.freelancer_id);
@@ -107,15 +143,15 @@ export const useQuotes = ({
         throw error;
       }
     },
-    enabled: !!user && !!projectId, // Only run query if we have both user and projectId
+    enabled: !!user, // Only run query if we have a user
     refetchInterval: refreshInterval,
     refetchOnWindowFocus: true,
     staleTime: 5000,
   });
 
-  // Set up real-time listener for quotes table only if we have both projectId and userId
+  // Set up real-time listener for quotes table
   useEffect(() => {
-    if (!projectId || !user?.id) return;
+    if (!user?.id) return;
     
     const channel = setupQuotesRealtimeListener(
       projectId, 

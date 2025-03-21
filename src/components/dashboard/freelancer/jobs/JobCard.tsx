@@ -45,6 +45,15 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
     ? quote.freelancer_completed 
     : quote.client_completed;
   
+  console.log("JobCard rendering for quote:", quote.id, {
+    isFullyCompleted,
+    isPartiallyCompleted,
+    userCompleted,
+    clientCompleted: quote.client_completed,
+    freelancerCompleted: quote.freelancer_completed,
+    completedAt: quote.completed_at
+  });
+  
   return (
     <Card key={quote.id} className="w-full">
       <CardHeader className="pb-2">
