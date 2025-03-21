@@ -1,17 +1,20 @@
 
 import { useState } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useVerification } from '.';
+import { uploadVerificationDocument } from './services/document-upload';
 import { useToast } from '@/hooks/use-toast';
-import { useVerification } from './useVerification';
 
-export const useDocumentUpload = (onClose?: () => void) => {
+export const useDocumentUpload = (onClose: () => void) => {
+  const { user } = useAuth();
+  const { refreshVerificationStatus } = useVerification();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
-  const { uploadVerificationDocument, refreshVerificationStatus } = useVerification();
 
   const handleFileSelection = (file: File) => {
-    setSelectedFile(file);
     console.log('File selected:', file.name);
+    setSelectedFile(file);
   };
 
   const handleRemoveSelectedFile = () => {
@@ -19,50 +22,44 @@ export const useDocumentUpload = (onClose?: () => void) => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedFile) {
+    if (!selectedFile || !user) {
       toast({
-        variant: 'destructive',
-        title: 'No file selected',
-        description: 'Please select a file to upload.',
+        title: "Missing information",
+        description: selectedFile ? "Authentication required" : "Please select a file to upload",
+        variant: "destructive"
       });
       return;
     }
 
     setIsUploading(true);
-    
+    console.log('Starting document upload...');
+    console.log('Starting document upload for user:', user.id);
+
     try {
-      console.log('Starting document upload...');
-      const result = await uploadVerificationDocument(selectedFile);
+      const result = await uploadVerificationDocument(user.id, selectedFile);
       
-      if (!result) {
-        throw new Error('Upload failed - no result returned');
+      if (!result || !result.success) {
+        console.error('Upload failed with result:', result);
+        throw new Error(result?.error?.message || 'Failed to upload document');
       }
 
-      if (result === true || (typeof result === 'object' && result.success)) {
-        console.log('Document upload succeeded');
-        setSelectedFile(null);
-        toast({
-          title: 'Document uploaded',
-          description: 'Your verification document has been submitted for review.',
-        });
-        
-        // Refresh the verification status
-        await refreshVerificationStatus();
-        
-        // Call onClose if provided
-        if (onClose) {
-          onClose();
-        }
-      } else {
-        console.error('Document upload failed with result:', result);
-        throw new Error('Upload failed');
-      }
+      // Refresh verification status to get the latest data
+      await refreshVerificationStatus();
+      
+      toast({
+        title: "Document uploaded successfully",
+        description: "Your verification document has been submitted for review",
+      });
+      
+      // Close the dialog
+      onClose();
     } catch (error: any) {
       console.error('Error uploading document:', error);
+      
       toast({
-        variant: 'destructive',
-        title: 'Upload failed',
-        description: error.message || 'There was an error uploading your document. Please try again.',
+        title: "Upload failed",
+        description: error.message || "There was a problem uploading your document. Please try again.",
+        variant: "destructive"
       });
     } finally {
       setIsUploading(false);

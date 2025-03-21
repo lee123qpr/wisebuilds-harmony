@@ -20,7 +20,8 @@ export const uploadVerificationDocument = async (
     const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     const filePath = `${userId}/${fileName}`;
     
-    // Upload file to storage
+    // First, try to upload the file
+    console.log('Attempting to upload file to storage path:', filePath);
     const { error: uploadError } = await supabase.storage
       .from('verification_documents')
       .upload(filePath, file, {
@@ -29,19 +30,24 @@ export const uploadVerificationDocument = async (
       });
     
     if (uploadError) {
-      console.error('Error uploading file:', uploadError);
+      console.error('Error uploading file to storage:', uploadError);
       return { 
         success: false, 
         error: uploadError 
       };
     }
     
+    console.log('File uploaded successfully, now updating verification record');
+    
     // Check if the user already has a verification record
     const existingVerification = await fetchVerificationStatus(userId);
     
+    let updateError;
+    
     if (existingVerification) {
       // If there's an existing verification record, update it
-      const { error: updateError } = await supabase
+      console.log('Updating existing verification record for user:', userId);
+      const { error } = await supabase
         .from('freelancer_verification')
         .update({
           id_document_path: filePath,
@@ -52,22 +58,11 @@ export const uploadVerificationDocument = async (
         })
         .eq('user_id', userId);
       
-      if (updateError) {
-        console.error('Error updating verification record:', updateError);
-        
-        // Clean up the uploaded file if there was an error
-        await supabase.storage
-          .from('verification_documents')
-          .remove([filePath]);
-        
-        return { 
-          success: false, 
-          error: updateError 
-        };
-      }
+      updateError = error;
     } else {
       // If there's no existing verification record, create one
-      const { error: insertError } = await supabase
+      console.log('Creating new verification record for user:', userId);
+      const { error } = await supabase
         .from('freelancer_verification')
         .insert({
           user_id: userId,
@@ -76,23 +71,29 @@ export const uploadVerificationDocument = async (
           submitted_at: new Date().toISOString()
         });
       
-      if (insertError) {
-        console.error('Error creating verification record:', insertError);
-        
-        // Clean up the uploaded file if there was an error
-        await supabase.storage
-          .from('verification_documents')
-          .remove([filePath]);
-        
-        return { 
-          success: false, 
-          error: insertError 
-        };
-      }
+      updateError = error;
+    }
+    
+    if (updateError) {
+      console.error('Error updating database record:', updateError);
+      
+      // Clean up the uploaded file if there was an error with the database record
+      console.log('Cleaning up uploaded file due to database error');
+      await supabase.storage
+        .from('verification_documents')
+        .remove([filePath]);
+      
+      return { 
+        success: false, 
+        error: updateError 
+      };
     }
     
     // Get the updated verification data
+    console.log('Fetching updated verification status');
     const updatedVerification = await fetchVerificationStatus(userId);
+    
+    console.log('Document upload complete. Verification status:', updatedVerification?.verification_status);
     
     return { 
       success: true, 

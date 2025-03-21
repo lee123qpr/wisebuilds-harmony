@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { VerificationData } from '../types';
+import type { VerificationData, VerificationStatus } from '../types';
 
 export const fetchVerificationStatus = async (userId: string): Promise<VerificationData | null> => {
   try {
@@ -20,7 +20,28 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
     }
     
     console.log('Verification data retrieved:', data);
-    return data;
+    
+    // If no data found, return null
+    if (!data) {
+      return null;
+    }
+    
+    // Ensure verification_status is a valid VerificationStatus type
+    const verificationStatus = data.verification_status as VerificationStatus;
+    
+    // Return typed verification data
+    return {
+      id: data.id,
+      user_id: data.user_id,
+      id_document_path: data.id_document_path,
+      verification_status: verificationStatus,
+      admin_notes: data.admin_notes,
+      submitted_at: data.submitted_at,
+      verified_at: data.verified_at,
+      created_at: data.created_at,
+      updated_at: data.updated_at,
+      verified_by: data.verified_by
+    };
   } catch (error) {
     console.error('Error in fetchVerificationStatus:', error);
     throw error;
