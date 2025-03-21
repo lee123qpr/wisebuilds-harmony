@@ -23,7 +23,7 @@ const BusinessDashboard = () => {
   
   // Set the active tab based on URL parameters
   useEffect(() => {
-    if (tabParam && ['projects', 'my-hires', 'messages', 'quotes'].includes(tabParam)) {
+    if (tabParam && ['projects', 'quotes', 'my-hires', 'messages'].includes(tabParam)) {
       setActiveTab(tabParam);
     }
   }, [tabParam]);
@@ -53,9 +53,8 @@ const BusinessDashboard = () => {
         // Use a separate count() query to avoid type instantiation issues
         const { count, error: countError } = await supabase
           .from('projects')
-          .select('*', { count: 'exact' })
-          .eq('client_id', user.id)
-          .limit(0); // Don't return actual records, just the count
+          .select('count')
+          .eq('client_id', user.id);
         
         if (countError) {
           console.error('Error fetching project count:', countError);
@@ -84,14 +83,22 @@ const BusinessDashboard = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="projects">My Projects</TabsTrigger>
+            <TabsTrigger value="quotes">Quotes</TabsTrigger>
             <TabsTrigger value="my-hires">My Hires</TabsTrigger>
             <TabsTrigger value="messages">Messages</TabsTrigger>
-            <TabsTrigger value="quotes">Quotes</TabsTrigger>
           </TabsList>
           
           <TabsContent value="projects" className="space-y-6">
             <ProjectsHeader projectCount={projectCount} />
             <ProjectsTable />
+          </TabsContent>
+          
+          <TabsContent value="quotes" className="space-y-4">
+            <Card>
+              <CardContent className="pt-6">
+                <BusinessQuotesTab />
+              </CardContent>
+            </Card>
           </TabsContent>
           
           <TabsContent value="my-hires" className="space-y-4">
@@ -106,14 +113,6 @@ const BusinessDashboard = () => {
             <Card>
               <CardContent className="pt-6">
                 <BusinessMessagesTab />
-              </CardContent>
-            </Card>
-          </TabsContent>
-          
-          <TabsContent value="quotes" className="space-y-4">
-            <Card>
-              <CardContent className="pt-6">
-                <BusinessQuotesTab />
               </CardContent>
             </Card>
           </TabsContent>
