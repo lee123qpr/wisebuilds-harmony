@@ -11,7 +11,6 @@ import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import ProjectCompleteButton from '@/components/projects/ProjectCompleteButton';
 import ProjectCompletionStatus from '@/components/projects/ProjectCompletionStatus';
 
 const QuotesTab: React.FC = () => {
@@ -198,24 +197,15 @@ const QuotesTab: React.FC = () => {
                           </Button>
                           
                           {isAccepted && (
-                            <>
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="gap-2"
-                                onClick={() => navigate(`/dashboard/business?tab=messages&freelancerId=${quote.freelancer_id}`)}
-                              >
-                                <MessageSquare className="h-4 w-4" />
-                                Message Freelancer
-                              </Button>
-                              
-                              <ProjectCompleteButton
-                                quoteId={quote.id}
-                                projectId={quote.project_id}
-                                projectTitle={projectTitle}
-                                onStatusUpdate={handleStatusUpdate}
-                              />
-                            </>
+                            <Button 
+                              variant="outline" 
+                              size="sm" 
+                              className="gap-2"
+                              onClick={() => navigate(`/dashboard/business?tab=messages&freelancerId=${quote.freelancer_id}`)}
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                              Message Freelancer
+                            </Button>
                           )}
                         </div>
                       </div>
