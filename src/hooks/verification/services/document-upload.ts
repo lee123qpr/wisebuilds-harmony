@@ -2,7 +2,6 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { VerificationData } from '../types';
 import { mapStatusToVerificationStatus } from '../utils/status-utils';
-import { isUserFreelancer } from './user-verification';
 
 // Upload ID document
 export const uploadVerificationDocument = async (userId: string, file: File): Promise<{
@@ -12,16 +11,6 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
   error?: any;
 }> => {
   try {
-    // Check if user is a freelancer first
-    const isFreelancer = await isUserFreelancer();
-    if (!isFreelancer) {
-      console.error('Only freelancers can upload verification documents');
-      return { 
-        success: false, 
-        error: new Error('Only freelancers can upload verification documents') 
-      };
-    }
-    
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
     const fileName = `${Date.now()}.${fileExt}`;

@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/context/AuthContext';
 
 export const isUserFreelancer = async (): Promise<boolean> => {
   try {
