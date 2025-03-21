@@ -2,14 +2,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
-import EmptyStateCard from '../freelancer/EmptyStateCard';
-import { Briefcase } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
-import { Skeleton } from '@/components/ui/skeleton';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import JobsList from '../freelancer/jobs/JobsList';
+import { Tabs } from '@/components/ui/tabs';
 import { useFreelancerNames } from '@/hooks/clients/useFreelancerNames';
+
+// Import our new components
+import JobsHeader from './jobs/JobsHeader';
+import JobsTabsList from './jobs/JobsTabsList';
+import JobTabsContent from './jobs/JobTabsContent';
+import JobsEmptyState from './jobs/JobsEmptyState';
+import JobsLoadingSkeleton from './jobs/JobsLoadingSkeleton';
 
 const BusinessJobsTab: React.FC = () => {
   const { user } = useAuth();
@@ -39,84 +40,33 @@ const BusinessJobsTab: React.FC = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="space-y-4">
-        {[1, 2].map((i) => (
-          <Card key={i} className="w-full">
-            <CardHeader className="pb-2">
-              <Skeleton className="h-6 w-3/4" />
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-1/2" />
-                <Skeleton className="h-4 w-1/3" />
-                <Skeleton className="h-10 w-full" />
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
+    return <JobsLoadingSkeleton />;
   }
 
   if (activeJobs.length === 0 && completedJobs.length === 0) {
-    return (
-      <EmptyStateCard
-        title="My Hires"
-        description="You don't have any active hires at the moment. When you accept a quote from a freelancer, they will appear here."
-      />
-    );
+    return <JobsEmptyState />;
   }
 
   return (
     <Tabs defaultValue={activeTab} onValueChange={setActiveTab}>
       <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="flex items-center gap-2">
-            <Briefcase className="h-5 w-5 text-primary" />
-            <h2 className="text-2xl font-bold tracking-tight">
-              My Hires
-              <Badge variant="secondary" className="ml-2 text-sm font-medium">
-                {activeJobs.length + completedJobs.length}
-              </Badge>
-            </h2>
-          </div>
-        </div>
+        <JobsHeader 
+          activeJobsCount={activeJobs.length} 
+          completedJobsCount={completedJobs.length} 
+        />
         
-        <TabsList>
-          <TabsTrigger value="active">
-            Active
-            <Badge variant="secondary" className="ml-2">
-              {activeJobs.length}
-            </Badge>
-          </TabsTrigger>
-          <TabsTrigger value="completed">
-            Completed
-            <Badge variant="secondary" className="ml-2">
-              {completedJobs.length}
-            </Badge>
-          </TabsTrigger>
-        </TabsList>
+        <JobsTabsList 
+          activeJobsCount={activeJobs.length} 
+          completedJobsCount={completedJobs.length} 
+        />
         
-        <TabsContent value="active">
-          <JobsList 
-            jobs={activeJobs}
-            clientNames={freelancerNames}
-            onStatusUpdate={handleStatusUpdate}
-            emptyTitle="Active Hires"
-            emptyDescription="You don't have any active hires at the moment. When you accept a quote from a freelancer, they will appear here."
-          />
-        </TabsContent>
-        
-        <TabsContent value="completed">
-          <JobsList 
-            jobs={completedJobs}
-            clientNames={freelancerNames}
-            onStatusUpdate={handleStatusUpdate}
-            emptyTitle="Completed Hires"
-            emptyDescription="You haven't completed any hires yet. Hires will appear here after both you and the freelancer mark them as complete."
-          />
-        </TabsContent>
+        <JobTabsContent 
+          activeJobs={activeJobs} 
+          completedJobs={completedJobs} 
+          freelancerNames={freelancerNames} 
+          handleStatusUpdate={handleStatusUpdate} 
+          activeTab={activeTab}
+        />
       </div>
     </Tabs>
   );
