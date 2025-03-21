@@ -63,7 +63,7 @@ const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
         </Alert>
       )}
       
-      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+      <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors">
         <input
           type="file"
           id="id-document"
@@ -74,17 +74,21 @@ const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
         />
         <label
           htmlFor="id-document"
-          className="flex flex-col items-center justify-center cursor-pointer"
+          className={`flex flex-col items-center justify-center ${!isUploading && setupComplete ? "cursor-pointer" : "cursor-not-allowed"}`}
         >
           {!setupComplete ? (
             <Loader2 className="h-8 w-8 text-gray-400 mb-2 animate-spin" />
+          ) : isUploading ? (
+            <Loader2 className="h-8 w-8 text-blue-500 mb-2 animate-spin" />
           ) : (
             <Upload className="h-8 w-8 text-gray-400 mb-2" />
           )}
           <p className="text-sm text-gray-600 font-medium">
             {!setupComplete 
               ? 'Setting up verification system...' 
-              : 'Click to upload your ID document'}
+              : isUploading
+                ? 'Uploading document...'
+                : 'Click to upload your ID document'}
           </p>
           <p className="text-xs text-gray-500 mt-1">
             JPEG, PNG or PDF (max. 5MB)
