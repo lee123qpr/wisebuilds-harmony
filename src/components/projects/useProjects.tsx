@@ -64,20 +64,25 @@ export const useProjects = () => {
       setIsLoading(true);
       setError(null); // Reset error state
       
-      // Fetch projects
+      // Fetch projects with specific fields to avoid TypeScript type recursion issues
       const { data: projectsData, error } = await supabase
         .from('projects')
-        .select('*, applications:project_applications(count)')
+        .select(`
+          id, title, description, budget, role, created_at, location, 
+          work_type, duration, hiring_status, requires_equipment, 
+          requires_insurance, requires_site_visits, status, updated_at, 
+          user_id, documents, applications, purchases_count, 
+          start_date
+        `)
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
       
       if (error) throw error;
       
-      // Process projects to include application count
+      // Process projects to include application count and parse documents
       const processedProjects = projectsData.map((project: any) => ({
         ...project,
-        applications: project.applications[0]?.count || 0,
-        // parse documents if it exists
+        // Ensure documents is properly parsed
         documents: Array.isArray(project.documents) 
           ? project.documents 
           : (project.documents ? JSON.parse(String(project.documents)) : [])
@@ -88,9 +93,9 @@ export const useProjects = () => {
         processedProjects.map(async (project) => {
           try {
             // Get chat count
-            const { data: conversations, error: chatError } = await supabase
+            const { count: chatCount, error: chatError } = await supabase
               .from('conversations')
-              .select('id')
+              .select('id', { count: 'exact', head: true })
               .eq('project_id', project.id);
             
             if (chatError) throw chatError;
@@ -105,7 +110,7 @@ export const useProjects = () => {
             
             return {
               ...project,
-              chat_count: conversations?.length || 0,
+              chat_count: chatCount || 0,
               quote_count: quoteCount || 0
             };
           } catch (err) {

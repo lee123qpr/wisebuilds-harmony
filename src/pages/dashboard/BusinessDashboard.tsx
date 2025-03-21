@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -62,10 +63,10 @@ const BusinessDashboard = () => {
           setContactName(data.contact_name);
         }
 
-        // Use separate count query for projects
+        // Use separate count query for projects with correct field name (user_id instead of client_id)
         const { count, error: countError } = await supabase
           .from('projects')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id);
         
         if (countError) {
