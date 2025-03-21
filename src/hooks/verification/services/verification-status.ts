@@ -1,6 +1,7 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { VerificationData, VerificationStatus } from '../types';
+import type { VerificationData } from '../types';
+import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
 
 export const fetchVerificationStatus = async (userId: string): Promise<VerificationData | null> => {
   try {
@@ -38,8 +39,6 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       admin_notes: data.admin_notes,
       submitted_at: data.submitted_at,
       verified_at: data.verified_at,
-      created_at: data.created_at,
-      updated_at: data.updated_at,
       verified_by: data.verified_by
     };
   } catch (error) {
