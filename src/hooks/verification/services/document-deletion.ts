@@ -1,8 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import type { VerificationData } from '../types';
+import { mapStatusToVerificationStatus } from '../utils/status-utils';
 import { isUserFreelancer } from './user-verification';
 
-// Delete verification document and reset status
+// Delete ID document
 export const deleteVerificationDocument = async (userId: string, documentPath: string): Promise<{
   success: boolean;
   error?: any;
@@ -11,44 +13,48 @@ export const deleteVerificationDocument = async (userId: string, documentPath: s
     // Check if user is a freelancer first
     const isFreelancer = await isUserFreelancer();
     if (!isFreelancer) {
-      console.error('Only freelancers can manage verification documents');
+      console.error('Only freelancers can delete verification documents');
       return { 
         success: false, 
-        error: new Error('Only freelancers can manage verification documents') 
+        error: new Error('Only freelancers can delete verification documents') 
       };
     }
     
-    console.log('Attempting to delete document:', documentPath);
+    console.log('Deleting document:', documentPath);
     
     // Delete the file from storage
-    const { error: deleteFileError } = await supabase.storage
-      .from('id-documents')
+    const { data: deleteData, error: deleteError } = await supabase.storage
+      .from('verification_documents')
       .remove([documentPath]);
     
-    if (deleteFileError) {
-      console.error('Error deleting file:', deleteFileError);
-      throw deleteFileError;
+    if (deleteError) {
+      console.error('Delete file error:', deleteError);
+      throw deleteError;
     }
     
     console.log('File deleted successfully');
     
-    // Update the verification record to reset status
+    // Reset the verification record
+    const resetRecord = {
+      user_id: userId,
+      id_document_path: null,
+      verification_status: 'not_submitted',
+      admin_notes: null,
+      verified_at: null,
+      updated_at: new Date().toISOString()
+    };
+    
     const { error: updateError } = await supabase
       .from('freelancer_verification')
-      .update({
-        id_document_path: null,
-        verification_status: 'not_submitted',
-        submitted_at: null,
-        verified_at: null,
-        admin_notes: null,
-        updated_at: new Date().toISOString()
-      })
+      .update(resetRecord)
       .eq('user_id', userId);
     
     if (updateError) {
-      console.error('Error updating verification record:', updateError);
+      console.error('Reset verification record error:', updateError);
       throw updateError;
     }
+    
+    console.log('Verification record reset successfully');
     
     return { success: true };
   } catch (error) {

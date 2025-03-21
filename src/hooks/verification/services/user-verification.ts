@@ -1,32 +1,28 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
-// Check if current user is a freelancer
 export const isUserFreelancer = async (): Promise<boolean> => {
   try {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return false;
+    // Get the current user session
+    const { data: { session }, error: sessionError } = await supabase.auth.getSession();
     
-    // Check user_type from user metadata (client side)
-    if (user.user_metadata?.user_type === 'freelancer') {
-      return true;
+    if (sessionError || !session) {
+      console.error('Error getting session or no session found:', sessionError);
+      return false;
     }
+
+    // Extract user_type from user metadata
+    const userType = session.user.user_metadata?.user_type;
     
-    // As a fallback, check if the user has a freelancer profile
-    const { data: profile, error } = await supabase
-      .from('freelancer_profiles')
-      .select('id')
-      .eq('id', user.id)
-      .maybeSingle();
-    
-    if (error) {
-      console.error('Error checking freelancer profile:', error);
+    if (!userType) {
+      console.warn('No user_type found in user metadata');
       return false;
     }
     
-    return !!profile;
+    return userType === 'freelancer';
   } catch (error) {
-    console.error('Error checking user type:', error);
+    console.error('Error checking if user is a freelancer:', error);
     return false;
   }
 };

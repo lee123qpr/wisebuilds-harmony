@@ -16,7 +16,7 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       return null;
     }
     
-    // Query the freelancer_verification table directly without joining to auth.users
+    // Query the freelancer_verification table
     const { data, error } = await supabase
       .from('freelancer_verification')
       .select('*')
