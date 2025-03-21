@@ -11,6 +11,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import { useNotifications } from '@/context/NotificationsContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { useUnreadMessages } from '@/hooks/messages/useUnreadMessages';
 
 interface TabCounts {
   available: number;
@@ -41,6 +42,7 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
   const navigate = useNavigate();
   const { user } = useAuth();
   const { notifications } = useNotifications();
+  const { unreadCount: messageCount, hasNewMessages } = useUnreadMessages();
   const tabParam = searchParams.get('tab');
   
   // State for tab counts and notifications
@@ -122,41 +124,34 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
         // Fetch counts for projects
         const { data: availableProjects, error: availableError } = await supabase
           .from('projects')
-          .select('id', { count: 'exact', head: true })
+          .select('id')
           .eq('status', 'open');
           
-        // Fetch counts for leads
+        // Fetch counts for project applications (for leads)
         const { data: leadsCount, error: leadsError } = await supabase
-          .from('project_leads')
-          .select('id', { count: 'exact', head: true })
-          .eq('freelancer_id', user.id);
+          .from('project_applications')
+          .select('id')
+          .eq('user_id', user.id);
           
         // Fetch counts for quotes
         const { data: quotesCount, error: quotesError } = await supabase
           .from('quotes')
-          .select('id', { count: 'exact', head: true })
+          .select('id')
           .eq('freelancer_id', user.id);
           
         // Fetch counts for active jobs
         const { data: activeJobsCount, error: activeJobsError } = await supabase
           .from('projects')
-          .select('id', { count: 'exact', head: true })
+          .select('id')
           .eq('status', 'in_progress')
           .eq('hired_freelancer_id', user.id);
           
-        // Fetch counts for messages
-        const { data: unreadMessagesCount, error: messagesError } = await supabase
-          .from('messages')
-          .select('id', { count: 'exact', head: true })
-          .eq('receiver_id', user.id)
-          .eq('is_read', false);
-          
         setTabCounts({
-          available: availableProjects?.count || 0,
-          leads: leadsCount?.count || 0,
-          quotes: quotesCount?.count || 0,
-          active: activeJobsCount?.count || 0,
-          messages: unreadMessagesCount?.count || 0
+          available: availableProjects?.length || 0,
+          leads: leadsCount?.length || 0,
+          quotes: quotesCount?.length || 0,
+          active: activeJobsCount?.length || 0,
+          messages: messageCount
         });
       } catch (error) {
         console.error('Error fetching tab counts:', error);
@@ -166,21 +161,6 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
     fetchTabCounts();
     
     // Set up real-time listeners for changes
-    const messagesChannel = supabase
-      .channel('tab-counts-messages')
-      .on('postgres_changes', 
-        { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
-        () => {
-          console.log('New message received');
-          // Only show notification if not on messages tab
-          if (activeTab !== 'messages') {
-            setTabNotifications(prev => ({ ...prev, messages: true }));
-          }
-          fetchTabCounts();
-        }
-      )
-      .subscribe();
-      
     const projectsChannel = supabase
       .channel('tab-counts-projects')
       .on('postgres_changes', 
@@ -222,7 +202,7 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       // Update tab notifications based on notification types
       setTabNotifications(prev => ({
         ...prev,
-        messages: prev.messages || messageNotifications.length > 0,
+        messages: hasNewMessages,
         leads: prev.leads || leadNotifications.length > 0
       }));
     };
@@ -230,11 +210,10 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
     processNotifications();
     
     return () => {
-      supabase.removeChannel(messagesChannel);
       supabase.removeChannel(projectsChannel);
       supabase.removeChannel(quotesChannel);
     };
-  }, [user, activeTab, notifications]);
+  }, [user, activeTab, notifications, messageCount, hasNewMessages]);
   
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
