@@ -50,11 +50,12 @@ const BusinessDashboard = () => {
           setContactName(data.contact_name);
         }
 
-        // Fix for TypeScript error - use count() instead of select('*')
+        // Use a separate count() query to avoid type instantiation issues
         const { count, error: countError } = await supabase
           .from('projects')
-          .select('id', { count: 'exact', head: true }) // Only select id field to avoid deep type instantiation
-          .eq('client_id', user.id);
+          .select('*', { count: 'exact' })
+          .eq('client_id', user.id)
+          .limit(0); // Don't return actual records, just the count
         
         if (countError) {
           console.error('Error fetching project count:', countError);
