@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -63,11 +62,11 @@ const BusinessDashboard = () => {
           setContactName(data.contact_name);
         }
 
-        // Use a separate count query to avoid type instantiation issues
+        // Use separate count query for projects
         const { count, error: countError } = await supabase
           .from('projects')
-          .select('id', { count: 'exact', head: true })
-          .eq('client_id', user.id);
+          .select('*', { count: 'exact', head: true })
+          .eq('user_id', user.id);
         
         if (countError) {
           console.error('Error fetching project count:', countError);

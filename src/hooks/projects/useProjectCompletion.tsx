@@ -30,22 +30,45 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
       
       console.log(`Setting ${updateField} to true for quote ${quoteId}`);
       
-      const { data, error } = await supabase
+      // First check if the quote exists
+      const { data: quoteExists, error: checkError } = await supabase
+        .from('quotes')
+        .select('id')
+        .eq('id', quoteId)
+        .limit(1);
+      
+      if (checkError) {
+        console.error('Error checking quote existence:', checkError);
+        throw checkError;
+      }
+      
+      if (!quoteExists || quoteExists.length === 0) {
+        console.error('Quote not found:', quoteId);
+        throw new Error('Quote not found');
+      }
+      
+      // Now update the quote (changed from using .single() to handling response manually)
+      const { data: updatedQuotes, error } = await supabase
         .from('quotes')
         .update({ [updateField]: true })
         .eq('id', quoteId)
-        .select('*')
-        .single();
+        .select('*');
         
       if (error) {
         console.error('Error updating quote:', error);
         throw error;
       }
       
-      console.log('Quote updated successfully:', data);
+      if (!updatedQuotes || updatedQuotes.length === 0) {
+        console.error('No quote was updated');
+        throw new Error('No quote was updated');
+      }
+      
+      const updatedQuote = updatedQuotes[0];
+      console.log('Quote updated successfully:', updatedQuote);
       
       // Check if both parties have marked as complete
-      if (data.freelancer_completed && data.client_completed) {
+      if (updatedQuote.freelancer_completed && updatedQuote.client_completed) {
         console.log('Both parties have marked as complete, setting completed_at timestamp');
         
         // Set the completed_at timestamp
@@ -72,7 +95,7 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
         }
       }
       
-      return data;
+      return updatedQuote;
     },
     onSuccess: (data) => {
       console.log('Project completion mutation succeeded:', data);
@@ -110,19 +133,25 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
     console.log('Checking completion status for quote:', quoteId);
     
     try {
+      // Changed from using .single() to handling the response manually
       const { data, error } = await supabase
         .from('quotes')
         .select('freelancer_completed, client_completed, completed_at')
         .eq('id', quoteId)
-        .single();
+        .limit(1);
         
       if (error) {
         console.error('Error checking completion status:', error);
         return null;
       }
       
-      console.log('Completion status:', data);
-      return data;
+      if (!data || data.length === 0) {
+        console.error('No quote found with ID:', quoteId);
+        return null;
+      }
+      
+      console.log('Completion status:', data[0]);
+      return data[0];
     } catch (err) {
       console.error('Exception checking completion status:', err);
       return null;

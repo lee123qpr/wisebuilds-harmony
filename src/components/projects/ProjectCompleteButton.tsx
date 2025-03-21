@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertTriangle, Loader2, Clock } from 'lucide-react';
@@ -69,7 +70,11 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
       }
     } catch (error) {
       console.error('Error completing project:', error);
-      toast.error('Failed to complete project');
+      toast({
+        title: 'Failed to complete project',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive'
+      });
     }
   };
   
