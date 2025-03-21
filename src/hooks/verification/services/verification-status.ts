@@ -38,8 +38,7 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       verification_status: verificationStatus,
       admin_notes: data.admin_notes,
       submitted_at: data.submitted_at,
-      verified_at: data.verified_at,
-      verified_by: data.verified_by
+      verified_at: data.verified_at
     };
   } catch (error) {
     console.error('Error in fetchVerificationStatus:', error);
