@@ -13,10 +13,16 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
   try {
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Date.now()}.${fileExt}`;
+    const fileName = `${userId}_${Date.now()}.${fileExt}`;
     const filePath = `${userId}/${fileName}`;
     
-    console.log('Attempting to upload file:', fileName);
+    console.log('Attempting to upload verification document:', {
+      userId,
+      fileName,
+      filePath,
+      fileType: file.type,
+      fileSize: file.size
+    });
     
     // Upload the file to the verification_documents bucket
     const { data: uploadData, error: uploadError } = await supabase.storage
@@ -45,6 +51,8 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
     };
     
     try {
+      console.log('Creating verification record:', verificationRecord);
+      
       const { data: verificationData, error: insertError } = await supabase
         .from('freelancer_verification')
         .upsert(verificationRecord, {
@@ -73,6 +81,8 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       if (!verificationData) {
         throw new Error('No verification data returned');
       }
+      
+      console.log('Verification record created:', verificationData);
       
       // Map the returned data to our expected format
       const result: VerificationData = {

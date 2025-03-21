@@ -1,47 +1,51 @@
 
 import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import { setupVerification } from './setupVerification';
+import { useToast } from '@/hooks/use-toast';
 
 export const useVerificationSetup = () => {
   const { user } = useAuth();
+  const { toast } = useToast();
   const [setupComplete, setSetupComplete] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    async function setupVerificationSystem() {
+    async function initVerificationSystem() {
+      if (!user) return;
+      
       setIsLoading(true);
       try {
-        // Check if the verification_documents bucket exists
-        const { data: bucketData, error: bucketError } = await supabase.storage
-          .getBucket('verification_documents');
+        console.log('Initializing verification system...');
+        const result = await setupVerification();
         
-        if (bucketError || !bucketData) {
-          console.log('Verification system not set up, initializing...');
-          
-          // Call the setup-verification Edge Function
-          const { data, error } = await supabase.functions.invoke('setup-verification');
-          
-          if (error) {
-            console.error('Error setting up verification system:', error);
-            return;
-          }
-          
-          console.log('Verification system setup result:', data);
+        if (result.success) {
+          console.log('Verification system initialized successfully');
           setSetupComplete(true);
         } else {
-          console.log('Verification system already set up');
-          setSetupComplete(true);
+          console.error('Failed to initialize verification system:', result.message);
+          toast({
+            variant: 'destructive',
+            title: 'Setup Error',
+            description: 'There was a problem setting up the verification system. Please try again later.',
+          });
+          setSetupComplete(false);
         }
       } catch (error) {
         console.error('Error in verification setup:', error);
+        toast({
+          variant: 'destructive',
+          title: 'Setup Error',
+          description: 'There was a problem setting up the verification system. Please try again later.',
+        });
+        setSetupComplete(false);
       } finally {
         setIsLoading(false);
       }
     }
     
-    setupVerificationSystem();
-  }, [user]);
+    initVerificationSystem();
+  }, [user, toast]);
 
   return {
     setupComplete,

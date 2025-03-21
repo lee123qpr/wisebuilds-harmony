@@ -2,19 +2,11 @@
 import { supabase } from '@/integrations/supabase/client';
 import type { VerificationData } from '../types';
 import { mapStatusToVerificationStatus } from '../utils/status-utils';
-import { isUserFreelancer } from './user-verification';
 
 // Fetch verification status
 export const fetchVerificationStatus = async (userId: string): Promise<VerificationData | null> => {
   try {
     console.log('Fetching verification status for user:', userId);
-    
-    // Check if user is a freelancer first
-    const isFreelancer = await isUserFreelancer();
-    if (!isFreelancer) {
-      console.log('User is not a freelancer, verification not applicable');
-      return null;
-    }
     
     // Query the freelancer_verification table
     const { data, error } = await supabase

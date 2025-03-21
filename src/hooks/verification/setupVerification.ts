@@ -3,6 +3,8 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const setupVerification = async (): Promise<{ success: boolean; message: string }> => {
   try {
+    console.log('Setting up verification system...');
+    
     // Call the setup-verification edge function
     const { data, error } = await supabase.functions.invoke('setup-verification');
     

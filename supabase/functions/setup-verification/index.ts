@@ -125,18 +125,14 @@ serve(async (req) => {
       const policies = [
         // Drop existing policies first
         `DROP POLICY IF EXISTS "Users can insert their own verification records" ON public.freelancer_verification;`,
-        `DROP POLICY IF EXISTS "Only freelancers can insert their own verification records" ON public.freelancer_verification;`,
         `DROP POLICY IF EXISTS "Users can view their own verification records" ON public.freelancer_verification;`,
         `DROP POLICY IF EXISTS "Users can update their own verification records" ON public.freelancer_verification;`,
         `DROP POLICY IF EXISTS "Users can delete their own verification records" ON public.freelancer_verification;`,
-        `DROP POLICY IF EXISTS "Service role can access all verification records" ON public.freelancer_verification;`,
         `DROP POLICY IF EXISTS "Admin users can view all verification records" ON public.freelancer_verification;`,
         
-        // Create new policies using simple auth.uid() checks to avoid direct users table access
-        `CREATE POLICY "Only freelancers can insert their own verification records" 
-         ON public.freelancer_verification FOR INSERT WITH CHECK (
-           auth.uid() = user_id
-         );`,
+        // Create new policies
+        `CREATE POLICY "Users can insert their own verification records" 
+         ON public.freelancer_verification FOR INSERT WITH CHECK (auth.uid() = user_id);`,
         
         `CREATE POLICY "Users can view their own verification records" 
          ON public.freelancer_verification FOR SELECT USING (auth.uid() = user_id);`,
@@ -153,10 +149,7 @@ serve(async (req) => {
              SELECT 1 FROM auth.users
              WHERE id = auth.uid() AND raw_user_meta_data->>'user_type' = 'admin'
            )
-         );`,
-        
-        `CREATE POLICY "Service role can access all verification records" 
-         ON public.freelancer_verification FOR ALL USING (auth.jwt() ->> 'role' = 'service_role');`
+         );`
       ];
       
       // Apply each policy
