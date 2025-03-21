@@ -1,31 +1,27 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { fetchVerificationStatus } from './verification-status';
 import type { VerificationData } from '../types';
-import { mapStatusToVerificationStatus } from '../utils/status-utils';
 
-// Upload ID document
-export const uploadVerificationDocument = async (userId: string, file: File): Promise<{
+export const uploadVerificationDocument = async (
+  userId: string,
+  file: File
+): Promise<{ 
   success: boolean;
   filePath?: string;
-  verificationData?: VerificationData;
   error?: any;
+  verificationData?: VerificationData
 }> => {
   try {
+    console.log('Uploading verification document for user:', userId);
+    
     // Create a unique file path
     const fileExt = file.name.split('.').pop();
-    const fileName = `${userId}_${Date.now()}.${fileExt}`;
+    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     const filePath = `${userId}/${fileName}`;
     
-    console.log('Attempting to upload verification document:', {
-      userId,
-      fileName,
-      filePath,
-      fileType: file.type,
-      fileSize: file.size
-    });
-    
-    // Upload the file to the verification_documents bucket
-    const { data: uploadData, error: uploadError } = await supabase.storage
+    // Upload file to storage
+    const { error: uploadError } = await supabase.storage
       .from('verification_documents')
       .upload(filePath, file, {
         cacheControl: '3600',
@@ -33,88 +29,81 @@ export const uploadVerificationDocument = async (userId: string, file: File): Pr
       });
     
     if (uploadError) {
-      console.error('Upload error:', uploadError);
-      throw uploadError;
+      console.error('Error uploading file:', uploadError);
+      return { 
+        success: false, 
+        error: uploadError 
+      };
     }
     
-    // Get the file path
-    const path = uploadData?.path;
-    console.log('File uploaded successfully to:', path);
+    // Check if the user already has a verification record
+    const existingVerification = await fetchVerificationStatus(userId);
     
-    // Create or update the verification record
-    const verificationRecord = {
-      user_id: userId,
-      id_document_path: filePath,
-      verification_status: 'pending',
-      submitted_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    };
-    
-    try {
-      console.log('Creating verification record:', verificationRecord);
-      
-      const { data: verificationData, error: insertError } = await supabase
+    if (existingVerification) {
+      // If there's an existing verification record, update it
+      const { error: updateError } = await supabase
         .from('freelancer_verification')
-        .upsert(verificationRecord, {
-          onConflict: 'user_id'
+        .update({
+          id_document_path: filePath,
+          verification_status: 'pending',
+          submitted_at: new Date().toISOString(),
+          admin_notes: null,
+          verified_at: null
         })
-        .select()
-        .single();
+        .eq('user_id', userId);
       
-      if (insertError) {
-        console.error('Create verification record error:', insertError);
+      if (updateError) {
+        console.error('Error updating verification record:', updateError);
         
-        // If we get an error when inserting the record, try to delete the uploaded file
-        // to avoid orphaned files in storage
-        try {
-          await supabase.storage
-            .from('verification_documents')
-            .remove([filePath]);
-          console.log('Cleaned up uploaded file after insert error');
-        } catch (cleanupError) {
-          console.error('Failed to clean up file after insert error:', cleanupError);
-        }
-        
-        throw insertError;
-      }
-      
-      if (!verificationData) {
-        throw new Error('No verification data returned');
-      }
-      
-      console.log('Verification record created:', verificationData);
-      
-      // Map the returned data to our expected format
-      const result: VerificationData = {
-        id: verificationData.id,
-        user_id: verificationData.user_id,
-        verification_status: mapStatusToVerificationStatus(verificationData.verification_status),
-        id_document_path: verificationData.id_document_path,
-        submitted_at: verificationData.submitted_at,
-        verified_at: verificationData.verified_at,
-        admin_notes: verificationData.admin_notes
-      };
-      
-      return {
-        success: true,
-        filePath: path,
-        verificationData: result
-      };
-    } catch (dbError) {
-      // Clean up the uploaded file if database operation fails
-      try {
+        // Clean up the uploaded file if there was an error
         await supabase.storage
           .from('verification_documents')
           .remove([filePath]);
-        console.log('Cleaned up uploaded file after database error');
-      } catch (cleanupError) {
-        console.error('Failed to clean up file after database error:', cleanupError);
+        
+        return { 
+          success: false, 
+          error: updateError 
+        };
       }
+    } else {
+      // If there's no existing verification record, create one
+      const { error: insertError } = await supabase
+        .from('freelancer_verification')
+        .insert({
+          user_id: userId,
+          id_document_path: filePath,
+          verification_status: 'pending',
+          submitted_at: new Date().toISOString()
+        });
       
-      throw dbError;
+      if (insertError) {
+        console.error('Error creating verification record:', insertError);
+        
+        // Clean up the uploaded file if there was an error
+        await supabase.storage
+          .from('verification_documents')
+          .remove([filePath]);
+        
+        return { 
+          success: false, 
+          error: insertError 
+        };
+      }
     }
+    
+    // Get the updated verification data
+    const updatedVerification = await fetchVerificationStatus(userId);
+    
+    return { 
+      success: true, 
+      filePath,
+      verificationData: updatedVerification || undefined
+    };
   } catch (error) {
-    console.error('Error uploading document:', error);
-    return { success: false, error };
+    console.error('Error in uploadVerificationDocument:', error);
+    return { 
+      success: false, 
+      error 
+    };
   }
 };

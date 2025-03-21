@@ -3,17 +3,15 @@ import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useVerification } from './useVerification';
 
-export const useDocumentUpload = (onUploadSuccess?: () => void) => {
+export const useDocumentUpload = (onClose?: () => void) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const { 
-    uploadVerificationDocument, 
-    isUploading,
-    refreshVerificationStatus
-  } = useVerification();
+  const [isUploading, setIsUploading] = useState(false);
   const { toast } = useToast();
+  const { uploadVerificationDocument, refreshVerificationStatus } = useVerification();
 
   const handleFileSelection = (file: File) => {
     setSelectedFile(file);
+    console.log('File selected:', file.name);
   };
 
   const handleRemoveSelectedFile = () => {
@@ -30,33 +28,44 @@ export const useDocumentUpload = (onUploadSuccess?: () => void) => {
       return;
     }
 
-    console.log('Submitting file for verification:', selectedFile.name);
+    setIsUploading(true);
+    
     try {
+      console.log('Starting document upload...');
       const result = await uploadVerificationDocument(selectedFile);
-      console.log('Upload result:', result);
       
-      if (result) {
+      if (!result) {
+        throw new Error('Upload failed - no result returned');
+      }
+
+      if (result === true || (typeof result === 'object' && result.success)) {
+        console.log('Document upload succeeded');
         setSelectedFile(null);
         toast({
           title: 'Document uploaded',
-          description: 'Your ID document has been submitted for verification.',
+          description: 'Your verification document has been submitted for review.',
         });
         
-        // Refresh verification status after upload
+        // Refresh the verification status
         await refreshVerificationStatus();
         
-        // Call the success callback if provided
-        if (onUploadSuccess) {
-          onUploadSuccess();
+        // Call onClose if provided
+        if (onClose) {
+          onClose();
         }
+      } else {
+        console.error('Document upload failed with result:', result);
+        throw new Error('Upload failed');
       }
-    } catch (error) {
-      console.error('Error during document upload:', error);
+    } catch (error: any) {
+      console.error('Error uploading document:', error);
       toast({
         variant: 'destructive',
         title: 'Upload failed',
-        description: 'An error occurred while uploading your document. Please try again.',
+        description: error.message || 'There was an error uploading your document. Please try again.',
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 

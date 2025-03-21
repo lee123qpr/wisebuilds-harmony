@@ -45,7 +45,7 @@ const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
       console.log('File selected:', {
         name: file.name,
         type: file.type,
-        size: file.size
+        size: `${(file.size / 1024 / 1024).toFixed(2)} MB`
       });
       
       onFileSelected(file);

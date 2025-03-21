@@ -57,13 +57,55 @@ serve(async (req) => {
         console.error('Error creating bucket:', createBucketError)
         throw createBucketError
       }
+      
+      // Create RLS policies for the bucket
+      try {
+        // Policy for uploading files
+        await supabaseAdmin.rpc('create_storage_policy', {
+          bucket_name: 'verification_documents',
+          policy_name: 'Users can upload their own documents',
+          operation: 'INSERT',
+          policy_definition: "(bucket_id = 'verification_documents' AND auth.uid()::text = SPLIT_PART(name, '/', 1))"
+        });
+        
+        // Policy for viewing files
+        await supabaseAdmin.rpc('create_storage_policy', {
+          bucket_name: 'verification_documents',
+          policy_name: 'Users can view their own documents',
+          operation: 'SELECT',
+          policy_definition: "(bucket_id = 'verification_documents' AND auth.uid()::text = SPLIT_PART(name, '/', 1))"
+        });
+        
+        // Policy for deleting files
+        await supabaseAdmin.rpc('create_storage_policy', {
+          bucket_name: 'verification_documents',
+          policy_name: 'Users can delete their own documents',
+          operation: 'DELETE',
+          policy_definition: "(bucket_id = 'verification_documents' AND auth.uid()::text = SPLIT_PART(name, '/', 1))"
+        });
+        
+        console.log('Storage policies created successfully');
+      } catch (policyError) {
+        console.log('Error creating storage policies (may already exist):', policyError);
+        // Continue anyway, as the bucket is created
+      }
+      
       console.log('Bucket created successfully')
     } else {
       console.log('Bucket verification_documents already exists')
     }
 
-    // Now we'll check if the freelancer_verification table has proper RLS policies
-    // This is just a basic check, the actual policies were created in the migration
+    // Now we'll check if the freelancer_verification table exists
+    const { error: tableCheckError } = await supabaseAdmin
+      .from('freelancer_verification')
+      .select('id')
+      .limit(1)
+    
+    if (tableCheckError) {
+      console.log('The freelancer_verification table might not exist or has RLS issues:', tableCheckError);
+    } else {
+      console.log('The freelancer_verification table exists and is accessible');
+    }
     
     return new Response(
       JSON.stringify({
