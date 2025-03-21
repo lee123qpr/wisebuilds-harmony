@@ -2,7 +2,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { toast } from 'sonner';
+import { toast } from '@/hooks/toast';
 
 interface UseProjectCompletionProps {
   quoteId: string;
@@ -83,19 +83,23 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
       const otherParty = isFreelancer ? 'client' : 'freelancer';
       
       if (data.freelancer_completed && data.client_completed) {
-        toast.success('Project marked as complete!', {
+        toast({
+          title: 'Project marked as complete!',
           description: 'You can now leave a review for this project.'
         });
       } else {
-        toast.success('Completion request sent', {
+        toast({
+          title: 'Completion request sent',
           description: `Waiting for the ${otherParty} to confirm completion.`
         });
       }
     },
     onError: (error) => {
       console.error('Error marking project as complete:', error);
-      toast.error('Failed to mark project as complete', {
-        description: error instanceof Error ? error.message : 'Please try again'
+      toast({
+        title: 'Failed to mark project as complete',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive'
       });
     }
   });

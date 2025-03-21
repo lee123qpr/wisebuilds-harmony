@@ -40,8 +40,8 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
     : null;
 
   // Determine completion status
-  const isFullyCompleted = quote.completed_at && quote.client_completed && quote.freelancer_completed;
-  const isPartiallyCompleted = quote.client_completed || quote.freelancer_completed;
+  const isFullyCompleted = Boolean(quote.completed_at && quote.client_completed && quote.freelancer_completed);
+  const isPartiallyCompleted = Boolean(quote.client_completed || quote.freelancer_completed);
   const userCompleted = user?.user_metadata?.user_type === 'freelancer' 
     ? quote.freelancer_completed 
     : quote.client_completed;

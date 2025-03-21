@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, AlertTriangle, Loader2, Clock } from 'lucide-react';
@@ -15,6 +14,7 @@ import {
 } from '@/components/ui/dialog';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
+import { toast } from '@/hooks/toast';
 
 interface ProjectCompleteButtonProps {
   quoteId: string;
@@ -69,7 +69,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
       }
     } catch (error) {
       console.error('Error completing project:', error);
-      // Dialog will close automatically on error due to toast
+      toast.error('Failed to complete project');
     }
   };
   
@@ -86,7 +86,6 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
     return null;
   }
   
-  // If project is already fully completed (both parties confirmed and has completed_at timestamp)
   if (completionStatus.completed_at && completionStatus.freelancer_completed && completionStatus.client_completed) {
     return (
       <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1 px-3 py-1">
@@ -96,12 +95,10 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
     );
   }
   
-  // Check if current user has already marked as complete
   const userCompleted = isFreelancer 
     ? completionStatus.freelancer_completed 
     : completionStatus.client_completed;
   
-  // Check if the other party has marked as complete
   const otherPartyCompleted = isFreelancer 
     ? completionStatus.client_completed 
     : completionStatus.freelancer_completed;
