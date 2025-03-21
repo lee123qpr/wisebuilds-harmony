@@ -4,7 +4,7 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, AlertTriangle } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import { useReviewSubmission } from '@/hooks/projects/useReviewSubmission';
@@ -93,55 +93,98 @@ const ProjectCompletionStatus: React.FC<ProjectCompletionStatusProps> = ({
     return null;
   }
   
-  // Project is not yet fully complete
-  if (!completionStatus.completed_at) {
+  // Get completion details
+  const isFullyCompleted = completionStatus.completed_at && completionStatus.client_completed && completionStatus.freelancer_completed;
+  const userCompleted = isFreelancer ? completionStatus.freelancer_completed : completionStatus.client_completed;
+  const otherPartyCompleted = isFreelancer ? completionStatus.client_completed : completionStatus.freelancer_completed;
+  const otherPartyLabel = isFreelancer ? 'Client' : 'Freelancer';
+  
+  // If neither party has marked complete, don't show anything
+  if (!userCompleted && !otherPartyCompleted) {
     return null;
   }
   
-  // Project is complete - show review form if user hasn't reviewed yet
+  // If project is fully complete - show review form if user hasn't reviewed yet
+  if (isFullyCompleted) {
+    return (
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex justify-between">
+            <div>
+              <CardTitle className="text-lg">Project Complete</CardTitle>
+              <CardDescription>
+                This project has been marked as complete by both parties
+              </CardDescription>
+            </div>
+            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+              <CheckCircle2 className="h-4 w-4" />
+              Completed
+            </Badge>
+          </div>
+        </CardHeader>
+        
+        <CardContent>
+          {hasReviewed ? (
+            <Alert className="bg-green-50 text-green-700 border-green-200">
+              <CheckCircle2 className="h-4 w-4" />
+              <AlertDescription>
+                You have submitted your review for this project.
+              </AlertDescription>
+            </Alert>
+          ) : (
+            <div className="space-y-4">
+              <Alert className="bg-blue-50 text-blue-700 border-blue-200">
+                <AlertTriangle className="h-4 w-4" />
+                <AlertDescription>
+                  Please take a moment to review your experience working with {revieweeName}.
+                </AlertDescription>
+              </Alert>
+              
+              <ReviewForm
+                projectId={projectId}
+                quoteId={quoteId}
+                revieweeId={revieweeId}
+                revieweeName={revieweeName}
+                onReviewSubmitted={handleReviewSubmitted}
+              />
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  }
+  
+  // Project is partially complete (waiting for other party)
   return (
     <Card>
       <CardHeader className="pb-3">
-        <div className="flex justify-between">
+        <div className="flex justify-between items-center">
           <div>
-            <CardTitle className="text-lg">Project Complete</CardTitle>
+            <CardTitle className="text-lg">Completion Status</CardTitle>
             <CardDescription>
-              This project has been marked as complete by both parties
+              {userCompleted 
+                ? `Waiting for ${otherPartyLabel} to confirm completion` 
+                : `${otherPartyLabel} has marked this as complete`}
             </CardDescription>
           </div>
-          <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
-            <CheckCircle2 className="h-4 w-4" />
-            Completed
+          <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 flex items-center gap-1">
+            <Clock className="h-4 w-4" />
+            Awaiting Confirmation
           </Badge>
         </div>
       </CardHeader>
       
       <CardContent>
-        {hasReviewed ? (
-          <Alert className="bg-green-50 text-green-700 border-green-200">
-            <CheckCircle2 className="h-4 w-4" />
-            <AlertDescription>
-              You have submitted your review for this project.
-            </AlertDescription>
-          </Alert>
-        ) : (
-          <div className="space-y-4">
-            <Alert className="bg-blue-50 text-blue-700 border-blue-200">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                Please take a moment to review your experience working with {revieweeName}.
-              </AlertDescription>
-            </Alert>
-            
-            <ReviewForm
-              projectId={projectId}
-              quoteId={quoteId}
-              revieweeId={revieweeId}
-              revieweeName={revieweeName}
-              onReviewSubmitted={handleReviewSubmitted}
-            />
-          </div>
-        )}
+        <Alert className={userCompleted 
+          ? "bg-blue-50 text-blue-700 border-blue-200" 
+          : "bg-yellow-50 text-yellow-700 border-yellow-200"}>
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            {userCompleted 
+              ? `You've marked this project as complete. The project will be finalized once the ${otherPartyLabel.toLowerCase()} confirms completion.` 
+              : `The ${otherPartyLabel.toLowerCase()} has marked this project as complete. Please confirm if you agree the work is completed.`}
+          </AlertDescription>
+        </Alert>
       </CardContent>
     </Card>
   );

@@ -23,12 +23,14 @@ const ActiveJobsTab: React.FC = () => {
   });
   
   // Filter for active and completed jobs
+  // Active jobs are those that are accepted but not fully completed (both parties confirmed)
   const activeJobs = allQuotes?.filter(quote => 
-    quote.status === 'accepted' && !quote.completed_at
+    quote.status === 'accepted' && (!quote.completed_at || !quote.client_completed || !quote.freelancer_completed)
   ) || [];
   
+  // Completed jobs are those that are accepted and fully completed
   const completedJobs = allQuotes?.filter(quote => 
-    quote.status === 'accepted' && quote.completed_at
+    quote.status === 'accepted' && quote.completed_at && quote.client_completed && quote.freelancer_completed
   ) || [];
   
   // Get client names for the projects

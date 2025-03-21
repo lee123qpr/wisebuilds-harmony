@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { CheckCircle2, AlertTriangle, Loader2 } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Loader2, Clock } from 'lucide-react';
 import { useProjectCompletion } from '@/hooks/projects/useProjectCompletion';
 import { useAuth } from '@/context/AuthContext';
 import {
@@ -81,8 +81,8 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
     return null;
   }
   
-  // If project is already fully completed
-  if (completionStatus.completed_at) {
+  // If project is already fully completed (both parties confirmed and has completed_at timestamp)
+  if (completionStatus.completed_at && completionStatus.freelancer_completed && completionStatus.client_completed) {
     return (
       <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1 px-3 py-1">
         <CheckCircle2 className="h-4 w-4" />
@@ -106,7 +106,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   if (userCompleted) {
     return (
       <Alert className="bg-blue-50 text-blue-700 border-blue-200">
-        <AlertTriangle className="h-4 w-4" />
+        <Clock className="h-4 w-4" />
         <AlertDescription>
           {otherPartyCompleted 
             ? 'Project completion in progress' 

@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Coins, Check, Briefcase, ArrowRight, MessageSquare, CheckCircle2 } from 'lucide-react';
+import { Calendar, Coins, Check, Briefcase, ArrowRight, MessageSquare, CheckCircle2, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import ProjectCompleteButton from '@/components/projects/ProjectCompleteButton';
@@ -38,20 +38,32 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
     ? format(new Date(quote.completed_at), 'MMM d, yyyy')
     : null;
 
+  // Determine completion status
+  const isFullyCompleted = quote.completed_at && quote.client_completed && quote.freelancer_completed;
+  const isPartiallyCompleted = quote.client_completed || quote.freelancer_completed;
+  const userCompleted = user?.user_metadata?.user_type === 'freelancer' 
+    ? quote.freelancer_completed 
+    : quote.client_completed;
+  
   return (
     <Card key={quote.id} className="w-full">
       <CardHeader className="pb-2">
         <div className="flex flex-wrap justify-between items-start gap-2">
           <CardTitle className="text-xl">{projectTitle}</CardTitle>
-          {quote.completed_at ? (
+          {isFullyCompleted ? (
             <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3" />
               Completed
             </Badge>
+          ) : isPartiallyCompleted ? (
+            <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 flex items-center gap-1">
+              <Clock className="h-3 w-3" />
+              Awaiting Confirmation
+            </Badge>
           ) : (
             <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
               <Check className="h-3 w-3" />
-              Quote Accepted
+              Active
             </Badge>
           )}
         </div>
@@ -78,7 +90,8 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
             )}
           </div>
           
-          {!quote.completed_at && (
+          {/* Show completion status component only when at least one party has marked as complete */}
+          {isPartiallyCompleted && (
             <ProjectCompletionStatus
               quoteId={quote.id}
               projectId={quote.project_id}
@@ -103,13 +116,13 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
               variant="outline" 
               size="sm" 
               className="gap-2"
-              onClick={() => navigate(`/dashboard/freelancer?tab=messages`)}
+              onClick={() => navigate(`/dashboard/freelancer?tab=messages&conversation=${quote.project_id}`)}
             >
               <MessageSquare className="h-4 w-4" />
               Message Client
             </Button>
             
-            {!quote.completed_at && (
+            {!isFullyCompleted && (
               <ProjectCompleteButton
                 quoteId={quote.id}
                 projectId={quote.project_id}
