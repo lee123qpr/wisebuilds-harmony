@@ -49,22 +49,26 @@ export const useTabCounts = (activeTab: string) => {
     
     const fetchTabCounts = async () => {
       try {
-        const { count: availableCount, error: availableError } = await supabase
+        // For available projects, use count only query
+        const { count: availableCount } = await supabase
           .from('projects')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'open');
           
-        const { count: leadsCount, error: leadsError } = await supabase
+        // For leads, use count only query
+        const { count: leadsCount } = await supabase
           .from('project_applications')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
           
-        const { count: quotesCount, error: quotesError } = await supabase
+        // For quotes, use count only query
+        const { count: quotesCount } = await supabase
           .from('quotes')
           .select('*', { count: 'exact', head: true })
           .eq('freelancer_id', user.id);
           
-        const { count: activeJobsCount, error: activeJobsError } = await supabase
+        // For active jobs, use count only query
+        const { count: activeJobsCount } = await supabase
           .from('projects')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'in_progress')

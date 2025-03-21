@@ -3,99 +3,138 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
-export const useUnreadMessages = () => {
+interface UnreadMessagesResponse {
+  unreadCount: number;
+  hasNewMessages: boolean;
+}
+
+export const useUnreadMessages = (): UnreadMessagesResponse & { markAllAsRead: () => Promise<void> } => {
   const [unreadCount, setUnreadCount] = useState(0);
   const [hasNewMessages, setHasNewMessages] = useState(false);
   const { user } = useAuth();
-
-  useEffect(() => {
+  
+  const fetchUnreadCount = async () => {
     if (!user) return;
-
-    // Fetch initial unread messages count
-    const fetchUnreadMessages = async () => {
-      try {
-        // Use a simpler query structure to avoid excessive type instantiation
-        const { data, error, count } = await supabase
-          .from('messages')
-          .select('id', { count: 'exact' })
-          .eq('receiver_id', user.id)
-          .eq('is_read', false);
-          
-        if (error) {
-          console.error('Error fetching unread messages:', error);
-          return;
-        }
-        
-        const countValue = count || 0;
-        setUnreadCount(countValue);
-        setHasNewMessages(countValue > 0);
-      } catch (error) {
-        console.error('Error in fetchUnreadMessages:', error);
+    
+    try {
+      // Get all conversations involving the current user
+      const { data: conversations, error: conversationsError } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+      
+      if (conversationsError) {
+        console.error('Error fetching conversations:', conversationsError);
+        return;
       }
-    };
-
-    fetchUnreadMessages();
-
-    // Set up real-time listener for new messages
-    const channel = supabase
-      .channel('unread-messages')
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'messages',
-          filter: `receiver_id=eq.${user.id}` 
-        },
-        (payload) => {
-          console.log('New message received:', payload);
-          setUnreadCount(prev => prev + 1);
-          setHasNewMessages(true);
-        }
-      )
-      .on('postgres_changes', 
-        { 
-          event: 'UPDATE', 
-          schema: 'public', 
-          table: 'messages',
-          filter: `receiver_id=eq.${user.id}` 
-        },
-        () => {
-          // Refetch count when messages are updated (marked as read)
-          fetchUnreadMessages();
-        }
-      )
-      .subscribe();
-
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
+      
+      if (!conversations || conversations.length === 0) {
+        setUnreadCount(0);
+        setHasNewMessages(false);
+        return;
+      }
+      
+      // Get conversation IDs
+      const conversationIds = conversations.map(c => c.id);
+      
+      // For each conversation, count unread messages
+      const { count, error: messagesError } = await supabase
+        .from('messages')
+        .select('*', { count: 'exact', head: true })
+        .in('conversation_id', conversationIds)
+        .eq('is_read', false)
+        .neq('sender_id', user.id);
+      
+      if (messagesError) {
+        console.error('Error counting unread messages:', messagesError);
+        return;
+      }
+      
+      setUnreadCount(count || 0);
+      setHasNewMessages(count > 0);
+    } catch (error) {
+      console.error('Error in useUnreadMessages:', error);
+    }
+  };
+  
+  // Function to mark all messages as read
   const markAllAsRead = async () => {
     if (!user) return;
     
     try {
-      const { error } = await supabase
-        .from('messages')
-        .update({ is_read: true })
-        .eq('receiver_id', user.id)
-        .eq('is_read', false);
-        
-      if (error) {
-        console.error('Error marking messages as read:', error);
+      // Get all conversations involving the current user
+      const { data: conversations, error: conversationsError } = await supabase
+        .from('conversations')
+        .select('id')
+        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
+      
+      if (conversationsError || !conversations || conversations.length === 0) {
         return;
       }
       
+      // Get conversation IDs
+      const conversationIds = conversations.map(c => c.id);
+      
+      // Mark all messages in these conversations as read
+      const { error: updateError } = await supabase
+        .from('messages')
+        .update({ is_read: true })
+        .in('conversation_id', conversationIds)
+        .neq('sender_id', user.id)
+        .eq('is_read', false);
+      
+      if (updateError) {
+        console.error('Error marking messages as read:', updateError);
+        return;
+      }
+      
+      // Reset counts
       setUnreadCount(0);
       setHasNewMessages(false);
     } catch (error) {
-      console.error('Error in markAllAsRead:', error);
+      console.error('Error marking messages as read:', error);
     }
   };
-
-  return {
-    unreadCount,
-    hasNewMessages,
-    markAllAsRead
-  };
+  
+  // Set up listeners for new messages
+  useEffect(() => {
+    if (!user) return;
+    
+    fetchUnreadCount();
+    
+    // Listen for new messages
+    const channel = supabase
+      .channel('messages-channel')
+      .on('postgres_changes', {
+        event: 'INSERT',
+        schema: 'public',
+        table: 'messages',
+        filter: `is_read=eq.false`
+      }, (payload) => {
+        // Only count if the message is not from the current user
+        if (payload.new.sender_id !== user.id) {
+          fetchUnreadCount();
+        }
+      })
+      .subscribe();
+    
+    // Listen for message updates (e.g., when messages are marked as read)
+    const updateChannel = supabase
+      .channel('messages-update-channel')
+      .on('postgres_changes', {
+        event: 'UPDATE',
+        schema: 'public',
+        table: 'messages'
+      }, () => {
+        fetchUnreadCount();
+      })
+      .subscribe();
+    
+    return () => {
+      supabase.removeChannel(channel);
+      supabase.removeChannel(updateChannel);
+    };
+  }, [user]);
+  
+  return { unreadCount, hasNewMessages, markAllAsRead };
 };
