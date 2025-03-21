@@ -1,11 +1,14 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
+import { useProjectsWithFiltering } from '@/hooks/projects/useProjectsWithFiltering';
 import { LeadSettings } from '@/hooks/freelancer/types';
 import ProjectListView from '@/components/dashboard/freelancer/ProjectListView';
 import LeadSettingsAlert from '@/components/dashboard/freelancer/leads/LeadSettingsAlert';
 import LeadsHeader from '@/components/dashboard/freelancer/leads/LeadsHeader';
+import { useState, useEffect } from 'react';
 import EmptyLeadsMessage from '@/components/dashboard/freelancer/leads/EmptyLeadsMessage';
-import { useLeadProjects } from '@/hooks/dashboard/useLeadProjects';
+import { toast } from '@/hooks/use-toast';
+import { useQueryClient } from '@tanstack/react-query';
 
 interface LeadsTabContentProps {
   isLoadingSettings: boolean;
@@ -18,27 +21,61 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
 }) => {
   console.log('LeadsTabContent render:', { isLoadingSettings, leadSettings });
   
-  const {
-    filteredProjects,
-    isLoadingLeads,
-    isRefreshing,
-    selectedProjectId,
-    setSelectedProjectId,
-    selectedProject,
-    handleRefresh
-  } = useLeadProjects(isLoadingSettings, leadSettings);
+  const queryClient = useQueryClient();
+  // Use our hook with filtering enabled (true) based on leadSettings
+  const { projectLeads: filteredProjects, isLoading: isLoadingLeads, refreshProjects } = useProjectsWithFiltering(true, leadSettings);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   
   useEffect(() => {
     console.log('Filtered projects in LeadsTabContent:', filteredProjects.length);
     console.log('Projects data:', filteredProjects);
   }, [filteredProjects]);
   
+  // Find the selected project
+  const selectedProject = selectedProjectId 
+    ? filteredProjects.find(project => project.id === selectedProjectId)
+    : filteredProjects.length > 0 ? filteredProjects[0] : null;
+  
   // Set the first project as selected by default when projects load
   useEffect(() => {
     if (filteredProjects.length > 0 && !selectedProjectId) {
       setSelectedProjectId(filteredProjects[0].id);
     }
-  }, [filteredProjects, selectedProjectId, setSelectedProjectId]);
+  }, [filteredProjects, selectedProjectId]);
+
+  // Handle refresh - improved to use the refreshProjects function
+  const handleRefresh = async () => {
+    console.log('Refreshing leads...');
+    setIsRefreshing(true);
+    
+    toast({
+      title: "Refreshing leads",
+      description: "Looking for new matching leads...",
+    });
+    
+    try {
+      // Use the refreshProjects function from useProjectsWithFiltering
+      await refreshProjects();
+      
+      // Force a refresh of the lead settings as well
+      await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+      
+      // Sometimes we need a full page refresh to get updated data
+      if (filteredProjects.length === 0) {
+        window.location.reload();
+      }
+    } catch (error) {
+      console.error('Error refreshing leads:', error);
+      toast({
+        variant: 'destructive',
+        title: "Error refreshing leads",
+        description: "There was a problem refreshing your leads. Please try again.",
+      });
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
   
   // If loading or no settings, show alert
   if (isLoadingSettings) {

@@ -5,15 +5,12 @@ import EmptyStateCard from './EmptyStateCard';
 import { useConversations } from '@/hooks/messages/useConversations';
 import MessagesTabSkeleton from './messages/MessagesTabSkeleton';
 import MessagesLayout from './messages/MessagesLayout';
-import { useUnreadMessages } from '@/hooks/messages/useUnreadMessages';
 
 const MessagesTab: React.FC = () => {
   const [searchParams] = useSearchParams();
   const projectId = searchParams.get('projectId');
   const clientId = searchParams.get('clientId');
   const conversationId = searchParams.get('conversation');
-  
-  const { markAllAsRead } = useUnreadMessages();
   
   const { 
     conversations, 
@@ -22,11 +19,6 @@ const MessagesTab: React.FC = () => {
     isLoading, 
     fetchConversations 
   } = useConversations(projectId, clientId);
-  
-  // Mark messages as read when tab is opened
-  useEffect(() => {
-    markAllAsRead();
-  }, [markAllAsRead]);
   
   // Set the selected conversation based on URL parameter
   useEffect(() => {
