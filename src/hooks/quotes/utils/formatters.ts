@@ -22,7 +22,7 @@ export const formatQuotesWithProfiles = (
     console.log('Formatting quote for freelancer:', quote.freelancer_id, 'with profile:', freelancerProfile);
     
     // Extract project data if available
-    const project = quote.projects || {};
+    const project = quote.project || {};
     
     return {
       ...quote,
@@ -30,7 +30,7 @@ export const formatQuotesWithProfiles = (
       duration_unit: quote.duration_unit as QuoteWithFreelancer['duration_unit'],
       quote_files: Array.isArray(quote.quote_files) ? quote.quote_files : [],
       project: {
-        title: project.title || 'Project',
+        title: project.title || 'Untitled Project',
         budget: project.budget || '',
         status: project.status || '',
       },

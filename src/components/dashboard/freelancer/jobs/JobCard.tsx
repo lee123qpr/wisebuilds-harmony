@@ -21,7 +21,8 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  const projectTitle = quote.project?.title || 'Project';
+  // Fix: Properly access the project title from the project object
+  const projectTitle = quote.project?.title || 'Untitled Project';
   const formattedDate = quote.created_at 
     ? format(new Date(quote.created_at), 'MMM d, yyyy')
     : 'Unknown date';
@@ -51,7 +52,9 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
     userCompleted,
     clientCompleted: quote.client_completed,
     freelancerCompleted: quote.freelancer_completed,
-    completedAt: quote.completed_at
+    completedAt: quote.completed_at,
+    projectTitle,
+    project: quote.project
   });
   
   return (
