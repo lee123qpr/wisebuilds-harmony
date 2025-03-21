@@ -55,9 +55,9 @@ const DocumentUploadSection: React.FC<DocumentUploadSectionProps> = ({
   return (
     <div className="space-y-4">
       {!setupComplete && (
-        <Alert variant="warning">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>
+        <Alert variant="default" className="bg-amber-50 border-amber-300 text-amber-800">
+          <AlertCircle className="h-4 w-4 text-amber-800" />
+          <AlertDescription className="text-amber-800">
             Setting up verification system. This may take a moment.
           </AlertDescription>
         </Alert>
