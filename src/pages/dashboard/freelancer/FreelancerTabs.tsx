@@ -8,6 +8,25 @@ import LeadsTabContent from './tabs/LeadsTabContent';
 import AvailableTabContent from './tabs/AvailableTabContent';
 import MessagesTabContent from './tabs/MessagesTabContent';
 import { useSearchParams, useNavigate } from 'react-router-dom';
+import { useNotifications } from '@/context/NotificationsContext';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
+
+interface TabCounts {
+  available: number;
+  leads: number;
+  quotes: number;
+  active: number;
+  messages: number;
+}
+
+interface TabNotifications {
+  available: boolean;
+  leads: boolean;
+  quotes: boolean;
+  active: boolean;
+  messages: boolean;
+}
 
 interface FreelancerTabsProps {
   isLoadingSettings: boolean;
@@ -20,7 +39,26 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
 }) => {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+  const { user } = useAuth();
+  const { notifications } = useNotifications();
   const tabParam = searchParams.get('tab');
+  
+  // State for tab counts and notifications
+  const [tabCounts, setTabCounts] = useState<TabCounts>({
+    available: 0,
+    leads: 0,
+    quotes: 0,
+    active: 0,
+    messages: 0
+  });
+  
+  const [tabNotifications, setTabNotifications] = useState<TabNotifications>({
+    available: false,
+    leads: false,
+    quotes: false,
+    active: false,
+    messages: false
+  });
   
   // Get the active tab from URL parameter, localStorage, or default to 'available'
   const getInitialTab = () => {
@@ -41,6 +79,12 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
   const handleTabChange = (value: string) => {
     setActiveTab(value);
     navigate(`/dashboard/freelancer?tab=${value}${getAdditionalQueryParams()}`);
+    
+    // Reset notification for the selected tab
+    setTabNotifications(prev => ({
+      ...prev,
+      [value]: false
+    }));
   };
   
   // Get any additional query parameters that need to be preserved
@@ -69,14 +113,167 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
     }
   }, [tabParam]);
   
+  // Fetch counts for each tab
+  useEffect(() => {
+    if (!user) return;
+    
+    const fetchTabCounts = async () => {
+      try {
+        // Fetch counts for projects
+        const { data: availableProjects, error: availableError } = await supabase
+          .from('projects')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'open');
+          
+        // Fetch counts for leads
+        const { data: leadsCount, error: leadsError } = await supabase
+          .from('project_leads')
+          .select('id', { count: 'exact', head: true })
+          .eq('freelancer_id', user.id);
+          
+        // Fetch counts for quotes
+        const { data: quotesCount, error: quotesError } = await supabase
+          .from('quotes')
+          .select('id', { count: 'exact', head: true })
+          .eq('freelancer_id', user.id);
+          
+        // Fetch counts for active jobs
+        const { data: activeJobsCount, error: activeJobsError } = await supabase
+          .from('projects')
+          .select('id', { count: 'exact', head: true })
+          .eq('status', 'in_progress')
+          .eq('hired_freelancer_id', user.id);
+          
+        // Fetch counts for messages
+        const { data: unreadMessagesCount, error: messagesError } = await supabase
+          .from('messages')
+          .select('id', { count: 'exact', head: true })
+          .eq('receiver_id', user.id)
+          .eq('is_read', false);
+          
+        setTabCounts({
+          available: availableProjects?.count || 0,
+          leads: leadsCount?.count || 0,
+          quotes: quotesCount?.count || 0,
+          active: activeJobsCount?.count || 0,
+          messages: unreadMessagesCount?.count || 0
+        });
+      } catch (error) {
+        console.error('Error fetching tab counts:', error);
+      }
+    };
+    
+    fetchTabCounts();
+    
+    // Set up real-time listeners for changes
+    const messagesChannel = supabase
+      .channel('tab-counts-messages')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'messages', filter: `receiver_id=eq.${user.id}` },
+        () => {
+          console.log('New message received');
+          // Only show notification if not on messages tab
+          if (activeTab !== 'messages') {
+            setTabNotifications(prev => ({ ...prev, messages: true }));
+          }
+          fetchTabCounts();
+        }
+      )
+      .subscribe();
+      
+    const projectsChannel = supabase
+      .channel('tab-counts-projects')
+      .on('postgres_changes', 
+        { event: 'INSERT', schema: 'public', table: 'projects' },
+        () => {
+          console.log('New project added');
+          if (activeTab !== 'available') {
+            setTabNotifications(prev => ({ ...prev, available: true }));
+          }
+          fetchTabCounts();
+        }
+      )
+      .subscribe();
+      
+    const quotesChannel = supabase
+      .channel('tab-counts-quotes')
+      .on('postgres_changes', 
+        { event: '*', schema: 'public', table: 'quotes', filter: `freelancer_id=eq.${user.id}` },
+        () => {
+          console.log('Quote updated');
+          if (activeTab !== 'quotes') {
+            setTabNotifications(prev => ({ ...prev, quotes: true }));
+          }
+          fetchTabCounts();
+        }
+      )
+      .subscribe();
+      
+    // Check for notification type to highlight appropriate tab
+    const processNotifications = () => {
+      const messageNotifications = notifications.filter(n => 
+        n.type === 'message' && !n.read
+      );
+      
+      const leadNotifications = notifications.filter(n => 
+        n.type === 'lead' && !n.read
+      );
+      
+      // Update tab notifications based on notification types
+      setTabNotifications(prev => ({
+        ...prev,
+        messages: prev.messages || messageNotifications.length > 0,
+        leads: prev.leads || leadNotifications.length > 0
+      }));
+    };
+    
+    processNotifications();
+    
+    return () => {
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(projectsChannel);
+      supabase.removeChannel(quotesChannel);
+    };
+  }, [user, activeTab, notifications]);
+  
   return (
     <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
       <TabsList className="grid grid-cols-5 mb-8">
-        <TabsTrigger value="available">Available Projects</TabsTrigger>
-        <TabsTrigger value="leads">My Leads</TabsTrigger>
-        <TabsTrigger value="quotes">My Quotes</TabsTrigger>
-        <TabsTrigger value="active">Active Jobs</TabsTrigger>
-        <TabsTrigger value="messages">Messages</TabsTrigger>
+        <TabsTrigger 
+          value="available" 
+          badgeCount={tabCounts.available > 0 ? tabCounts.available : undefined}
+          showNotification={tabNotifications.available}
+        >
+          Available Projects
+        </TabsTrigger>
+        <TabsTrigger 
+          value="leads"
+          badgeCount={tabCounts.leads > 0 ? tabCounts.leads : undefined}
+          showNotification={tabNotifications.leads}
+        >
+          My Leads
+        </TabsTrigger>
+        <TabsTrigger 
+          value="quotes"
+          badgeCount={tabCounts.quotes > 0 ? tabCounts.quotes : undefined}
+          showNotification={tabNotifications.quotes}
+        >
+          My Quotes
+        </TabsTrigger>
+        <TabsTrigger 
+          value="active"
+          badgeCount={tabCounts.active > 0 ? tabCounts.active : undefined}
+          showNotification={tabNotifications.active}
+        >
+          Active Jobs
+        </TabsTrigger>
+        <TabsTrigger 
+          value="messages"
+          badgeCount={tabCounts.messages > 0 ? tabCounts.messages : undefined}
+          showNotification={tabNotifications.messages}
+        >
+          Messages
+        </TabsTrigger>
       </TabsList>
       
       <TabsContent value="available" className="pt-2">
