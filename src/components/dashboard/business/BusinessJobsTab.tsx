@@ -62,8 +62,8 @@ const BusinessJobsTab: React.FC = () => {
   if (activeJobs.length === 0 && completedJobs.length === 0) {
     return (
       <EmptyStateCard
-        title="Active Contracts"
-        description="You don't have any active contracts at the moment. When you accept a quote from a freelancer, the job will appear here."
+        title="My Hires"
+        description="You don't have any active hires at the moment. When you accept a quote from a freelancer, they will appear here."
       />
     );
   }
@@ -75,7 +75,7 @@ const BusinessJobsTab: React.FC = () => {
           <div className="flex items-center gap-2">
             <Briefcase className="h-5 w-5 text-primary" />
             <h2 className="text-2xl font-bold tracking-tight">
-              Contracts
+              My Hires
               <Badge variant="secondary" className="ml-2 text-sm font-medium">
                 {activeJobs.length + completedJobs.length}
               </Badge>
@@ -103,8 +103,8 @@ const BusinessJobsTab: React.FC = () => {
             jobs={activeJobs}
             clientNames={freelancerNames}
             onStatusUpdate={handleStatusUpdate}
-            emptyTitle="Active Contracts"
-            emptyDescription="You don't have any active contracts at the moment. When you accept a quote from a freelancer, the job will appear here."
+            emptyTitle="Active Hires"
+            emptyDescription="You don't have any active hires at the moment. When you accept a quote from a freelancer, they will appear here."
           />
         </TabsContent>
         
@@ -113,8 +113,8 @@ const BusinessJobsTab: React.FC = () => {
             jobs={completedJobs}
             clientNames={freelancerNames}
             onStatusUpdate={handleStatusUpdate}
-            emptyTitle="Completed Contracts"
-            emptyDescription="You haven't completed any contracts yet. Contracts will appear here after both you and the freelancer mark them as complete."
+            emptyTitle="Completed Hires"
+            emptyDescription="You haven't completed any hires yet. Hires will appear here after both you and the freelancer mark them as complete."
           />
         </TabsContent>
       </div>
