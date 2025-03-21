@@ -51,10 +51,15 @@ const BusinessDashboard = () => {
         }
 
         // Get project count
-        const { count } = await supabase
+        const { count, error: countError } = await supabase
           .from('projects')
           .select('*', { count: 'exact', head: true })
           .eq('client_id', user.id);
+        
+        if (countError) {
+          console.error('Error fetching project count:', countError);
+          return;
+        }
         
         setProjectCount(count || 0);
       } catch (error) {
