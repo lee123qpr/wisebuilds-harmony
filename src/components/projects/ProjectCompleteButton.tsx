@@ -60,11 +60,16 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   }, [quoteId]);
   
   const handleComplete = async () => {
-    await markProjectCompleted();
-    setDialogOpen(false);
-    loadCompletionStatus();
-    if (onStatusUpdate) {
-      onStatusUpdate();
+    try {
+      await markProjectCompleted();
+      setDialogOpen(false);
+      loadCompletionStatus();
+      if (onStatusUpdate) {
+        onStatusUpdate();
+      }
+    } catch (error) {
+      console.error('Error completing project:', error);
+      // Dialog will close automatically on error due to toast
     }
   };
   

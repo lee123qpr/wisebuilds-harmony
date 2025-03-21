@@ -1,2 +1,4 @@
 
-export { useToast, toast } from "./toast"
+import { useToast, toast } from "./toast/index";
+
+export { useToast, toast };
