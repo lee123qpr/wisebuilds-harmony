@@ -5,7 +5,7 @@ import { ProjectLead } from '@/types/projects';
 
 export const useAvailableProjects = () => {
   // Use our hook with filtering disabled (false) to fetch all available projects
-  const { projectLeads: projects, isLoading, refreshProjects, error } = useProjectsWithFiltering(false);
+  const { projectLeads: projects, isLoading, refreshProjects, error: projectsError } = useProjectsWithFiltering(false);
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
   const [localError, setLocalError] = useState<string | null>(null);
   
@@ -36,7 +36,7 @@ export const useAvailableProjects = () => {
   return {
     projects,
     isLoading,
-    error: error || localError,
+    error: projectsError || localError,
     selectedProjectId,
     setSelectedProjectId,
     selectedProject,

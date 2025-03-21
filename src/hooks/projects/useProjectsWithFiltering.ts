@@ -10,6 +10,7 @@ import { useQueryClient } from '@tanstack/react-query';
 export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings?: LeadSettings | null) => {
   const { leadSettings, isLoading: isSettingsLoading } = useLeadSettingsData();
   const queryClient = useQueryClient();
+  const [error, setError] = useState<string | null>(null);
   
   // If useFiltering is false, pass null to useProjectLeadsGenerator to fetch all projects
   // Otherwise use customLeadSettings if provided, or fallback to leadSettings from hook
@@ -48,8 +49,9 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
       window.location.reload();
       
       return true;
-    } catch (error) {
-      console.error('Error refreshing projects:', error);
+    } catch (err) {
+      console.error('Error refreshing projects:', err);
+      setError('Failed to refresh projects. Please try again.');
       toast({
         variant: 'destructive',
         title: "Error refreshing",
@@ -62,6 +64,7 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
   return {
     projectLeads: filteredLeads,
     isLoading: isSettingsLoading || isLeadsLoading,
-    refreshProjects
+    refreshProjects,
+    error
   };
 };

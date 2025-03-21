@@ -50,29 +50,37 @@ export const useTabCounts = (activeTab: string) => {
     const fetchTabCounts = async () => {
       try {
         // For available projects, use count only query
-        const { count: availableCount } = await supabase
+        const { count: availableCount, error: availableError } = await supabase
           .from('projects')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'open');
+        
+        if (availableError) throw availableError;
           
         // For leads, use count only query
-        const { count: leadsCount } = await supabase
+        const { count: leadsCount, error: leadsError } = await supabase
           .from('project_applications')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
+        
+        if (leadsError) throw leadsError;
           
         // For quotes, use count only query
-        const { count: quotesCount } = await supabase
+        const { count: quotesCount, error: quotesError } = await supabase
           .from('quotes')
           .select('*', { count: 'exact', head: true })
           .eq('freelancer_id', user.id);
+        
+        if (quotesError) throw quotesError;
           
         // For active jobs, use count only query
-        const { count: activeJobsCount } = await supabase
+        const { count: activeJobsCount, error: activeJobsError } = await supabase
           .from('projects')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'in_progress')
           .eq('hired_freelancer_id', user.id);
+        
+        if (activeJobsError) throw activeJobsError;
           
         setTabCounts({
           available: availableCount || 0,

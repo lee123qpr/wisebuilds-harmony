@@ -3,138 +3,91 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
-interface UnreadMessagesResponse {
-  unreadCount: number;
-  hasNewMessages: boolean;
-}
-
-export const useUnreadMessages = (): UnreadMessagesResponse & { markAllAsRead: () => Promise<void> } => {
-  const [unreadCount, setUnreadCount] = useState(0);
-  const [hasNewMessages, setHasNewMessages] = useState(false);
+export const useUnreadMessages = () => {
   const { user } = useAuth();
-  
-  const fetchUnreadCount = async () => {
+  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const [hasNewMessages, setHasNewMessages] = useState<boolean>(false);
+
+  useEffect(() => {
     if (!user) return;
-    
-    try {
-      // Get all conversations involving the current user
-      const { data: conversations, error: conversationsError } = await supabase
-        .from('conversations')
-        .select('id')
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
-      
-      if (conversationsError) {
-        console.error('Error fetching conversations:', conversationsError);
-        return;
+
+    const fetchUnreadCount = async () => {
+      try {
+        // Use a simpler query with count to avoid type instantiation issues
+        const { count, error } = await supabase
+          .from('messages')
+          .select('*', { count: 'exact', head: true })
+          .eq('recipient_id', user.id)
+          .eq('read', false);
+
+        if (error) throw error;
+        
+        setUnreadCount(count || 0);
+        setHasNewMessages(count ? count > 0 : false);
+      } catch (error) {
+        console.error('Error fetching unread message count:', error);
       }
-      
-      if (!conversations || conversations.length === 0) {
-        setUnreadCount(0);
-        setHasNewMessages(false);
-        return;
-      }
-      
-      // Get conversation IDs
-      const conversationIds = conversations.map(c => c.id);
-      
-      // For each conversation, count unread messages
-      const { count, error: messagesError } = await supabase
-        .from('messages')
-        .select('*', { count: 'exact', head: true })
-        .in('conversation_id', conversationIds)
-        .eq('is_read', false)
-        .neq('sender_id', user.id);
-      
-      if (messagesError) {
-        console.error('Error counting unread messages:', messagesError);
-        return;
-      }
-      
-      setUnreadCount(count || 0);
-      setHasNewMessages(count > 0);
-    } catch (error) {
-      console.error('Error in useUnreadMessages:', error);
-    }
-  };
-  
+    };
+
+    fetchUnreadCount();
+
+    // Set up real-time listener for new messages
+    const messagesChannel = supabase
+      .channel('unread-messages')
+      .on('postgres_changes', 
+        { 
+          event: 'INSERT', 
+          schema: 'public', 
+          table: 'messages', 
+          filter: `recipient_id=eq.${user.id}` 
+        },
+        () => {
+          console.log('New message received');
+          fetchUnreadCount();
+        }
+      )
+      .on('postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'messages',
+          filter: `recipient_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Message updated:', payload);
+          fetchUnreadCount();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(messagesChannel);
+    };
+  }, [user]);
+
   // Function to mark all messages as read
   const markAllAsRead = async () => {
     if (!user) return;
-    
+
     try {
-      // Get all conversations involving the current user
-      const { data: conversations, error: conversationsError } = await supabase
-        .from('conversations')
-        .select('id')
-        .or(`user1_id.eq.${user.id},user2_id.eq.${user.id}`);
-      
-      if (conversationsError || !conversations || conversations.length === 0) {
-        return;
-      }
-      
-      // Get conversation IDs
-      const conversationIds = conversations.map(c => c.id);
-      
-      // Mark all messages in these conversations as read
-      const { error: updateError } = await supabase
+      const { error } = await supabase
         .from('messages')
-        .update({ is_read: true })
-        .in('conversation_id', conversationIds)
-        .neq('sender_id', user.id)
-        .eq('is_read', false);
+        .update({ read: true })
+        .eq('recipient_id', user.id)
+        .eq('read', false);
+
+      if (error) throw error;
       
-      if (updateError) {
-        console.error('Error marking messages as read:', updateError);
-        return;
-      }
-      
-      // Reset counts
       setUnreadCount(0);
       setHasNewMessages(false);
     } catch (error) {
       console.error('Error marking messages as read:', error);
     }
   };
-  
-  // Set up listeners for new messages
-  useEffect(() => {
-    if (!user) return;
-    
-    fetchUnreadCount();
-    
-    // Listen for new messages
-    const channel = supabase
-      .channel('messages-channel')
-      .on('postgres_changes', {
-        event: 'INSERT',
-        schema: 'public',
-        table: 'messages',
-        filter: `is_read=eq.false`
-      }, (payload) => {
-        // Only count if the message is not from the current user
-        if (payload.new.sender_id !== user.id) {
-          fetchUnreadCount();
-        }
-      })
-      .subscribe();
-    
-    // Listen for message updates (e.g., when messages are marked as read)
-    const updateChannel = supabase
-      .channel('messages-update-channel')
-      .on('postgres_changes', {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'messages'
-      }, () => {
-        fetchUnreadCount();
-      })
-      .subscribe();
-    
-    return () => {
-      supabase.removeChannel(channel);
-      supabase.removeChannel(updateChannel);
-    };
-  }, [user]);
-  
-  return { unreadCount, hasNewMessages, markAllAsRead };
+
+  return {
+    unreadCount,
+    hasNewMessages,
+    markAllAsRead
+  };
 };
