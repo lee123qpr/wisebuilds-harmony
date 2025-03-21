@@ -50,10 +50,10 @@ const BusinessDashboard = () => {
           setContactName(data.contact_name);
         }
 
-        // Get project count
+        // Fix for TypeScript error - use count() instead of select('*')
         const { count, error: countError } = await supabase
           .from('projects')
-          .select('*', { count: 'exact', head: true })
+          .select('id', { count: 'exact', head: true }) // Only select id field to avoid deep type instantiation
           .eq('client_id', user.id);
         
         if (countError) {
