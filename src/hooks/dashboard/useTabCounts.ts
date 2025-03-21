@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -33,48 +32,44 @@ export const useTabCounts = (activeTab: string) => {
     
     const fetchTabCounts = async () => {
       try {
-        // For available projects, use count only query with simpler structure
-        const availableResponse = await supabase
+        // For available projects
+        const { count: availableCount, error: availableError } = await supabase
           .from('projects')
           .select('id', { count: 'exact', head: true })
           .eq('status', 'open');
         
-        const availableCount = availableResponse.count || 0;
-        if (availableResponse.error) throw availableResponse.error;
+        if (availableError) throw availableError;
           
-        // For leads, use count only query with simpler structure
-        const leadsResponse = await supabase
+        // For leads
+        const { count: leadsCount, error: leadsError } = await supabase
           .from('project_applications')
           .select('id', { count: 'exact', head: true })
           .eq('user_id', user.id);
         
-        const leadsCount = leadsResponse.count || 0;
-        if (leadsResponse.error) throw leadsResponse.error;
+        if (leadsError) throw leadsError;
           
-        // For quotes, use count only query with simpler structure
-        const quotesResponse = await supabase
+        // For quotes
+        const { count: quotesCount, error: quotesError } = await supabase
           .from('quotes')
           .select('id', { count: 'exact', head: true })
           .eq('freelancer_id', user.id);
         
-        const quotesCount = quotesResponse.count || 0;
-        if (quotesResponse.error) throw quotesResponse.error;
+        if (quotesError) throw quotesError;
           
-        // For active jobs, use count only query with simpler structure
-        const activeJobsResponse = await supabase
+        // For active jobs
+        const { count: activeJobsCount, error: activeJobsError } = await supabase
           .from('projects')
           .select('id', { count: 'exact', head: true })
           .eq('status', 'in_progress')
           .eq('hired_freelancer_id', user.id);
         
-        const activeJobsCount = activeJobsResponse.count || 0;
-        if (activeJobsResponse.error) throw activeJobsResponse.error;
+        if (activeJobsError) throw activeJobsError;
           
         setTabCounts({
-          available: availableCount,
-          leads: leadsCount,
-          quotes: quotesCount,
-          active: activeJobsCount,
+          available: availableCount || 0,
+          leads: leadsCount || 0,
+          quotes: quotesCount || 0,
+          active: activeJobsCount || 0,
           messages: messageCount
         });
       } catch (error) {
