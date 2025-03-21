@@ -18,7 +18,7 @@ export const useUnreadMessages = () => {
           .from('messages')
           .select('*', { count: 'exact', head: true })
           .eq('recipient_id', user.id)
-          .eq('read', false);
+          .eq('is_read', false);
 
         if (error) throw error;
         
@@ -72,9 +72,9 @@ export const useUnreadMessages = () => {
     try {
       const { error } = await supabase
         .from('messages')
-        .update({ read: true })
+        .update({ is_read: true })
         .eq('recipient_id', user.id)
-        .eq('read', false);
+        .eq('is_read', false);
 
       if (error) throw error;
       
