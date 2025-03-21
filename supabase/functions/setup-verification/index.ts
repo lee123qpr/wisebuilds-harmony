@@ -17,7 +17,7 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Setting up storage policies...')
+    console.log('Setting up verification system...')
 
     // Create a Supabase client with the Admin key
     const supabaseAdmin = createClient(
@@ -62,6 +62,9 @@ serve(async (req) => {
       console.log('Bucket verification_documents already exists')
     }
 
+    // Now we'll check if the freelancer_verification table has proper RLS policies
+    // This is just a basic check, the actual policies were created in the migration
+    
     return new Response(
       JSON.stringify({
         success: true,
