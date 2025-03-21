@@ -21,12 +21,11 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
   leadSettings
 }) => {
   const { activeTab, handleTabChange } = useFreelancerTabs();
-  const { tabCounts, tabNotifications, resetTabNotification } = useTabCounts(activeTab);
+  const { tabCounts } = useTabCounts(activeTab);
   
-  // Handle tab change with notification reset
+  // Handle tab change
   const onTabChange = (value: string) => {
     handleTabChange(value);
-    resetTabNotification(value);
   };
   
   return (
@@ -34,7 +33,6 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
       activeTab={activeTab}
       onTabChange={onTabChange}
       tabCounts={tabCounts}
-      tabNotifications={tabNotifications}
     >
       <TabsContent value="available" className="pt-2">
         <AvailableTabContent />

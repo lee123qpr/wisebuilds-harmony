@@ -14,16 +14,17 @@ export const useUnreadMessages = () => {
     const fetchUnreadCount = async () => {
       try {
         // Use a simpler query with count to avoid type instantiation issues
-        const { count, error } = await supabase
+        const response = await supabase
           .from('messages')
           .select('*', { count: 'exact', head: true })
           .eq('recipient_id', user.id)
           .eq('is_read', false);
 
-        if (error) throw error;
+        const count = response.count || 0;
+        if (response.error) throw response.error;
         
-        setUnreadCount(count || 0);
-        setHasNewMessages(count ? count > 0 : false);
+        setUnreadCount(count);
+        setHasNewMessages(count > 0);
       } catch (error) {
         console.error('Error fetching unread message count:', error);
       }
@@ -53,8 +54,8 @@ export const useUnreadMessages = () => {
           table: 'messages',
           filter: `recipient_id=eq.${user.id}`
         },
-        (payload) => {
-          console.log('Message updated:', payload);
+        () => {
+          console.log('Message updated');
           fetchUnreadCount();
         }
       )

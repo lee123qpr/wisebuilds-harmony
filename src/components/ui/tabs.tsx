@@ -23,13 +23,12 @@ TabsList.displayName = TabsPrimitive.List.displayName
 
 interface TabsTriggerProps extends React.ComponentPropsWithoutRef<typeof TabsPrimitive.Trigger> {
   badgeCount?: number;
-  showNotification?: boolean;
 }
 
 const TabsTrigger = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Trigger>,
   TabsTriggerProps
->(({ className, badgeCount, showNotification, children, ...props }, ref) => (
+>(({ className, badgeCount, children, ...props }, ref) => (
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
@@ -44,10 +43,6 @@ const TabsTrigger = React.forwardRef<
       <span className="ml-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-xs font-medium text-primary-foreground">
         {badgeCount > 99 ? '99+' : badgeCount}
       </span>
-    )}
-    
-    {showNotification && (
-      <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-red-500" />
     )}
   </TabsPrimitive.Trigger>
 ))

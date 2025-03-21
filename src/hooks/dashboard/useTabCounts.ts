@@ -13,34 +13,18 @@ export interface TabCounts {
   messages: number;
 }
 
-export interface TabNotifications {
-  available: boolean;
-  leads: boolean;
-  quotes: boolean;
-  active: boolean;
-  messages: boolean;
-}
-
 export const useTabCounts = (activeTab: string) => {
   const { user } = useAuth();
   const { notifications } = useNotifications();
-  const { unreadCount: messageCount, hasNewMessages } = useUnreadMessages();
+  const { unreadCount: messageCount } = useUnreadMessages();
   
-  // State for tab counts and notifications
+  // State for tab counts
   const [tabCounts, setTabCounts] = useState<TabCounts>({
     available: 0,
     leads: 0,
     quotes: 0,
     active: 0,
     messages: 0
-  });
-  
-  const [tabNotifications, setTabNotifications] = useState<TabNotifications>({
-    available: false,
-    leads: false,
-    quotes: false,
-    active: false,
-    messages: false
   });
 
   // Fetch counts for each tab
@@ -50,43 +34,47 @@ export const useTabCounts = (activeTab: string) => {
     const fetchTabCounts = async () => {
       try {
         // For available projects, use count only query
-        const { count: availableCount, error: availableError } = await supabase
+        const availableResponse = await supabase
           .from('projects')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'open');
         
-        if (availableError) throw availableError;
+        const availableCount = availableResponse.count || 0;
+        if (availableResponse.error) throw availableResponse.error;
           
         // For leads, use count only query
-        const { count: leadsCount, error: leadsError } = await supabase
+        const leadsResponse = await supabase
           .from('project_applications')
           .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
         
-        if (leadsError) throw leadsError;
+        const leadsCount = leadsResponse.count || 0;
+        if (leadsResponse.error) throw leadsResponse.error;
           
         // For quotes, use count only query
-        const { count: quotesCount, error: quotesError } = await supabase
+        const quotesResponse = await supabase
           .from('quotes')
           .select('*', { count: 'exact', head: true })
           .eq('freelancer_id', user.id);
         
-        if (quotesError) throw quotesError;
+        const quotesCount = quotesResponse.count || 0;
+        if (quotesResponse.error) throw quotesResponse.error;
           
         // For active jobs, use count only query
-        const { count: activeJobsCount, error: activeJobsError } = await supabase
+        const activeJobsResponse = await supabase
           .from('projects')
           .select('*', { count: 'exact', head: true })
           .eq('status', 'in_progress')
           .eq('hired_freelancer_id', user.id);
         
-        if (activeJobsError) throw activeJobsError;
+        const activeJobsCount = activeJobsResponse.count || 0;
+        if (activeJobsResponse.error) throw activeJobsResponse.error;
           
         setTabCounts({
-          available: availableCount || 0,
-          leads: leadsCount || 0,
-          quotes: quotesCount || 0,
-          active: activeJobsCount || 0,
+          available: availableCount,
+          leads: leadsCount,
+          quotes: quotesCount,
+          active: activeJobsCount,
           messages: messageCount
         });
       } catch (error) {
@@ -103,9 +91,6 @@ export const useTabCounts = (activeTab: string) => {
         { event: 'INSERT', schema: 'public', table: 'projects' },
         () => {
           console.log('New project added');
-          if (activeTab !== 'available') {
-            setTabNotifications(prev => ({ ...prev, available: true }));
-          }
           fetchTabCounts();
         }
       )
@@ -117,46 +102,18 @@ export const useTabCounts = (activeTab: string) => {
         { event: '*', schema: 'public', table: 'quotes', filter: `freelancer_id=eq.${user.id}` },
         () => {
           console.log('Quote updated');
-          if (activeTab !== 'quotes') {
-            setTabNotifications(prev => ({ ...prev, quotes: true }));
-          }
           fetchTabCounts();
         }
       )
       .subscribe();
       
-    // Check for notification type to highlight appropriate tab
-    const processNotifications = () => {
-      const leadNotifications = notifications.filter(n => 
-        n.type === 'lead' && !n.read
-      );
-      
-      setTabNotifications(prev => ({
-        ...prev,
-        messages: hasNewMessages,
-        leads: prev.leads || leadNotifications.length > 0
-      }));
-    };
-    
-    processNotifications();
-    
     return () => {
       supabase.removeChannel(projectsChannel);
       supabase.removeChannel(quotesChannel);
     };
-  }, [user, activeTab, notifications, messageCount, hasNewMessages]);
-
-  // Reset notification for the selected tab
-  const resetTabNotification = (tabName: string) => {
-    setTabNotifications(prev => ({
-      ...prev,
-      [tabName]: false
-    }));
-  };
+  }, [user, messageCount]);
   
   return {
-    tabCounts,
-    tabNotifications,
-    resetTabNotification
+    tabCounts
   };
 };
