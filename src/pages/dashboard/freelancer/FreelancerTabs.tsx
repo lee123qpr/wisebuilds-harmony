@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { LeadSettings } from '@/hooks/useFreelancerDashboard';
@@ -121,36 +120,32 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
     
     const fetchTabCounts = async () => {
       try {
-        // Fetch counts for projects
-        const { data: availableProjects, error: availableError } = await supabase
+        const { count: availableCount, error: availableError } = await supabase
           .from('projects')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('status', 'open');
           
-        // Fetch counts for project applications (for leads)
-        const { data: leadsCount, error: leadsError } = await supabase
+        const { count: leadsCount, error: leadsError } = await supabase
           .from('project_applications')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('user_id', user.id);
           
-        // Fetch counts for quotes
-        const { data: quotesCount, error: quotesError } = await supabase
+        const { count: quotesCount, error: quotesError } = await supabase
           .from('quotes')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('freelancer_id', user.id);
           
-        // Fetch counts for active jobs
-        const { data: activeJobsCount, error: activeJobsError } = await supabase
+        const { count: activeJobsCount, error: activeJobsError } = await supabase
           .from('projects')
-          .select('id')
+          .select('*', { count: 'exact', head: true })
           .eq('status', 'in_progress')
           .eq('hired_freelancer_id', user.id);
           
         setTabCounts({
-          available: availableProjects?.length || 0,
-          leads: leadsCount?.length || 0,
-          quotes: quotesCount?.length || 0,
-          active: activeJobsCount?.length || 0,
+          available: availableCount || 0,
+          leads: leadsCount || 0,
+          quotes: quotesCount || 0,
+          active: activeJobsCount || 0,
           messages: messageCount
         });
       } catch (error) {
@@ -199,7 +194,6 @@ const FreelancerTabs: React.FC<FreelancerTabsProps> = ({
         n.type === 'lead' && !n.read
       );
       
-      // Update tab notifications based on notification types
       setTabNotifications(prev => ({
         ...prev,
         messages: hasNewMessages,
