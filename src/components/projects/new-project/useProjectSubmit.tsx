@@ -5,6 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { ProjectFormValues } from './schema';
+import { generateFilePath } from '../file-upload/utils';
 
 export const useProjectSubmit = (
   form: UseFormReturn<ProjectFormValues>,
@@ -16,20 +17,23 @@ export const useProjectSubmit = (
   const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
 
-  const uploadFilesToSupabase = async () => {
+  const uploadFilesToSupabase = async (projectId: string) => {
     if (!user || selectedFiles.length === 0) return [];
     
     const uploadPromises = selectedFiles.map(async (file) => {
-      const fileExt = file.name.split('.').pop();
-      // Generate a unique filename to avoid collisions
-      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
+      // Generate appropriate file path for project files
+      const filePath = generateFilePath(file, {
+        projectId,
+        userId: user.id,
+        userType: user.user_metadata?.user_type
+      });
       
       try {
-        console.log(`Starting upload for file: ${file.name}`);
+        console.log(`Starting upload for file: ${file.name} to path: ${filePath}`);
         
         const { data, error } = await supabase.storage
           .from('project-documents')
-          .upload(fileName, file, {
+          .upload(filePath, file, {
             cacheControl: '3600',
             upsert: false
           });
@@ -76,21 +80,7 @@ export const useProjectSubmit = (
         throw new Error('You must be logged in to create a project');
       }
 
-      let documentReferences = [];
-      try {
-        documentReferences = await uploadFilesToSupabase();
-        console.log('Uploaded documents:', documentReferences);
-      } catch (uploadError: any) {
-        console.error('Error uploading files:', uploadError);
-        toast({
-          variant: 'destructive',
-          title: 'Upload failed',
-          description: uploadError.message || 'Failed to upload project documents. Please try again.',
-        });
-        setIsUploading(false);
-        return;
-      }
-
+      // First create the project to get the ID
       const projectData = {
         user_id: user.id,
         title: data.title,
@@ -106,18 +96,46 @@ export const useProjectSubmit = (
         requires_site_visits: data.requiresSiteVisits,
         requires_equipment: data.requiresEquipment,
         status: 'active',
-        documents: documentReferences.length > 0 ? documentReferences : null
+        documents: null
       };
 
-      console.log('Submitting project data to Supabase:', projectData);
-      
-      const { error } = await supabase
+      const { data: newProject, error: projectError } = await supabase
         .from('projects')
-        .insert(projectData);
+        .insert(projectData)
+        .select('id')
+        .single();
 
-      if (error) {
-        console.error('Database error:', error);
-        throw new Error(`Database error: ${error.message}`);
+      if (projectError) {
+        console.error('Database error:', projectError);
+        throw new Error(`Database error: ${projectError.message}`);
+      }
+
+      // Now upload the files using the project ID
+      let documentReferences = [];
+      try {
+        documentReferences = await uploadFilesToSupabase(newProject.id);
+        console.log('Uploaded documents:', documentReferences);
+      } catch (uploadError: any) {
+        console.error('Error uploading files:', uploadError);
+        toast({
+          variant: 'destructive',
+          title: 'Upload failed',
+          description: uploadError.message || 'Failed to upload project documents. Please try again.',
+        });
+        // Continue with project creation even if file upload fails
+      }
+
+      // Update the project with document references if we have any
+      if (documentReferences.length > 0) {
+        const { error: updateError } = await supabase
+          .from('projects')
+          .update({ documents: documentReferences })
+          .eq('id', newProject.id);
+
+        if (updateError) {
+          console.error('Error updating project with documents:', updateError);
+          // Non-critical error, continue
+        }
       }
       
       toast({

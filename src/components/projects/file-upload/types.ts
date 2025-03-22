@@ -10,6 +10,8 @@ export type UploadedFile = {
 export interface FileUploadProps {
   onFilesUploaded: (files: UploadedFile[]) => void;
   existingFiles?: UploadedFile[];
+  projectId?: string;
+  quoteId?: string;
 }
 
 export interface FileItemProps {

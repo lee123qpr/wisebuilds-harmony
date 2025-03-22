@@ -1,7 +1,7 @@
 
 import { UploadedFile } from '@/components/projects/file-upload/types';
 import { supabase } from '@/integrations/supabase/client';
-import { allowedFileTypes } from '@/components/projects/file-upload/utils';
+import { allowedFileTypes, generateFilePath } from '@/components/projects/file-upload/utils';
 
 export const getFileIcon = (fileType: string) => {
   if (fileType.includes('image')) return 'image';
@@ -14,11 +14,14 @@ export const formatFileSize = (bytes: number): string => {
   else return (bytes / 1048576).toFixed(1) + ' MB';
 };
 
-export const uploadFile = async (file: File): Promise<UploadedFile | null> => {
-  // Create a unique file path
-  const fileExt = file.name.split('.').pop();
-  const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-  const filePath = `${fileName}`;
+export const uploadFile = async (file: File, context: {
+  projectId?: string;
+  quoteId?: string;
+  userId: string;
+  userType?: string;
+}): Promise<UploadedFile | null> => {
+  // Generate appropriate file path with organized structure
+  const filePath = generateFilePath(file, context);
   
   const { data, error } = await supabase.storage
     .from('project-documents')

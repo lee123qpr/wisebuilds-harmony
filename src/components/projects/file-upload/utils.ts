@@ -63,3 +63,33 @@ export const isValidFile = (file: File): boolean => {
   
   return false;
 };
+
+// Generate appropriate file path based on user type and context
+export const generateFilePath = (file: File, context: {
+  projectId?: string;
+  quoteId?: string;
+  userId: string;
+  userType?: string;
+}): string => {
+  const { projectId, quoteId, userId, userType } = context;
+  const fileExt = file.name.split('.').pop() || '';
+  const uniquePart = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}`;
+  
+  // Create organized folder structure
+  let basePath = '';
+  
+  if (userType === 'admin') {
+    basePath = 'admin';
+  } else if (quoteId) {
+    // For quote-related files
+    basePath = `quotes/${quoteId}`;
+  } else if (projectId) {
+    // For project-related files
+    basePath = `projects/${projectId}`;
+  } else {
+    // General user uploads
+    basePath = `users/${userId}`;
+  }
+  
+  return `${basePath}/${uniquePart}.${fileExt}`;
+};

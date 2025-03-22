@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { FormDescription, FormLabel } from '@/components/ui/form';
 import { UploadedFile } from '@/components/projects/file-upload/types';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import FileDropzone from './file-upload/FileDropzone';
 import UploadProgressBar from './file-upload/UploadProgressBar';
 import FileList from './file-upload/FileList';
@@ -11,16 +12,33 @@ import { uploadFile, validateFile, removeFileFromStorage } from './file-upload/f
 interface QuoteFilesProps {
   quoteFiles: UploadedFile[];
   onQuoteFilesUploaded: (files: UploadedFile[]) => void;
+  projectId?: string;
+  quoteId?: string;
 }
 
-const QuoteFiles: React.FC<QuoteFilesProps> = ({ quoteFiles, onQuoteFilesUploaded }) => {
+const QuoteFiles: React.FC<QuoteFilesProps> = ({ 
+  quoteFiles, 
+  onQuoteFilesUploaded, 
+  projectId, 
+  quoteId 
+}) => {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const newFiles = event.target.files;
-    if (!newFiles || newFiles.length === 0) return;
+    if (!newFiles || newFiles.length === 0 || !user) {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "You must be logged in to upload files",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
 
     // Filter out invalid file types
     const validFiles = Array.from(newFiles).filter(file => {
@@ -44,9 +62,16 @@ const QuoteFiles: React.FC<QuoteFilesProps> = ({ quoteFiles, onQuoteFilesUploade
     const uploadedItems: UploadedFile[] = [];
     let completedUploads = 0;
     
+    const uploadContext = {
+      projectId,
+      quoteId,
+      userId: user.id,
+      userType: user.user_metadata?.user_type
+    };
+    
     for (const file of validFiles) {
       try {
-        const uploadedFile = await uploadFile(file);
+        const uploadedFile = await uploadFile(file, uploadContext);
         
         if (uploadedFile) {
           uploadedItems.push(uploadedFile);

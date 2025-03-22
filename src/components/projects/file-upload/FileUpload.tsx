@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { FileUploadProps, UploadedFile } from './types';
 import Dropzone from './Dropzone';
@@ -8,14 +9,20 @@ import FileItem from './FileItem';
 import UploadedFileItem from './UploadedFileItem';
 import UploadButtons from './UploadButtons';
 import UploadProgress from './UploadProgress';
-import { allowedFileTypes } from './utils';
+import { allowedFileTypes, generateFilePath } from './utils';
 
-const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded, existingFiles = [] }) => {
+const FileUpload: React.FC<FileUploadProps> = ({ 
+  onFilesUploaded, 
+  existingFiles = [],
+  projectId,
+  quoteId
+}) => {
   const [files, setFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>(existingFiles);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const { toast } = useToast();
+  const { user } = useAuth();
 
   const handleFileSelection = (newFiles: File[]) => {
     // Filter out invalid file types
@@ -54,13 +61,27 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded, existingFiles 
         .then(({ error }) => {
           if (error) {
             console.error('Error removing file:', error);
+            toast({
+              title: "Error",
+              description: `Failed to delete ${fileToRemove.name}`,
+              variant: "destructive"
+            });
           }
         });
     }
   };
 
   const uploadFiles = async () => {
-    if (!files.length) return;
+    if (!files.length || !user) {
+      if (!user) {
+        toast({
+          title: "Authentication required",
+          description: "You must be logged in to upload files",
+          variant: "destructive"
+        });
+      }
+      return;
+    }
     
     setIsUploading(true);
     setUploadProgress(0);
@@ -69,38 +90,47 @@ const FileUpload: React.FC<FileUploadProps> = ({ onFilesUploaded, existingFiles 
     let completedUploads = 0;
     
     for (const file of files) {
-      // Create a unique file path
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
-      const filePath = `${fileName}`;
-      
-      const { data, error } = await supabase.storage
-        .from('project-documents')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false
+      try {
+        // Generate organized file path based on context
+        const filePath = generateFilePath(file, {
+          projectId,
+          quoteId,
+          userId: user.id,
+          userType: user.user_metadata?.user_type
         });
-      
-      if (error) {
-        toast({
-          title: "Upload failed",
-          description: `Failed to upload ${file.name}: ${error.message}`,
-          variant: "destructive"
-        });
-        console.error('Error uploading file:', error);
-      } else {
-        // Get the public URL for the file
-        const { data: { publicUrl } } = supabase.storage
-          .from('project-documents')
-          .getPublicUrl(filePath);
         
-        uploadedItems.push({
-          name: file.name,
-          size: file.size,
-          type: file.type,
-          url: publicUrl,
-          path: filePath
-        });
+        console.log(`Uploading file to path: ${filePath}`);
+        
+        const { data, error } = await supabase.storage
+          .from('project-documents')
+          .upload(filePath, file, {
+            cacheControl: '3600',
+            upsert: false
+          });
+        
+        if (error) {
+          console.error('Error uploading file:', error);
+          toast({
+            title: "Upload failed",
+            description: `Failed to upload ${file.name}: ${error.message}`,
+            variant: "destructive"
+          });
+        } else {
+          // Get the public URL for the file
+          const { data: { publicUrl } } = supabase.storage
+            .from('project-documents')
+            .getPublicUrl(data.path);
+          
+          uploadedItems.push({
+            name: file.name,
+            size: file.size,
+            type: file.type,
+            url: publicUrl,
+            path: data.path
+          });
+        }
+      } catch (error) {
+        console.error(`Error uploading file ${file.name}:`, error);
       }
       
       completedUploads++;
