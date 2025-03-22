@@ -323,38 +323,47 @@ export type Database = {
         Row: {
           admin_notes: string | null
           created_at: string | null
+          document_name: string | null
+          document_path: string | null
+          document_size: number | null
+          document_type: string | null
           id: string
-          id_document_path: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          status: Database["public"]["Enums"]["verification_status"] | null
           submitted_at: string | null
           updated_at: string | null
           user_id: string
-          verification_status: string
-          verified_at: string | null
-          verified_by: string | null
         }
         Insert: {
           admin_notes?: string | null
           created_at?: string | null
+          document_name?: string | null
+          document_path?: string | null
+          document_size?: number | null
+          document_type?: string | null
           id?: string
-          id_document_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["verification_status"] | null
           submitted_at?: string | null
           updated_at?: string | null
           user_id: string
-          verification_status?: string
-          verified_at?: string | null
-          verified_by?: string | null
         }
         Update: {
           admin_notes?: string | null
           created_at?: string | null
+          document_name?: string | null
+          document_path?: string | null
+          document_size?: number | null
+          document_type?: string | null
           id?: string
-          id_document_path?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          status?: Database["public"]["Enums"]["verification_status"] | null
           submitted_at?: string | null
           updated_at?: string | null
           user_id?: string
-          verification_status?: string
-          verified_at?: string | null
-          verified_by?: string | null
         }
         Relationships: []
       }
@@ -734,7 +743,7 @@ export type Database = {
       }
       is_user_verified: {
         Args: {
-          user_id: string
+          check_user_id: string
         }
         Returns: boolean
       }
@@ -747,7 +756,7 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      verification_status: "not_submitted" | "pending" | "verified" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never

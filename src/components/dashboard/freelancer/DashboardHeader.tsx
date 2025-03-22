@@ -12,10 +12,23 @@ interface DashboardHeaderProps {
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ fullName, hasLeadSettings }) => {
   const navigate = useNavigate();
   
+  // Helper function to get the appropriate greeting based on time of day
+  const getTimeBasedGreeting = () => {
+    const currentHour = new Date().getHours();
+    
+    if (currentHour >= 5 && currentHour < 12) {
+      return 'Good morning';
+    } else if (currentHour >= 12 && currentHour < 18) {
+      return 'Good afternoon';
+    } else {
+      return 'Good evening';
+    }
+  };
+  
   return (
     <div className="mb-8 flex justify-between items-center">
       <div>
-        <h1 className="text-3xl font-bold mb-2">Welcome, {fullName}</h1>
+        <h1 className="text-3xl font-bold mb-2">{getTimeBasedGreeting()}, {fullName}</h1>
         <p className="text-muted-foreground">Your freelancer dashboard</p>
       </div>
       <Button 
