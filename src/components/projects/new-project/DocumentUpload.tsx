@@ -23,7 +23,7 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = event.target.files;
-    if (!files) return;
+    if (!files || files.length === 0) return;
 
     const newFiles: File[] = [];
     let hasInvalidFile = false;
@@ -36,7 +36,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         return;
       }
 
-      if (!ACCEPTED_FILE_TYPES.includes(file.type)) {
+      // Check if file type is in accepted types or has .dwg extension
+      const fileExtension = file.name.split('.').pop()?.toLowerCase();
+      const isDwgFile = fileExtension === 'dwg';
+      
+      if (!ACCEPTED_FILE_TYPES.includes(file.type) && !isDwgFile) {
         hasInvalidFile = true;
         errorMessage = `File ${file.name} is not a supported file type`;
         return;

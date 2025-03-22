@@ -17,7 +17,7 @@ export const allowedFileTypes = [
   'application/octet-stream' // For DWG files
 ];
 
-// We need to use a function that returns JSX.Element, not directly use JSX in a .ts file
+// Return a React element for the file icon
 export const getFileIcon = (file: File | { type: string, name: string }): React.ReactNode => {
   const fileType = file.type;
   const fileName = file.name;
