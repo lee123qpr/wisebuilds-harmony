@@ -1,15 +1,16 @@
 
 import { useState } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { useVerification } from '.';
-import { uploadVerificationDocument } from './services/document-upload';
 import { useToast } from '@/hooks/use-toast';
+import { useVerification } from './useVerification';
 
 export const useDocumentUpload = (onClose: () => void) => {
-  const { user } = useAuth();
-  const { refreshVerificationStatus } = useVerification();
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [isUploading, setIsUploading] = useState(false);
+  const { 
+    uploadVerificationDocument, 
+    refreshVerificationStatus, 
+    isUploading,
+    setupComplete
+  } = useVerification();
   const { toast } = useToast();
 
   const handleFileSelection = (file: File) => {
@@ -22,47 +23,38 @@ export const useDocumentUpload = (onClose: () => void) => {
   };
 
   const handleSubmit = async () => {
-    if (!selectedFile || !user) {
+    if (!selectedFile || !setupComplete) {
       toast({
-        title: "Missing information",
-        description: selectedFile ? "Authentication required" : "Please select a file to upload",
-        variant: "destructive"
+        title: "Error",
+        description: !setupComplete 
+          ? "Verification system is not ready yet. Please try again later." 
+          : "Please select a file to upload",
+        variant: "destructive",
       });
       return;
     }
 
-    setIsUploading(true);
-    console.log('Starting document upload...');
-    console.log('Starting document upload for user:', user.id);
-
     try {
-      const result = await uploadVerificationDocument(user.id, selectedFile);
+      console.log('Submitting document for verification:', selectedFile.name);
       
-      if (!result || !result.success) {
-        console.error('Upload failed with result:', result);
-        throw new Error(result?.error?.message || 'Failed to upload document');
-      }
-
-      // Refresh verification status to get the latest data
-      await refreshVerificationStatus();
+      await uploadVerificationDocument(selectedFile);
       
       toast({
-        title: "Document uploaded successfully",
-        description: "Your verification document has been submitted for review",
+        title: "Document submitted",
+        description: "Your ID document has been submitted for verification. This process usually takes 1-2 business days.",
       });
       
-      // Close the dialog
+      setSelectedFile(null);
+      await refreshVerificationStatus();
       onClose();
     } catch (error: any) {
-      console.error('Error uploading document:', error);
+      console.error('Error submitting document:', error);
       
       toast({
         title: "Upload failed",
-        description: error.message || "There was a problem uploading your document. Please try again.",
-        variant: "destructive"
+        description: error.message || "There was an error uploading your document. Please try again.",
+        variant: "destructive",
       });
-    } finally {
-      setIsUploading(false);
     }
   };
 

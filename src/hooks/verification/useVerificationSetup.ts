@@ -1,49 +1,41 @@
 
 import { useState, useEffect } from 'react';
-import { useToast } from '@/hooks/use-toast';
-import { setupVerification } from './setupVerification';
+import { setupVerification } from './verificationService';
 
 export const useVerificationSetup = () => {
   const [setupComplete, setSetupComplete] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    const initVerification = async () => {
+    const initSetup = async () => {
       try {
-        setLoading(true);
+        setIsLoading(true);
+        console.log('Initializing verification system setup...');
+        
         const result = await setupVerification();
         
-        if (result.success) {
-          console.log('Verification setup successful:', result.message);
-          setSetupComplete(true);
-        } else {
-          console.error('Verification setup failed:', result.message);
-          toast({
-            variant: 'destructive',
-            title: 'Setup Failed',
-            description: 'Could not set up verification. Please try again later.',
-          });
-          setSetupComplete(false);
+        setSetupComplete(result.success);
+        console.log('Verification system setup complete:', result);
+        
+        if (!result.success) {
+          setError(new Error(result.message));
         }
-      } catch (error) {
-        console.error('Error in verification setup:', error);
-        toast({
-          variant: 'destructive',
-          title: 'Setup Error',
-          description: 'An unexpected error occurred during setup.',
-        });
+      } catch (error: any) {
+        console.error('Error during verification setup:', error);
+        setError(error);
         setSetupComplete(false);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    initVerification();
-  }, [toast]);
+    initSetup();
+  }, []);
 
   return {
     setupComplete,
-    loading
+    isLoading,
+    error
   };
 };

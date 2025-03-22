@@ -4,25 +4,26 @@ import { VerificationStatus } from '@/components/dashboard/freelancer/Verificati
 export interface VerificationData {
   id: string;
   user_id: string;
-  document_path: string | null;
-  document_name: string | null;
-  document_type: string | null;
-  document_size: number | null;
+  document_path: string;
+  document_name?: string | null;
+  document_type?: string | null;
+  document_size?: number | null;
   status: VerificationStatus;
-  admin_notes: string | null;
-  submitted_at: string | null;
-  reviewed_at: string | null;
+  admin_notes?: string | null;
+  submitted_at?: string | null;
+  reviewed_at?: string | null;
 }
 
 export interface UseVerificationResult {
-  isVerified: boolean;
-  verificationStatus: VerificationStatus;
   verificationData: VerificationData | null;
+  verificationStatus: VerificationStatus;
+  isVerified: boolean;
   isLoading: boolean;
+  isUploading: boolean;
+  isDeleting: boolean;
+  setupComplete?: boolean;
   error: Error | null;
-  isUploading?: boolean;
-  isDeleting?: boolean;
-  uploadVerificationDocument?: (file: File) => Promise<string | boolean>;
-  deleteVerificationDocument?: () => Promise<boolean>;
+  uploadVerificationDocument: (file: File) => Promise<string | boolean | null>;
+  deleteVerificationDocument: () => Promise<boolean>;
   refreshVerificationStatus: () => Promise<void>;
 }

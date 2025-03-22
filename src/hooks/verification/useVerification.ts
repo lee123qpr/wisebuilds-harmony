@@ -5,7 +5,8 @@ import { useAuth } from '@/context/AuthContext';
 import { 
   fetchVerificationStatus, 
   uploadVerificationDocument, 
-  deleteVerificationDocument 
+  deleteVerificationDocument,
+  setupVerification
 } from './verificationService';
 import type { VerificationData, UseVerificationResult } from './types';
 import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
@@ -17,7 +18,27 @@ export const useVerification = (): UseVerificationResult => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [error, setError] = useState<Error | null>(null);
+
+  // Initialize verification system
+  const setupVerificationSystem = async () => {
+    try {
+      const result = await setupVerification();
+      setIsSetupComplete(result.success);
+      
+      if (!result.success) {
+        console.error('Failed to setup verification system:', result.message);
+        setError(new Error(result.message));
+      } else {
+        console.log('Verification system setup complete');
+      }
+    } catch (error: any) {
+      console.error('Error in setupVerificationSystem:', error);
+      setIsSetupComplete(false);
+      setError(error);
+    }
+  };
 
   // Fetch verification status
   const refreshVerificationStatus = async () => {
@@ -97,6 +118,8 @@ export const useVerification = (): UseVerificationResult => {
 
   // Initialize
   useEffect(() => {
+    setupVerificationSystem();
+    
     if (user) {
       refreshVerificationStatus();
     } else {
@@ -113,6 +136,7 @@ export const useVerification = (): UseVerificationResult => {
     isLoading,
     isUploading,
     isDeleting,
+    setupComplete: isSetupComplete,
     error,
     uploadVerificationDocument: handleUploadVerificationDocument,
     deleteVerificationDocument: handleDeleteVerificationDocument,
