@@ -23,7 +23,8 @@ export const useCredits = () => {
   const { 
     transactions, 
     isLoadingTransactions, 
-    transactionsError 
+    transactionsError,
+    refetchTransactions
   } = useTransactions();
   
   const {
@@ -32,6 +33,13 @@ export const useCredits = () => {
   } = usePurchaseCredits();
   
   const { handleCheckoutSuccess } = useCheckoutSuccess();
+  
+  // Enhanced refetch function that refreshes all credit-related data
+  const refreshAllCreditData = async () => {
+    console.log('Refreshing all credit data');
+    if (refetchCredits) await refetchCredits();
+    if (refetchTransactions) await refetchTransactions();
+  };
   
   return {
     creditBalance,
@@ -46,6 +54,6 @@ export const useCredits = () => {
     transactionsError,
     purchaseCredits,
     handleCheckoutSuccess,
-    refetchCredits,
+    refetchCredits: refreshAllCreditData,
   };
 };

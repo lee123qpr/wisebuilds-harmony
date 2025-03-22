@@ -14,10 +14,19 @@ export const useCheckoutSuccess = () => {
     if (!sessionId) return;
     
     try {
-      // If user exists, we can update their data immediately
-      if (user) {
+      console.log('Processing checkout success with session ID:', sessionId);
+      
+      // Force an immediate invalidation of credit-related queries
+      if (user?.id) {
+        console.log(`Refreshing credit data for user ${user.id}`);
         await queryClient.invalidateQueries({ queryKey: ['creditBalance', user.id] });
         await queryClient.invalidateQueries({ queryKey: ['creditTransactions', user.id] });
+        
+        // Force refetch to ensure we have the latest data
+        await queryClient.refetchQueries({ queryKey: ['creditBalance', user.id] });
+        await queryClient.refetchQueries({ queryKey: ['creditTransactions', user.id] });
+      } else {
+        console.log('No user ID available for credit refresh');
       }
       
       toast({
