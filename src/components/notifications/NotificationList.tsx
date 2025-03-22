@@ -71,10 +71,15 @@ const NotificationList = () => {
 
   return (
     <div className="flex flex-col h-full">
-      <div className="px-4 py-3 flex items-center justify-between bg-muted/50">
-        <h3 className="font-medium">Notifications</h3>
+      <div className="px-4 py-2 flex items-center justify-between bg-muted/50">
+        <h3 className="font-medium text-base">Notifications</h3>
         {unreadCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={markAllAsRead}>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={markAllAsRead}
+            className="h-7 px-2 text-xs font-medium text-primary hover:text-primary/90"
+          >
             Mark all as read
           </Button>
         )}
@@ -82,7 +87,7 @@ const NotificationList = () => {
       <Separator />
       
       {notifications.length === 0 ? (
-        <div className="p-4 text-center text-muted-foreground">
+        <div className="p-4 text-center text-muted-foreground text-xs">
           <p>No notifications</p>
         </div>
       ) : (
@@ -91,26 +96,26 @@ const NotificationList = () => {
             {notifications.map((notification) => (
               <div 
                 key={notification.id} 
-                className={`p-4 hover:bg-muted/30 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}
+                className={`p-3 hover:bg-muted/30 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}
                 onClick={() => handleNotificationClick(notification)}
               >
-                <div className="flex items-start gap-3">
+                <div className="flex items-start gap-2">
                   <div className="mt-0.5">
                     {getNotificationIcon(notification.type)}
                   </div>
-                  <div className="flex-1 space-y-1">
-                    <p className={`text-sm ${!notification.read ? 'font-medium' : ''}`}>
+                  <div className="flex-1 space-y-0.5">
+                    <p className={`text-xs ${!notification.read ? 'font-medium' : ''}`}>
                       {notification.title}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {notification.description}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground">
                       {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </p>
                   </div>
                   {!notification.read && (
-                    <div className="h-2 w-2 bg-blue-500 rounded-full" aria-hidden="true"></div>
+                    <div className="h-2 w-2 bg-blue-500 rounded-full mt-1" aria-hidden="true"></div>
                   )}
                 </div>
               </div>

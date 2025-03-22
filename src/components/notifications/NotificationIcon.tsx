@@ -20,15 +20,15 @@ const NotificationIcon = () => {
           <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <span 
-              className="absolute top-0 right-0 h-4 w-4 rounded-full bg-destructive text-xs text-white flex items-center justify-center"
+              className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-500 text-xs text-white flex items-center justify-center font-medium"
               aria-label={`${unreadCount} unread notifications`}
             >
-              {unreadCount > 9 ? '9+' : unreadCount}
+              {unreadCount > 99 ? '99+' : unreadCount}
             </span>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0 max-h-[400px] overflow-hidden">
+      <PopoverContent className="w-80 p-0 max-h-[400px] overflow-hidden" align="end">
         <NotificationList />
       </PopoverContent>
     </Popover>

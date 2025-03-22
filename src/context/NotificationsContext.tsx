@@ -13,7 +13,7 @@ export type NotificationType =
   | 'application_viewed'
   | 'verification_status'
   | 'payment'
-  | 'credit_update'; // New type for credit balance updates
+  | 'credit_update';
 
 export interface Notification {
   id: string;
@@ -36,26 +36,6 @@ interface NotificationsContextType {
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
-// Initial mock notifications for testing
-const INITIAL_NOTIFICATIONS: Notification[] = [
-  {
-    id: '1',
-    type: 'message',
-    title: 'New Message',
-    description: 'Sarah Johnson sent you a message about your proposal',
-    read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString(), // 30 minutes ago
-  },
-  {
-    id: '2',
-    type: 'lead',
-    title: 'New Lead Available',
-    description: 'A new project matching your skills is available',
-    read: false,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-  }
-];
-
 export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -74,9 +54,23 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     const fetchNotifications = async () => {
       setIsLoading(true);
       try {
-        // In a real implementation, this would fetch from Supabase
-        // For now, we'll continue using mock data until a notifications table is created
-        setNotifications(INITIAL_NOTIFICATIONS);
+        const { data, error } = await supabase
+          .from('notifications')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(20);
+        
+        if (error) {
+          console.error('Error fetching notifications:', error);
+          return;
+        }
+        
+        if (data && data.length > 0) {
+          setNotifications(data);
+        } else {
+          setNotifications([]);
+        }
       } catch (error) {
         console.error('Error fetching notifications:', error);
       } finally {
@@ -102,7 +96,52 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
   const setupRealTimeListeners = (userId: string) => {
     const channels = [];
 
-    // 1. Listen for new messages
+    // 1. Listen for new notifications
+    const notificationsChannel = supabase
+      .channel('public:notifications')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          const newNotification = payload.new as Notification;
+          setNotifications(prev => [newNotification, ...prev]);
+          
+          toast({
+            title: newNotification.title,
+            description: newNotification.description,
+            variant: "default"
+          });
+        }
+      )
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'notifications',
+          filter: `user_id=eq.${userId}`
+        },
+        (payload) => {
+          const updatedNotification = payload.new as Notification;
+          setNotifications(prev => 
+            prev.map(notification => 
+              notification.id === updatedNotification.id 
+                ? updatedNotification 
+                : notification
+            )
+          );
+        }
+      )
+      .subscribe();
+    
+    channels.push(notificationsChannel);
+
+    // 2. Listen for new messages
     const messagesChannel = supabase
       .channel('public:messages')
       .on(
@@ -133,7 +172,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     
     channels.push(messagesChannel);
 
-    // 2. Listen for quote status changes (hired notifications)
+    // 3. Listen for quote status changes (hired notifications)
     const quotesChannel = supabase
       .channel('public:quotes')
       .on(
@@ -168,7 +207,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     
     channels.push(quotesChannel);
 
-    // 3. Listen for new projects matching freelancer lead settings
+    // 4. Listen for new projects matching freelancer lead settings
     const projectsChannel = supabase
       .channel('public:projects')
       .on(
@@ -199,7 +238,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     
     channels.push(projectsChannel);
 
-    // 4. Listen for credit balance updates
+    // 5. Listen for credit balance updates
     const creditsChannel = supabase
       .channel('public:freelancer_credits')
       .on(
@@ -239,7 +278,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     
     channels.push(creditsChannel);
 
-    // 5. Listen for credit transactions
+    // 6. Listen for credit transactions
     const transactionsChannel = supabase
       .channel('public:credit_transactions')
       .on(
@@ -296,9 +335,24 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     };
     
     setNotifications(prev => [newNotification, ...prev]);
+    
+    // Create a record in the notifications table
+    if (user) {
+      supabase.from('notifications').insert([{
+        user_id: user.id,
+        type: newNotification.type,
+        title: newNotification.title,
+        description: newNotification.description,
+        data: newNotification.data
+      }]).then(({ error }) => {
+        if (error) {
+          console.error('Error saving notification:', error);
+        }
+      });
+    }
   };
 
-  const markAsRead = (id: string) => {
+  const markAsRead = async (id: string) => {
     setNotifications(prev => 
       prev.map(notification => 
         notification.id === id 
@@ -306,12 +360,40 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           : notification
       )
     );
+    
+    // Update the notification in the database if it's a database record
+    if (user && !id.startsWith('custom_') && !id.startsWith('msg_') && 
+        !id.startsWith('quote_') && !id.startsWith('project_') && 
+        !id.startsWith('credits_') && !id.startsWith('payment_')) {
+      try {
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('id', id)
+          .eq('user_id', user.id);
+      } catch (error) {
+        console.error('Error marking notification as read:', error);
+      }
+    }
   };
 
-  const markAllAsRead = () => {
+  const markAllAsRead = async () => {
     setNotifications(prev => 
       prev.map(notification => ({ ...notification, read: true }))
     );
+    
+    // Update all notifications in the database
+    if (user) {
+      try {
+        await supabase
+          .from('notifications')
+          .update({ read: true })
+          .eq('user_id', user.id)
+          .eq('read', false);
+      } catch (error) {
+        console.error('Error marking all notifications as read:', error);
+      }
+    }
   };
 
   return (
