@@ -2,11 +2,12 @@
 import React from 'react';
 import { useNotifications, NotificationType } from '@/context/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
-import { Bell, Mail, Package, Star, Briefcase, Eye, FileCheck, AlertCircle, DollarSign, CreditCard } from 'lucide-react';
+import { Bell, Mail, Package, Star, Briefcase, Eye, AlertCircle, DollarSign, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useNavigate } from 'react-router-dom';
+import { cn } from '@/lib/utils';
 
 const NotificationList = () => {
   const { notifications, unreadCount, markAllAsRead, markAsRead, isLoading } = useNotifications();
@@ -72,7 +73,7 @@ const NotificationList = () => {
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 py-2 flex items-center justify-between bg-muted/50">
-        <h3 className="font-medium text-base">Notifications</h3>
+        <h3 className="font-medium text-sm">Notifications</h3>
         {unreadCount > 0 && (
           <Button 
             variant="ghost" 
@@ -96,26 +97,32 @@ const NotificationList = () => {
             {notifications.map((notification) => (
               <div 
                 key={notification.id} 
-                className={`p-3 hover:bg-muted/30 transition-colors cursor-pointer ${!notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''}`}
+                className={cn(
+                  "p-2.5 hover:bg-muted/30 transition-colors cursor-pointer",
+                  !notification.read ? 'bg-blue-50 dark:bg-blue-950/20' : ''
+                )}
                 onClick={() => handleNotificationClick(notification)}
               >
                 <div className="flex items-start gap-2">
-                  <div className="mt-0.5">
+                  <div className="mt-0.5 flex-shrink-0">
                     {getNotificationIcon(notification.type)}
                   </div>
-                  <div className="flex-1 space-y-0.5">
-                    <p className={`text-xs ${!notification.read ? 'font-medium' : ''}`}>
+                  <div className="flex-1 space-y-0.5 min-w-0">
+                    <p className={cn(
+                      "text-xs truncate",
+                      !notification.read ? 'font-medium' : ''
+                    )}>
                       {notification.title}
                     </p>
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground line-clamp-2 break-words">
                       {notification.description}
                     </p>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-gray-500">
                       {formatDistanceToNow(new Date(notification.created_at), { addSuffix: true })}
                     </p>
                   </div>
                   {!notification.read && (
-                    <div className="h-2 w-2 bg-blue-500 rounded-full mt-1" aria-hidden="true"></div>
+                    <div className="h-2 w-2 bg-blue-500 rounded-full mt-1 flex-shrink-0" aria-hidden="true"></div>
                   )}
                 </div>
               </div>
