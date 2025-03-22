@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
@@ -20,7 +19,6 @@ interface ProjectListViewProps {
   setSelectedProjectId: (id: string) => void;
   selectedProject: Project | null;
   showContactInfo?: boolean;
-  onPurchaseSuccess?: () => void;
 }
 
 const ProjectListView: React.FC<ProjectListViewProps> = ({
@@ -29,8 +27,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   selectedProjectId,
   setSelectedProjectId,
   selectedProject,
-  showContactInfo = false,
-  onPurchaseSuccess
+  showContactInfo = false
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -43,7 +40,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  const handlePurchaseSuccess = async () => {
+  const handlePurchaseSuccess = () => {
     toast({
       title: 'Lead purchased',
       description: 'You can now view the client contact information',
@@ -58,22 +55,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       }));
     }
     
-    // Invalidate both applications and leads queries to refresh data
-    await queryClient.invalidateQueries({ queryKey: ['applications'] });
-    await queryClient.invalidateQueries({ queryKey: ['leads'] });
-    
-    // Force refetch to ensure the UI reflects the update
-    await queryClient.refetchQueries({ queryKey: ['applications'] });
-    await queryClient.refetchQueries({ queryKey: ['leads'] });
-    
-    // Reset the leads query data to force a server refetch
-    queryClient.resetQueries({ queryKey: ['leads'] });
-    
-    // Call the parent's onPurchaseSuccess if provided
-    if (onPurchaseSuccess) {
-      console.log('Calling parent onPurchaseSuccess callback');
-      await onPurchaseSuccess();
-    }
+    queryClient.invalidateQueries({ queryKey: ['applications'] });
   };
 
   useEffect(() => {

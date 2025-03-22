@@ -1,5 +1,5 @@
 
-import React, { useCallback } from 'react';
+import React from 'react';
 import { useProjectsWithFiltering } from '@/hooks/projects/useProjectsWithFiltering';
 import { LeadSettings } from '@/hooks/freelancer/types';
 import ProjectListView from '@/components/dashboard/freelancer/ProjectListView';
@@ -44,16 +44,6 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
     }
   }, [filteredProjects, selectedProjectId]);
 
-  // Refresh leads when the component mounts and after lead purchases
-  useEffect(() => {
-    // Refetch leads data when the component mounts
-    queryClient.invalidateQueries({ queryKey: ['leads'] });
-    queryClient.refetchQueries({ queryKey: ['leads'] });
-    
-    // Explicitly get fresh data from server
-    refreshProjects();
-  }, [queryClient, refreshProjects]);
-
   // Handle refresh - improved to use the refreshProjects function
   const handleRefresh = async () => {
     console.log('Refreshing leads...');
@@ -65,19 +55,15 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
     });
     
     try {
-      // Force a full refresh
-      await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
-      await queryClient.invalidateQueries({ queryKey: ['leads'] });
-      await queryClient.refetchQueries({ queryKey: ['leads'] });
-      
       // Use the refreshProjects function from useProjectsWithFiltering
-      const refreshResult = await refreshProjects();
-      console.log('Projects refresh result:', refreshResult);
+      await refreshProjects();
       
-      // Sometimes a more aggressive refresh is needed
+      // Force a refresh of the lead settings as well
+      await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+      
+      // Sometimes we need a full page refresh to get updated data
       if (filteredProjects.length === 0) {
-        await queryClient.resetQueries({ queryKey: ['leads'] });
-        await queryClient.refetchQueries({ queryKey: ['leads'] });
+        window.location.reload();
       }
     } catch (error) {
       console.error('Error refreshing leads:', error);
@@ -90,23 +76,6 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
       setIsRefreshing(false);
     }
   };
-
-  // Handle purchase success to refresh leads data
-  const handlePurchaseSuccess = useCallback(async () => {
-    console.log('Lead purchase success, refreshing leads data...');
-    try {
-      await queryClient.invalidateQueries({ queryKey: ['leads'] });
-      await queryClient.refetchQueries({ queryKey: ['leads'] });
-      await refreshProjects();
-      
-      toast({
-        title: "Lead Purchase Successful",
-        description: "Your lead list has been updated with your new purchase.",
-      });
-    } catch (error) {
-      console.error('Error refreshing after purchase:', error);
-    }
-  }, [queryClient, refreshProjects]);
   
   // If loading or no settings, show alert
   if (isLoadingSettings) {
@@ -137,7 +106,6 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
           selectedProject={selectedProject as any}
-          onPurchaseSuccess={handlePurchaseSuccess}
         />
       )}
     </div>
