@@ -1,7 +1,6 @@
-
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { useVerification } from './useVerification';
+import { useToast } from '@/hooks/use-toast';
 
 export const useDocumentDeletion = (onDeleteSuccess?: () => void) => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);

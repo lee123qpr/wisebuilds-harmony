@@ -1,6 +1,5 @@
-
 import { useState, useEffect } from 'react';
-import { setupVerification } from './verificationService';
+import { setupVerification } from './services';
 
 export const useVerificationSetup = () => {
   const [setupComplete, setSetupComplete] = useState(false);

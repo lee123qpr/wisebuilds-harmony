@@ -1,7 +1,7 @@
-
 import { useState } from 'react';
-import { useToast } from '@/hooks/use-toast';
 import { useVerification } from './useVerification';
+import { validateFile } from '@/components/quotes/components/file-upload/utils/validation';
+import { useToast } from '@/hooks/use-toast';
 
 export const useDocumentUpload = (onClose: () => void) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);

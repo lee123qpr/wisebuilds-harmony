@@ -1,8 +1,13 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { fetchVerificationStatus } from './verification-status';
+import { setupVerification } from './verification-setup';
+import { getVerificationBucketName } from './storage-utils';
 import type { VerificationData } from '../types';
 
+/**
+ * Uploads verification document for a user
+ */
 export const uploadVerificationDocument = async (
   userId: string,
   file: File
@@ -13,17 +18,38 @@ export const uploadVerificationDocument = async (
   verificationData?: VerificationData
 }> => {
   try {
-    console.log('Uploading verification document for user:', userId);
+    console.log('Starting document upload for user:', userId);
     
-    // Create a unique file path
+    // Create a unique file path - make sure the userId is the first part of the path
+    // This is critical for RLS policies that check path ownership
     const fileExt = file.name.split('.').pop();
     const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
     const filePath = `${userId}/${fileName}`;
     
-    // First, try to upload the file
-    console.log('Attempting to upload file to storage path:', filePath);
+    console.log('Generated file path:', filePath);
+    
+    // Determine which bucket name to use
+    const bucketName = await getVerificationBucketName();
+    console.log(`Using bucket name: ${bucketName}`);
+    
+    // If no bucket exists, set up the verification system
+    if (bucketName === 'verification_documents' && !(await bucketExists(bucketName))) {
+      console.log('Bucket not found, setting up verification system first');
+      // Call the setup function
+      const setupResult = await setupVerification();
+      
+      if (!setupResult.success) {
+        console.error('Failed to setup verification system:', setupResult.message);
+        throw new Error('Failed to setup verification system: ' + setupResult.message);
+      }
+      
+      console.log('Verification system setup complete');
+    }
+    
+    // Try to upload the file
+    console.log(`Attempting to upload file to storage path: ${filePath} in bucket: ${bucketName}`);
     const { error: uploadError } = await supabase.storage
-      .from('verification_documents')
+      .from(bucketName)
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
@@ -86,7 +112,7 @@ export const uploadVerificationDocument = async (
       // Clean up the uploaded file if there was an error with the database record
       console.log('Cleaning up uploaded file due to database error');
       await supabase.storage
-        .from('verification_documents')
+        .from(bucketName)
         .remove([filePath]);
       
       return { 
@@ -114,3 +140,17 @@ export const uploadVerificationDocument = async (
     };
   }
 };
+
+/**
+ * Checks if a bucket exists
+ */
+async function bucketExists(bucketName: string): Promise<boolean> {
+  const { data, error } = await supabase.storage.listBuckets();
+  
+  if (error) {
+    console.error('Error checking buckets:', error);
+    return false;
+  }
+  
+  return data.some(bucket => bucket.name === bucketName);
+}

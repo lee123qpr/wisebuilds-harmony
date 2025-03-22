@@ -7,7 +7,7 @@ import {
   uploadVerificationDocument, 
   deleteVerificationDocument,
   setupVerification
-} from './verificationService';
+} from './services';
 import type { VerificationData, UseVerificationResult } from './types';
 import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
 

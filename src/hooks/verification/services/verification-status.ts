@@ -1,8 +1,11 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { mapDatabaseStatusToVerificationStatus } from './status-utils';
 import type { VerificationData } from '../types';
-import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
 
+/**
+ * Fetches verification status for a user
+ */
 export const fetchVerificationStatus = async (userId: string): Promise<VerificationData | null> => {
   try {
     console.log('Fetching verification status for user:', userId);
@@ -26,8 +29,8 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       return null;
     }
     
-    // Ensure status is a valid VerificationStatus type
-    const verificationStatus = data.status as VerificationStatus;
+    // Map database status to frontend status type
+    const status = mapDatabaseStatusToVerificationStatus(data.status);
     
     // Return typed verification data
     return {
@@ -37,7 +40,7 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       document_name: data.document_name,
       document_type: data.document_type,
       document_size: data.document_size,
-      status: verificationStatus,
+      status: status,
       admin_notes: data.admin_notes,
       submitted_at: data.submitted_at,
       reviewed_at: data.reviewed_at

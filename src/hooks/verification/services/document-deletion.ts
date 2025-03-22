@@ -1,7 +1,10 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { getVerificationBucketName } from './storage-utils';
 
-// Delete ID document
+/**
+ * Deletes verification document for a user
+ */
 export const deleteVerificationDocument = async (userId: string, documentPath: string): Promise<{
   success: boolean;
   error?: any;
@@ -9,17 +12,24 @@ export const deleteVerificationDocument = async (userId: string, documentPath: s
   try {
     console.log('Deleting document for user:', userId);
     
-    // Delete the file from storage
+    // Determine which bucket to use
+    const bucketName = await getVerificationBucketName();
+    console.log(`Using bucket name for deletion: ${bucketName}`);
+    
+    // Try to delete the file
     const { error: storageError } = await supabase.storage
-      .from('verification_documents')
+      .from(bucketName)
       .remove([documentPath]);
     
     if (storageError) {
       console.error('Error deleting document from storage:', storageError);
-      throw storageError;
+      // We'll continue with deleting the database record even if storage deletion fails
+      console.log('Continuing with database record deletion despite storage error');
+    } else {
+      console.log('Successfully deleted document from storage');
     }
     
-    // Delete or update the verification record
+    // Delete the verification record
     const { error: dbError } = await supabase
       .from('freelancer_verification')
       .delete()
@@ -29,6 +39,8 @@ export const deleteVerificationDocument = async (userId: string, documentPath: s
       console.error('Error deleting verification record:', dbError);
       throw dbError;
     }
+    
+    console.log('Successfully deleted verification record from database');
     
     return { 
       success: true
