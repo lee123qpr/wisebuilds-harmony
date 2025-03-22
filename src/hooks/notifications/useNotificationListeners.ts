@@ -2,7 +2,9 @@
 import { useEffect, useCallback } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificationsState } from './useNotificationsState';
-import { fetchNotifications, setupNotificationsListeners } from '@/services/notifications/notificationService';
+import { fetchNotifications } from '@/services/notifications/notificationService';
+import { setupListeners } from '@/services/notifications/realTimeListeners';
+import { Notification } from '@/services/notifications/types';
 
 // Maximum number of retries for network operations
 const MAX_RETRIES = 3;
@@ -11,7 +13,12 @@ const RETRY_DELAY_BASE = 2000;
 
 export function useNotificationListeners() {
   const { user } = useAuth();
-  const { setNotifications, addNotification, markAsRead } = useNotificationsState();
+  const { 
+    setNotifications, 
+    addNotificationToState, 
+    updateNotificationInState, 
+    markAsRead
+  } = useNotificationsState();
 
   // Fetch notifications with retry mechanism
   const initializeNotifications = useCallback(async () => {
@@ -55,17 +62,23 @@ export function useNotificationListeners() {
     // Initialize notifications (with retry mechanism)
     initializeNotifications();
     
-    // Set up real-time listeners for notifications
-    const cleanup = setupNotificationsListeners(user.id, (notification) => {
-      console.log('New notification received:', notification);
-      addNotification(notification);
-    });
+    // Handle real-time notifications
+    const onNotification = (payload: any) => {
+      console.log('New notification received:', payload);
+      if (payload.new) {
+        const notification = payload.new as Notification;
+        addNotificationToState(notification);
+      }
+    };
+    
+    // Set up real-time listeners for all notification types
+    const cleanup = setupListeners(user.id, onNotification);
     
     return () => {
       console.log('Cleaning up notification channels');
       cleanup();
     };
-  }, [user, addNotification, initializeNotifications]);
+  }, [user, addNotificationToState, initializeNotifications]);
 
   return { markAsRead };
 }

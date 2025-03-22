@@ -1,11 +1,10 @@
 
-import { useState } from 'react';
+import { Notification } from '@/services/notifications/types';
 import { 
   markNotificationAsRead,
-  markAllNotificationsAsRead as markAllAsReadInDB,
+  markAllNotificationsAsRead,
   fetchNotifications
 } from '@/services/notifications';
-import { Notification } from '@/services/notifications/types';
 
 export const useNotificationActions = (
   userId: string | undefined,
@@ -49,7 +48,7 @@ export const useNotificationActions = (
     );
     
     // Then update the database
-    const success = await markAllAsReadInDB(userId);
+    const success = await markAllNotificationsAsRead(userId);
     
     if (!success) {
       // Revert by fetching fresh data

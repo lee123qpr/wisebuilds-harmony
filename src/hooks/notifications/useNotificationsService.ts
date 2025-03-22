@@ -12,8 +12,7 @@ export const useNotificationsService = () => {
     isLoading,
     setIsLoading,
     unreadCount,
-    addNotificationToState,
-    updateNotificationInState
+    addNotificationToState
   } = useNotificationsState();
 
   const { markAsRead, markAllAsRead } = useNotificationActions(
@@ -22,13 +21,8 @@ export const useNotificationsService = () => {
     setNotifications
   );
 
-  const { addNotification } = useNotificationListeners(
-    user,
-    setNotifications,
-    setIsLoading,
-    addNotificationToState,
-    updateNotificationInState
-  );
+  // Set up notification listeners
+  useNotificationListeners();
 
   return {
     notifications,
@@ -36,6 +30,6 @@ export const useNotificationsService = () => {
     markAsRead,
     markAllAsRead,
     isLoading,
-    addNotification
+    addNotification: addNotificationToState
   };
 };

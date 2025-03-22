@@ -1,6 +1,6 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Notification } from '../notifications/types';
+import { Notification, NotificationType } from './types';
 
 // Maximum number of notifications to fetch
 const NOTIFICATION_LIMIT = 20;
@@ -32,11 +32,61 @@ export const fetchNotifications = async (userId: string, limit = NOTIFICATION_LI
       throw error;
     }
     
-    return data || [];
+    // Cast the type to ensure compatibility
+    return (data || []).map(notification => ({
+      ...notification,
+      type: notification.type as NotificationType
+    }));
   } catch (error) {
     console.error('Error fetching notifications:', error);
     // Don't throw here, return empty array to prevent UI crashes
     return [];
+  }
+};
+
+/**
+ * Mark a notification as read
+ */
+export const markNotificationAsRead = async (notificationId: string, userId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('id', notificationId)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error marking notification as read:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error marking notification as read:', error);
+    return false;
+  }
+};
+
+/**
+ * Mark all notifications as read for a user
+ */
+export const markAllNotificationsAsRead = async (userId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('notifications')
+      .update({ read: true })
+      .eq('user_id', userId)
+      .eq('read', false);
+
+    if (error) {
+      console.error('Error marking all notifications as read:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error marking all notifications as read:', error);
+    return false;
   }
 };
 
@@ -58,7 +108,12 @@ export const setupNotificationsListeners = (userId: string, callback: (notificat
       (payload) => {
         console.log('Real-time notification received:', payload);
         if (payload.new) {
-          callback(payload.new as Notification);
+          // Cast the type to ensure compatibility
+          const notification = {
+            ...payload.new,
+            type: payload.new.type as NotificationType
+          } as Notification;
+          callback(notification);
         }
       }
     )
