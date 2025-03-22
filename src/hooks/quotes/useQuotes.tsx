@@ -9,7 +9,6 @@ import { useEffect, useRef } from 'react';
 import { logQuoteFetchDiagnostics, verifyProjectOwnership, logSystemQuotesSample, checkAllProjectQuotes } from './utils/diagnostics';
 import { buildQuotesQuery, fetchFreelancerProfiles, createProfileMap } from './utils/queries';
 import { formatQuotesWithProfiles } from './utils/formatters';
-import { setupQuotesRealtimeListener, removeRealtimeListener } from './utils/realtime';
 
 interface UseQuotesProps {
   projectId?: string;
@@ -66,8 +65,7 @@ export const useQuotes = ({
             const { data, error } = await supabase
               .from('quotes')
               .select('*, project:projects(*)')
-              .eq('freelancer_id', user.id)
-              .eq('status', 'accepted'); // Get only accepted quotes for active jobs
+              .eq('freelancer_id', user.id);
               
             if (error) {
               console.error('Error fetching quotes for freelancer:', error);
@@ -78,32 +76,11 @@ export const useQuotes = ({
             quotesData = data;
           } else {
             // For clients, get quotes for their projects
-            let query = supabase
+            const { data, error } = await supabase
               .from('quotes')
-              .select('*, project:projects(*)');
+              .select('*, project:projects(*)')
+              .eq('client_id', user.id);
               
-            // This is a critical change: We need to use client_id to filter 
-            // quotes for specific client instead of project.user_id
-            query = query.eq('client_id', user.id);
-              
-            // If we're only looking for accepted quotes
-            if (!includeAllQuotes) {
-              query = query.eq('status', 'accepted');
-            }
-              
-            // If we want to exclude quotes for completed projects and quotes that are fully completed
-            if (excludeCompletedProjects) {
-              // First exclude completed projects
-              query = query.not('project.status', 'eq', 'completed');
-              
-              // Then exclude quotes that have been marked as completed by both parties
-              query = query.or('freelancer_completed.is.null,client_completed.is.null');
-              
-              console.log('Excluding quotes for completed projects and fully completed quotes');
-            }
-              
-            const { data, error } = await query;
-            
             if (error) {
               console.error('Error fetching quotes for client:', error);
               throw error;

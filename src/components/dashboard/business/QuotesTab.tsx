@@ -20,10 +20,10 @@ const QuotesTab: React.FC = () => {
     forClient: true,
     includeAllQuotes: true, // Always get all quotes regardless of status
     excludeCompletedProjects: true, // Always exclude quotes for completed projects
-    refreshInterval: 10000 // Refresh more frequently to catch new quotes
+    refreshInterval: 5000 // Refresh more frequently to catch new quotes
   });
   
-  const [activeTab, setActiveTab] = useState('accepted');
+  const [activeTab, setActiveTab] = useState('pending'); // Changed default tab to pending to see new quotes first
   
   // Force refresh when component mounts
   useEffect(() => {
@@ -60,6 +60,7 @@ const QuotesTab: React.FC = () => {
     return <LoadingSkeleton />;
   }
   
+  // Only show NoQuotesMessage if quotes array is actually empty or null
   if (!quotes || quotes.length === 0) {
     return <NoQuotesMessage />;
   }
@@ -70,7 +71,7 @@ const QuotesTab: React.FC = () => {
     <div className="space-y-4">
       <QuotesHeader totalQuotes={totalQuotes} />
       
-      <Tabs defaultValue="accepted" value={activeTab} onValueChange={setActiveTab}>
+      <Tabs defaultValue={activeTab} value={activeTab} onValueChange={setActiveTab}>
         <QuoteTabsNav tabCounts={tabCounts} />
         
         <TabsContent value={activeTab} className="mt-4">
