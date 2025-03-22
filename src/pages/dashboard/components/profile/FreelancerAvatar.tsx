@@ -3,7 +3,6 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2 } from 'lucide-react';
-import { checkBucketAccess } from '@/utils/supabaseStorage';
 import { useToast } from '@/hooks/use-toast';
 
 interface FreelancerAvatarProps {
@@ -21,11 +20,9 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   initials,
   handleImageUpload
 }) => {
-  // Create a ref for the file input
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [imageError, setImageError] = React.useState(false);
   const { toast } = useToast();
-  const [bucketAccessChecked, setBucketAccessChecked] = React.useState(false);
 
   // When the button is clicked, trigger the hidden file input
   const handleButtonClick = () => {
