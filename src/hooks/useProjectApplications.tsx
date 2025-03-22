@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { FreelancerApplication, FreelancerProfile } from '@/types/applications';
 import { toast } from 'sonner';
+import { Json } from '@/integrations/supabase/types';
 
 export const useProjectApplications = (projectId: string | undefined) => {
   const [applications, setApplications] = useState<FreelancerApplication[]>([]);
@@ -79,7 +80,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 verified: isVerified || false,
                 email_verified: profileData.id_verified || false, // map id_verified to email_verified
                 hourly_rate: profileData.hourly_rate,
-                day_rate: profileData.day_rate,
+                day_rate: profileData.hourly_rate, // Fix: use hourly_rate as day_rate isn't in the database schema
                 email: profileData.email,
                 phone_number: profileData.phone_number,
                 website: profileData.website,
