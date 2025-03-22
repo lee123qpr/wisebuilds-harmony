@@ -1,17 +1,31 @@
+import { createBrowserRouter } from 'react-router-dom';
+import { authRoutes } from './authRoutes';
+import { dashboardRoutes } from './dashboardRoutes';
+import { projectRoutes } from './projectRoutes';
+import { miscRoutes } from './miscRoutes';
+import Index from '../pages/Index';
+import NotFound from '../pages/NotFound';
+import FreelancerProfileView from '../pages/freelancer/FreelancerProfileView';
 
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { authRoutes } from "./authRoutes";
-import { dashboardRoutes } from "./dashboardRoutes";
-import { projectRoutes } from "./projectRoutes";
-import { miscRoutes } from "./miscRoutes";
+const router = createBrowserRouter([
+  {
+    path: '/',
+    element: <Index />,
+  },
+  // Freelancer profile view route
+  {
+    path: '/freelancer/:freelancerId',
+    element: <FreelancerProfileView />,
+  },
+  // Other route groups
+  ...authRoutes,
+  ...dashboardRoutes,
+  ...projectRoutes,
+  ...miscRoutes,
+  {
+    path: '*',
+    element: <NotFound />,
+  },
+]);
 
-export const AppRouter = () => (
-  <BrowserRouter>
-    <Routes>
-      {authRoutes}
-      {dashboardRoutes}
-      {projectRoutes}
-      {miscRoutes}
-    </Routes>
-  </BrowserRouter>
-);
+export default router;
