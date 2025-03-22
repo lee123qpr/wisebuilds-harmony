@@ -1,120 +1,73 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { Notification } from './types';
-import { User } from '@supabase/supabase-js';
-import { toast } from '@/hooks/use-toast';
+import { Notification } from '../notifications/types';
 
-export const fetchNotifications = async (userId: string): Promise<Notification[]> => {
-  if (!userId) return [];
-  
+// Maximum number of notifications to fetch
+const NOTIFICATION_LIMIT = 20;
+
+/**
+ * Fetch notifications for a user
+ */
+export const fetchNotifications = async (userId: string, limit = NOTIFICATION_LIMIT): Promise<Notification[]> => {
   try {
-    // Check if the table exists
-    const { data: exists, error: checkError } = await supabase
+    // Check if the notifications table exists and is accessible
+    const { count, error: checkError } = await supabase
       .from('notifications')
       .select('id', { count: 'exact', head: true })
       .limit(1);
-      
+    
     if (checkError) {
-      console.error('Error checking notifications table:', checkError);
-      return [];
+      throw checkError;
     }
     
-    // Fetch notifications from the table
+    // Proceed with fetching notifications
     const { data, error } = await supabase
       .from('notifications')
       .select('*')
       .eq('user_id', userId)
       .order('created_at', { ascending: false })
-      .limit(20);
+      .limit(limit);
     
     if (error) {
-      console.error('Error fetching notifications:', error);
-      return [];
+      throw error;
     }
     
-    return (data as Notification[]) || [];
+    return data || [];
   } catch (error) {
-    console.error('Error in fetchNotifications:', error);
+    console.error('Error fetching notifications:', error);
+    // Don't throw here, return empty array to prevent UI crashes
     return [];
   }
 };
 
-export const markNotificationAsRead = async (id: string, userId: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('id', id)
-      .eq('user_id', userId);
-      
-    if (error) {
-      console.error('Error marking notification as read:', error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error in markNotificationAsRead:', error);
-    return false;
-  }
-};
-
-export const markAllNotificationsAsRead = async (userId: string): Promise<boolean> => {
-  try {
-    const { error } = await supabase
-      .from('notifications')
-      .update({ read: true })
-      .eq('user_id', userId)
-      .eq('read', false);
-      
-    if (error) {
-      console.error('Error marking all notifications as read:', error);
-      return false;
-    }
-    
-    return true;
-  } catch (error) {
-    console.error('Error in markAllNotificationsAsRead:', error);
-    return false;
-  }
-};
-
-export const addNotificationToDatabase = async (
-  user: User | null, 
-  notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>
-): Promise<Notification | null> => {
-  if (!user) return null;
-  
-  try {
-    // Insert into the notifications table
-    const { data, error } = await supabase
-      .from('notifications')
-      .insert({
-        user_id: user.id,
-        type: notificationData.type,
-        title: notificationData.title,
-        description: notificationData.description,
-        data: notificationData.data || {},
-        read: false
-      })
-      .select()
-      .single();
-    
-    if (error) {
-      console.error('Error adding notification:', error);
-      return null;
-    }
-    
-    // Show toast notification
-    toast({
-      title: notificationData.title,
-      description: notificationData.description,
-      variant: "default"
+/**
+ * Set up real-time listeners for notifications
+ */
+export const setupNotificationsListeners = (userId: string, callback: (notification: Notification) => void) => {
+  // Create a channel for notification updates
+  const channel = supabase
+    .channel(`notifications-for-${userId}`)
+    .on(
+      'postgres_changes',
+      { 
+        event: 'INSERT', 
+        schema: 'public', 
+        table: 'notifications',
+        filter: `user_id=eq.${userId}`
+      },
+      (payload) => {
+        console.log('Real-time notification received:', payload);
+        if (payload.new) {
+          callback(payload.new as Notification);
+        }
+      }
+    )
+    .subscribe((status) => {
+      console.log('Notifications subscription status:', status);
     });
-    
-    return data as Notification;
-  } catch (error) {
-    console.error('Error in addNotification:', error);
-    return null;
-  }
+  
+  // Return cleanup function
+  return () => {
+    supabase.removeChannel(channel);
+  };
 };

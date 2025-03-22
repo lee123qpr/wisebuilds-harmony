@@ -1,70 +1,56 @@
 
 import { supabase } from '@/integrations/supabase/client';
+import { setupNotificationChannel } from './listeners/notificationListeners';
 import { RealtimeChannel } from '@supabase/supabase-js';
-import { NotificationType } from './types';
-import { ListenersOptions } from './interfaces';
-import { 
-  createNotificationsListener, 
-  createMessagesListener,
-  createQuoteListener,
-  createProjectListener,
-  createCreditBalanceListener,
-  createCreditTransactionListener
-} from './listeners';
-import { handleNewMessage } from './handlers';
 
-// Re-export the message handler function for direct use
-export { handleNewMessage } from './handlers';
+// Map to track active channels by user ID to prevent duplicate subscriptions
+const activeChannels = new Map<string, RealtimeChannel[]>();
 
-// Re-export the notifications listener for direct use
-export { createNotificationsListener } from './listeners';
-
-// Setup all real-time listeners
-export const setupRealTimeListeners = (options: ListenersOptions): RealtimeChannel[] => {
-  const { 
-    userId, 
-    onNewNotification, 
-    onNotificationUpdate, 
-    onNewMessage,
-    onQuoteUpdate,
-    onNewProject,
-    onCreditBalanceUpdate,
-    onCreditTransaction
-  } = options;
+/**
+ * Set up all real-time listeners for notifications
+ */
+export const setupListeners = (userId: string, onNotification: (payload: any) => void) => {
+  if (!userId) {
+    console.warn('Cannot set up listeners: No user ID provided');
+    return () => {};
+  }
   
-  console.log('Setting up all real-time listeners for user:', userId);
+  // Clean up any existing channels for this user to prevent duplicates
+  if (activeChannels.has(userId)) {
+    const channels = activeChannels.get(userId) || [];
+    channels.forEach(channel => {
+      try {
+        supabase.removeChannel(channel);
+      } catch (error) {
+        console.warn('Error removing channel:', error);
+      }
+    });
+  }
   
+  // Set up new channels with error handling
   const channels: RealtimeChannel[] = [];
-
-  // 1. Listen for new notifications
-  const notificationsChannel = createNotificationsListener(
-    userId,
-    onNewNotification,
-    onNotificationUpdate
-  );
   
-  channels.push(notificationsChannel);
-
-  // 2. Listen for new messages
-  const messagesChannel = createMessagesListener(userId, onNewMessage);
-  channels.push(messagesChannel);
-
-  // 3. Listen for quote status changes (hired notifications)
-  const quotesChannel = createQuoteListener(userId, onQuoteUpdate);
-  channels.push(quotesChannel);
-
-  // 4. Listen for new projects matching freelancer lead settings
-  const projectsChannel = createProjectListener(userId, onNewProject);
-  channels.push(projectsChannel);
-
-  // 5. Listen for credit balance updates
-  const creditsChannel = createCreditBalanceListener(userId, onCreditBalanceUpdate);
-  channels.push(creditsChannel);
-
-  // 6. Listen for credit transactions
-  const transactionsChannel = createCreditTransactionListener(userId, onCreditTransaction);
-  channels.push(transactionsChannel);
-
-  // Return all channels for cleanup
-  return channels;
+  try {
+    // Notification channel
+    const notificationChannel = setupNotificationChannel(userId, onNotification);
+    channels.push(notificationChannel);
+    
+    // Store active channels for this user
+    activeChannels.set(userId, channels);
+    
+    // Return cleanup function
+    return () => {
+      channels.forEach(channel => {
+        try {
+          supabase.removeChannel(channel);
+        } catch (error) {
+          console.warn('Error removing channel during cleanup:', error);
+        }
+      });
+      activeChannels.delete(userId);
+    };
+  } catch (error) {
+    console.error('Error setting up real-time listeners:', error);
+    return () => {};
+  }
 };

@@ -1,94 +1,71 @@
 
-import { useEffect } from 'react';
-import { User } from '@supabase/supabase-js';
-import { RealtimeChannel } from '@supabase/supabase-js';
-import { supabase } from '@/integrations/supabase/client';
-import { 
-  fetchNotifications,
-  setupRealTimeListeners,
-  addNotificationToDatabase
-} from '@/services/notifications';
-import { Notification } from '@/services/notifications/types';
-import { useNotificationEventHandlers } from './useNotificationEventHandlers';
+import { useEffect, useCallback } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import { useNotificationsState } from './useNotificationsState';
+import { fetchNotifications, setupNotificationsListeners } from '@/services/notifications/notificationService';
 
-export const useNotificationListeners = (
-  user: User | null,
-  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
-  addNotificationToState: (notification: Notification) => void,
-  updateNotificationInState: (notification: Notification) => void
-) => {
-  const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+// Maximum number of retries for network operations
+const MAX_RETRIES = 3;
+// Delay between retries in milliseconds (exponential backoff)
+const RETRY_DELAY_BASE = 2000;
+
+export function useNotificationListeners() {
+  const { user } = useAuth();
+  const { setNotifications, addNotification, markAsRead } = useNotificationsState();
+
+  // Fetch notifications with retry mechanism
+  const initializeNotifications = useCallback(async () => {
     if (!user) return;
-    console.log('Adding notification to database:', notificationData);
-    await addNotificationToDatabase(user, notificationData);
-    // We don't need to manually update the state as the realtime listener will handle it
-  };
-
-  // Use the extracted event handlers
-  const {
-    handleMessageEvent,
-    handleQuoteUpdate,
-    handleNewProject,
-    handleCreditBalanceUpdate,
-    handleCreditTransaction
-  } = useNotificationEventHandlers(user, addNotification);
-
-  useEffect(() => {
-    if (!user) {
-      setNotifications([]);
-      setIsLoading(false);
-      return;
-    }
-
-    let channels: RealtimeChannel[] = [];
-
-    const initializeNotifications = async () => {
-      setIsLoading(true);
-      console.log('Initializing notifications for user:', user.id);
-      
+    
+    console.log('Initializing notifications for user:', user.id);
+    
+    let retries = 0;
+    let success = false;
+    
+    while (retries < MAX_RETRIES && !success) {
       try {
-        // Fetch existing notifications
-        const data = await fetchNotifications(user.id);
-        setNotifications(data);
-        console.log('Fetched notifications:', data.length);
-        
-        // Setup realtime listeners
-        channels = setupRealTimeListeners({
-          userId: user.id,
-          onNewNotification: (notification) => {
-            console.log('New notification received:', notification);
-            addNotificationToState(notification);
-          },
-          onNotificationUpdate: (updatedNotification) => {
-            console.log('Notification updated:', updatedNotification);
-            updateNotificationInState(updatedNotification);
-          },
-          onNewMessage: handleMessageEvent,
-          onQuoteUpdate: handleQuoteUpdate,
-          onNewProject: handleNewProject,
-          onCreditBalanceUpdate: handleCreditBalanceUpdate,
-          onCreditTransaction: handleCreditTransaction
-        });
+        const notifications = await fetchNotifications(user.id);
+        console.log('Fetched notifications:', notifications.length);
+        setNotifications(notifications);
+        success = true;
       } catch (error) {
-        console.error('Error initializing notifications:', error);
-      } finally {
-        setIsLoading(false);
+        console.error('Error checking notifications table:', error);
+        retries++;
+        
+        if (retries < MAX_RETRIES) {
+          // Exponential backoff
+          const delay = RETRY_DELAY_BASE * Math.pow(2, retries - 1);
+          console.log(`Retrying in ${delay}ms (attempt ${retries} of ${MAX_RETRIES})`);
+          await new Promise(resolve => setTimeout(resolve, delay));
+        } else {
+          // If all retries fail, we still initialize with empty notifications to prevent UI issues
+          console.log('All retries failed, initializing with empty notifications');
+          setNotifications([]);
+        }
       }
-    };
+    }
+  }, [user, setNotifications]);
 
+  // Set up all listeners when user is available
+  useEffect(() => {
+    if (!user) return;
+    
+    console.log('Setting up all real-time listeners for user:', user.id);
+    
+    // Initialize notifications (with retry mechanism)
     initializeNotifications();
-
-    // Cleanup function
+    
+    // Set up real-time listeners for notifications
+    const cleanup = setupNotificationsListeners(user.id, (notification) => {
+      console.log('New notification received:', notification);
+      addNotification(notification);
+    });
+    
     return () => {
       console.log('Cleaning up notification channels');
-      channels.forEach(channel => {
-        if (channel) {
-          supabase.removeChannel(channel);
-        }
-      });
+      cleanup();
     };
-  }, [user, setNotifications, setIsLoading, addNotificationToState, updateNotificationInState]);
+  }, [user, addNotification, initializeNotifications]);
 
-  return { addNotification };
-};
+  return { markAsRead };
+}
