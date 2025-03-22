@@ -1,26 +1,51 @@
 
 import React from 'react';
-import { CardTitle } from '@/components/ui/card';
-import QuoteStatusBadge from '@/components/quotes/table/QuoteStatusBadge';
-import HiringStatusBadge from '@/components/projects/HiringStatusBadge';
-import { Quote } from '@/types/quotes';
+import { Check, X, Clock } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 interface ProjectHeaderProps {
   project: any;
-  quoteStatus: string | undefined;
+  quoteStatus?: string;
 }
 
+// Helper function to get status badge based on quote status
+const getStatusBadge = (status?: string) => {
+  switch (status) {
+    case 'accepted':
+      return (
+        <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200 flex items-center gap-1">
+          <Check className="h-3 w-3" />
+          Hired
+        </Badge>
+      );
+    case 'pending':
+      return (
+        <Badge variant="outline" className="bg-yellow-50 text-yellow-800 border-yellow-200 flex items-center gap-1">
+          <Clock className="h-3 w-3" />
+          Pending
+        </Badge>
+      );
+    case 'declined':
+      return (
+        <Badge variant="outline" className="bg-red-50 text-red-800 border-red-200 flex items-center gap-1">
+          <X className="h-3 w-3" />
+          Declined
+        </Badge>
+      );
+    default:
+      return (
+        <Badge variant="outline" className="bg-gray-50 text-gray-800 border-gray-200">
+          No Quote
+        </Badge>
+      );
+  }
+};
+
 const ProjectHeader: React.FC<ProjectHeaderProps> = ({ project, quoteStatus }) => {
-  // Ensure the quoteStatus is a valid value for QuoteStatusBadge
-  const validQuoteStatus = quoteStatus as Quote['status'] | undefined;
-  
   return (
     <div className="flex flex-wrap justify-between items-start gap-2">
-      <CardTitle className="text-xl">{project.title}</CardTitle>
-      <div className="flex items-center gap-2">
-        {validQuoteStatus && <QuoteStatusBadge status={validQuoteStatus} />}
-        <HiringStatusBadge status={project.hiring_status} />
-      </div>
+      <h3 className="text-xl font-semibold">{project.title}</h3>
+      {getStatusBadge(quoteStatus)}
     </div>
   );
 };

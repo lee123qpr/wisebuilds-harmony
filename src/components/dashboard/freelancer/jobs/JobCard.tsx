@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -10,6 +9,7 @@ import { QuoteWithFreelancer } from '@/types/quotes';
 import ProjectCompleteButton from '@/components/projects/ProjectCompleteButton';
 import ProjectCompletionStatus from '@/components/projects/ProjectCompletionStatus';
 import { useAuth } from '@/context/AuthContext';
+import { cn } from '@/lib/utils';
 
 interface JobCardProps {
   quote: QuoteWithFreelancer;
@@ -46,34 +46,30 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
     ? quote.freelancer_completed 
     : quote.client_completed;
   
-  console.log("JobCard rendering for quote:", quote.id, {
-    isFullyCompleted,
-    isPartiallyCompleted,
-    userCompleted,
-    clientCompleted: quote.client_completed,
-    freelancerCompleted: quote.freelancer_completed,
-    completedAt: quote.completed_at,
-    projectTitle,
-    project: quote.project
-  });
+  // Determine card style based on completion status
+  const getCardStyles = () => {
+    if (isFullyCompleted) return "border-l-4 border-green-500";
+    if (isPartiallyCompleted) return "border-l-4 border-blue-500";
+    return "border-l-4 border-green-500"; // Active jobs are green
+  };
   
   return (
-    <Card key={quote.id} className="w-full">
+    <Card key={quote.id} className={cn("w-full", getCardStyles())}>
       <CardHeader className="pb-2">
         <div className="flex flex-wrap justify-between items-start gap-2">
           <CardTitle className="text-xl">{projectTitle}</CardTitle>
           {isFullyCompleted ? (
-            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+            <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200 flex items-center gap-1">
               <CheckCircle2 className="h-3 w-3" />
               Completed
             </Badge>
           ) : isPartiallyCompleted ? (
-            <Badge variant="outline" className="bg-blue-100 text-blue-700 border-blue-200 flex items-center gap-1">
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 flex items-center gap-1">
               <Clock className="h-3 w-3" />
               Awaiting Confirmation
             </Badge>
           ) : (
-            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
+            <Badge variant="outline" className="bg-green-50 text-green-800 border-green-200 flex items-center gap-1">
               <Check className="h-3 w-3" />
               Active
             </Badge>

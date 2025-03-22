@@ -18,7 +18,7 @@ const QuoteStatsSummary: React.FC<QuoteStatsSummaryProps> = ({ applications }) =
   const noQuoteCount = applications.filter(p => !p.quote_status).length || 0;
   
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+    <div className="grid grid-cols-4 gap-2 mb-4">
       <div className="bg-green-50 border border-green-200 rounded-md p-3">
         <div className="text-green-800 text-sm font-medium">Hired</div>
         <div className="text-2xl font-bold text-green-700">{acceptedCount}</div>
