@@ -38,24 +38,8 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       const filePath = `${userId}/${fileName}`;
       
       console.log('Uploading to path:', filePath);
-      console.log('Bucket name:', 'freelancer-avatar');
       
-      // Check if bucket exists first
-      const { data: buckets } = await supabase.storage.listBuckets();
-      const bucketExists = buckets?.some(b => b.name === 'freelancer-avatar');
-      
-      if (!bucketExists) {
-        console.error('Bucket "freelancer-avatar" does not exist');
-        toast({
-          title: "Upload failed",
-          description: "Storage bucket not configured correctly. Please contact support.",
-          variant: "destructive"
-        });
-        setUploadingImage(false);
-        return;
-      }
-      
-      // Upload to freelancer-avatar bucket
+      // Upload to freelancer-avatar bucket - removed the bucket existence check
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('freelancer-avatar')
         .upload(filePath, file, { 
