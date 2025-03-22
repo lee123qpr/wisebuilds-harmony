@@ -46,7 +46,7 @@ const updateQuoteCompletionStatus = async (
   userId: string, 
   isFreelancer: boolean
 ) => {
-  console.log('Marking project as complete:', { projectId, quoteId, userId });
+  console.log('Marking project as complete:', { projectId, quoteId, userId, isFreelancer });
   
   // Determine whether this is a freelancer or client based on user metadata
   // Update the appropriate completion field based on user type
@@ -55,49 +55,20 @@ const updateQuoteCompletionStatus = async (
   console.log(`Setting ${updateField} to true for quote ${quoteId}`);
   
   try {
-    // Update the quote
-    const { data, error } = await supabase
-      .from('quotes')
-      .update({ [updateField]: true })
-      .eq('id', quoteId)
-      .select('*')
-      .single();
+    // Update the quote with the RPC approach that explicitly includes the userId
+    const { data, error } = await supabase.rpc('update_project_completion_status', {
+      p_quote_id: quoteId,
+      p_project_id: projectId,
+      p_user_id: userId,
+      p_is_freelancer: isFreelancer
+    });
       
     if (error) {
-      console.error('Error updating quote:', error);
+      console.error('Error updating completion status:', error);
       throw error;
     }
     
-    console.log('Quote updated successfully:', data);
-    
-    // Check if both parties have marked as complete
-    if (data.freelancer_completed && data.client_completed) {
-      console.log('Both parties have marked as complete, setting completed_at timestamp');
-      
-      // Set the completed_at timestamp
-      const { error: completionError } = await supabase
-        .from('quotes')
-        .update({ completed_at: new Date().toISOString() })
-        .eq('id', quoteId);
-        
-      if (completionError) {
-        console.error('Error setting completed_at:', completionError);
-        throw completionError;
-      }
-      
-      // Update project status to completed
-      console.log('Updating project status to completed');
-      const { error: projectError } = await supabase
-        .from('projects')
-        .update({ status: 'completed' })
-        .eq('id', projectId);
-        
-      if (projectError) {
-        console.error('Error updating project status:', projectError);
-        throw projectError;
-      }
-    }
-    
+    console.log('Quote update response:', data);
     return data;
   } catch (error) {
     console.error('Exception in project completion:', error);
@@ -157,6 +128,7 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
       
       // Determine whether this is a freelancer or client based on user metadata
       const isFreelancer = user.user_metadata?.user_type === 'freelancer';
+      console.log('User type:', isFreelancer ? 'freelancer' : 'client');
       
       return updateQuoteCompletionStatus(quoteId, projectId, user.id, isFreelancer);
     },

@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useProjectCompletion } from '@/hooks/projects/useProjectCompletion';
 import { useAuth } from '@/context/AuthContext';
@@ -40,6 +41,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   const loadCompletionStatus = async () => {
     setIsLoading(true);
     try {
+      console.log("Checking completion status for quoteId:", quoteId);
       const status = await checkCompletionStatus(quoteId);
       console.log("Loaded completion status:", status);
       setCompletionStatus(status);
@@ -57,13 +59,14 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   
   useEffect(() => {
     if (quoteId) {
+      console.log("Loading completion status for quoteId:", quoteId);
       loadCompletionStatus();
     }
   }, [quoteId]);
   
   const handleComplete = async () => {
     try {
-      console.log("Marking project as complete...");
+      console.log("Marking project as complete for quoteId:", quoteId, "projectId:", projectId);
       await markProjectCompleted();
       setDialogOpen(false);
       
