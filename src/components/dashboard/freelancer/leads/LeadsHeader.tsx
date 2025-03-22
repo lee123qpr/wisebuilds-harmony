@@ -31,7 +31,7 @@ const LeadsHeader: React.FC<LeadsHeaderProps> = ({
         <Briefcase className="h-5 w-5 text-primary" />
         <h2 className="text-2xl font-bold tracking-tight">
           My Leads
-          <Badge variant="secondary" className="ml-2 text-sm font-medium">
+          <Badge variant="outline" className="ml-2 text-sm font-medium bg-green-50 text-green-600 border-green-200">
             {isLoading ? '...' : leadsCount || 0}
           </Badge>
         </h2>
