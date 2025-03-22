@@ -51,5 +51,6 @@ export const ACCEPTED_FILE_TYPES = [
   'application/acad', // DWG
   'image/vnd.dwg', // DWG alternative
   'application/dwg', // DWG alternative
-  'application/x-dwg' // DWG alternative
+  'application/x-dwg', // DWG alternative
+  'application/octet-stream' // Fallback for some DWG files
 ];

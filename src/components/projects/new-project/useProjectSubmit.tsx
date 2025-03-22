@@ -25,6 +25,8 @@ export const useProjectSubmit = (
       const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       
       try {
+        console.log(`Starting upload for file: ${file.name}`);
+        
         const { data, error } = await supabase.storage
           .from('project-documents')
           .upload(fileName, file, {
@@ -34,8 +36,10 @@ export const useProjectSubmit = (
         
         if (error) {
           console.error('Upload error:', error);
-          throw error;
+          throw new Error(`Failed to upload ${file.name}: ${error.message}`);
         }
+        
+        console.log(`File uploaded successfully: ${data.path}`);
         
         // Get the public URL for the file
         const { data: { publicUrl } } = supabase.storage
@@ -56,6 +60,7 @@ export const useProjectSubmit = (
     });
     
     try {
+      console.log(`Attempting to upload ${uploadPromises.length} files...`);
       return await Promise.all(uploadPromises);
     } catch (error) {
       console.error('Failed to upload one or more files:', error);
@@ -75,12 +80,12 @@ export const useProjectSubmit = (
       try {
         documentReferences = await uploadFilesToSupabase();
         console.log('Uploaded documents:', documentReferences);
-      } catch (uploadError) {
+      } catch (uploadError: any) {
         console.error('Error uploading files:', uploadError);
         toast({
           variant: 'destructive',
           title: 'Upload failed',
-          description: 'Failed to upload project documents. Please try again.',
+          description: uploadError.message || 'Failed to upload project documents. Please try again.',
         });
         setIsUploading(false);
         return;
@@ -104,12 +109,15 @@ export const useProjectSubmit = (
         documents: documentReferences.length > 0 ? documentReferences : null
       };
 
+      console.log('Submitting project data to Supabase:', projectData);
+      
       const { error } = await supabase
         .from('projects')
         .insert(projectData);
 
       if (error) {
-        throw error;
+        console.error('Database error:', error);
+        throw new Error(`Database error: ${error.message}`);
       }
       
       toast({

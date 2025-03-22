@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { MAX_FILE_SIZE, ACCEPTED_FILE_TYPES } from './constants';
 import { UseFormReturn } from 'react-hook-form';
 import { ProjectFormValues } from './schema';
+import { isValidFile } from '../file-upload/utils';
 
 interface DocumentUploadProps {
   form: UseFormReturn<ProjectFormValues>;
@@ -36,13 +37,11 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
         return;
       }
 
-      // Check if file type is in accepted types or has .dwg extension
-      const fileExtension = file.name.split('.').pop()?.toLowerCase();
-      const isDwgFile = fileExtension === 'dwg';
-      
-      if (!ACCEPTED_FILE_TYPES.includes(file.type) && !isDwgFile) {
+      // Check if file type is valid using our utility function
+      if (!isValidFile(file)) {
         hasInvalidFile = true;
         errorMessage = `File ${file.name} is not a supported file type`;
+        console.log(`Rejected file: ${file.name}, type: ${file.type}`);
         return;
       }
 
@@ -59,6 +58,9 @@ export const DocumentUpload: React.FC<DocumentUploadProps> = ({
     }
 
     setSelectedFiles(prev => [...prev, ...newFiles]);
+    
+    // Clear the input value so the same file can be selected again
+    event.target.value = '';
   };
 
   const removeFile = (index: number) => {
