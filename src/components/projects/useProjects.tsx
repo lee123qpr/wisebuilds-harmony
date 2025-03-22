@@ -121,7 +121,25 @@ export const useProjects = () => {
         })
       );
       
-      setProjects(projectsWithCounts);
+      // Filter out projects that are completed or where someone has been hired
+      const filteredProjects = projectsWithCounts.filter(project => {
+        // Filter out completed projects
+        if (project.status === 'completed') {
+          console.log(`Filtering out completed project: ${project.title}`);
+          return false;
+        }
+        
+        // Filter out projects where someone is hired
+        if (project.hiring_status === 'hired') {
+          console.log(`Filtering out project with hired status: ${project.title}`);
+          return false;
+        }
+        
+        return true;
+      });
+      
+      console.log(`Filtered out ${projectsWithCounts.length - filteredProjects.length} completed or hired projects`);
+      setProjects(filteredProjects);
     } catch (error: any) {
       console.error('Error fetching projects:', error);
       setError(error.message || 'An unexpected error occurred');
