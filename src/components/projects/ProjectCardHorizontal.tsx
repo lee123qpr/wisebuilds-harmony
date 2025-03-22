@@ -28,9 +28,6 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   // Number of interested freelancers
   const interestedCount = project.applications || 0;
   
-  // Number of chats
-  const chatCount = project.chat_count || 0;
-  
   // Number of quotes - always use the live data from the quotes hook when available
   const quoteCount = !isLoadingQuotes && quotes ? quotes.length : (project.quote_count || 0);
   
@@ -44,13 +41,6 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
     e.stopPropagation(); // Prevent the card click event from firing
     console.log(`Navigating to applications for project: ${project.id} with ${interestedCount} applications`);
     navigate(`/project/${project.id}/applications`, {
-      state: { from: 'businessDashboard' }
-    });
-  };
-  
-  const handleChatsClick = (e: React.MouseEvent) => {
-    e.stopPropagation(); // Prevent the card click event from firing
-    navigate(`/project/${project.id}`, {
       state: { from: 'businessDashboard' }
     });
   };
@@ -75,7 +65,7 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
           
           <h3 className="text-xl font-semibold mb-5">{project.title}</h3>
           
-          <div className="grid grid-cols-3 gap-4 mt-4">
+          <div className="grid grid-cols-2 gap-4 mt-4">
             {/* Interested freelancers box */}
             <div 
               className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
@@ -89,20 +79,6 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
               <div>
                 <p className="font-medium">Interested</p>
                 <p className="text-sm text-muted-foreground">Waiting for your decision</p>
-              </div>
-            </div>
-            
-            {/* Chats box */}
-            <div 
-              className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
-              onClick={handleChatsClick}
-            >
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3">
-                <span className="text-2xl font-bold text-primary">{chatCount}</span>
-              </div>
-              <div>
-                <p className="font-medium">Chats</p>
-                <p className="text-sm text-muted-foreground">Chat started to discuss job</p>
               </div>
             </div>
             
