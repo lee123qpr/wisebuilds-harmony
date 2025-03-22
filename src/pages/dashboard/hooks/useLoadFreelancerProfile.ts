@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
@@ -50,9 +51,9 @@ export const useLoadFreelancerProfile = ({
         console.log('Loaded profile data from database:', profileData);
         
         if (profileData) {
-          // Ensure arrays are properly typed or default to empty arrays
-          const previousEmployers = Array.isArray(profileData.previous_employers) 
-            ? (profileData.previous_employers as FreelancerEmployer[]) 
+          // Convert JSON types to the expected format
+          const previousEmployers: FreelancerEmployer[] = Array.isArray(profileData.previous_employers) 
+            ? profileData.previous_employers as FreelancerEmployer[]
             : [];
             
           const skills = Array.isArray(profileData.skills) 
@@ -80,10 +81,17 @@ export const useLoadFreelancerProfile = ({
           const fullName = profileData.display_name || 
                           `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
           
+          // Convert ISO date strings to Date objects for the form
+          const formattedEmployers = previousEmployers.map(employer => ({
+            ...employer,
+            startDate: new Date(employer.startDate),
+            endDate: employer.endDate ? new Date(employer.endDate) : null
+          }));
+          
           form.reset({
             fullName,
             profession: profileData.job_title || '',
-            previousEmployers,
+            previousEmployers: formattedEmployers,
             location: profileData.location || '',
             bio: profileData.bio || '',
             phoneNumber: profileData.phone_number || '',
@@ -107,12 +115,21 @@ export const useLoadFreelancerProfile = ({
           // Fallback to user metadata if no profile data found
           const userMetadata = user.user_metadata || {};
           
-          // Similar conversion and form population code for the metadata fallback
-          // This is useful for users who haven't had their profiles synced yet
+          // Similar conversion for metadata
+          const previousEmployers = Array.isArray(userMetadata.previous_employers) 
+            ? userMetadata.previous_employers as FreelancerEmployer[]
+            : [];
+            
+          const formattedEmployers = previousEmployers.map(employer => ({
+            ...employer,
+            startDate: new Date(employer.startDate),
+            endDate: employer.endDate ? new Date(employer.endDate) : null
+          }));
+          
           form.reset({
             fullName: userMetadata.full_name || '',
             profession: userMetadata.profession || '',
-            previousEmployers: userMetadata.previous_employers || [],
+            previousEmployers: formattedEmployers,
             location: userMetadata.location || '',
             bio: userMetadata.bio || '',
             phoneNumber: userMetadata.phone_number || userMetadata.phone || '',
