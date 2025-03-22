@@ -42,11 +42,12 @@ export interface FreelancerInfo {
   verified?: boolean;
   id_verified?: boolean;
   location?: string | null;
-  // Add new properties to match what getFreelancerInfo returns
+  // Add properties for consistency
   id?: string;
   name?: string;
   profilePhoto?: string;
   jobTitle?: string;
+  job_title?: string; // Add this for compatibility
   isVerified?: boolean;
 }
 

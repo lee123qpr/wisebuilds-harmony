@@ -34,7 +34,7 @@ export const formatQuotesWithProfiles = (
         title: project.title || 'Untitled Project',
         budget: project.budget || '',
         status: project.status || '',
-        role: project.role || 'Not specified',
+        role: project.role || 'Not specified',  // Make sure to include the role
       },
       freelancer_profile: {
         first_name: freelancerProfile.first_name || '',

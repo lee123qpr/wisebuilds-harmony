@@ -32,16 +32,16 @@ export async function getFreelancerInfo(freelancerId: string) {
 
     if (verificationError) throw verificationError;
 
-    // Return a comprehensive object that maps to FreelancerInfo interface
+    // Return a comprehensive object with consistent property naming
     return {
       id: freelancer?.id,
-      // Support both legacy and new property names
+      // Both camelCase and snake_case properties for backward compatibility
       name: freelancer?.display_name || `${freelancer?.first_name || ''} ${freelancer?.last_name || ''}`.trim() || 'Unknown Freelancer',
       full_name: freelancer?.display_name || `${freelancer?.first_name || ''} ${freelancer?.last_name || ''}`.trim() || 'Unknown Freelancer',
       profilePhoto: freelancer?.profile_photo,
       profile_image: freelancer?.profile_photo,
       jobTitle: freelancer?.job_title,
-      job_title: freelancer?.job_title,
+      job_title: freelancer?.job_title, // Add this for consistency
       rating: freelancer?.rating,
       isVerified: isVerified || false,
       verified: isVerified || false,
@@ -61,7 +61,7 @@ export async function getFreelancerInfo(freelancerId: string) {
       profilePhoto: null,
       profile_image: null,
       jobTitle: null,
-      job_title: null,
+      job_title: null, // Add this for consistency
       rating: null,
       isVerified: false,
       verified: false

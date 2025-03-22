@@ -101,7 +101,9 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
                     <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
                   }
                 </h3>
-                <p className="text-sm text-muted-foreground">{freelancer.job_title || freelancerInfo?.job_title || 'Freelancer'}</p>
+                <p className="text-sm text-muted-foreground">
+                  {freelancer.job_title || freelancerInfo?.job_title || 'Freelancer'}
+                </p>
               </div>
             </>
           )}
