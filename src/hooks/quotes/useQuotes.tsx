@@ -80,14 +80,23 @@ export const useQuotes = ({
             // For clients, get quotes for their projects
             let query = supabase
               .from('quotes')
-              .select('*, project:projects(*)')
-              .eq('client_id', user.id)
-              .eq('status', 'accepted'); // Get only accepted quotes for active jobs
+              .select('*, project:projects(*)') 
+              .eq('client_id', user.id);
               
-            // If we want to exclude quotes for completed projects, add a filter
+            // If we're only looking for accepted quotes
+            if (!includeAllQuotes) {
+              query = query.eq('status', 'accepted');
+            }
+              
+            // If we want to exclude quotes for completed projects and quotes that are fully completed
             if (excludeCompletedProjects) {
+              // First exclude completed projects
               query = query.not('project.status', 'eq', 'completed');
-              console.log('Excluding quotes for completed projects');
+              
+              // Then exclude quotes that have been marked as completed by both parties
+              query = query.or('freelancer_completed.is.null,client_completed.is.null');
+              
+              console.log('Excluding quotes for completed projects and fully completed quotes');
             }
               
             const { data, error } = await query;
