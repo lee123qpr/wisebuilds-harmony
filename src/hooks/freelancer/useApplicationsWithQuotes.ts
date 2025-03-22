@@ -57,7 +57,8 @@ export const useApplicationsWithQuotes = () => {
               requires_site_visits
             )
           `)
-          .eq('user_id', user.id);
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false }); // Order by created_at descending (newest first)
         
         if (appError) {
           console.error('Error fetching applications:', appError);

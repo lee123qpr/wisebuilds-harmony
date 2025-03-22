@@ -53,7 +53,7 @@ const QuotesTab: React.FC = () => {
       {/* Quote status summary */}
       <QuoteStatsSummary applications={applications} />
       
-      {/* List of quotes */}
+      {/* List of quotes - applications are sorted in the QuotesList component */}
       <QuotesList 
         applications={applications}
         isLoading={isLoading}

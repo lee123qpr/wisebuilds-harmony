@@ -19,9 +19,14 @@ const QuotesList: React.FC<QuotesListProps> = ({ applications, isLoading }) => {
     return <QuotesListEmpty />;
   }
   
+  // Sort applications with newest at the top based on application_created_at
+  const sortedApplications = [...applications].sort((a, b) => {
+    return new Date(b.application_created_at).getTime() - new Date(a.application_created_at).getTime();
+  });
+  
   return (
     <div className="space-y-4">
-      {applications.map((project) => (
+      {sortedApplications.map((project) => (
         <QuotesListItem key={project.id} project={project} />
       ))}
     </div>
