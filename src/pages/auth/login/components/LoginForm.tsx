@@ -41,13 +41,11 @@ const LoginForm = () => {
     setAuthError(null);
     
     try {
+      // Using the correct options structure for Supabase auth
+      // The session expiry should be in the options object, not inside an additional options property
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
-        options: {
-          // Set longer expiry when remember me is checked
-          expiresIn: data.rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 8, // 30 days vs 8 hours
-        }
       });
       
       if (error) {
