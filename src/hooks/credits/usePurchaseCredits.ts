@@ -40,10 +40,19 @@ export const usePurchaseCredits = () => {
       
       console.log('Checkout session response:', response.data);
       
-      // Redirect to Stripe Checkout using the session URL directly
+      // Open Stripe Checkout in a new window to avoid iframe restrictions
       if (response.data && response.data.sessionUrl) {
-        console.log('Redirecting to Stripe checkout:', response.data.sessionUrl);
-        window.location.href = response.data.sessionUrl;
+        console.log('Opening Stripe checkout in new window:', response.data.sessionUrl);
+        window.open(response.data.sessionUrl, '_blank');
+        
+        // Also reduce loading state since we're not leaving the page
+        setIsCheckoutLoading(false);
+        
+        toast({
+          title: 'Checkout Started',
+          description: 'Stripe checkout has opened in a new tab',
+          variant: 'default',
+        });
       } else {
         console.error('No checkout URL returned', response.data);
         throw new Error('No checkout URL returned from server');
