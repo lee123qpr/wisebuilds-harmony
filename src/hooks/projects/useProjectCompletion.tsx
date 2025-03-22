@@ -56,12 +56,17 @@ const updateQuoteCompletionStatus = async (
   
   try {
     // Call the stored procedure using `.rpc()` method
-    const { data, error } = await supabase.rpc('update_project_completion_status', {
-      p_quote_id: quoteId,
-      p_project_id: projectId,
-      p_user_id: userId,
-      p_is_freelancer: isFreelancer
-    });
+    // Use type assertion to avoid TypeScript error since the function exists in the database
+    // but might not be in the TypeScript definitions
+    const { data, error } = await supabase.rpc(
+      'update_project_completion_status' as any, 
+      {
+        p_quote_id: quoteId,
+        p_project_id: projectId,
+        p_user_id: userId,
+        p_is_freelancer: isFreelancer
+      }
+    );
       
     if (error) {
       console.error('Error updating completion status:', error);
