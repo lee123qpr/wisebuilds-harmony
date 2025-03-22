@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import type { VerificationData } from './types';
 import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
@@ -70,11 +69,27 @@ export const uploadVerificationDocument = async (
     
     console.log('Generated file path:', filePath);
     
-    // First check if the verification_documents bucket exists
-    const { data: buckets, error: bucketError } = await supabase.storage
+    // Check possible bucket names (with underscore and with hyphen)
+    console.log('Checking bucket with underscore: verification_documents');
+    const { data: bucketsWithUnderscore, error: bucketErrorWithUnderscore } = await supabase.storage
       .getBucket('verification_documents');
     
-    if (bucketError) {
+    console.log('Result for bucket with underscore:', bucketsWithUnderscore ? 'exists' : 'not found', bucketErrorWithUnderscore ? `Error: ${bucketErrorWithUnderscore.message}` : 'no error');
+    
+    console.log('Checking bucket with hyphen: verification-documents');
+    const { data: bucketsWithHyphen, error: bucketErrorWithHyphen } = await supabase.storage
+      .getBucket('verification-documents');
+    
+    console.log('Result for bucket with hyphen:', bucketsWithHyphen ? 'exists' : 'not found', bucketErrorWithHyphen ? `Error: ${bucketErrorWithHyphen.message}` : 'no error');
+    
+    // Determine which bucket name to use based on the check results
+    const bucketName = bucketsWithUnderscore ? 'verification_documents' : 
+                        bucketsWithHyphen ? 'verification-documents' : 'verification_documents';
+    
+    console.log(`Using bucket name: ${bucketName}`);
+    
+    // If neither bucket exists, set up the verification system
+    if (bucketErrorWithUnderscore && bucketErrorWithHyphen) {
       console.log('Bucket not found, setting up verification system first');
       // Call the setup function
       const setupResult = await setupVerification();
@@ -88,9 +103,9 @@ export const uploadVerificationDocument = async (
     }
     
     // Try to upload the file
-    console.log('Attempting to upload file to storage path:', filePath);
+    console.log(`Attempting to upload file to storage path: ${filePath} in bucket: ${bucketName}`);
     const { error: uploadError } = await supabase.storage
-      .from('verification_documents')
+      .from(bucketName)
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: false
@@ -153,7 +168,7 @@ export const uploadVerificationDocument = async (
       // Clean up the uploaded file if there was an error with the database record
       console.log('Cleaning up uploaded file due to database error');
       await supabase.storage
-        .from('verification_documents')
+        .from(bucketName)
         .remove([filePath]);
       
       return { 
@@ -190,10 +205,46 @@ export const deleteVerificationDocument = async (userId: string, documentPath: s
   try {
     console.log('Deleting document for user:', userId);
     
-    // Delete the file from storage
-    const { error: storageError } = await supabase.storage
-      .from('verification_documents')
-      .remove([documentPath]);
+    // Check both possible bucket names
+    const bucketWithUnderscore = 'verification_documents';
+    const bucketWithHyphen = 'verification-documents';
+    
+    // Try to delete from bucket with underscore first
+    let storageError = null;
+    try {
+      const { error } = await supabase.storage
+        .from(bucketWithUnderscore)
+        .remove([documentPath]);
+      
+      storageError = error;
+      if (!error) {
+        console.log(`Successfully deleted from ${bucketWithUnderscore}`);
+      } else {
+        console.log(`Error deleting from ${bucketWithUnderscore}:`, error.message);
+      }
+    } catch (err) {
+      console.log(`Exception deleting from ${bucketWithUnderscore}:`, err);
+      storageError = err;
+    }
+    
+    // If that failed, try bucket with hyphen
+    if (storageError) {
+      try {
+        const { error } = await supabase.storage
+          .from(bucketWithHyphen)
+          .remove([documentPath]);
+        
+        if (!error) {
+          console.log(`Successfully deleted from ${bucketWithHyphen}`);
+          storageError = null;
+        } else {
+          console.log(`Error deleting from ${bucketWithHyphen}:`, error.message);
+        }
+      } catch (err) {
+        console.log(`Exception deleting from ${bucketWithHyphen}:`, err);
+        // Keep original error if both delete attempts fail
+      }
+    }
     
     if (storageError) {
       console.error('Error deleting document from storage:', storageError);
@@ -224,6 +275,7 @@ export const deleteVerificationDocument = async (userId: string, documentPath: s
 export const setupVerification = async (): Promise<{ success: boolean; message: string }> => {
   try {
     // Call the edge function to set up the verification system
+    console.log('Calling setup-verification edge function');
     const { data, error } = await supabase.functions.invoke('setup-verification');
     
     if (error) {
@@ -234,6 +286,7 @@ export const setupVerification = async (): Promise<{ success: boolean; message: 
       };
     }
     
+    console.log('Edge function response:', data);
     return data || { success: true, message: 'Verification system set up successfully' };
   } catch (error: any) {
     console.error('Exception in setupVerification:', error);
