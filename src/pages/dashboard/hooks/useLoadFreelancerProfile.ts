@@ -51,9 +51,15 @@ export const useLoadFreelancerProfile = ({
         console.log('Loaded profile data from database:', profileData);
         
         if (profileData) {
-          // Convert JSON types to the expected format
-          const previousEmployers: FreelancerEmployer[] = Array.isArray(profileData.previous_employers) 
-            ? profileData.previous_employers as FreelancerEmployer[]
+          // Convert JSON types to the expected format with proper type assertion
+          const previousEmployers = Array.isArray(profileData.previous_employers) 
+            ? (profileData.previous_employers as any[]).map(emp => ({
+                employerName: emp.employerName || '',
+                startDate: emp.startDate || '',
+                endDate: emp.endDate || null,
+                current: emp.current || false,
+                position: emp.position || ''
+              })) as FreelancerEmployer[]
             : [];
             
           const skills = Array.isArray(profileData.skills) 
@@ -84,7 +90,7 @@ export const useLoadFreelancerProfile = ({
           // Convert ISO date strings to Date objects for the form
           const formattedEmployers = previousEmployers.map(employer => ({
             ...employer,
-            startDate: new Date(employer.startDate),
+            startDate: employer.startDate ? new Date(employer.startDate) : new Date(),
             endDate: employer.endDate ? new Date(employer.endDate) : null
           }));
           
@@ -115,14 +121,20 @@ export const useLoadFreelancerProfile = ({
           // Fallback to user metadata if no profile data found
           const userMetadata = user.user_metadata || {};
           
-          // Similar conversion for metadata
+          // Similar conversion for metadata with proper type handling
           const previousEmployers = Array.isArray(userMetadata.previous_employers) 
-            ? userMetadata.previous_employers as FreelancerEmployer[]
+            ? (userMetadata.previous_employers as any[]).map(emp => ({
+                employerName: emp.employerName || '',
+                startDate: emp.startDate || '',
+                endDate: emp.endDate || null,
+                current: emp.current || false,
+                position: emp.position || ''
+              })) as FreelancerEmployer[]
             : [];
             
           const formattedEmployers = previousEmployers.map(employer => ({
             ...employer,
-            startDate: new Date(employer.startDate),
+            startDate: employer.startDate ? new Date(employer.startDate) : new Date(),
             endDate: employer.endDate ? new Date(employer.endDate) : null
           }));
           
