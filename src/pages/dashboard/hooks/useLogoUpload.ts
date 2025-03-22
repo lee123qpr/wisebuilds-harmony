@@ -25,6 +25,26 @@ export const useLogoUpload = ({ userId, companyName, contactName }: UseLogoUploa
     try {
       console.log('Uploading logo to path:', fileName);
       
+      // Check if bucket exists first
+      const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+      
+      if (bucketsError) {
+        console.error('Error checking buckets:', bucketsError);
+        throw new Error('Failed to check storage buckets');
+      }
+      
+      const bucketExists = buckets?.some(b => b.name === 'company_logos');
+      
+      if (!bucketExists) {
+        console.error('Bucket "company_logos" does not exist');
+        toast({
+          title: 'Upload failed',
+          description: 'Storage bucket not configured correctly. Please contact support.',
+          variant: 'destructive'
+        });
+        return null;
+      }
+      
       // Upload the file
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('company_logos')

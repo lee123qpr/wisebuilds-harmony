@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { UploadedFile } from './types';
 import { allowedFileTypes } from './utils';
 import { useFileUploader } from './uploadUtils';
+import { supabase } from '@/integrations/supabase/client';
 
 export const useFileUpload = (
   initialFiles: UploadedFile[] = [],
@@ -21,7 +21,6 @@ export const useFileUpload = (
   const { uploadFiles } = useFileUploader();
 
   const handleFileSelection = (newFiles: File[]) => {
-    // Filter out invalid file types
     const validFiles = newFiles.filter(file => {
       const isValid = allowedFileTypes.includes(file.type) || file.name.endsWith('.dwg');
       if (!isValid) {
@@ -48,7 +47,6 @@ export const useFileUpload = (
     setUploadedFiles(updatedFiles);
     onFilesUploaded(updatedFiles);
     
-    // Optionally delete from storage
     if (fileToRemove.path) {
       supabase.storage
         .from('project-documents')
@@ -95,14 +93,11 @@ export const useFileUpload = (
       completedUploads = uploadedItems.length;
       setUploadProgress(100);
       
-      // Combine with existing files
       const allUploadedFiles = [...uploadedFiles, ...uploadedItems];
       setUploadedFiles(allUploadedFiles);
       
-      // Notify parent component
       onFilesUploaded(allUploadedFiles);
       
-      // Clear selected files
       setFiles([]);
       
       if (uploadedItems.length > 0) {
@@ -140,5 +135,3 @@ export const useFileUpload = (
     clearAllFiles
   };
 };
-
-import { supabase } from '@/integrations/supabase/client';

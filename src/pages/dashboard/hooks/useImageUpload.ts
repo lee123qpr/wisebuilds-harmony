@@ -30,19 +30,6 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       console.log('Uploading image for user:', userId);
       console.log('File details:', { name: file.name, type: file.type, size: file.size });
       
-      // Check if user is a freelancer
-      const isFreelancer = await isUserFreelancer();
-      
-      if (!isFreelancer) {
-        console.error('User is not a freelancer. Upload will likely fail due to RLS policies.');
-        toast({
-          variant: 'destructive',
-          title: 'Permission Error',
-          description: 'Only freelancer accounts can upload profile images. Your account is not set as a freelancer type.',
-        });
-        return;
-      }
-      
       // Create unique file name with proper extension
       const fileExt = file.name.split('.').pop();
       const fileName = `${namePrefix.trim() || 'profile'}-${Date.now()}.${fileExt}`;
@@ -52,6 +39,21 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       console.log('Uploading to path:', filePath);
       console.log('Bucket name:', 'freelancer-avatar');
+      
+      // Check if bucket exists first
+      const { data: buckets } = await supabase.storage.listBuckets();
+      const bucketExists = buckets?.some(b => b.name === 'freelancer-avatar');
+      
+      if (!bucketExists) {
+        console.error('Bucket "freelancer-avatar" does not exist');
+        toast({
+          title: "Upload failed",
+          description: "Storage bucket not configured correctly. Please contact support.",
+          variant: "destructive"
+        });
+        setUploadingImage(false);
+        return;
+      }
       
       // Upload to freelancer-avatar bucket
       const { data: uploadData, error: uploadError } = await supabase.storage

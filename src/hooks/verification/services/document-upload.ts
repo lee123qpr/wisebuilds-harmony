@@ -145,12 +145,17 @@ export const uploadVerificationDocument = async (
  * Checks if a bucket exists
  */
 async function bucketExists(bucketName: string): Promise<boolean> {
-  const { data, error } = await supabase.storage.listBuckets();
-  
-  if (error) {
-    console.error('Error checking buckets:', error);
+  try {
+    const { data, error } = await supabase.storage.listBuckets();
+    
+    if (error) {
+      console.error('Error checking buckets:', error);
+      return false;
+    }
+    
+    return data.some(bucket => bucket.name === bucketName);
+  } catch (error) {
+    console.error('Error in bucketExists:', error);
     return false;
   }
-  
-  return data.some(bucket => bucket.name === bucketName);
 }
