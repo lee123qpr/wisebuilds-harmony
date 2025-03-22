@@ -30,7 +30,7 @@ export const createBucketPolicies = async (bucketName: string): Promise<boolean>
     // Use RPC functions to create the storage policies
     // For upload policy
     const { error: uploadError } = await supabase.rpc('create_storage_policy', {
-      bucket_id: bucketName,
+      bucket_name: bucketName,
       policy_name: 'Users can upload their own documents',
       policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`,
       operation: 'INSERT'
@@ -40,7 +40,7 @@ export const createBucketPolicies = async (bucketName: string): Promise<boolean>
     
     // For view policy
     const { error: viewError } = await supabase.rpc('create_storage_policy', {
-      bucket_id: bucketName,
+      bucket_name: bucketName,
       policy_name: 'Users can view their own documents',
       policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`,
       operation: 'SELECT'
@@ -50,7 +50,7 @@ export const createBucketPolicies = async (bucketName: string): Promise<boolean>
     
     // For delete policy
     const { error: deleteError } = await supabase.rpc('create_storage_policy', {
-      bucket_id: bucketName,
+      bucket_name: bucketName,
       policy_name: 'Users can delete their own documents',
       policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`,
       operation: 'DELETE'

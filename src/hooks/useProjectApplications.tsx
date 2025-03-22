@@ -51,7 +51,7 @@ export const useProjectApplications = (projectId: string) => {
                 message: application.message,
                 user_id: application.user_id,
                 user: application.user ? {
-                  ...(application.user || {}),
+                  ...application.user,
                   is_verified: isVerified || false
                 } : null
               };
@@ -63,7 +63,7 @@ export const useProjectApplications = (projectId: string) => {
                 message: application.message,
                 user_id: application.user_id,
                 user: application.user ? {
-                  ...(application.user || {}),
+                  ...application.user,
                   is_verified: false
                 } : null
               };
