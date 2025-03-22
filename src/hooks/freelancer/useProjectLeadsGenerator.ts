@@ -65,17 +65,17 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           created_at: project.created_at,
           location: project.location,
           work_type: project.work_type,
-          tags: project.tags || [], // Handle tags safely
+          tags: [], // Default empty array since it's missing in the database
           duration: project.duration,
           hiring_status: project.hiring_status,
           requires_equipment: project.requires_equipment || false,
-          requires_security_check: project.requires_security_check || false,
+          requires_security_check: false, // Add default value since it's missing
           requires_insurance: project.requires_insurance || false,
-          requires_qualifications: project.requires_qualifications || false,
-          published: project.published || true,
+          requires_qualifications: false, // Add default value since it's missing
+          published: true, // Add default value since it's missing
           client_id: project.user_id, // Assuming user_id is client_id
-          client_name: project.client_name || '',
-          client_company: project.client_company || '',
+          client_name: '', // Add default value since it's missing
+          client_company: '', // Add default value since it's missing
           start_date: project.start_date || new Date().toISOString(),
           applications: project.applications || 0,
           documents: project.documents || null,
