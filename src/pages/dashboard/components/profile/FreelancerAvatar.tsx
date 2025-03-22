@@ -113,6 +113,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
             className="h-8 w-8 rounded-full shadow"
             disabled={uploadingImage}
             onClick={handleButtonClick}
+            aria-label="Upload profile picture"
           >
             {uploadingImage ? (
               <Loader2 className="h-4 w-4 animate-spin" />
