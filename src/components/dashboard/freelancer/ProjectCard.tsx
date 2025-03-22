@@ -33,10 +33,14 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
     ? (isSelected ? 'border-green-500' : 'border-transparent hover:bg-muted/50') 
     : (isSelected ? 'border-primary' : 'border-transparent hover:bg-muted/50');
   
-  // Set highlight background color based on which tab we're in
+  // Set highlight background color based on which tab we're in - using an even lighter green
   const bgColor = isSelected 
-    ? isLeadsTab ? 'bg-green-50' : 'bg-primary/5'
+    ? isLeadsTab ? 'bg-green-50/70' : 'bg-primary/5'
     : '';
+    
+  // Set icon background color based on which tab we're in
+  const iconBgColor = isLeadsTab ? 'bg-green-100' : 'bg-gray-100';
+  const iconTextColor = isLeadsTab ? 'text-green-600' : 'text-gray-600';
   
   return (
     <div 
@@ -58,24 +62,24 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         
         {/* Location */}
         <div className="flex items-center gap-2">
-          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
-            <MapPin className="h-3 w-3 text-gray-600" />
+          <span className={`flex items-center justify-center w-6 h-6 rounded-full ${iconBgColor}`}>
+            <MapPin className={`h-3 w-3 ${iconTextColor}`} />
           </span>
           <span className="text-sm text-gray-600 font-medium">{project.location}</span>
         </div>
         
         {/* Role */}
         <div className="flex items-center gap-2">
-          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
-            <Users className="h-3 w-3 text-gray-600" />
+          <span className={`flex items-center justify-center w-6 h-6 rounded-full ${iconBgColor}`}>
+            <Users className={`h-3 w-3 ${iconTextColor}`} />
           </span>
           <span className="text-sm text-gray-600 font-medium">{formatRole(project.role)}</span>
         </div>
         
         {/* Posted Date */}
         <div className="flex items-center gap-2">
-          <span className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100">
-            <CalendarIcon className="h-3 w-3 text-gray-600" />
+          <span className={`flex items-center justify-center w-6 h-6 rounded-full ${iconBgColor}`}>
+            <CalendarIcon className={`h-3 w-3 ${iconTextColor}`} />
           </span>
           <span className="text-sm text-gray-600 font-bold">Posted {postedDateAgo}</span>
         </div>
