@@ -32,7 +32,7 @@ const QuoteStatsSummary: React.FC<QuoteStatsSummaryProps> = ({ applications }) =
         <div className="text-2xl font-bold text-red-700">{declinedCount}</div>
       </div>
       <div className="bg-gray-50 border border-gray-200 rounded-md p-3">
-        <div className="text-gray-800 text-sm font-medium">No Quote</div>
+        <div className="text-gray-800 text-sm font-medium">No Quote Issued</div>
         <div className="text-2xl font-bold text-gray-700">{noQuoteCount}</div>
       </div>
     </div>
