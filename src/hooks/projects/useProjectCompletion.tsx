@@ -89,6 +89,7 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
       const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
       const otherParty = isFreelancer ? 'client' : 'freelancer';
       
+      // Check if both parties have completed or just one
       if (data.freelancer_completed && data.client_completed) {
         toast({
           title: 'Project marked as complete!',
@@ -96,10 +97,12 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
           variant: 'success'
         });
       } else {
+        // Show appropriate message based on whether both parties have marked complete
         const isUserCompleted = isFreelancer ? data.freelancer_completed : data.client_completed;
         const isOtherPartyCompleted = isFreelancer ? data.client_completed : data.freelancer_completed;
         
         if (isUserCompleted && !isOtherPartyCompleted) {
+          // This is the case we're fixing - user has marked as complete but other party hasn't
           toast({
             title: 'Completion request sent',
             description: `The ${otherParty} has been notified to confirm completion.`,

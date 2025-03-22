@@ -51,6 +51,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
     setIsLoading(true);
     try {
       const status = await checkCompletionStatus();
+      console.log("Loaded completion status:", status);
       setCompletionStatus(status);
     } catch (error) {
       console.error("Error loading completion status:", error);
@@ -72,15 +73,19 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   
   const handleComplete = async () => {
     try {
+      console.log("Marking project as complete...");
       await markProjectCompleted();
       setDialogOpen(false);
+      
       // Add delay before refreshing status to ensure database has updated
+      // Using a longer delay to ensure data is properly updated
       setTimeout(() => {
+        console.log("Refreshing status after completion...");
         loadCompletionStatus();
         if (onStatusUpdate) {
           onStatusUpdate();
         }
-      }, 1000);
+      }, 1500);
     } catch (error) {
       console.error('Error completing project:', error);
       toast({
