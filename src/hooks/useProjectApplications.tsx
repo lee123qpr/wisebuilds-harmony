@@ -51,7 +51,8 @@ export const useProjectApplications = (projectId: string) => {
                 message: application.message,
                 user_id: application.user_id,
                 user: application.user ? {
-                  ...application.user,
+                  // Use type assertion to ensure TypeScript knows this is an object
+                  ...(application.user as object),
                   is_verified: isVerified || false
                 } : null
               };
@@ -63,7 +64,8 @@ export const useProjectApplications = (projectId: string) => {
                 message: application.message,
                 user_id: application.user_id,
                 user: application.user ? {
-                  ...application.user,
+                  // Use type assertion to ensure TypeScript knows this is an object
+                  ...(application.user as object),
                   is_verified: false
                 } : null
               };
