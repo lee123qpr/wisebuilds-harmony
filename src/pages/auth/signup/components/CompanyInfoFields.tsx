@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { UseFormReturn } from "react-hook-form";
 import { BusinessFormValues } from "../types";
+import { LocationField } from '@/components/location/LocationField';
 
 type CompanyInfoFieldsProps = {
   form: UseFormReturn<BusinessFormValues>;
@@ -44,18 +45,11 @@ const CompanyInfoFields = ({ form, isLoading }: CompanyInfoFieldsProps) => {
         />
       </div>
       
-      <FormField
-        control={form.control}
+      <LocationField
+        form={form}
         name="companyAddress"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Company Address</FormLabel>
-            <FormControl>
-              <Input placeholder="123 Business Street, London, UK" {...field} disabled={isLoading} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+        label="Company Location"
+        description="Enter your company's primary location"
       />
       
       <FormField

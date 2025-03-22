@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -37,7 +38,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
           .update({
             company_name: values.companyName,
             contact_name: values.contactName,
-            company_address: values.companyAddress,
+            company_address: values.companyLocation,
             company_description: values.companyDescription,
             phone_number: values.phoneNumber,
             website: websiteUrl,
@@ -59,7 +60,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
             id: user.id,
             company_name: values.companyName,
             contact_name: values.contactName,
-            company_address: values.companyAddress,
+            company_address: values.companyLocation,
             company_description: values.companyDescription,
             phone_number: values.phoneNumber,
             website: websiteUrl,
@@ -81,7 +82,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
         data: {
           company_name: values.companyName,
           contact_name: values.contactName,
-          company_address: values.companyAddress,
+          company_address: values.companyLocation,
           company_description: values.companyDescription,
           phone_number: values.phoneNumber,
           website: websiteUrl,

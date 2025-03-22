@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
@@ -7,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { clientProfileSchema } from './schema';
 import * as z from 'zod';
+import { LocationField } from '@/components/location/LocationField';
 
 type ProfileFormProps = {
   form: UseFormReturn<z.infer<typeof clientProfileSchema>>;
@@ -46,18 +46,11 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
         />
       </div>
       
-      <FormField
-        control={form.control}
-        name="companyAddress"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel>Company Address</FormLabel>
-            <FormControl>
-              <Input placeholder="Enter company address" {...field} disabled={disabled} />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
+      <LocationField
+        form={form}
+        name="companyLocation"
+        label="Company Location"
+        description="Company's primary location or headquarters address"
       />
       
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

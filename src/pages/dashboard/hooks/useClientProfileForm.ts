@@ -15,7 +15,7 @@ export const useClientProfileForm = () => {
     defaultValues: {
       companyName: '',
       contactName: '',
-      companyAddress: '',
+      companyLocation: '',
       companyDescription: '',
       phoneNumber: '',
       website: '',

@@ -53,7 +53,7 @@ export const useLoadClientProfile = ({
           form.reset({
             companyName: data.company_name || userMetadata.company_name || '',
             contactName: data.contact_name || userMetadata.contact_name || userMetadata.full_name || '',
-            companyAddress: data.company_address || userMetadata.company_address || '',
+            companyLocation: data.company_address || userMetadata.company_address || '',
             companyDescription: data.company_description || userMetadata.company_description || '',
             phoneNumber: data.phone_number || userMetadata.phone_number || userMetadata.phone || '',
             website: data.website || userMetadata.website || '',
@@ -72,13 +72,13 @@ export const useLoadClientProfile = ({
           const companyName = userMetadata.company_name || '';
           const contactName = userMetadata.contact_name || userMetadata.full_name || '';
           const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
-          const companyAddress = userMetadata.company_address || '';
+          const companyLocation = userMetadata.company_address || '';
           const companyDescription = userMetadata.company_description || '';
           
           form.reset({
             companyName,
             contactName,
-            companyAddress,
+            companyLocation,
             companyDescription,
             phoneNumber,
             website: userMetadata.website || '',

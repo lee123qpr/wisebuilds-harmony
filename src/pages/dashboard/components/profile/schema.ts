@@ -10,10 +10,10 @@ export const clientProfileSchema = z.object({
     .string()
     .min(2, { message: 'Contact name must be at least 2 characters long' })
     .max(100, { message: 'Contact name cannot exceed 100 characters' }),
-  companyAddress: z
+  companyLocation: z
     .string()
-    .min(5, { message: 'Address must be at least 5 characters long' })
-    .max(200, { message: 'Address cannot exceed 200 characters' }),
+    .min(5, { message: 'Location must be at least 5 characters long' })
+    .max(200, { message: 'Location cannot exceed 200 characters' }),
   companyDescription: z
     .string()
     .max(500, { message: 'Description cannot exceed 500 characters' })
