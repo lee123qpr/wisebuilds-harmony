@@ -11,8 +11,6 @@ import BusinessQuotesTab from '@/components/dashboard/business/QuotesTab';
 import BusinessJobsTab from '@/components/dashboard/business/BusinessJobsTab';
 import { supabase } from '@/integrations/supabase/client';
 import ProjectsHeader from '@/components/dashboard/business/projects/ProjectsHeader';
-import { Button } from '@/components/ui/button';
-import { PlusCircle } from 'lucide-react';
 import NewProjectDialog from '@/components/projects/NewProjectDialog';
 
 const BusinessDashboard = () => {
@@ -92,7 +90,7 @@ const BusinessDashboard = () => {
     <MainLayout>
       <div className="container py-8">
         <div className="mb-8 flex justify-between items-center">
-          <div>
+          <div className="transition-all duration-300">
             <h1 className="text-3xl font-bold mb-2">{getTimeBasedGreeting()}, {isLoading ? 'Loading...' : contactName}</h1>
             <p className="text-muted-foreground">Your business dashboard</p>
           </div>
@@ -100,11 +98,31 @@ const BusinessDashboard = () => {
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="mb-6">
-            <TabsTrigger value="projects">My Projects</TabsTrigger>
-            <TabsTrigger value="quotes">Quotes</TabsTrigger>
-            <TabsTrigger value="my-hires">My Hires</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
+          <TabsList className="mb-6 bg-slate-100 p-1">
+            <TabsTrigger 
+              value="projects"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+            >
+              My Projects
+            </TabsTrigger>
+            <TabsTrigger 
+              value="quotes"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+            >
+              Quotes
+            </TabsTrigger>
+            <TabsTrigger 
+              value="my-hires"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+            >
+              My Hires
+            </TabsTrigger>
+            <TabsTrigger 
+              value="messages"
+              className="data-[state=active]:bg-white data-[state=active]:shadow-sm transition-all"
+            >
+              Messages
+            </TabsTrigger>
           </TabsList>
           
           <TabsContent value="projects" className="space-y-6">
@@ -113,7 +131,7 @@ const BusinessDashboard = () => {
           </TabsContent>
           
           <TabsContent value="quotes" className="space-y-4">
-            <Card>
+            <Card className="border-none shadow-sm">
               <CardContent className="pt-6">
                 <BusinessQuotesTab />
               </CardContent>
@@ -121,7 +139,7 @@ const BusinessDashboard = () => {
           </TabsContent>
           
           <TabsContent value="my-hires" className="space-y-4">
-            <Card>
+            <Card className="border-none shadow-sm">
               <CardContent className="pt-6">
                 <BusinessJobsTab />
               </CardContent>
@@ -129,7 +147,7 @@ const BusinessDashboard = () => {
           </TabsContent>
           
           <TabsContent value="messages" className="space-y-4">
-            <Card>
+            <Card className="border-none shadow-sm">
               <CardContent className="pt-6">
                 <BusinessMessagesTab />
               </CardContent>

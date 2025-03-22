@@ -54,13 +54,18 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   
   return (
     <Card 
-      className="p-6 mb-4 cursor-pointer hover:shadow-md transition-shadow"
+      className="p-6 mb-4 cursor-pointer hover:shadow-md transition-all duration-200 border-l-4 border-transparent hover:border-l-4 hover:border-primary"
       onClick={handleClick}
     >
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <div className="mb-2">
+          <div className="mb-2 flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Posted {formattedDate}</p>
+            
+            {/* Add a "Test" badge for test projects */}
+            {project.title.startsWith('Test ') && (
+              <Badge variant="outline" className="text-xs bg-yellow-50 border-yellow-200 text-yellow-700">Test</Badge>
+            )}
           </div>
           
           <h3 className="text-xl font-semibold mb-5">{project.title}</h3>
@@ -68,30 +73,36 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
           <div className="grid grid-cols-2 gap-4 mt-4">
             {/* Interested freelancers box */}
             <div 
-              className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
+              className="border rounded-md p-4 flex items-center cursor-pointer relative overflow-hidden group transition-all duration-200"
               onClick={handleInterestedClick}
               role="button"
               aria-label={`View ${interestedCount} interested freelancers`}
             >
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3">
+              {/* Green hover overlay */}
+              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3 z-10 group-hover:bg-primary/20 transition-colors">
                 <span className="text-2xl font-bold text-primary">{interestedCount}</span>
               </div>
-              <div>
-                <p className="font-medium">Interested</p>
+              <div className="z-10">
+                <p className="font-medium group-hover:text-primary/90 transition-colors">Interested</p>
                 <p className="text-sm text-muted-foreground">Waiting for your decision</p>
               </div>
             </div>
             
             {/* Quotes box */}
             <div 
-              className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
+              className="border rounded-md p-4 flex items-center cursor-pointer relative overflow-hidden group transition-all duration-200"
               onClick={handleQuotesClick}
             >
-              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3">
+              {/* Green hover overlay */}
+              <div className="absolute inset-0 bg-green-50 opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+              
+              <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3 z-10 group-hover:bg-primary/20 transition-colors">
                 <span className="text-2xl font-bold text-primary">{quoteCount}</span>
               </div>
-              <div>
-                <p className="font-medium">Quotes</p>
+              <div className="z-10">
+                <p className="font-medium group-hover:text-primary/90 transition-colors">Quotes</p>
                 <p className="text-sm text-muted-foreground">Received quotes for project</p>
               </div>
             </div>
@@ -99,14 +110,9 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
         </div>
         
         <div className="ml-4 flex items-center h-full">
-          <ChevronRight className="h-6 w-6 text-muted-foreground" />
+          <ChevronRight className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
         </div>
       </div>
-      
-      {/* Add a "Test" badge for test projects */}
-      {project.title.startsWith('Test ') && (
-        <Badge variant="outline" className="absolute top-3 right-3 text-xs bg-yellow-50">Test</Badge>
-      )}
     </Card>
   );
 };

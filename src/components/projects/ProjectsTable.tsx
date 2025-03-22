@@ -39,15 +39,20 @@ const ProjectsTable = () => {
   }
 
   return (
-    <div>
+    <div className="space-y-4">
       {projects.length === 0 ? (
-        <div className="text-center py-8 text-muted-foreground">
-          You don't have any projects yet. Create your first project to get started.
+        <div className="text-center py-8 text-muted-foreground rounded-lg border-2 border-dashed border-gray-200 bg-gray-50">
+          <p className="text-lg mb-2">You don't have any projects yet</p>
+          <p className="text-sm">Create your first project to get started</p>
         </div>
       ) : (
         <div className="space-y-4">
-          {projects.map((project) => (
-            <ProjectCardHorizontal key={project.id} project={project} />
+          {projects.map((project, index) => (
+            <div key={project.id} 
+                 className="transition-all duration-300" 
+                 style={{ animationDelay: `${index * 100}ms` }}>
+              <ProjectCardHorizontal project={project} />
+            </div>
           ))}
         </div>
       )}
