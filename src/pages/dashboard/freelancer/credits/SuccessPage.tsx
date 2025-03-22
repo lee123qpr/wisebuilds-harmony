@@ -7,6 +7,7 @@ import { CheckCircle, RefreshCw, ArrowRight } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 
 const SuccessPage = () => {
   const [searchParams] = useSearchParams();
@@ -19,6 +20,7 @@ const SuccessPage = () => {
   const [retryCount, setRetryCount] = useState(0);
   const [manualUpdateAttempted, setManualUpdateAttempted] = useState(false);
   const [initialLoad, setInitialLoad] = useState(true);
+  const { toast } = useToast();
   
   // Effect to handle initial session check and stripe status
   useEffect(() => {

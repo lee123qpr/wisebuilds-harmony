@@ -34,7 +34,7 @@ export const useCreditBalance = () => {
     },
     enabled: !!user,
     staleTime: 0, // Always consider data stale
-    cacheTime: 1000, // Very short cache time
+    gcTime: 1000, // Very short cache time (changed from cacheTime to gcTime)
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,

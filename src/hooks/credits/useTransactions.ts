@@ -62,7 +62,7 @@ export const useTransactions = () => {
     },
     enabled: !!user,
     staleTime: 0, // Always consider data stale
-    cacheTime: 1000, // Very short cache time
+    gcTime: 1000, // Very short cache time (changed from cacheTime to gcTime)
     refetchOnWindowFocus: true,
     refetchOnMount: true,
     refetchInterval: 5000, // Poll every 5 seconds when active
