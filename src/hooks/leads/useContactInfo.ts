@@ -46,6 +46,8 @@ export const useContactInfo = (projectId: string) => {
         console.error('Error fetching client profile:', clientProfileError);
       }
       
+      console.log('Client profile data:', clientProfile);
+      
       // Only fetch auth user data if profile is incomplete or missing contact_name
       let userData = null;
       let userError = null;
@@ -64,20 +66,23 @@ export const useContactInfo = (projectId: string) => {
         if (userError) {
           console.error('Error fetching user data:', userError);
         }
+        
+        console.log('User data from edge function:', userData);
       }
-      
-      console.log('Client profile data:', clientProfile);
-      console.log('User data from edge function:', userData);
       
       // Extract the email and metadata
       const email = clientProfile?.email || userData?.email || null;
       const userMetadata = userData?.user_metadata || null;
+      const contactName = clientProfile?.contact_name || 
+                          userData?.full_name || 
+                          userMetadata?.full_name || 
+                          null;
       
       // Create a proper object with all the fields we need
       // First priority: client_profiles table data
       // Second priority: user metadata (only if profile data is missing)
       setClientInfo({
-        contact_name: clientProfile?.contact_name || userMetadata?.full_name || null,
+        contact_name: contactName,
         company_name: clientProfile?.company_name || userMetadata?.company_name || null,
         phone_number: clientProfile?.phone_number || userMetadata?.phone_number || null,
         website: clientProfile?.website || userMetadata?.website || null,
@@ -87,14 +92,15 @@ export const useContactInfo = (projectId: string) => {
         user_metadata: userMetadata,
         // A profile is considered complete if we have at least name, email, and phone
         is_profile_complete: !!(
-          (clientProfile?.contact_name) && 
+          contactName && 
           email && 
           (clientProfile?.phone_number)
         )
       });
       
       // If client profile doesn't exist but we have data from auth, let's create/update the profile
-      if ((!clientProfile || !profileHasName) && userMetadata) {
+      // Only attempt this if we got meaningful data from auth
+      if ((!clientProfile || !profileHasName) && userMetadata && userData?.full_name) {
         try {
           // Create a profile in the database using auth data
           console.log('Creating/updating client profile with auth data');
@@ -102,7 +108,7 @@ export const useContactInfo = (projectId: string) => {
             .from('client_profiles')
             .upsert({
               id: project.user_id,
-              contact_name: userMetadata.full_name,
+              contact_name: userData.full_name,
               email: userData?.email,
               phone_number: userMetadata.phone_number || userMetadata.phone,
               company_name: userMetadata.company_name,

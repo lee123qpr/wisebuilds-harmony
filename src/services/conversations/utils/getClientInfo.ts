@@ -33,7 +33,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     
     console.log('Client profile data from database:', clientProfile);
     
-    // If profile exists with contact_name, prioritize it over auth data
+    // If profile exists and contact_name is available, prioritize it
     if (clientProfile && clientProfile.contact_name) {
       console.log('Returning client info from profile with contact_name:', clientProfile.contact_name);
       return {
@@ -45,14 +45,8 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     } else {
       console.log('No client profile found or contact_name missing, will try auth data');
     }
-  } catch (dbError) {
-    console.error('Exception when querying client_profiles:', dbError);
-  }
-  
-  // If no profile data or contact_name not set, try to get user data from auth using edge function
-  try {
-    console.log('Fetching user data from edge function for userId:', clientId);
     
+    // If no profile data or contact_name not set, try to get user data from auth using edge function
     const { data: userData, error: userError } = await supabase.functions.invoke(
       'get-user-email',
       {
@@ -91,24 +85,29 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     console.log('Extracted full name from auth data:', fullName);
     
     // Create/update client profile with this data for future use
-    try {
-      console.log('Creating/updating client profile with auth data');
-      const { error: upsertError } = await supabase
-        .from('client_profiles')
-        .upsert({
-          id: clientId,
-          contact_name: fullName,
-          email: userData.email,
-          updated_at: new Date().toISOString()
-        }, {
-          onConflict: 'id'
-        });
-
-      if (upsertError) {
-        console.error('Error creating/updating client profile:', upsertError);
+    // Only if we got useful data from auth
+    if (fullName !== 'Client') {
+      try {
+        console.log('Creating/updating client profile with auth data');
+        const { error: upsertError } = await supabase
+          .from('client_profiles')
+          .upsert({
+            id: clientId,
+            contact_name: fullName,
+            email: userData.email,
+            updated_at: new Date().toISOString()
+          }, {
+            onConflict: 'id'
+          });
+  
+        if (upsertError) {
+          console.error('Error creating/updating client profile:', upsertError);
+        } else {
+          console.log('Successfully created/updated client profile with name:', fullName);
+        }
+      } catch (syncError) {
+        console.error('Exception during profile synchronization:', syncError);
       }
-    } catch (syncError) {
-      console.error('Exception during profile synchronization:', syncError);
     }
     
     // Return the user data
@@ -119,7 +118,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
       email: userData.email
     };
   } catch (error) {
-    console.error('Error calling edge function:', error);
+    console.error('Error in getClientInfo:', error);
     
     // No data available
     return {

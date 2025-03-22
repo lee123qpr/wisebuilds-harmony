@@ -19,6 +19,8 @@ interface ContactInfoContentProps {
 
 const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) => {
   const formatPhoneForLink = (phone: string) => {
+    if (!phone) return '';
+    
     const digits = phone.replace(/\D/g, '');
     
     if (phone.startsWith('+')) {
@@ -37,7 +39,12 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
     return website.startsWith('http') ? website : `https://${website}`;
   };
 
-  const hasEssentialContactInfo = !!(clientInfo.contact_name || clientInfo.email || clientInfo.phone_number);
+  // Make sure we have a valid contact name
+  const contactName = clientInfo.contact_name && clientInfo.contact_name.trim() !== '' 
+    ? clientInfo.contact_name 
+    : 'Client';
+  
+  const hasEssentialContactInfo = !!(contactName || clientInfo.email || clientInfo.phone_number);
 
   if (!hasEssentialContactInfo) {
     return (
@@ -49,11 +56,11 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
 
   return (
     <div className="space-y-3">
-      {clientInfo.contact_name && (
+      {contactName && (
         <ContactItem
           icon={<User className="h-4 w-4 text-green-700" />}
           label="Contact Name"
-          value={clientInfo.contact_name}
+          value={contactName}
         />
       )}
       
