@@ -33,16 +33,19 @@ export const useNotificationsService = () => {
 
     const initializeNotifications = async () => {
       setIsLoading(true);
+      console.log('Initializing notifications for user:', user.id);
       
       try {
         // Fetch existing notifications
         const data = await fetchNotifications(user.id);
         setNotifications(data);
+        console.log('Fetched notifications:', data.length);
         
         // Setup realtime listeners
         channels = setupRealTimeListeners({
           userId: user.id,
           onNewNotification: (notification) => {
+            console.log('New notification received:', notification);
             setNotifications(prev => [notification, ...prev]);
             
             toast({
@@ -52,6 +55,7 @@ export const useNotificationsService = () => {
             });
           },
           onNotificationUpdate: (updatedNotification) => {
+            console.log('Notification updated:', updatedNotification);
             setNotifications(prev => 
               prev.map(notification => 
                 notification.id === updatedNotification.id 
@@ -61,7 +65,11 @@ export const useNotificationsService = () => {
             );
           },
           onNewMessage: (message) => {
-            handleNewMessage(message, addNotification);
+            console.log('New message received in notification service:', message);
+            // Check if the message is not from the current user before creating a notification
+            if (message.sender_id !== user.id) {
+              handleNewMessage(message, addNotification);
+            }
           },
           onQuoteUpdate: (payload) => {
             const oldStatus = payload.old?.status;
@@ -164,6 +172,7 @@ export const useNotificationsService = () => {
 
     // Cleanup function
     return () => {
+      console.log('Cleaning up notification channels');
       channels.forEach(channel => {
         if (channel) {
           supabase.removeChannel(channel);
@@ -218,6 +227,8 @@ export const useNotificationsService = () => {
   };
 
   const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+    if (!user) return;
+    console.log('Adding notification to database:', notificationData);
     await addNotificationToDatabase(user, notificationData);
     // We don't need to manually update the state as the realtime listener will handle it
   };

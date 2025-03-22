@@ -65,6 +65,8 @@ export const useQuotes = ({
   useEffect(() => {
     if (!user?.id) return;
     
+    console.log('Setting up enhanced realtime listener for quotes in useQuotes hook');
+    
     // Set up a more comprehensive realtime listener
     const channel = setupRealtimeListener(user.id, queryResult.refetch);
 

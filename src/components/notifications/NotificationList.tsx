@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { useNotifications, NotificationType } from '@/context/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -43,7 +44,12 @@ const NotificationList = () => {
     }
     
     if (notification.type === 'message' && notification.data?.conversation_id) {
-      navigate(`/dashboard/freelancer/messages?conversation=${notification.data.conversation_id}`);
+      // Determine correct path based on user type (business or freelancer)
+      const pathname = location.pathname.includes('/business')
+        ? `/dashboard/business/messages?conversation=${notification.data.conversation_id}`
+        : `/dashboard/freelancer/messages?conversation=${notification.data.conversation_id}`;
+        
+      navigate(pathname);
     } else if (notification.type === 'hired' && notification.data?.project_id) {
       navigate(`/dashboard/freelancer/quotes`);
     } else if (notification.type === 'lead' && notification.data?.id) {

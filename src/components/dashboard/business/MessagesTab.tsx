@@ -6,6 +6,7 @@ import { useConversations } from '@/hooks/messages/useConversations';
 import MessagesTabSkeleton from '../freelancer/messages/MessagesTabSkeleton';
 import MessagesLayout from '../freelancer/messages/MessagesLayout';
 import MessagesHeader from './messages/MessagesHeader';
+import { supabase } from '@/integrations/supabase/client';
 
 const BusinessMessagesTab: React.FC = () => {
   const [searchParams] = useSearchParams();
@@ -30,6 +31,44 @@ const BusinessMessagesTab: React.FC = () => {
       }
     }
   }, [conversationId, conversations, setSelectedConversation]);
+  
+  // Setup real-time listener for new conversations
+  useEffect(() => {
+    const setupListener = async () => {
+      const { data } = await supabase.auth.getSession();
+      const userId = data.session?.user.id;
+      
+      if (!userId) return;
+      
+      console.log('Setting up messages tab realtime listener for business user:', userId);
+      
+      const channel = supabase
+        .channel(`business-conversations-${userId}`)
+        .on(
+          'postgres_changes',
+          {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'conversations',
+            filter: `client_id=eq.${userId}`
+          },
+          (payload) => {
+            console.log('New conversation detected:', payload);
+            fetchConversations();
+          }
+        )
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    };
+    
+    const cleanup = setupListener();
+    return () => {
+      cleanup.then(fn => fn && fn());
+    };
+  }, [fetchConversations]);
   
   if (isLoading) {
     return <MessagesTabSkeleton />;

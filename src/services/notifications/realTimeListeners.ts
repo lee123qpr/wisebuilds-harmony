@@ -20,6 +20,7 @@ export const createNotificationsListener = (
   onNewNotification: (notification: any) => void,
   onNotificationUpdate: (notification: any) => void
 ): RealtimeChannel => {
+  console.log('Setting up notifications listener for user:', userId);
   return supabase
     .channel('public:notifications')
     .on(
@@ -31,6 +32,7 @@ export const createNotificationsListener = (
         filter: `user_id=eq.${userId}`
       },
       (payload) => {
+        console.log('New notification received:', payload.new);
         onNewNotification(payload.new);
       }
     )
@@ -43,6 +45,7 @@ export const createNotificationsListener = (
         filter: `user_id=eq.${userId}`
       },
       (payload) => {
+        console.log('Notification updated:', payload.new);
         onNotificationUpdate(payload.new);
       }
     )
@@ -51,6 +54,7 @@ export const createNotificationsListener = (
 
 // Process new message and create a notification
 export const handleNewMessage = async (message: any, addNotification: (notification: any) => void) => {
+  console.log('Processing message for notification:', message);
   try {
     // Get conversation details to determine who sent the message
     const { data: conversationData, error: convError } = await supabase
@@ -107,10 +111,12 @@ export const handleNewMessage = async (message: any, addNotification: (notificat
       }
     }
     
+    console.log('Creating notification for message from:', senderName);
+    
     const notification = {
       type: 'message' as NotificationType,
       title: `New Message from ${senderName}`,
-      description: 'You have received a new message',
+      description: message.message?.substring(0, 50) || 'You have received a new message',
       data: {
         conversation_id: message.conversation_id,
         message: message.message,
@@ -118,6 +124,7 @@ export const handleNewMessage = async (message: any, addNotification: (notificat
       }
     };
     
+    console.log('Adding notification:', notification);
     addNotification(notification);
   } catch (error) {
     console.error('Error processing message notification:', error);
@@ -136,6 +143,8 @@ export const setupRealTimeListeners = (options: ListenersOptions): RealtimeChann
     onCreditBalanceUpdate,
     onCreditTransaction
   } = options;
+  
+  console.log('Setting up all real-time listeners for user:', userId);
   
   const channels: RealtimeChannel[] = [];
 
@@ -160,7 +169,7 @@ export const setupRealTimeListeners = (options: ListenersOptions): RealtimeChann
         filter: `sender_id=neq.${userId}`
       },
       (payload) => {
-        console.log('New message received:', payload);
+        console.log('New message received:', payload.new);
         onNewMessage(payload.new);
       }
     )
@@ -180,6 +189,7 @@ export const setupRealTimeListeners = (options: ListenersOptions): RealtimeChann
         filter: `freelancer_id=eq.${userId}`,
       },
       (payload) => {
+        console.log('Quote update received:', payload);
         onQuoteUpdate(payload);
       }
     )
@@ -198,6 +208,7 @@ export const setupRealTimeListeners = (options: ListenersOptions): RealtimeChann
         table: 'projects',
       },
       (payload) => {
+        console.log('New project received:', payload.new);
         onNewProject(payload.new);
       }
     )
@@ -217,6 +228,7 @@ export const setupRealTimeListeners = (options: ListenersOptions): RealtimeChann
         filter: `user_id=eq.${userId}`,
       },
       (payload) => {
+        console.log('Credit balance update received:', payload);
         onCreditBalanceUpdate(payload);
       }
     )
@@ -236,6 +248,7 @@ export const setupRealTimeListeners = (options: ListenersOptions): RealtimeChann
         filter: `user_id=eq.${userId} AND status=eq.completed`,
       },
       (payload) => {
+        console.log('Credit transaction received:', payload);
         onCreditTransaction(payload);
       }
     )
