@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useCredits } from '@/hooks/useCredits';
@@ -22,13 +21,11 @@ const SuccessPage = () => {
   const [initialLoad, setInitialLoad] = useState(true);
   const { toast } = useToast();
   
-  // Effect to handle initial session check and stripe status
   useEffect(() => {
     const checkStripeSession = async () => {
       if (!sessionId) return;
       
       try {
-        // Check transaction status directly
         const { data: transaction } = await supabase
           .from('credit_transactions')
           .select('status')
@@ -37,7 +34,6 @@ const SuccessPage = () => {
           
         console.log('Transaction found with status:', transaction?.status);
         
-        // If completed, set processing complete
         if (transaction?.status === 'completed') {
           console.log('Transaction already completed');
           setProcessingComplete(true);
@@ -54,7 +50,6 @@ const SuccessPage = () => {
     }
   }, [sessionId, isLoading, initialLoad, refetchCredits]);
   
-  // Effect to manually force update a pending transaction
   const forceUpdateTransaction = async () => {
     if (!sessionId || manualUpdateAttempted) return;
     
@@ -83,7 +78,6 @@ const SuccessPage = () => {
         });
       }
       
-      // Wait a bit then refresh data
       setTimeout(() => {
         refetchCredits();
         setIsRefreshing(false);
@@ -94,21 +88,17 @@ const SuccessPage = () => {
     }
   };
   
-  // Effect to handle the initial processing
   useEffect(() => {
     const processCheckout = async () => {
       if (sessionId && !isLoading && !processingComplete) {
         console.log('Processing checkout success with session ID:', sessionId);
         
-        // Attempt to restore the session from backup if needed
         if (!user) {
           const sessionBackup = localStorage.getItem('sb-session-backup');
           if (sessionBackup) {
             try {
               console.log('Attempting to restore session from backup');
-              // This will trigger an auth state change if successful
               await supabase.auth.setSession(JSON.parse(sessionBackup));
-              // Wait for auth to process
               await new Promise(resolve => setTimeout(resolve, 500));
             } catch (error) {
               console.error('Error restoring session:', error);
@@ -116,16 +106,13 @@ const SuccessPage = () => {
           }
         }
         
-        // Process the checkout success
         handleCheckoutSuccess(sessionId);
         setProcessingComplete(true);
         
-        // After processing, automatically refresh data
         setTimeout(async () => {
           await refetchCredits();
         }, 2000);
       } else if (!sessionId && !isLoading) {
-        // If no session ID, redirect back to credits page after a short delay
         const timer = setTimeout(() => {
           navigate('/dashboard/freelancer/credits');
         }, 2000);
@@ -137,7 +124,6 @@ const SuccessPage = () => {
     processCheckout();
   }, [sessionId, handleCheckoutSuccess, navigate, user, isLoading, processingComplete, refetchCredits]);
   
-  // Check if the current transaction is pending
   const isTransactionPending = React.useMemo(() => {
     if (!transactions || !sessionId) return false;
     
@@ -148,7 +134,6 @@ const SuccessPage = () => {
     return currentTransaction?.status === 'pending';
   }, [transactions, sessionId]);
   
-  // Auto-refresh data if transaction is pending or credit balance is 0
   useEffect(() => {
     const shouldAutoRefresh = isTransactionPending || (processingComplete && creditBalance === 0 && retryCount < 6);
     
@@ -160,7 +145,6 @@ const SuccessPage = () => {
         setIsRefreshing(false);
         setRetryCount(prev => prev + 1);
         
-        // Try manual update on the third retry
         if (retryCount === 2 && (isTransactionPending || creditBalance === 0) && sessionId && !manualUpdateAttempted) {
           forceUpdateTransaction();
         }
@@ -170,14 +154,11 @@ const SuccessPage = () => {
     }
   }, [processingComplete, creditBalance, retryCount, isRefreshing, refetchCredits, sessionId, isTransactionPending, manualUpdateAttempted]);
   
-  // Manual refresh function for users to force refresh credit balance
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
     
-    // If transaction is still pending and we haven't tried a manual update yet
     if (sessionId && !manualUpdateAttempted && isTransactionPending) {
       await forceUpdateTransaction();
-      // Wait a bit longer for the manual update
       setTimeout(async () => {
         await refetchCredits();
         setIsRefreshing(false);
@@ -187,9 +168,6 @@ const SuccessPage = () => {
       setTimeout(() => setIsRefreshing(false), 1000);
     }
   };
-  
-  // Import toast
-  const { toast } = useToast();
   
   return (
     <MainLayout>
