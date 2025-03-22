@@ -7,6 +7,7 @@ import { ChevronRight, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
+import { formatRole } from '@/utils/projectFormatters';
 
 interface ProjectCardHorizontalProps {
   project: Project;
@@ -30,6 +31,9 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   
   // Number of quotes - always use the live data from the quotes hook when available
   const quoteCount = !isLoadingQuotes && quotes ? quotes.length : (project.quote_count || 0);
+  
+  // Format the role for display
+  const roleFormatted = formatRole(project.role);
   
   const handleClick = () => {
     navigate(`/project/${project.id}`, { 
@@ -68,7 +72,12 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
             )}
           </div>
           
-          <h3 className="text-xl font-semibold mb-5">{project.title}</h3>
+          <h3 className="text-xl font-semibold mb-1">{project.title}</h3>
+          
+          {/* Add role information */}
+          <p className="text-sm text-muted-foreground mb-4">
+            Looking for: <span className="font-medium text-primary">{roleFormatted}</span>
+          </p>
           
           <div className="grid grid-cols-2 gap-4 mt-4">
             {/* Interested freelancers box */}
