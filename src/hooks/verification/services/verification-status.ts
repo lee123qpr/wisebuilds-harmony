@@ -97,7 +97,9 @@ export const getUserVerificationStatus = async (): Promise<VerificationStatus> =
     const verificationData = await fetchVerificationStatus();
     if (!verificationData) return 'not_submitted';
     
-    return mapDatabaseStatusToVerificationStatus(verificationData.status);
+    // Fix the type instantiation issue by explicitly typing the status
+    const status: string = verificationData.status;
+    return mapDatabaseStatusToVerificationStatus(status);
   } catch (error) {
     console.error('Error getting user verification status:', error);
     return 'not_submitted';
