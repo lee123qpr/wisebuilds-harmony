@@ -24,7 +24,7 @@ const PriceSection: React.FC<PriceSectionProps> = ({ quote }) => {
 
   return (
     <div className="space-y-2">
-      <h3 className="text-md font-semibold">Price Details</h3>
+      <h3 className="text-sm font-semibold">Price Details</h3>
       <div className="bg-slate-50 p-3 rounded-md">
         <div className="grid grid-cols-2 gap-2">
           <span className="text-sm text-slate-600">Price Type:</span>
