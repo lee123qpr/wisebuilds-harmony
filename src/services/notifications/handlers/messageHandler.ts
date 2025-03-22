@@ -1,9 +1,9 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { NotificationType } from '../types';
+import { NotificationType, Notification } from '../types';
 
 // Process new message and create a notification
-export const handleNewMessage = async (message: any, addNotification: (notification: any) => void) => {
+export const handleNewMessage = async (message: any, addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => void) => {
   console.log('Processing message for notification:', message);
   try {
     // Get conversation details to determine who sent the message
@@ -63,7 +63,7 @@ export const handleNewMessage = async (message: any, addNotification: (notificat
     
     console.log('Creating notification for message from:', senderName);
     
-    const notification = {
+    const notification: Omit<Notification, 'id' | 'created_at' | 'read'> = {
       type: 'message' as NotificationType,
       title: `New Message from ${senderName}`,
       description: message.message?.substring(0, 50) || 'You have received a new message',

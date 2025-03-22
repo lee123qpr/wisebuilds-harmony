@@ -18,6 +18,13 @@ export const useNotificationListeners = (
   addNotificationToState: (notification: Notification) => void,
   updateNotificationInState: (notification: Notification) => void
 ) => {
+  const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+    if (!user) return;
+    console.log('Adding notification to database:', notificationData);
+    await addNotificationToDatabase(user, notificationData);
+    // We don't need to manually update the state as the realtime listener will handle it
+  };
+
   // Use the extracted event handlers
   const {
     handleMessageEvent,
@@ -82,13 +89,6 @@ export const useNotificationListeners = (
       });
     };
   }, [user, setNotifications, setIsLoading, addNotificationToState, updateNotificationInState]);
-
-  const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
-    if (!user) return;
-    console.log('Adding notification to database:', notificationData);
-    await addNotificationToDatabase(user, notificationData);
-    // We don't need to manually update the state as the realtime listener will handle it
-  };
 
   return { addNotification };
 };

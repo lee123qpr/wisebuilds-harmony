@@ -1,7 +1,7 @@
 
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { NotificationType } from '@/services/notifications/types';
+import { Notification, NotificationType } from '@/services/notifications/types';
 import { handleNewMessage } from '@/services/notifications';
 
 /**
@@ -26,7 +26,7 @@ export const useNotificationEventHandlers = (
     
     // Only notify on status change to 'accepted'
     if (oldStatus !== 'accepted' && newStatus === 'accepted') {
-      const notification = {
+      const notification: Omit<Notification, 'id' | 'created_at' | 'read'> = {
         type: 'hired' as NotificationType,
         title: 'You Were Hired!',
         description: 'A client has accepted your quote. Congratulations!',
@@ -65,7 +65,7 @@ export const useNotificationEventHandlers = (
     }
     
     if (isMatch) {
-      const notification = {
+      const notification: Omit<Notification, 'id' | 'created_at' | 'read'> = {
         type: 'lead' as NotificationType,
         title: 'New Lead Available',
         description: `A new project "${project.title}" matching your criteria has been posted`,
@@ -86,7 +86,7 @@ export const useNotificationEventHandlers = (
     // Only notify when balance increases (credits added)
     if (newBalance > oldBalance) {
       const addedCredits = newBalance - oldBalance;
-      const notification = {
+      const notification: Omit<Notification, 'id' | 'created_at' | 'read'> = {
         type: 'credit_update' as NotificationType,
         title: 'Credits Added',
         description: `${addedCredits} credits have been added to your account`,
@@ -104,7 +104,7 @@ export const useNotificationEventHandlers = (
   const handleCreditTransaction = (payload: any) => {
     // Only notify when a transaction is updated to completed
     if (payload.old?.status === 'pending' && payload.new?.status === 'completed') {
-      const notification = {
+      const notification: Omit<Notification, 'id' | 'created_at' | 'read'> = {
         type: 'payment' as NotificationType,
         title: 'Payment Completed',
         description: `Your credit purchase of ${payload.new.credits_purchased} credits has been completed`,
