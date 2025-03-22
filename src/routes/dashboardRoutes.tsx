@@ -1,5 +1,4 @@
 
-import { Route, Navigate } from "react-router-dom";
 import ProtectedRoute from "../components/auth/ProtectedRoute";
 import FreelancerDashboard from "../pages/dashboard/FreelancerDashboard";
 import BusinessDashboard from "../pages/dashboard/BusinessDashboard";
@@ -9,99 +8,47 @@ import ClientProfile from "../pages/dashboard/ClientProfile";
 import FreelancerProfile from "../pages/dashboard/FreelancerProfile";
 import CreditsPage from "../pages/dashboard/freelancer/credits/CreditsPage";
 import SuccessPage from "../pages/dashboard/freelancer/credits/SuccessPage";
+import { Navigate } from "react-router-dom";
 
-export const dashboardRoutes = (
-  <>
-    {/* Dashboard Routes - Protected */}
-    <Route 
-      path="/dashboard/freelancer" 
-      element={
-        <ProtectedRoute allowedUserTypes={['freelancer']}>
-          <FreelancerDashboard />
-        </ProtectedRoute>
-      } 
-    />
-    <Route 
-      path="/dashboard/business" 
-      element={
-        <ProtectedRoute allowedUserTypes={['business']}>
-          <BusinessDashboard />
-        </ProtectedRoute>
-      } 
-    />
-    <Route 
-      path="/dashboard/admin" 
-      element={
-        <ProtectedRoute allowedUserTypes={['admin']}>
-          <AdminDashboard />
-        </ProtectedRoute>
-      } 
-    />
-    
-    {/* Credits Routes */}
-    <Route 
-      path="/dashboard/freelancer/credits" 
-      element={
-        <ProtectedRoute allowedUserTypes={['freelancer']}>
-          <CreditsPage />
-        </ProtectedRoute>
-      } 
-    />
-    <Route 
-      path="/dashboard/freelancer/credits/success" 
-      element={
-        <ProtectedRoute allowedUserTypes={['freelancer']}>
-          <SuccessPage />
-        </ProtectedRoute>
-      } 
-    />
-    
-    {/* Lead Settings Route */}
-    <Route 
-      path="/dashboard/freelancer/lead-settings" 
-      element={
-        <ProtectedRoute allowedUserTypes={['freelancer']}>
-          <LeadSettings />
-        </ProtectedRoute>
-      } 
-    />
-    
-    {/* Profile routes */}
-    <Route 
-      path="/dashboard/business/profile" 
-      element={
-        <ProtectedRoute allowedUserTypes={['business']}>
-          <ClientProfile />
-        </ProtectedRoute>
-      } 
-    />
-    
-    <Route 
-      path="/dashboard/freelancer/profile" 
-      element={
-        <ProtectedRoute allowedUserTypes={['freelancer']}>
-          <FreelancerProfile />
-        </ProtectedRoute>
-      } 
-    />
-    
-    {/* Redirect from account page to profile page */}
-    <Route 
-      path="/dashboard/business/account" 
-      element={
-        <ProtectedRoute allowedUserTypes={['business']}>
-          <Navigate to="/dashboard/business/profile" replace />
-        </ProtectedRoute>
-      } 
-    />
-    
-    <Route 
-      path="/dashboard/freelancer/account" 
-      element={
-        <ProtectedRoute allowedUserTypes={['freelancer']}>
-          <Navigate to="/dashboard/freelancer/profile" replace />
-        </ProtectedRoute>
-      } 
-    />
-  </>
-);
+export const dashboardRoutes = [
+  {
+    path: "/dashboard/freelancer",
+    element: <ProtectedRoute allowedUserTypes={['freelancer']}><FreelancerDashboard /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/business",
+    element: <ProtectedRoute allowedUserTypes={['business']}><BusinessDashboard /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/admin",
+    element: <ProtectedRoute allowedUserTypes={['admin']}><AdminDashboard /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/freelancer/credits",
+    element: <ProtectedRoute allowedUserTypes={['freelancer']}><CreditsPage /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/freelancer/credits/success",
+    element: <ProtectedRoute allowedUserTypes={['freelancer']}><SuccessPage /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/freelancer/lead-settings",
+    element: <ProtectedRoute allowedUserTypes={['freelancer']}><LeadSettings /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/business/profile",
+    element: <ProtectedRoute allowedUserTypes={['business']}><ClientProfile /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/freelancer/profile",
+    element: <ProtectedRoute allowedUserTypes={['freelancer']}><FreelancerProfile /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/business/account",
+    element: <ProtectedRoute allowedUserTypes={['business']}><Navigate to="/dashboard/business/profile" replace /></ProtectedRoute>
+  },
+  {
+    path: "/dashboard/freelancer/account",
+    element: <ProtectedRoute allowedUserTypes={['freelancer']}><Navigate to="/dashboard/freelancer/profile" replace /></ProtectedRoute>
+  }
+];
