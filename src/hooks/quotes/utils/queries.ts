@@ -53,7 +53,11 @@ export const buildQuotesQuery = (
   if (excludeCompletedProjects) {
     // Filter out quotes where the project status is 'completed'
     query = query.not('projects.status', 'eq', 'completed');
-    console.log('Excluding quotes for completed projects');
+    
+    // Also filter out quotes that have been marked as completed by both parties
+    query = query.or('freelancer_completed.is.null,client_completed.is.null');
+    
+    console.log('Excluding quotes for completed projects and fully completed quotes');
   }
   
   return query;

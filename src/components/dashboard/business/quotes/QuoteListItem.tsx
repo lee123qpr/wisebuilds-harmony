@@ -18,7 +18,15 @@ interface QuoteListItemProps {
 const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
   const navigate = useNavigate();
   
-  const projectTitle = quote.project?.title || 'Project';
+  // More robust project title handling
+  const projectTitle = quote.project?.title && 
+                      quote.project.title !== 'null' && 
+                      quote.project.title !== 'undefined' && 
+                      quote.project.title.trim() !== '' 
+                        ? quote.project.title 
+                        : 'Untitled Project';
+  
+  console.log('Quote project data:', quote.project);
   
   const formattedDate = quote.created_at 
     ? format(new Date(quote.created_at), 'MMM d, yyyy')
