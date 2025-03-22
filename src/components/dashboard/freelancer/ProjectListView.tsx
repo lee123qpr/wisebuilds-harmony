@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
@@ -37,16 +36,18 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
   const queryClient = useQueryClient();
 
+  const sortedProjects = [...projects].sort((a, b) => 
+    new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+  );
+
   const handlePurchaseSuccess = () => {
     toast({
       title: 'Lead purchased',
       description: 'You can now view the client contact information',
     });
     
-    // Refresh purchase status
     setRefreshTrigger(prev => prev + 1);
     
-    // Update purchased status for the current project
     if (selectedProject) {
       setPurchasedProjects(prev => ({
         ...prev,
@@ -54,7 +55,6 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       }));
     }
     
-    // Refresh applications data for the "My Responses" tab
     queryClient.invalidateQueries({ queryKey: ['applications'] });
   };
 
@@ -102,7 +102,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
     <ResizablePanelGroup direction="horizontal" className="rounded-lg border bg-white">
       <ResizablePanel defaultSize={35} minSize={25}>
         <div className="divide-y h-[700px] overflow-auto">
-          {projects.map((project) => (
+          {sortedProjects.map((project) => (
             <ProjectCard
               key={project.id}
               project={project}

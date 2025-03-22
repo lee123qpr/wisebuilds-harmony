@@ -19,7 +19,8 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         let query = supabase
           .from('projects')
           .select('*')
-          .eq('status', 'active');
+          .eq('status', 'active')
+          .order('created_at', { ascending: false }); // Order by created_at descending (newest first)
         
         // Apply filters only if leadSettings is provided
         if (leadSettings) {
