@@ -21,7 +21,7 @@ export interface FreelancerProfileFormData {
   experience?: string;
   qualifications: string[];
   accreditations: string[];
-  indemnityInsurance: {
+  indemnity_insurance: {
     hasInsurance: boolean;
     coverLevel?: string;
   };

@@ -79,7 +79,7 @@ export const useLoadFreelancerProfile = ({
             : [];
 
           // Ensure indemnity_insurance is properly typed
-          const indemnityInsurance = typeof profileData.indemnity_insurance === 'object' 
+          const indemnity_insurance = typeof profileData.indemnity_insurance === 'object' 
             ? profileData.indemnity_insurance as { hasInsurance: boolean; coverLevel?: string }
             : { hasInsurance: false };
           
@@ -108,7 +108,7 @@ export const useLoadFreelancerProfile = ({
             experience: profileData.experience || '',
             qualifications,
             accreditations,
-            indemnityInsurance,
+            indemnity_insurance,
             previousWork,
             idVerified: profileData.id_verified || false,
           });
@@ -152,7 +152,7 @@ export const useLoadFreelancerProfile = ({
             experience: userMetadata.experience || '',
             qualifications: userMetadata.qualifications || [],
             accreditations: userMetadata.accreditations || [],
-            indemnityInsurance: {
+            indemnity_insurance: {
               hasInsurance: userMetadata.indemnity_insurance?.hasInsurance || false,
               coverLevel: userMetadata.indemnity_insurance?.coverLevel || '',
             },

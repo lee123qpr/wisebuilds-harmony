@@ -26,7 +26,7 @@ export const useFreelancerProfileForm = () => {
       experience: '',
       qualifications: [],
       accreditations: [],
-      indemnityInsurance: {
+      indemnity_insurance: {
         hasInsurance: false,
         coverLevel: '',
       },

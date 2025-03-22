@@ -58,7 +58,7 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
           experience: values.experience,
           qualifications: values.qualifications,
           accreditations: values.accreditations,
-          indemnity_insurance: values.indemnityInsurance,
+          indemnity_insurance: values.indemnity_insurance,
           previous_work: previousWork,
           id_verified: values.idVerified,
         }
@@ -88,7 +88,7 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
           qualifications: values.qualifications,
           accreditations: values.accreditations,
           previous_employers: previousEmployers,
-          indemnity_insurance: values.indemnityInsurance,
+          indemnity_insurance: values.indemnity_insurance,
           previous_work: previousWork,
           id_verified: values.idVerified,
           updated_at: new Date().toISOString()

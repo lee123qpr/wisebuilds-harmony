@@ -24,7 +24,7 @@ const coverLevels = [
 ];
 
 const FreelancerIndemnityField: React.FC<FreelancerIndemnityFieldProps> = ({ form, disabled = false }) => {
-  const hasInsurance = form.watch('indemnityInsurance.hasInsurance');
+  const hasInsurance = form.watch('indemnity_insurance.hasInsurance');
 
   return (
     <div className="space-y-4">
@@ -32,7 +32,7 @@ const FreelancerIndemnityField: React.FC<FreelancerIndemnityFieldProps> = ({ for
       
       <FormField
         control={form.control}
-        name="indemnityInsurance.hasInsurance"
+        name="indemnity_insurance.hasInsurance"
         render={({ field }) => (
           <FormItem className="flex flex-row items-center justify-between rounded-lg border p-4 shadow-sm">
             <div className="space-y-0.5">
@@ -57,7 +57,7 @@ const FreelancerIndemnityField: React.FC<FreelancerIndemnityFieldProps> = ({ for
       {hasInsurance && (
         <FormField
           control={form.control}
-          name="indemnityInsurance.coverLevel"
+          name="indemnity_insurance.coverLevel"
           render={({ field }) => (
             <FormItem>
               <FormLabel>Cover Level</FormLabel>
