@@ -1,12 +1,13 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useCredits } from '@/hooks/useCredits';
 import CreditPlans from './CreditPlans';
 import TransactionHistory from './TransactionHistory';
-import { ArrowLeft, CreditCard, RefreshCw, History } from 'lucide-react';
+import { ArrowLeft, CreditCard, RefreshCw, History, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 const CreditsPage = () => {
   const { 
@@ -18,10 +19,35 @@ const CreditsPage = () => {
     isLoadingBalance,
     isCheckoutLoading,
     purchaseCredits,
-    refetchCredits
+    refetchCredits,
+    testStripeConnection
   } = useCredits();
   
+  const [stripeStatus, setStripeStatus] = useState<{status?: string, stripeStatus?: string, error?: string} | null>(null);
+  const [isTestingStripe, setIsTestingStripe] = useState(false);
+  
   const navigate = useNavigate();
+
+  // Test Stripe connection on mount
+  useEffect(() => {
+    const checkStripeConnection = async () => {
+      setIsTestingStripe(true);
+      try {
+        const status = await testStripeConnection();
+        setStripeStatus(status);
+      } catch (error) {
+        setStripeStatus({ error: error.message });
+      } finally {
+        setIsTestingStripe(false);
+      }
+    };
+    
+    checkStripeConnection();
+  }, [testStripeConnection]);
+
+  const handleRefresh = () => {
+    refetchCredits();
+  };
 
   return (
     <MainLayout>
@@ -56,6 +82,16 @@ const CreditsPage = () => {
           </div>
         </div>
 
+        {stripeStatus && stripeStatus.stripeStatus && stripeStatus.stripeStatus !== 'API key valid' && (
+          <Alert variant="destructive" className="mb-6">
+            <AlertTriangle className="h-4 w-4" />
+            <AlertTitle>Payment system issue</AlertTitle>
+            <AlertDescription>
+              There might be an issue with our payment system. Please try again later or contact support.
+            </AlertDescription>
+          </Alert>
+        )}
+
         <div className="space-y-8">
           <div>
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
@@ -71,6 +107,7 @@ const CreditsPage = () => {
               plans={creditPlans} 
               onPurchase={purchaseCredits}
               isLoading={isLoadingPlans || isCheckoutLoading}
+              onRefresh={() => refetchCredits()}
             />
           </div>
           

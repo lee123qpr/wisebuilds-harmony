@@ -17,21 +17,31 @@ export const useCredits = () => {
   const { 
     creditPlans, 
     isLoadingPlans, 
-    plansError 
+    plansError,
+    refetchPlans
   } = useCreditPlans();
   
   const { 
     transactions, 
     isLoadingTransactions, 
-    transactionsError 
+    transactionsError,
+    refetchTransactions
   } = useTransactions();
   
   const {
     purchaseCredits,
-    isCheckoutLoading
+    isCheckoutLoading,
+    checkoutError,
+    testStripeConnection
   } = usePurchaseCredits();
   
   const { handleCheckoutSuccess } = useCheckoutSuccess();
+  
+  const refreshAll = () => {
+    refetchCredits();
+    refetchPlans();
+    refetchTransactions();
+  };
   
   return {
     creditBalance,
@@ -44,8 +54,10 @@ export const useCredits = () => {
     balanceError,
     plansError,
     transactionsError,
+    checkoutError,
     purchaseCredits,
     handleCheckoutSuccess,
-    refetchCredits,
+    refetchCredits: refreshAll,
+    testStripeConnection
   };
 };

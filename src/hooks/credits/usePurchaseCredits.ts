@@ -8,6 +8,7 @@ export const usePurchaseCredits = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [isCheckoutLoading, setIsCheckoutLoading] = useState(false);
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
 
   const purchaseCredits = async (planId: string) => {
     if (!user) {
@@ -20,6 +21,7 @@ export const usePurchaseCredits = () => {
     }
     
     setIsCheckoutLoading(true);
+    setCheckoutError(null);
     
     try {
       console.log('Creating checkout session for planId:', planId);
@@ -51,16 +53,33 @@ export const usePurchaseCredits = () => {
     } catch (error) {
       console.error('Error creating checkout session:', error);
       setIsCheckoutLoading(false);
+      setCheckoutError(error.message || 'Failed to start checkout process');
       toast({
         title: 'Checkout Error',
-        description: error.message || 'Failed to start checkout process. Please try again or contact support.',
+        description: error.message || 'Failed to start checkout process. Please try again later.',
         variant: 'destructive',
       });
     }
   };
 
+  const testStripeConnection = async () => {
+    try {
+      const response = await supabase.functions.invoke('create-checkout-session', {
+        method: 'GET'
+      });
+      
+      console.log('Stripe connection test response:', response);
+      return response.data;
+    } catch (error) {
+      console.error('Error testing Stripe connection:', error);
+      return { error: error.message };
+    }
+  };
+
   return {
     purchaseCredits,
-    isCheckoutLoading
+    isCheckoutLoading,
+    checkoutError,
+    testStripeConnection
   };
 };
