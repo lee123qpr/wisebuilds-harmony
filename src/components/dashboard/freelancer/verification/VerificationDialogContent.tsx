@@ -18,7 +18,7 @@ const VerificationDialogContent: React.FC<VerificationDialogContentProps> = ({ o
   const { 
     verificationStatus, 
     verificationData,
-    isDeleting
+    isDeleting = false
   } = useVerification();
   
   const { setupComplete } = useVerificationSetup();

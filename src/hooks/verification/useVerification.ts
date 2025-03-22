@@ -17,20 +17,20 @@ export const useVerification = (): UseVerificationResult => {
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   // Fetch verification status
   const refreshVerificationStatus = async () => {
-    if (!user) return null;
+    if (!user) return;
     
     setIsLoading(true);
     try {
       const data = await fetchVerificationStatus(user.id);
       setVerificationData(data);
       console.log('Refreshed verification status:', data);
-      return data;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error refreshing verification status:', error);
-      return null;
+      setError(error);
     } finally {
       setIsLoading(false);
     }
@@ -59,6 +59,7 @@ export const useVerification = (): UseVerificationResult => {
       return result.filePath || true;
     } catch (error: any) {
       console.error('Error uploading document:', error);
+      setError(error);
       throw error;
     } finally {
       setIsUploading(false);
@@ -67,12 +68,12 @@ export const useVerification = (): UseVerificationResult => {
 
   // Delete ID document
   const handleDeleteVerificationDocument = async () => {
-    if (!user || !verificationData?.id_document_path) return false;
+    if (!user || !verificationData?.document_path) return false;
     
     setIsDeleting(true);
     try {
       console.log('Deleting document for user:', user.id);
-      const result = await deleteVerificationDocument(user.id, verificationData.id_document_path);
+      const result = await deleteVerificationDocument(user.id, verificationData.document_path);
       
       if (!result.success) {
         console.error('Delete failed with result:', result);
@@ -87,6 +88,7 @@ export const useVerification = (): UseVerificationResult => {
       return true;
     } catch (error: any) {
       console.error('Error deleting document:', error);
+      setError(error);
       throw error;
     } finally {
       setIsDeleting(false);
@@ -106,11 +108,12 @@ export const useVerification = (): UseVerificationResult => {
 
   return {
     verificationData,
-    verificationStatus: verificationData?.verification_status || 'not_submitted',
-    isVerified: verificationData?.verification_status === 'verified',
+    verificationStatus: verificationData?.status || 'not_submitted',
+    isVerified: verificationData?.status === 'verified',
     isLoading,
     isUploading,
     isDeleting,
+    error,
     uploadVerificationDocument: handleUploadVerificationDocument,
     deleteVerificationDocument: handleDeleteVerificationDocument,
     refreshVerificationStatus

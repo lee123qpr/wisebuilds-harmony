@@ -47,5 +47,11 @@ export const useFreelancerProfileData = () => {
     }
   }, [freelancerId]);
 
-  return { profileData, loading, error, isVerified };
+  // Make the returned object's property names match what's expected
+  return { 
+    profile: profileData,
+    isLoading: loading, 
+    error, 
+    isVerified 
+  };
 };

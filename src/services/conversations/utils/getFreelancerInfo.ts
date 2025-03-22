@@ -13,7 +13,13 @@ export async function getFreelancerInfo(freelancerId: string) {
         display_name,
         profile_photo,
         job_title,
-        rating
+        rating,
+        location,
+        member_since,
+        jobs_completed,
+        reviews_count,
+        email,
+        phone_number
       `)
       .eq('id', freelancerId)
       .maybeSingle();
@@ -26,23 +32,39 @@ export async function getFreelancerInfo(freelancerId: string) {
 
     if (verificationError) throw verificationError;
 
+    // Return a comprehensive object that maps to FreelancerInfo interface
     return {
       id: freelancer?.id,
+      // Support both legacy and new property names
       name: freelancer?.display_name || `${freelancer?.first_name} ${freelancer?.last_name}`,
+      full_name: freelancer?.display_name || `${freelancer?.first_name} ${freelancer?.last_name}`,
       profilePhoto: freelancer?.profile_photo,
+      profile_image: freelancer?.profile_photo,
       jobTitle: freelancer?.job_title,
+      job_title: freelancer?.job_title,
       rating: freelancer?.rating,
-      isVerified: isVerified || false
+      isVerified: isVerified || false,
+      verified: isVerified || false,
+      location: freelancer?.location,
+      member_since: freelancer?.member_since,
+      jobs_completed: freelancer?.jobs_completed,
+      reviews_count: freelancer?.reviews_count,
+      email: freelancer?.email,
+      phone_number: freelancer?.phone_number
     };
   } catch (error) {
     console.error('Error getting freelancer info:', error);
     return {
       id: freelancerId,
       name: 'Unknown Freelancer',
+      full_name: 'Unknown Freelancer',
       profilePhoto: null,
+      profile_image: null,
       jobTitle: null,
+      job_title: null,
       rating: null,
-      isVerified: false
+      isVerified: false,
+      verified: false
     };
   }
 }

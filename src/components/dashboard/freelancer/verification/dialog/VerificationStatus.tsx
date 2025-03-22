@@ -47,7 +47,7 @@ const VerificationStatus: React.FC<VerificationStatusProps> = ({
         />
       )}
       
-      {canDelete && verificationData?.id_document_path && (
+      {canDelete && verificationData?.document_path && (
         <SubmittedDocumentInfo 
           verificationData={verificationData}
           isDeleting={isDeleting}

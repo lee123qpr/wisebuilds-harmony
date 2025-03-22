@@ -6,8 +6,8 @@ import { useVerification } from './useVerification';
 export const useDocumentDeletion = (onDeleteSuccess?: () => void) => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
   const { 
-    deleteVerificationDocument,
-    isDeleting
+    deleteVerificationDocument = async () => false,
+    isDeleting = false
   } = useVerification();
   const { toast } = useToast();
 

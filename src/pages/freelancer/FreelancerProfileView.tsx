@@ -12,7 +12,7 @@ import { useLocation } from 'react-router-dom';
 
 const FreelancerProfileView: React.FC = () => {
   const { freelancerId } = useParams<{ freelancerId: string }>();
-  const { profile, isLoading } = useFreelancerProfileData(freelancerId);
+  const { profile, isLoading } = useFreelancerProfileData();
   const location = useLocation();
   
   // Check if the user came from a project applications page

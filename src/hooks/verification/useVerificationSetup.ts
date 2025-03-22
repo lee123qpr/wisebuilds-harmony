@@ -1,33 +1,28 @@
 
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { setupVerification } from './setupVerification';
 import { useToast } from '@/hooks/use-toast';
+import { setupVerification } from './setupVerification';
 
 export const useVerificationSetup = () => {
-  const { user } = useAuth();
-  const { toast } = useToast();
   const [setupComplete, setSetupComplete] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    async function initVerificationSystem() {
-      if (!user) return;
-      
-      setIsLoading(true);
+    const initVerification = async () => {
       try {
-        console.log('Initializing verification system...');
+        setLoading(true);
         const result = await setupVerification();
         
         if (result.success) {
-          console.log('Verification system initialized successfully');
+          console.log('Verification setup successful:', result.message);
           setSetupComplete(true);
         } else {
-          console.error('Failed to initialize verification system:', result.message);
+          console.error('Verification setup failed:', result.message);
           toast({
             variant: 'destructive',
-            title: 'Setup Error',
-            description: 'There was a problem setting up the verification system. Please try again later.',
+            title: 'Setup Failed',
+            description: 'Could not set up verification. Please try again later.',
           });
           setSetupComplete(false);
         }
@@ -36,19 +31,19 @@ export const useVerificationSetup = () => {
         toast({
           variant: 'destructive',
           title: 'Setup Error',
-          description: 'There was a problem setting up the verification system. Please try again later.',
+          description: 'An unexpected error occurred during setup.',
         });
         setSetupComplete(false);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
-    }
-    
-    initVerificationSystem();
-  }, [user, toast]);
+    };
+
+    initVerification();
+  }, [toast]);
 
   return {
     setupComplete,
-    isLoading
+    loading
   };
 };

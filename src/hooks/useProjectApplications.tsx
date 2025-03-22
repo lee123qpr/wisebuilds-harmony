@@ -17,7 +17,6 @@ export const useProjectApplications = (projectId: string) => {
           .select(`
             id,
             created_at,
-            status,
             message,
             user_id,
             user:user_id (
@@ -40,7 +39,7 @@ export const useProjectApplications = (projectId: string) => {
 
         // Fetch verification status for each applicant
         const applicationsWithVerification = await Promise.all(
-          data.map(async (application) => {
+          (data || []).map(async (application) => {
             try {
               const { data: isVerified } = await supabase.rpc('is_user_verified', { 
                 check_user_id: application.user_id 
@@ -80,5 +79,6 @@ export const useProjectApplications = (projectId: string) => {
     }
   }, [projectId]);
 
-  return { applications, loading, error };
+  // Match the expected property names in the component
+  return { applications, isLoading: loading, error };
 };

@@ -42,6 +42,12 @@ export interface FreelancerInfo {
   verified?: boolean;
   id_verified?: boolean;
   location?: string | null;
+  // Add new properties to match what getFreelancerInfo returns
+  id?: string;
+  name?: string;
+  profilePhoto?: string;
+  jobTitle?: string;
+  isVerified?: boolean;
 }
 
 export interface ClientInfo {

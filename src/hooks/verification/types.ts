@@ -20,5 +20,9 @@ export interface UseVerificationResult {
   verificationData: VerificationData | null;
   isLoading: boolean;
   error: Error | null;
+  isUploading?: boolean;
+  isDeleting?: boolean;
+  uploadVerificationDocument?: (file: File) => Promise<string | boolean>;
+  deleteVerificationDocument?: () => Promise<boolean>;
   refreshVerificationStatus: () => Promise<void>;
 }

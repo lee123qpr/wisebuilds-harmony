@@ -1,64 +1,60 @@
 
 import { supabase } from '@/integrations/supabase/client';
 
-/**
- * Calls the Supabase Edge Function to set up verification infrastructure
- * @returns {Promise<{ success: boolean, error?: any }>}
- */
-export const setupVerificationSystem = async (): Promise<{ success: boolean; error?: any }> => {
+export const setupVerification = async (): Promise<{ success: boolean; message: string }> => {
   try {
-    // Create verification documents bucket
-    const { error: bucketError } = await supabase.storage.createBucket('verification_documents', {
-      public: false,
-      fileSizeLimit: 5242880, // 5MB
-      allowedMimeTypes: ['image/jpeg', 'image/png', 'application/pdf']
+    // Call the edge function to set up the verification system
+    const { data, error } = await supabase.functions.invoke('setup-verification');
+    
+    if (error) {
+      console.error('Error calling setup-verification function:', error);
+      return {
+        success: false,
+        message: `Failed to set up verification: ${error.message}`,
+      };
+    }
+    
+    return data || { success: true, message: 'Verification system set up successfully' };
+  } catch (error: any) {
+    console.error('Exception in setupVerification:', error);
+    return {
+      success: false,
+      message: `Exception in setupVerification: ${error.message}`,
+    };
+  }
+};
+
+// Additional helper to create bucket policies using RPC instead of direct API calls
+export const createBucketPolicies = async (bucketName: string): Promise<boolean> => {
+  try {
+    // Use RPC calls instead of direct policy creation
+    // For upload policy
+    await supabase.rpc('create_storage_policy', {
+      bucket_name: bucketName,
+      policy_name: 'Users can upload their own documents',
+      operation: 'INSERT',
+      policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`
     });
     
-    if (bucketError && !bucketError.message.includes('already exists')) {
-      console.error('Error creating verification bucket:', bucketError);
-      return { success: false, error: bucketError };
-    }
+    // For view policy
+    await supabase.rpc('create_storage_policy', {
+      bucket_name: bucketName,
+      policy_name: 'Users can view their own documents',
+      operation: 'SELECT',
+      policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`
+    });
     
-    // Add policies for the verification_documents bucket
-    try {
-      // Users can upload their own documents
-      await supabase.storage.from('verification_documents').createPolicy(
-        'Users can upload their own documents',
-        {
-          name: 'Users can upload their own documents',
-          definition: "(bucket_id = 'verification_documents' AND auth.uid()::text = SPLIT_PART(name, '/', 1))",
-          action: 'INSERT'
-        }
-      );
-      
-      // Users can view their own documents
-      await supabase.storage.from('verification_documents').createPolicy(
-        'Users can view their own documents',
-        {
-          name: 'Users can view their own documents',
-          definition: "(bucket_id = 'verification_documents' AND auth.uid()::text = SPLIT_PART(name, '/', 1))",
-          action: 'SELECT'
-        }
-      );
-      
-      // Users can delete their own documents
-      await supabase.storage.from('verification_documents').createPolicy(
-        'Users can delete their own documents',
-        {
-          name: 'Users can delete their own documents',
-          definition: "(bucket_id = 'verification_documents' AND auth.uid()::text = SPLIT_PART(name, '/', 1))",
-          action: 'DELETE'
-        }
-      );
-    } catch (policyError) {
-      console.log('Error creating policies (they may already exist):', policyError);
-      // Continue since this is not a critical failure
-    }
+    // For delete policy
+    await supabase.rpc('create_storage_policy', {
+      bucket_name: bucketName,
+      policy_name: 'Users can delete their own documents',
+      operation: 'DELETE',
+      policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`
+    });
     
-    console.log('Verification system setup complete');
-    return { success: true };
+    return true;
   } catch (error) {
-    console.error('Error in setupVerificationSystem:', error);
-    return { success: false, error };
+    console.error('Error creating bucket policies:', error);
+    return false;
   }
 };
