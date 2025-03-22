@@ -9,6 +9,7 @@ import type { VerificationData } from '../types';
  * Uploads verification document for a user
  */
 export const uploadVerificationDocument = async (
+  userId: string,
   file: File
 ): Promise<{ 
   success: boolean;
@@ -17,18 +18,6 @@ export const uploadVerificationDocument = async (
   verificationData?: VerificationData
 }> => {
   try {
-    // Get the current user's ID
-    const { data: { user } } = await supabase.auth.getUser();
-    
-    if (!user) {
-      console.error('No authenticated user found');
-      return { 
-        success: false, 
-        error: new Error('Authentication required') 
-      };
-    }
-    
-    const userId = user.id;
     console.log('Starting document upload for user:', userId);
     
     // Create a unique file path - make sure the userId is the first part of the path
@@ -63,7 +52,7 @@ export const uploadVerificationDocument = async (
       .from(bucketName)
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: true // Changed to true to overwrite existing files
+        upsert: false
       });
     
     if (uploadError) {
@@ -77,7 +66,7 @@ export const uploadVerificationDocument = async (
     console.log('File uploaded successfully, now updating verification record');
     
     // Check if the user already has a verification record
-    const existingVerification = await fetchVerificationStatus();
+    const existingVerification = await fetchVerificationStatus(userId);
     
     let updateError;
     
@@ -134,7 +123,7 @@ export const uploadVerificationDocument = async (
     
     // Get the updated verification data
     console.log('Fetching updated verification status');
-    const updatedVerification = await fetchVerificationStatus();
+    const updatedVerification = await fetchVerificationStatus(userId);
     
     console.log('Document upload complete. Verification status:', updatedVerification?.status);
     

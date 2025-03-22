@@ -1,43 +1,40 @@
-
 import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
 import { setupVerification } from './services';
 
 export const useVerificationSetup = () => {
-  const { user } = useAuth();
   const [setupComplete, setSetupComplete] = useState(false);
-  const [isSettingUp, setIsSettingUp] = useState(false);
-  const [setupError, setSetupError] = useState<Error | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const initSetup = async () => {
-      if (!user) return;
-      
-      setIsSettingUp(true);
       try {
-        console.log('Initializing verification setup');
+        setIsLoading(true);
+        console.log('Initializing verification system setup...');
+        
         const result = await setupVerification();
+        
         setSetupComplete(result.success);
+        console.log('Verification system setup complete:', result);
         
         if (!result.success) {
-          console.error('Setup failed:', result.message);
-          setSetupError(new Error(result.message));
+          setError(new Error(result.message));
         }
       } catch (error: any) {
-        console.error('Error in verification setup:', error);
-        setSetupError(error);
+        console.error('Error during verification setup:', error);
+        setError(error);
         setSetupComplete(false);
       } finally {
-        setIsSettingUp(false);
+        setIsLoading(false);
       }
     };
-    
+
     initSetup();
-  }, [user]);
+  }, []);
 
   return {
     setupComplete,
-    isSettingUp,
-    setupError
+    isLoading,
+    error
   };
 };

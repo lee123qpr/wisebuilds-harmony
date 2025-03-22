@@ -1,11 +1,13 @@
-
 import { useState } from 'react';
 import { useVerification } from './useVerification';
 import { useToast } from '@/hooks/use-toast';
 
-export const useDocumentDeletion = (onClose: () => void) => {
+export const useDocumentDeletion = (onDeleteSuccess?: () => void) => {
   const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
-  const { deleteVerificationDocument, refreshVerificationStatus, isDeleting } = useVerification();
+  const { 
+    deleteVerificationDocument = async () => false,
+    isDeleting = false
+  } = useVerification();
   const { toast } = useToast();
 
   const handleOpenDeleteConfirmation = () => {
@@ -18,34 +20,32 @@ export const useDocumentDeletion = (onClose: () => void) => {
 
   const handleDelete = async () => {
     try {
-      console.log('Deleting verification document');
       const result = await deleteVerificationDocument();
-      
-      if (!result) {
-        throw new Error("Failed to delete document");
+      if (result) {
+        setConfirmDeleteOpen(false);
+        toast({
+          title: 'Document deleted',
+          description: 'Your ID document has been deleted successfully.',
+        });
+        
+        // Call the success callback if provided
+        if (onDeleteSuccess) {
+          onDeleteSuccess();
+        }
       }
-      
+    } catch (error) {
+      console.error('Error during document deletion:', error);
       toast({
-        title: "Document deleted",
-        description: "Your ID verification document has been deleted. You can submit a new one anytime.",
-      });
-      
-      await refreshVerificationStatus();
-      setConfirmDeleteOpen(false);
-      onClose();
-    } catch (error: any) {
-      console.error('Error deleting document:', error);
-      
-      toast({
-        title: "Delete failed",
-        description: error.message || "There was an error deleting your document. Please try again.",
-        variant: "destructive",
+        variant: 'destructive',
+        title: 'Delete failed',
+        description: 'An error occurred while deleting your document. Please try again.',
       });
     }
   };
 
   return {
     confirmDeleteOpen,
+    isDeleting,
     handleOpenDeleteConfirmation,
     handleCloseDeleteConfirmation,
     handleDelete
