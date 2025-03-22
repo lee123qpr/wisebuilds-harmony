@@ -21,25 +21,41 @@ export const useProjectSubmit = (
     
     const uploadPromises = selectedFiles.map(async (file) => {
       const fileExt = file.name.split('.').pop();
-      const filePath = `${user.id}/${Date.now()}.${fileExt}`;
+      // Generate a unique filename to avoid collisions
+      const fileName = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}.${fileExt}`;
       
       const { data, error } = await supabase.storage
         .from('project-documents')
-        .upload(filePath, file);
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
       
       if (error) {
+        console.error('Upload error:', error);
         throw error;
       }
+      
+      // Get the public URL for the file
+      const { data: { publicUrl } } = supabase.storage
+        .from('project-documents')
+        .getPublicUrl(data.path);
       
       return {
         path: data.path,
         name: file.name,
         size: file.size,
-        type: file.type
+        type: file.type,
+        url: publicUrl
       };
     });
     
-    return Promise.all(uploadPromises);
+    try {
+      return await Promise.all(uploadPromises);
+    } catch (error) {
+      console.error('Failed to upload one or more files:', error);
+      throw error;
+    }
   };
 
   const onSubmit = async (data: ProjectFormValues) => {
@@ -53,6 +69,7 @@ export const useProjectSubmit = (
       let documentReferences = [];
       try {
         documentReferences = await uploadFilesToSupabase();
+        console.log('Uploaded documents:', documentReferences);
       } catch (uploadError) {
         console.error('Error uploading files:', uploadError);
         toast({

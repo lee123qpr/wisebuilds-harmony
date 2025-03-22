@@ -1,24 +1,24 @@
 
-import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
+import { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
 
 export interface VerificationData {
   id: string;
   user_id: string;
-  verification_status: VerificationStatus;
-  id_document_path: string | null;
-  submitted_at: string | null;
-  verified_at: string | null;
+  document_path: string | null;
+  document_name: string | null;
+  document_type: string | null;
+  document_size: number | null;
+  status: VerificationStatus;
   admin_notes: string | null;
+  submitted_at: string | null;
+  reviewed_at: string | null;
 }
 
 export interface UseVerificationResult {
-  verificationData: VerificationData | null;
-  verificationStatus: VerificationStatus;
   isVerified: boolean;
+  verificationStatus: VerificationStatus;
+  verificationData: VerificationData | null;
   isLoading: boolean;
-  isUploading: boolean;
-  isDeleting: boolean;
-  uploadVerificationDocument: (file: File) => Promise<string | boolean | null>;
-  deleteVerificationDocument: () => Promise<boolean>;
-  refreshVerificationStatus: () => Promise<VerificationData | null>;
+  error: Error | null;
+  refreshVerificationStatus: () => Promise<void>;
 }

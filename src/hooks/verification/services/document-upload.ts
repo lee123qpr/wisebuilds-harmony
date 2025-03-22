@@ -50,11 +50,14 @@ export const uploadVerificationDocument = async (
       const { error } = await supabase
         .from('freelancer_verification')
         .update({
-          id_document_path: filePath,
-          verification_status: 'pending',
+          document_path: filePath,
+          document_name: file.name,
+          document_size: file.size,
+          document_type: file.type,
+          status: 'pending',
           submitted_at: new Date().toISOString(),
           admin_notes: null,
-          verified_at: null
+          reviewed_at: null
         })
         .eq('user_id', userId);
       
@@ -66,8 +69,11 @@ export const uploadVerificationDocument = async (
         .from('freelancer_verification')
         .insert({
           user_id: userId,
-          id_document_path: filePath,
-          verification_status: 'pending',
+          document_path: filePath,
+          document_name: file.name,
+          document_size: file.size,
+          document_type: file.type,
+          status: 'pending',
           submitted_at: new Date().toISOString()
         });
       
@@ -93,7 +99,7 @@ export const uploadVerificationDocument = async (
     console.log('Fetching updated verification status');
     const updatedVerification = await fetchVerificationStatus(userId);
     
-    console.log('Document upload complete. Verification status:', updatedVerification?.verification_status);
+    console.log('Document upload complete. Verification status:', updatedVerification?.status);
     
     return { 
       success: true, 

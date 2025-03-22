@@ -1,121 +1,51 @@
 
 import { useState, useEffect } from 'react';
-import { FreelancerProfile } from '@/types/applications';
+import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
 
-export const useFreelancerProfileData = (freelancerId: string | undefined) => {
-  const [profile, setProfile] = useState<FreelancerProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
+export const useFreelancerProfileData = () => {
+  const [profileData, setProfileData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [isVerified, setIsVerified] = useState(false);
+  const { freelancerId } = useParams();
 
   useEffect(() => {
     const fetchFreelancerProfile = async () => {
-      if (!freelancerId) return;
-      
-      setIsLoading(true);
       try {
-        // Get user data via edge function
-        const { data: userData, error: userError } = await supabase.functions.invoke(
-          'get-user-profile',
-          {
-            body: { userId: freelancerId }
-          }
-        );
+        setLoading(true);
         
-        if (userError) throw userError;
+        // Fetch the freelancer profile data
+        const { data: profileData, error: profileError } = await supabase
+          .from('freelancer_profiles')
+          .select('*')
+          .eq('id', freelancerId)
+          .maybeSingle();
         
-        // Get verification status
-        const { data: verificationData, error: verificationError } = await supabase
-          .rpc('is_user_verified', { user_id: freelancerId });
+        if (profileError) throw profileError;
         
-        if (verificationError) {
-          console.error('Error checking verification status:', verificationError);
-        }
+        // Check if the freelancer is verified
+        const { data: isVerifiedData, error: verificationError } = await supabase
+          .rpc('is_user_verified', { check_user_id: freelancerId });
         
-        // Extract user metadata
-        const userMetadata = userData?.user_metadata || {};
-        const email = userData?.email || '';
-        const firstName = userMetadata.first_name || userMetadata.firstname || '';
-        const lastName = userMetadata.last_name || userMetadata.lastname || '';
-        const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
-        const displayName = userMetadata.full_name || 
-          (firstName && lastName ? `${firstName} ${lastName}` : 'Anonymous Freelancer');
-        const jobTitle = userMetadata.job_title || userMetadata.profession || '';
-        const location = userMetadata.location || '';
-        const bio = userMetadata.bio || '';
-        const skills = userMetadata.skills || [];
-        const hourlyRate = userMetadata.hourly_rate || '';
-        const dayRate = userMetadata.day_rate || '';
-        const availability = userMetadata.availability || '';
-        const experience = userMetadata.experience || '';
-        const website = userMetadata.website || '';
-        const qualifications = userMetadata.qualifications || [];
-        const accreditations = userMetadata.accreditations || [];
-        const previousEmployers = userMetadata.previous_employers || [];
-        const indemnityInsurance = userMetadata.indemnity_insurance || { hasInsurance: false };
-        const previousWork = userMetadata.previous_work || [];
+        if (verificationError) throw verificationError;
         
-        // Get any reviews for this user
-        const { data: reviews, error: reviewsError } = await supabase
-          .from('client_reviews')
-          .select('rating')
-          .eq('reviewer_id', freelancerId);
-        
-        if (reviewsError) {
-          console.error('Error fetching reviews:', reviewsError);
-        }
-        
-        // Calculate average rating
-        let rating = null;
-        if (reviews && reviews.length > 0) {
-          const sum = reviews.reduce((acc, review) => acc + review.rating, 0);
-          rating = sum / reviews.length;
-        }
-        
-        setProfile({
-          id: freelancerId,
-          email: email,
-          verified: verificationData || false,
-          email_verified: userData?.email_confirmed || false,
-          first_name: firstName,
-          last_name: lastName,
-          display_name: displayName,
-          phone_number: phoneNumber,
-          job_title: jobTitle,
-          location: location,
-          bio: bio,
-          skills: skills,
-          hourly_rate: hourlyRate,
-          day_rate: dayRate,
-          availability: availability,
-          experience: experience,
-          website: website,
-          qualifications: qualifications,
-          accreditations: accreditations,
-          previous_employers: previousEmployers,
-          indemnity_insurance: indemnityInsurance,
-          previousWork: previousWork,
-          profile_photo: userMetadata.profile_image_url || userMetadata.avatar_url,
-          rating: rating,
-          reviews_count: reviews?.length || 0,
-          member_since: userData?.user?.created_at || userMetadata.created_at,
-          jobs_completed: userMetadata.jobs_completed || 0
-        });
-      } catch (error: any) {
-        console.error('Error fetching freelancer profile:', error);
-        toast({
-          title: 'Error loading profile',
-          description: error.message || 'Could not load freelancer profile',
-          variant: 'destructive',
-        });
+        setProfileData(profileData);
+        setIsVerified(isVerifiedData || false);
+        setError(null);
+      } catch (err) {
+        console.error('Error fetching freelancer data:', err);
+        setError(err);
+        setProfileData(null);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
-    
-    fetchFreelancerProfile();
-  }, [freelancerId, toast]);
 
-  return { profile, isLoading };
+    if (freelancerId) {
+      fetchFreelancerProfile();
+    }
+  }, [freelancerId]);
+
+  return { profileData, loading, error, isVerified };
 };

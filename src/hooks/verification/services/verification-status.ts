@@ -7,8 +7,7 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
   try {
     console.log('Fetching verification status for user:', userId);
     
-    // Instead of accessing the users table directly (which causes permission denied),
-    // we'll just query the freelancer_verification table
+    // Query the freelancer_verification table
     const { data, error } = await supabase
       .from('freelancer_verification')
       .select('*')
@@ -27,18 +26,21 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       return null;
     }
     
-    // Ensure verification_status is a valid VerificationStatus type
-    const verificationStatus = data.verification_status as VerificationStatus;
+    // Ensure status is a valid VerificationStatus type
+    const verificationStatus = data.status as VerificationStatus;
     
     // Return typed verification data
     return {
       id: data.id,
       user_id: data.user_id,
-      id_document_path: data.id_document_path,
-      verification_status: verificationStatus,
+      document_path: data.document_path,
+      document_name: data.document_name,
+      document_type: data.document_type,
+      document_size: data.document_size,
+      status: verificationStatus,
       admin_notes: data.admin_notes,
       submitted_at: data.submitted_at,
-      verified_at: data.verified_at
+      reviewed_at: data.reviewed_at
     };
   } catch (error) {
     console.error('Error in fetchVerificationStatus:', error);
