@@ -70,8 +70,8 @@ export const uploadVerificationDocument = async (
     
     console.log('Generated file path:', filePath);
     
-    // First check if the bucket exists
-    const { data: bucketData, error: bucketError } = await supabase.storage
+    // First check if the verification_documents bucket exists
+    const { data: buckets, error: bucketError } = await supabase.storage
       .getBucket('verification_documents');
     
     if (bucketError) {
@@ -85,8 +85,6 @@ export const uploadVerificationDocument = async (
       }
       
       console.log('Verification system setup complete');
-    } else {
-      console.log('Verification bucket exists');
     }
     
     // Try to upload the file
