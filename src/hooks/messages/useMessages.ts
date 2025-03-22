@@ -4,7 +4,8 @@ import { Conversation, Message, MessageAttachment } from '@/types/messaging';
 import { fetchMessages, markMessagesAsRead, sendMessage, uploadMessageAttachment } from '@/services/messages';
 import { updateConversationTime } from '@/services/conversations';
 import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/components/ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
+import { useNotifications } from '@/context/NotificationsContext';
 
 export const useMessages = (selectedConversation: Conversation | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -15,6 +16,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
   const { toast } = useToast();
+  const { addNotification } = useNotifications();
 
   useEffect(() => {
     const getCurrentUser = async () => {
@@ -61,6 +63,21 @@ export const useMessages = (selectedConversation: Conversation | null) => {
           
           if (newMsg.sender_id !== currentUserId && currentUserId) {
             markMessagesAsRead([newMsg.id]);
+            
+            // Add notification for message if it's from someone else
+            const senderName = selectedConversation.freelancer_id === newMsg.sender_id
+              ? selectedConversation.freelancer_name
+              : selectedConversation.client_name;
+              
+            addNotification({
+              type: 'message',
+              title: 'New Message',
+              description: `${senderName} sent you a message`,
+              data: {
+                conversation_id: selectedConversation.id,
+                message_id: newMsg.id
+              }
+            });
           }
         }
       )
@@ -69,7 +86,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     return () => {
       messagesSubscription.unsubscribe();
     };
-  }, [selectedConversation, currentUserId]);
+  }, [selectedConversation, currentUserId, addNotification]);
 
   const handleFileSelect = useCallback((files: FileList | null) => {
     if (!files) return;

@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { useAuth } from './AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,7 +12,8 @@ export type NotificationType =
   | 'review'
   | 'application_viewed'
   | 'verification_status'
-  | 'payment';
+  | 'payment'
+  | 'credit_update'; // New type for credit balance updates
 
 export interface Notification {
   id: string;
@@ -29,12 +31,13 @@ interface NotificationsContextType {
   markAsRead: (id: string) => void;
   markAllAsRead: () => void;
   isLoading: boolean;
+  addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => void;
 }
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);
 
-// Mock notifications for testing
-const MOCK_NOTIFICATIONS: Notification[] = [
+// Initial mock notifications for testing
+const INITIAL_NOTIFICATIONS: Notification[] = [
   {
     id: '1',
     type: 'message',
@@ -50,22 +53,6 @@ const MOCK_NOTIFICATIONS: Notification[] = [
     description: 'A new project matching your skills is available',
     read: false,
     created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString(), // 2 hours ago
-  },
-  {
-    id: '3',
-    type: 'hired',
-    title: 'You Were Hired!',
-    description: 'Congratulations! You were hired for the Kitchen Renovation project',
-    read: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString(), // 1 day ago
-  },
-  {
-    id: '4',
-    type: 'review',
-    title: 'New Review',
-    description: 'Michael Brown left you a 5-star review',
-    read: true,
-    created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString(), // 2 days ago
   }
 ];
 
@@ -88,8 +75,8 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
       setIsLoading(true);
       try {
         // In a real implementation, this would fetch from Supabase
-        // For now, we'll use mock data
-        setNotifications(MOCK_NOTIFICATIONS);
+        // For now, we'll continue using mock data until a notifications table is created
+        setNotifications(INITIAL_NOTIFICATIONS);
       } catch (error) {
         console.error('Error fetching notifications:', error);
       } finally {
@@ -99,37 +86,216 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
 
     fetchNotifications();
 
+    // Setup real-time listeners for various notification sources
+    const channels = setupRealTimeListeners(user.id);
+
     return () => {
-      // No need to clean up interval anymore
+      // Clean up all channels when component unmounts
+      channels.forEach(channel => {
+        if (channel) {
+          supabase.removeChannel(channel);
+        }
+      });
     };
   }, [user, toast]);
 
-  const getNotificationTitle = (type: NotificationType): string => {
-    switch (type) {
-      case 'message': return 'New Message';
-      case 'lead': return 'New Lead Available';
-      case 'hired': return 'You Were Hired!';
-      case 'project_complete': return 'Project Completed';
-      case 'review': return 'New Review';
-      case 'application_viewed': return 'Application Viewed';
-      case 'verification_status': return 'Verification Update';
-      case 'payment': return 'Payment Received';
-      default: return 'New Notification';
-    }
+  const setupRealTimeListeners = (userId: string) => {
+    const channels = [];
+
+    // 1. Listen for new messages
+    const messagesChannel = supabase
+      .channel('public:messages')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'messages',
+          filter: `receiver_id=eq.${userId}`
+        },
+        (payload) => {
+          console.log('New message received:', payload);
+          const message = payload.new;
+          const notification = {
+            id: `msg_${message.id}`,
+            type: 'message' as NotificationType,
+            title: 'New Message',
+            description: 'You have received a new message',
+            read: false,
+            created_at: new Date().toISOString(),
+            data: message
+          };
+          
+          addNotificationWithToast(notification);
+        }
+      )
+      .subscribe();
+    
+    channels.push(messagesChannel);
+
+    // 2. Listen for quote status changes (hired notifications)
+    const quotesChannel = supabase
+      .channel('public:quotes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'quotes',
+          filter: `freelancer_id=eq.${userId}`,
+        },
+        (payload) => {
+          const oldStatus = payload.old?.status;
+          const newStatus = payload.new?.status;
+          
+          // Only notify on status change to 'accepted'
+          if (oldStatus !== 'accepted' && newStatus === 'accepted') {
+            const notification = {
+              id: `quote_${payload.new.id}`,
+              type: 'hired' as NotificationType,
+              title: 'You Were Hired!',
+              description: 'A client has accepted your quote. Congratulations!',
+              read: false,
+              created_at: new Date().toISOString(),
+              data: payload.new
+            };
+            
+            addNotificationWithToast(notification);
+          }
+        }
+      )
+      .subscribe();
+    
+    channels.push(quotesChannel);
+
+    // 3. Listen for new projects matching freelancer lead settings
+    const projectsChannel = supabase
+      .channel('public:projects')
+      .on(
+        'postgres_changes',
+        {
+          event: 'INSERT',
+          schema: 'public',
+          table: 'projects',
+        },
+        (payload) => {
+          // In a full implementation, we would check if this project matches 
+          // the user's lead settings before notifying
+          // For now, we'll notify for all new projects
+          const notification = {
+            id: `project_${payload.new.id}`,
+            type: 'lead' as NotificationType,
+            title: 'New Lead Available',
+            description: 'A new project matching your criteria has been posted',
+            read: false,
+            created_at: new Date().toISOString(),
+            data: payload.new
+          };
+          
+          addNotificationWithToast(notification);
+        }
+      )
+      .subscribe();
+    
+    channels.push(projectsChannel);
+
+    // 4. Listen for credit balance updates
+    const creditsChannel = supabase
+      .channel('public:freelancer_credits')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'freelancer_credits',
+          filter: `user_id=eq.${userId}`,
+        },
+        (payload) => {
+          const oldBalance = payload.old?.credit_balance || 0;
+          const newBalance = payload.new?.credit_balance || 0;
+          
+          // Only notify when balance increases (credits added)
+          if (newBalance > oldBalance) {
+            const addedCredits = newBalance - oldBalance;
+            const notification = {
+              id: `credits_${Date.now()}`,
+              type: 'credit_update' as NotificationType,
+              title: 'Credits Added',
+              description: `${addedCredits} credits have been added to your account`,
+              read: false,
+              created_at: new Date().toISOString(),
+              data: { 
+                oldBalance, 
+                newBalance, 
+                difference: addedCredits 
+              }
+            };
+            
+            addNotificationWithToast(notification);
+          }
+        }
+      )
+      .subscribe();
+    
+    channels.push(creditsChannel);
+
+    // 5. Listen for credit transactions
+    const transactionsChannel = supabase
+      .channel('public:credit_transactions')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'credit_transactions',
+          filter: `user_id=eq.${userId} AND status=eq.completed`,
+        },
+        (payload) => {
+          // Only notify when a transaction is updated to completed
+          if (payload.old?.status === 'pending' && payload.new?.status === 'completed') {
+            const notification = {
+              id: `payment_${payload.new.id}`,
+              type: 'payment' as NotificationType,
+              title: 'Payment Completed',
+              description: `Your credit purchase of ${payload.new.credits_purchased} credits has been completed`,
+              read: false,
+              created_at: new Date().toISOString(),
+              data: payload.new
+            };
+            
+            addNotificationWithToast(notification);
+          }
+        }
+      )
+      .subscribe();
+    
+    channels.push(transactionsChannel);
+
+    // Return all channels for cleanup
+    return channels;
   };
 
-  const getNotificationDescription = (type: NotificationType): string => {
-    switch (type) {
-      case 'message': return 'You have received a new message.';
-      case 'lead': return 'A new project matching your settings is available.';
-      case 'hired': return 'Congratulations! You were hired for a project.';
-      case 'project_complete': return 'A project has been marked as complete.';
-      case 'review': return 'Someone left you a new review.';
-      case 'application_viewed': return 'A client viewed your application.';
-      case 'verification_status': return 'There is an update to your verification status.';
-      case 'payment': return 'You have received a payment.';
-      default: return 'You have a new notification.';
-    }
+  const addNotificationWithToast = (notification: Notification) => {
+    // Add to notifications state
+    setNotifications(prev => [notification, ...prev]);
+    
+    // Show toast notification
+    toast({
+      title: notification.title,
+      description: notification.description,
+      variant: "default"
+    });
+  };
+
+  const addNotification = (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+    const newNotification: Notification = {
+      ...notificationData,
+      id: `custom_${Date.now()}`,
+      created_at: new Date().toISOString(),
+      read: false
+    };
+    
+    setNotifications(prev => [newNotification, ...prev]);
   };
 
   const markAsRead = (id: string) => {
@@ -155,7 +321,8 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
         unreadCount, 
         markAsRead, 
         markAllAsRead,
-        isLoading
+        isLoading,
+        addNotification
       }}
     >
       {children}

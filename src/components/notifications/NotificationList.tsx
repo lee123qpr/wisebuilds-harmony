@@ -2,7 +2,7 @@
 import React from 'react';
 import { useNotifications, NotificationType } from '@/context/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
-import { Bell, Mail, Package, Star, Briefcase, Eye, FileCheck, AlertCircle, DollarSign } from 'lucide-react';
+import { Bell, Mail, Package, Star, Briefcase, Eye, FileCheck, AlertCircle, DollarSign, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -30,6 +30,8 @@ const NotificationList = () => {
         return <AlertCircle className="h-4 w-4 text-green-500" />;
       case 'payment':
         return <DollarSign className="h-4 w-4 text-cyan-500" />;
+      case 'credit_update':
+        return <CreditCard className="h-4 w-4 text-green-600" />;
       default:
         return <Bell className="h-4 w-4 text-gray-500" />;
     }
@@ -41,7 +43,15 @@ const NotificationList = () => {
     }
     
     // Handle navigation based on notification type
-    if (notification.link) {
+    if (notification.type === 'message' && notification.data?.conversation_id) {
+      navigate(`/dashboard/freelancer/messages?conversation=${notification.data.conversation_id}`);
+    } else if (notification.type === 'hired' && notification.data?.project_id) {
+      navigate(`/dashboard/freelancer/quotes`);
+    } else if (notification.type === 'lead' && notification.data?.id) {
+      navigate(`/projects/${notification.data.id}`);
+    } else if (notification.type === 'credit_update' || notification.type === 'payment') {
+      navigate('/dashboard/freelancer/credits');
+    } else if (notification.link) {
       navigate(notification.link);
     }
   };

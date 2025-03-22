@@ -1,7 +1,9 @@
+
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { CreditTransaction } from './types';
+import { useEffect } from 'react';
 
 export const useTransactions = () => {
   const { user } = useAuth();
@@ -72,6 +74,34 @@ export const useTransactions = () => {
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
+
+  // Set up real-time subscription for transactions
+  useEffect(() => {
+    if (!user) return;
+
+    // Subscribe to changes in the credit_transactions table
+    const channel = supabase
+      .channel('credit_transactions_channel')
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'credit_transactions',
+          filter: `user_id=eq.${user.id}`
+        },
+        () => {
+          // Refetch transactions when any change occurs
+          refetchTransactions();
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, refetchTransactions]);
 
   const refetchTransactionsData = async () => {
     if (!user) return null;
