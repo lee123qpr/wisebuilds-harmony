@@ -55,7 +55,7 @@ const updateQuoteCompletionStatus = async (
   console.log(`Setting ${updateField} to true for quote ${quoteId}`);
   
   try {
-    // Update the quote with the RPC approach that explicitly includes the userId
+    // Call the stored procedure using `.rpc()` method
     const { data, error } = await supabase.rpc('update_project_completion_status', {
       p_quote_id: quoteId,
       p_project_id: projectId,

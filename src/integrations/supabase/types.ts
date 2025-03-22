@@ -751,6 +751,15 @@ export type Database = {
         Args: Record<PropertyKey, never>
         Returns: undefined
       }
+      update_project_completion_status: {
+        Args: {
+          p_quote_id: string
+          p_project_id: string
+          p_user_id: string
+          p_is_freelancer: boolean
+        }
+        Returns: Json
+      }
       update_quote_status: {
         Args: {
           quote_id: string
