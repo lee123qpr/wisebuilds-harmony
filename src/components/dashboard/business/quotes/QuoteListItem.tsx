@@ -10,6 +10,7 @@ import { QuoteWithFreelancer } from '@/types/quotes';
 import ProjectCompletionStatus from '@/components/projects/ProjectCompletionStatus';
 import { cn } from '@/lib/utils';
 import { formatRole } from '@/utils/projectFormatters';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface QuoteListItemProps {
   quote: QuoteWithFreelancer;
@@ -28,6 +29,7 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                         : 'Untitled Project';
   
   console.log('Quote project data:', quote.project);
+  console.log('Quote freelancer data:', quote.freelancer_profile);
   
   // Safely access role with proper fallback
   const role = quote.project?.role || 'Not specified';
@@ -92,6 +94,17 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
       
       <CardContent>
         <div className="space-y-4">
+          <div className="flex items-center gap-3 mb-4">
+            <Avatar className="h-10 w-10">
+              <AvatarImage src={quote.freelancer_profile?.profile_photo} alt={freelancerName} />
+              <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{freelancerName}</p>
+              <p className="text-sm text-muted-foreground">{quote.freelancer_profile?.job_title || 'Freelancer'}</p>
+            </div>
+          </div>
+          
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />

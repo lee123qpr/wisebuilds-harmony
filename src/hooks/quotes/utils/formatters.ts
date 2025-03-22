@@ -20,9 +20,10 @@ export const formatQuotesWithProfiles = (
     const freelancerProfile = profileMap[quote.freelancer_id] || {};
     
     console.log('Formatting quote for freelancer:', quote.freelancer_id, 'with profile:', freelancerProfile);
+    console.log('Project data in formatter:', quote.project || quote.projects);
     
-    // Extract project data if available
-    const project = quote.project || {};
+    // Extract project data - account for both 'project' and 'projects' field naming from different queries
+    const project = quote.project || quote.projects || {};
     
     return {
       ...quote,
@@ -33,6 +34,7 @@ export const formatQuotesWithProfiles = (
         title: project.title || 'Untitled Project',
         budget: project.budget || '',
         status: project.status || '',
+        role: project.role || 'Not specified',
       },
       freelancer_profile: {
         first_name: freelancerProfile.first_name || '',

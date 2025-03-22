@@ -73,7 +73,7 @@ export const fetchFreelancerProfiles = async (freelancerIds: string[]) => {
   
   const { data: freelancerProfiles, error: profilesError } = await supabase
     .from('freelancer_profiles')
-    .select('id, first_name, last_name, display_name, profile_photo, job_title, rating')
+    .select('id, first_name, last_name, display_name, profile_photo, job_title, rating, location, verified')
     .in('id', uniqueFreelancerIds);
   
   if (profilesError) {

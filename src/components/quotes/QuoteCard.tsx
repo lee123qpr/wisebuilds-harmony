@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, Clock, DollarSign, Eye } from 'lucide-react';
+import { Calendar, Clock, DollarSign, Eye, User } from 'lucide-react';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useNavigate } from 'react-router-dom';
@@ -25,6 +25,9 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
   
   // Format the created date
   const formattedDate = format(new Date(quote.created_at), 'MMM d, yyyy');
+  
+  console.log('Quote data in QuoteCard:', quote);
+  console.log('Project role from quote:', quote.project?.role);
   
   // Get project role if available - with proper fallback
   const role = quote.project?.role || 'Not specified';
@@ -98,7 +101,7 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
                     <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
                   }
                 </h3>
-                <p className="text-sm text-muted-foreground">{freelancer.job_title || 'Freelancer'}</p>
+                <p className="text-sm text-muted-foreground">{freelancer.job_title || freelancerInfo?.job_title || 'Freelancer'}</p>
               </div>
             </>
           )}
@@ -114,11 +117,10 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
               <span>Submitted on {formattedDate}</span>
             </div>
             
-            {quote.project && (
-              <p className="text-sm text-muted-foreground">
-                Looking for: <span className="font-medium text-primary">{roleFormatted}</span>
-              </p>
-            )}
+            <div className="flex items-center gap-2 text-sm text-primary font-medium">
+              <User className="h-4 w-4" />
+              <span>Looking for: {roleFormatted}</span>
+            </div>
           </div>
           
           <div className="line-clamp-3 text-sm">
