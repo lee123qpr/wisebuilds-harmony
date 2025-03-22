@@ -40,7 +40,7 @@ export const usePurchaseCredits = () => {
       
       console.log('Checkout session response:', response.data);
       
-      // Redirect to Stripe Checkout
+      // Redirect to Stripe Checkout using the session URL directly
       if (response.data && response.data.sessionUrl) {
         console.log('Redirecting to Stripe checkout:', response.data.sessionUrl);
         window.location.href = response.data.sessionUrl;
