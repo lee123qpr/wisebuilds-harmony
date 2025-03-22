@@ -1,6 +1,6 @@
 
 import React, { createContext, useContext } from 'react';
-import { useNotificationsService } from '@/hooks/useNotificationsService';
+import { useNotificationsService } from '@/hooks/notifications';
 import { Notification, NotificationType, NotificationsContextType } from '@/services/notifications/types';
 
 const NotificationsContext = createContext<NotificationsContextType | undefined>(undefined);

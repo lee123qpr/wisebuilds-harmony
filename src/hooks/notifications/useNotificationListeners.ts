@@ -1,27 +1,23 @@
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
+import { useEffect } from 'react';
+import { User } from '@supabase/supabase-js';
+import { RealtimeChannel } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { 
   fetchNotifications,
-  markNotificationAsRead,
-  markAllNotificationsAsRead,
-  addNotificationToDatabase,
+  setupRealTimeListeners,
   handleNewMessage,
-  setupRealTimeListeners
+  addNotificationToDatabase
 } from '@/services/notifications';
 import { Notification, NotificationType } from '@/services/notifications/types';
-import { useToast } from './use-toast';
-import { RealtimeChannel } from '@supabase/supabase-js';
 
-export const useNotificationsService = () => {
-  const { user } = useAuth();
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-
-  const unreadCount = notifications.filter(n => !n.read).length;
-
+export const useNotificationListeners = (
+  user: User | null,
+  setNotifications: React.Dispatch<React.SetStateAction<Notification[]>>,
+  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>,
+  addNotificationToState: (notification: Notification) => void,
+  updateNotificationInState: (notification: Notification) => void
+) => {
   useEffect(() => {
     if (!user) {
       setNotifications([]);
@@ -46,23 +42,11 @@ export const useNotificationsService = () => {
           userId: user.id,
           onNewNotification: (notification) => {
             console.log('New notification received:', notification);
-            setNotifications(prev => [notification, ...prev]);
-            
-            toast({
-              title: notification.title,
-              description: notification.description,
-              variant: "default"
-            });
+            addNotificationToState(notification);
           },
           onNotificationUpdate: (updatedNotification) => {
             console.log('Notification updated:', updatedNotification);
-            setNotifications(prev => 
-              prev.map(notification => 
-                notification.id === updatedNotification.id 
-                  ? updatedNotification 
-                  : notification
-              )
-            );
+            updateNotificationInState(updatedNotification);
           },
           onNewMessage: (message) => {
             console.log('New message received in notification service:', message);
@@ -179,52 +163,7 @@ export const useNotificationsService = () => {
         }
       });
     };
-  }, [user, toast]);
-
-  const markAsRead = async (id: string) => {
-    if (!user) return;
-    
-    // First update the local state for immediate feedback
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, read: true } 
-          : notification
-      )
-    );
-    
-    // Then update the database
-    const success = await markNotificationAsRead(id, user.id);
-    
-    if (!success) {
-      // Revert the local change if DB update failed
-      setNotifications(prev => 
-        prev.map(notification => 
-          notification.id === id 
-            ? { ...notification, read: false } 
-            : notification
-        )
-      );
-    }
-  };
-
-  const markAllAsRead = async () => {
-    if (!user) return;
-    
-    // First update the local state for immediate feedback
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
-    
-    // Then update the database
-    const success = await markAllNotificationsAsRead(user.id);
-    
-    if (!success) {
-      // Revert by fetching fresh data
-      const data = await fetchNotifications(user.id);
-      setNotifications(data);
-    }
-  };
+  }, [user, setNotifications, setIsLoading, addNotificationToState, updateNotificationInState]);
 
   const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
     if (!user) return;
@@ -233,12 +172,5 @@ export const useNotificationsService = () => {
     // We don't need to manually update the state as the realtime listener will handle it
   };
 
-  return {
-    notifications,
-    unreadCount,
-    markAsRead,
-    markAllAsRead,
-    isLoading,
-    addNotification
-  };
+  return { addNotification };
 };
