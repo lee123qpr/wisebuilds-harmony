@@ -1,4 +1,3 @@
-
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -33,12 +32,9 @@ export const useTransactions = () => {
         // Make sure we have a valid transaction with a status
         if (!tx || tx.status !== 'pending') return false;
         
-        // Use created_at if updated_at is not available
-        // Need to use optional chaining since updated_at might not exist
-        const lastUpdateTime = tx.created_at;
-        if (tx.updated_at) {
-          lastUpdateTime = tx.updated_at;
-        }
+        // Get the timestamp to use for checking staleness
+        // Using created_at as default if updated_at doesn't exist
+        let lastUpdateTime = tx.created_at;
         
         // Check if the last update was more than 5 minutes ago
         return new Date(lastUpdateTime).getTime() + 5 * 60 * 1000 < Date.now();
