@@ -9,6 +9,7 @@ export {
   uploadVerificationDocument,
   deleteVerificationDocument,
   isUserVerified,
-  getUserVerificationStatus
+  getUserVerificationStatus,
+  isUserFreelancer
 } from './services';
 export type { VerificationData, UseVerificationResult } from './types';

@@ -9,5 +9,6 @@ export {
   deleteVerificationDocument,
   mapDatabaseStatusToVerificationStatus,
   isUserVerified,
-  getUserVerificationStatus
+  getUserVerificationStatus,
+  isUserFreelancer
 } from './services';
