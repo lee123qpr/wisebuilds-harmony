@@ -14,10 +14,10 @@ interface MessageInputProps {
   onKeyDown: (e: React.KeyboardEvent) => void;
   isSending: boolean;
   onFileSelect?: (files: FileList | null) => void;
-  attachments?: File[];
+  attachments?: MessageAttachment[];
   onRemoveAttachment?: (index: number) => void;
   isUploading?: boolean;
-  uploadProgress?: {[key: string]: number};
+  uploadProgress?: number;
 }
 
 const MessageInput: React.FC<MessageInputProps> = ({
@@ -30,7 +30,7 @@ const MessageInput: React.FC<MessageInputProps> = ({
   attachments = [],
   onRemoveAttachment,
   isUploading = false,
-  uploadProgress = {}
+  uploadProgress = 0
 }) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showFileTip, setShowFileTip] = useState(false);
@@ -40,11 +40,11 @@ const MessageInput: React.FC<MessageInputProps> = ({
     setShowFileTip(true);
   };
 
-  const getFileIcon = (file: File) => {
-    if (file.type.startsWith('image/')) return <Image className="h-4 w-4 text-blue-500" />;
-    if (file.type.includes('pdf')) return <FileText className="h-4 w-4 text-red-500" />;
-    if (file.type.includes('word') || file.type.includes('document')) return <FileText className="h-4 w-4 text-blue-700" />;
-    if (file.type.includes('excel') || file.type.includes('spreadsheet') || file.name.endsWith('.xlsx') || file.name.endsWith('.xls')) 
+  const getFileIcon = (attachment: MessageAttachment) => {
+    if (attachment.type.startsWith('image/')) return <Image className="h-4 w-4 text-blue-500" />;
+    if (attachment.type.includes('pdf')) return <FileText className="h-4 w-4 text-red-500" />;
+    if (attachment.type.includes('word') || attachment.type.includes('document')) return <FileText className="h-4 w-4 text-blue-700" />;
+    if (attachment.type.includes('excel') || attachment.type.includes('spreadsheet') || attachment.name.endsWith('.xlsx') || attachment.name.endsWith('.xls')) 
       return <FileText className="h-4 w-4 text-green-600" />;
     return <FileIcon className="h-4 w-4 text-gray-500" />;
   };
@@ -80,46 +80,34 @@ const MessageInput: React.FC<MessageInputProps> = ({
       {/* Attachments preview */}
       {attachments.length > 0 && (
         <div className="flex flex-wrap gap-2 mb-3 max-h-[100px] overflow-y-auto p-2 bg-muted/30 rounded-md">
-          {attachments.map((file, index) => {
-            const progress = uploadProgress[index];
-            const isUploading = progress !== undefined && progress >= 0 && progress < 100;
-            const hasError = progress === -1;
-            
-            return (
-              <div 
-                key={index}
-                className={`flex items-center gap-1 py-1 px-2 rounded text-xs ${
-                  hasError ? 'bg-red-100 border-red-200' : 'bg-white border'
-                }`}
-              >
-                <span className="mr-1">{getFileIcon(file)}</span>
-                <div className="flex-grow">
-                  <div className="flex justify-between items-center">
-                    <span className="font-medium truncate max-w-[120px]">{file.name}</span>
-                    <Button 
-                      type="button" 
-                      variant="ghost" 
-                      size="icon" 
-                      className="h-5 w-5 ml-1 p-0" 
-                      onClick={() => onRemoveAttachment?.(index)}
-                      disabled={isSending || isUploading}
-                    >
-                      <X className="h-3 w-3" />
-                    </Button>
-                  </div>
-                  <span className="text-muted-foreground block">{getFileSize(file.size)}</span>
-                  
-                  {isUploading && (
-                    <Progress value={progress} className="h-1 mt-1" />
-                  )}
-                  
-                  {hasError && (
-                    <span className="text-red-500 text-[10px]">Upload failed</span>
-                  )}
+          {attachments.map((attachment, index) => (
+            <div 
+              key={index}
+              className="flex items-center gap-1 py-1 px-2 rounded text-xs bg-white border"
+            >
+              <span className="mr-1">{getFileIcon(attachment)}</span>
+              <div className="flex-grow">
+                <div className="flex justify-between items-center">
+                  <span className="font-medium truncate max-w-[120px]">{attachment.name}</span>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon" 
+                    className="h-5 w-5 ml-1 p-0" 
+                    onClick={() => onRemoveAttachment?.(index)}
+                    disabled={isSending || isUploading}
+                  >
+                    <X className="h-3 w-3" />
+                  </Button>
                 </div>
+                <span className="text-muted-foreground block">{getFileSize(attachment.size)}</span>
+                
+                {isUploading && (
+                  <Progress value={uploadProgress} className="h-1 mt-1" />
+                )}
               </div>
-            );
-          })}
+            </div>
+          ))}
         </div>
       )}
 
