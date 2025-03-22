@@ -13,13 +13,13 @@ const QuotesListItem: React.FC<QuotesListItemProps> = ({ project }) => {
   const getStatusStyles = (status?: string) => {
     switch (status) {
       case 'accepted':
-        return 'border-l-4 border-green-500 bg-green-50';
+        return 'border-2 border-green-500 bg-green-50';
       case 'pending':
-        return 'border-l-4 border-amber-500 bg-yellow-50';
+        return 'border-2 border-amber-500 bg-yellow-50';
       case 'declined':
-        return 'border-l-4 border-red-500 bg-red-50';
+        return 'border-2 border-red-500 bg-red-50';
       default:
-        return 'border-l-4 border-gray-500 bg-gray-50';
+        return 'border-2 border-gray-300 bg-gray-50';
     }
   };
 

@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
@@ -48,9 +49,9 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
   
   // Determine card style based on completion status
   const getCardStyles = () => {
-    if (isFullyCompleted) return "border-l-4 border-green-500";
-    if (isPartiallyCompleted) return "border-l-4 border-blue-500";
-    return "border-l-4 border-green-500"; // Active jobs are green
+    if (isFullyCompleted) return "border-2 border-green-500";
+    if (isPartiallyCompleted) return "border-2 border-blue-500";
+    return "border-2 border-green-500"; // Active jobs are green
   };
   
   return (

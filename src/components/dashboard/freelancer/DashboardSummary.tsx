@@ -12,7 +12,7 @@ const DashboardSummary: React.FC<DashboardSummaryProps> = ({
   isLoadingBalance 
 }) => {
   return (
-    <div className="mb-8">
+    <div className="mb-6">
       <CreditBalanceCard 
         creditBalance={creditBalance} 
         isLoading={isLoadingBalance} 

@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import ProjectCompletionStatus from '@/components/projects/ProjectCompletionStatus';
+import { cn } from '@/lib/utils';
 
 interface QuoteListItemProps {
   quote: QuoteWithFreelancer;
@@ -42,9 +43,23 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                           : 'Freelancer');
   
   const isAccepted = quote.status === 'accepted';
+  
+  // Get card style based on quote status
+  const getCardStyle = () => {
+    switch (quote.status) {
+      case 'accepted':
+        return "border-2 border-green-500";
+      case 'pending':
+        return "border-2 border-amber-500";
+      case 'declined':
+        return "border-2 border-red-500";
+      default:
+        return "border-2 border-gray-300";
+    }
+  };
 
   return (
-    <Card key={quote.id} className="w-full">
+    <Card key={quote.id} className={cn("w-full", getCardStyle())}>
       <CardHeader className="pb-2">
         <div className="flex flex-wrap justify-between items-start gap-2">
           <CardTitle className="text-xl">{projectTitle}</CardTitle>
