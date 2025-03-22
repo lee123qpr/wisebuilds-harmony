@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProjects } from '@/components/projects/useProjects';
 import ProjectCardHorizontal from './ProjectCardHorizontal';
@@ -10,6 +10,15 @@ const ProjectsTable = () => {
     isLoading, 
     refreshProjects
   } = useProjects();
+
+  // Refresh projects data periodically to ensure real-time updates
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      refreshProjects();
+    }, 15000); // Refresh every 15 seconds
+    
+    return () => clearInterval(intervalId);
+  }, [refreshProjects]);
 
   if (isLoading) {
     return (

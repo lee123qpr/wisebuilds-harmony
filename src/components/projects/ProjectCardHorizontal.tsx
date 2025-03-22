@@ -3,7 +3,7 @@ import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Project } from './useProjects';
 import { format } from 'date-fns';
-import { ChevronRight, UserRound, MessageSquare, Quote } from 'lucide-react';
+import { ChevronRight, UserRound } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useQuotes } from '@/hooks/quotes/useQuotes';

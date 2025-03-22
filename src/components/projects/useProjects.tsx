@@ -52,6 +52,30 @@ export const useProjects = () => {
 
   useEffect(() => {
     fetchProjects();
+    
+    // Set up real-time listener for project changes
+    if (user) {
+      const channel = supabase
+        .channel('schema-db-changes')
+        .on(
+          'postgres_changes',
+          {
+            event: '*',
+            schema: 'public',
+            table: 'projects',
+            filter: `user_id=eq.${user.id}`
+          },
+          () => {
+            console.log('Projects data changed, refreshing projects list');
+            fetchProjects();
+          }
+        )
+        .subscribe();
+
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [user]);
 
   const fetchProjects = async () => {
