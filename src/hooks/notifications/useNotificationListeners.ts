@@ -16,8 +16,7 @@ export function useNotificationListeners() {
   const { 
     setNotifications, 
     addNotificationToState, 
-    updateNotificationInState, 
-    markAsRead
+    updateNotificationInState
   } = useNotificationsState();
 
   // Fetch notifications with retry mechanism
@@ -79,6 +78,4 @@ export function useNotificationListeners() {
       cleanup();
     };
   }, [user, addNotificationToState, initializeNotifications]);
-
-  return { markAsRead };
 }
