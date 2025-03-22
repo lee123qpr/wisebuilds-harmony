@@ -29,7 +29,7 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
     console.log('Number of leads received:', projectLeads.length);
     
     if (useFiltering) {
-      // Filter out completed and hired projects only when filtering is enabled
+      // For My Leads tab, only show active and available projects (not hired or completed)
       const activeLeads = projectLeads.filter(project => {
         // Filter out projects that are completed or already hired for
         const isActive = project.status === 'active';
@@ -40,7 +40,7 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
       console.log('Filtered leads for My Leads tab:', activeLeads.length);
       setFilteredLeads(activeLeads);
     } else {
-      // When not filtering, show all active projects regardless of hiring status
+      // For Available Projects tab, show all active projects regardless of hiring status
       const allActiveLeads = projectLeads.filter(project => project.status === 'active');
       console.log('All active leads for Available Projects tab:', allActiveLeads.length);
       setFilteredLeads(allActiveLeads);

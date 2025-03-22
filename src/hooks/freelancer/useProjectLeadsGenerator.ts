@@ -58,12 +58,14 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
             console.log('Filtering for projects requiring site visits');
           }
           
-          // Only filter by hiring status if leadSettings is provided
-          // Add hiring status filter to only get available projects
+          // For the "My Leads" tab, we want to filter by hiring status
+          // to only show available projects (enquiring or hiring)
           query = query.in('hiring_status', ['enquiring', 'hiring']);
           console.log('Filtering for projects with hiring status: enquiring, hiring');
         } else {
           console.log('No lead settings provided, fetching all active projects');
+          // When no lead settings are provided (Available Projects tab),
+          // we don't filter by hiring status so we show all active projects
         }
         
         // Get the results
