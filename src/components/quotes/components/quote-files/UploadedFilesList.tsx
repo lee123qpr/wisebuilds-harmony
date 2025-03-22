@@ -1,9 +1,8 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { UploadedFile } from '@/components/projects/file-upload/types';
 import { FileText, FileImage, X, Check } from 'lucide-react';
-import { formatFileSize, getFileIcon } from '../file-upload/fileUtils';
+import { formatFileSize, getFileIcon } from '../file-upload/utils';
 
 interface UploadedFilesListProps {
   files: UploadedFile[];

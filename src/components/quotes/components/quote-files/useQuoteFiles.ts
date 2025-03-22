@@ -1,9 +1,12 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { UploadedFile } from '@/components/projects/file-upload/types';
-import { uploadFile, validateFile, removeFileFromStorage } from '../file-upload/fileUtils';
+import { 
+  uploadFile, 
+  validateFile, 
+  removeFileFromStorage 
+} from '../file-upload/utils';
 
 interface UseQuoteFilesProps {
   quoteFiles: UploadedFile[];
