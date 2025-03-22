@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 export async function getFreelancerInfo(freelancerId: string) {
   try {
-    // Get freelancer profile information
+    // Get freelancer profile information from the database table
     const { data: freelancer, error: profileError } = await supabase
       .from('freelancer_profiles')
       .select(`
@@ -36,8 +36,8 @@ export async function getFreelancerInfo(freelancerId: string) {
     return {
       id: freelancer?.id,
       // Support both legacy and new property names
-      name: freelancer?.display_name || `${freelancer?.first_name} ${freelancer?.last_name}`,
-      full_name: freelancer?.display_name || `${freelancer?.first_name} ${freelancer?.last_name}`,
+      name: freelancer?.display_name || `${freelancer?.first_name || ''} ${freelancer?.last_name || ''}`.trim() || 'Unknown Freelancer',
+      full_name: freelancer?.display_name || `${freelancer?.first_name || ''} ${freelancer?.last_name || ''}`.trim() || 'Unknown Freelancer',
       profilePhoto: freelancer?.profile_photo,
       profile_image: freelancer?.profile_photo,
       jobTitle: freelancer?.job_title,

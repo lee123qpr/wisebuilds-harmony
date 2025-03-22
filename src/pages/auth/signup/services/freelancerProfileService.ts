@@ -3,32 +3,27 @@ import { supabase } from '@/integrations/supabase/client';
 import { FreelancerFormValues } from '../components/FreelancerSignupForm';
 
 export const createFreelancerProfile = async (userId: string, data: FreelancerFormValues) => {
-  // In a real implementation, you'd create a freelancer_profiles table
-  // and insert the initial profile data here
-  
   try {
-    // This is a placeholder - in a real app you would create an actual profile
-    // For now, we'll just log the data to ensure it's being captured correctly
-    
-    // Example of what this might look like if we had a freelancer_profiles table:
-    /*
-    const { error } = await supabase
+    // Create or update the freelancer profile in the database
+    const { error: profileError } = await supabase
       .from('freelancer_profiles')
-      .insert({
+      .upsert({
         id: userId,
-        full_name: data.fullName,
-        profession: data.profession,
+        first_name: data.fullName.split(' ')[0] || '',
+        last_name: data.fullName.split(' ').slice(1).join(' ') || '',
+        display_name: data.fullName,
+        job_title: data.profession,
         location: data.location,
         email: data.email,
         member_since: new Date().toISOString(),
       });
     
-    if (error) throw error;
-    */
+    if (profileError) {
+      console.error('Error creating freelancer profile:', profileError);
+      // Continue execution to ensure credits are created even if profile insertion fails
+    }
     
-    console.log('Creating freelancer profile for:', userId, data);
-    
-    // For now, let's just create an entry in freelancer_credits to ensure the user has credits
+    // Create an entry in freelancer_credits to ensure the user has credits
     const { error: creditsError } = await supabase
       .from('freelancer_credits')
       .insert({

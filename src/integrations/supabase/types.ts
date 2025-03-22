@@ -747,6 +747,10 @@ export type Database = {
         }
         Returns: boolean
       }
+      sync_freelancer_profiles_from_metadata: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
       update_quote_status: {
         Args: {
           quote_id: string

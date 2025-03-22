@@ -1,3 +1,4 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -58,6 +59,39 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
       
       if (updateUserError) {
         throw updateUserError;
+      }
+      
+      // 2. Update the freelancer_profiles table directly
+      const { error: updateProfileError } = await supabase
+        .from('freelancer_profiles')
+        .update({
+          first_name: values.fullName.split(' ')[0] || '',
+          last_name: values.fullName.split(' ').slice(1).join(' ') || '',
+          display_name: values.fullName,
+          job_title: values.profession,
+          location: values.location,
+          bio: values.bio,
+          phone_number: values.phoneNumber,
+          website: websiteUrl,
+          profile_photo: profileImage,
+          hourly_rate: values.hourlyRate,
+          availability: values.availability,
+          skills: values.skills,
+          experience: values.experience,
+          qualifications: values.qualifications,
+          accreditations: values.accreditations,
+          previous_employers: values.previousEmployers,
+          indemnity_insurance: values.indemnityInsurance,
+          previous_work: previousWork,
+          id_verified: values.idVerified,
+          updated_at: new Date()
+        })
+        .eq('id', user.id);
+        
+      if (updateProfileError) {
+        console.error('Error updating freelancer profile:', updateProfileError);
+        // Don't throw here, as we've already updated the user metadata
+        // which will trigger the database trigger to update the profile
       }
       
       toast({

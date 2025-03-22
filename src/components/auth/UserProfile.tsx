@@ -22,7 +22,7 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, children }) => {
       
       try {
         if (userType === 'freelancer') {
-          // Fetch freelancer profile
+          // Fetch freelancer profile from the database table
           const { data, error } = await supabase
             .from('freelancer_profiles')
             .select('display_name, first_name, last_name')
@@ -32,7 +32,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, children }) => {
           if (error) throw error;
           
           if (data) {
-            setDisplayName(data.display_name || `${data.first_name || ''} ${data.last_name || ''}`.trim());
+            // If we have data in the database, use it
+            setDisplayName(data.display_name || `${data.first_name || ''} ${data.last_name || ''}`.trim() || 'Unknown Freelancer');
+          } else {
+            // Fallback to user metadata if the profile doesn't exist in the database yet
+            const fullName = user.user_metadata?.full_name || '';
+            if (fullName) {
+              setDisplayName(fullName);
+            } else {
+              setDisplayName('Unknown Freelancer');
+            }
           }
         } else if (userType === 'business') {
           // Fetch business profile
@@ -45,11 +54,16 @@ const UserProfile: React.FC<UserProfileProps> = ({ user, children }) => {
           if (error) throw error;
           
           if (data) {
-            setDisplayName(data.contact_name || data.company_name || '');
+            setDisplayName(data.contact_name || data.company_name || 'Unknown Business');
+          } else {
+            // Fallback to user metadata
+            setDisplayName(user.user_metadata?.full_name || user.user_metadata?.company_name || 'Unknown Business');
           }
         }
       } catch (error) {
         console.error('Error fetching user profile:', error);
+        // Use user metadata as fallback
+        setDisplayName(user.user_metadata?.full_name || user.email || 'Unknown User');
       } finally {
         setIsLoading(false);
       }
