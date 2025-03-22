@@ -19,7 +19,11 @@ export const useDocumentDeletion = (onClose: () => void) => {
   const handleDelete = async () => {
     try {
       console.log('Deleting verification document');
-      await deleteVerificationDocument();
+      const result = await deleteVerificationDocument();
+      
+      if (!result) {
+        throw new Error("Failed to delete document");
+      }
       
       toast({
         title: "Document deleted",

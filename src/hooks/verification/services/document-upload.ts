@@ -77,7 +77,7 @@ export const uploadVerificationDocument = async (
     console.log('File uploaded successfully, now updating verification record');
     
     // Check if the user already has a verification record
-    const existingVerification = await fetchVerificationStatus(userId);
+    const existingVerification = await fetchVerificationStatus();
     
     let updateError;
     
@@ -134,7 +134,7 @@ export const uploadVerificationDocument = async (
     
     // Get the updated verification data
     console.log('Fetching updated verification status');
-    const updatedVerification = await fetchVerificationStatus(userId);
+    const updatedVerification = await fetchVerificationStatus();
     
     console.log('Document upload complete. Verification status:', updatedVerification?.status);
     

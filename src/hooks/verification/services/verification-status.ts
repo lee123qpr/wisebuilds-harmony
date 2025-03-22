@@ -61,10 +61,10 @@ export const deleteVerificationDocument = async (): Promise<boolean> => {
         document_name: null,
         document_size: null,
         document_type: null,
-        verification_status: 'not_submitted',
+        status: 'not_submitted',
         admin_notes: null,
         submitted_at: null,
-        verified_at: null
+        reviewed_at: null
       })
       .eq('user_id', user.user.id);
     
@@ -85,7 +85,7 @@ export const isUserVerified = async (): Promise<boolean> => {
     const verificationData = await fetchVerificationStatus();
     if (!verificationData) return false;
     
-    return verificationData.verification_status === 'approved';
+    return verificationData.status === 'verified';
   } catch (error) {
     console.error('Error checking user verification status:', error);
     return false;
@@ -97,7 +97,7 @@ export const getUserVerificationStatus = async (): Promise<VerificationStatus> =
     const verificationData = await fetchVerificationStatus();
     if (!verificationData) return 'not_submitted';
     
-    return mapDatabaseStatusToVerificationStatus(verificationData.verification_status);
+    return mapDatabaseStatusToVerificationStatus(verificationData.status);
   } catch (error) {
     console.error('Error getting user verification status:', error);
     return 'not_submitted';

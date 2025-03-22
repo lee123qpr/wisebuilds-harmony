@@ -46,7 +46,7 @@ export const useVerification = (): UseVerificationResult => {
     
     setIsLoading(true);
     try {
-      const data = await fetchVerificationStatus(user.id);
+      const data = await fetchVerificationStatus();
       setVerificationData(data);
       console.log('Refreshed verification status:', data);
     } catch (error: any) {
@@ -94,14 +94,14 @@ export const useVerification = (): UseVerificationResult => {
     setIsDeleting(true);
     try {
       console.log('Deleting document for user:', user.id);
-      const result = await deleteVerificationDocument(user.id, verificationData.document_path);
+      const result = await deleteVerificationDocument();
       
-      if (!result.success) {
-        console.error('Delete failed with result:', result);
-        throw result.error || new Error('Delete failed');
+      if (!result) {
+        console.error('Delete failed');
+        throw new Error('Delete failed');
       }
       
-      console.log('Delete successful:', result);
+      console.log('Delete successful');
       
       // Reset verification data
       await refreshVerificationStatus();
