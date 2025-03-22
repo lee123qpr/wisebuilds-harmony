@@ -1,19 +1,22 @@
 
 import React from 'react';
 import { Building, User, Calendar, Briefcase } from 'lucide-react';
+import { formatRole } from '@/utils/projectFormatters';
 
 interface ProjectInfoProps {
   projectTitle: string;
   clientName: string;
   quoteSubmitted?: boolean;
   submissionDate?: string;
+  projectRole?: string;
 }
 
 const ProjectInfo: React.FC<ProjectInfoProps> = ({ 
   projectTitle, 
   clientName,
   quoteSubmitted = false,
-  submissionDate
+  submissionDate,
+  projectRole
 }) => {
   // Enhanced validation to ensure clientName is displayed properly
   const displayName = clientName && 
@@ -22,6 +25,8 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
                      clientName.trim() !== '' 
                        ? clientName 
                        : 'Client';
+  
+  const formattedRole = projectRole ? formatRole(projectRole) : 'Any';
   
   console.log('ProjectInfo received clientName:', clientName);
   console.log('ProjectInfo displaying name:', displayName);
@@ -36,8 +41,11 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
           <h2 className="text-xl font-semibold text-slate-800">
             {projectTitle || 'Project'}
           </h2>
+          <p className="text-sm text-slate-600 mt-1">
+            Looking for: <span className="font-medium text-primary">{formattedRole}</span>
+          </p>
           {quoteSubmitted && submissionDate && (
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-slate-500 mt-1">
               Quote submitted on {submissionDate}
             </p>
           )}

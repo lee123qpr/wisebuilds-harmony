@@ -3,6 +3,7 @@ import React from 'react';
 import PurchasedProjectCard from '../PurchasedProjectCard';
 import { ApplicationWithProject } from '@/hooks/freelancer/useApplicationsWithQuotes';
 import { cn } from '@/lib/utils';
+import { formatRole } from '@/utils/projectFormatters';
 
 interface QuotesListItemProps {
   project: ApplicationWithProject;

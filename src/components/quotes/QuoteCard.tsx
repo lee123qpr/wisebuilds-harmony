@@ -12,6 +12,7 @@ import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerI
 import { Skeleton } from '@/components/ui/skeleton';
 import { FreelancerInfo } from '@/types/messaging';
 import VerificationBadge from '@/components/common/VerificationBadge';
+import { formatRole } from '@/utils/projectFormatters';
 
 interface QuoteCardProps {
   quote: QuoteWithFreelancer;
@@ -24,6 +25,10 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
   
   // Format the created date
   const formattedDate = format(new Date(quote.created_at), 'MMM d, yyyy');
+  
+  // Get project role if available
+  const role = quote.project?.role || 'Any';
+  const roleFormatted = formatRole(role);
   
   // Get freelancer info
   const freelancer = quote.freelancer_profile || {};
@@ -103,9 +108,17 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
       
       <CardContent className="p-4">
         <div className="space-y-4">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <Clock className="h-4 w-4" />
-            <span>Submitted on {formattedDate}</span>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+              <Clock className="h-4 w-4" />
+              <span>Submitted on {formattedDate}</span>
+            </div>
+            
+            {quote.project && (
+              <p className="text-sm text-muted-foreground">
+                Looking for: <span className="font-medium text-primary">{roleFormatted}</span>
+              </p>
+            )}
           </div>
           
           <div className="line-clamp-3 text-sm">

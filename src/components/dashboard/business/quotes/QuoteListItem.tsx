@@ -9,6 +9,7 @@ import { useNavigate } from 'react-router-dom';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import ProjectCompletionStatus from '@/components/projects/ProjectCompletionStatus';
 import { cn } from '@/lib/utils';
+import { formatRole } from '@/utils/projectFormatters';
 
 interface QuoteListItemProps {
   quote: QuoteWithFreelancer;
@@ -27,6 +28,10 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                         : 'Untitled Project';
   
   console.log('Quote project data:', quote.project);
+  
+  // Format role for display
+  const role = quote.project?.role || 'Any';
+  const roleFormatted = formatRole(role);
   
   const formattedDate = quote.created_at 
     ? format(new Date(quote.created_at), 'MMM d, yyyy')
@@ -70,7 +75,12 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
     <Card key={quote.id} className={cn("w-full", getCardStyle())}>
       <CardHeader className="pb-2">
         <div className="flex flex-wrap justify-between items-start gap-2">
-          <CardTitle className="text-xl">{projectTitle}</CardTitle>
+          <div>
+            <CardTitle className="text-xl">{projectTitle}</CardTitle>
+            <p className="text-sm text-muted-foreground mt-1">
+              Looking for: <span className="font-medium text-primary">{roleFormatted}</span>
+            </p>
+          </div>
           {isAccepted && (
             <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
               <Check className="h-3 w-3" />
