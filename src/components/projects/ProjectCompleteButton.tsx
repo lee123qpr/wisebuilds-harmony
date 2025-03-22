@@ -41,7 +41,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   const loadCompletionStatus = async () => {
     setIsLoading(true);
     try {
-      const status = await checkCompletionStatus();
+      const status = await checkCompletionStatus(quoteId);
       console.log("Loaded completion status:", status);
       setCompletionStatus(status);
     } catch (error) {
