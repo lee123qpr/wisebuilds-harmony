@@ -22,48 +22,23 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           .eq('status', 'active')
           .order('created_at', { ascending: false }); // Order by created_at descending (newest first)
         
-        // Apply filters only if leadSettings is provided (for My Leads tab)
+        // Apply minimal filters at database level - more detailed filtering will be done in useProjectsWithFiltering
         if (leadSettings) {
-          console.log('Applying lead setting filters');
-          
           // Filter by role if specified and not 'any'
+          // Use more relaxed filtering at the database level
           if (leadSettings.role && leadSettings.role !== 'any' && leadSettings.role !== 'Any') {
-            // Use ilike for case-insensitive partial matching
+            // Use ilike for case-insensitive partial matching on role
             query = query.ilike('role', `%${leadSettings.role.toLowerCase()}%`);
-            console.log(`Filtering by role: %${leadSettings.role.toLowerCase()}%`);
-          }
-          
-          // Filter by location if specified and not 'any'
-          if (leadSettings.location && leadSettings.location !== 'any' && leadSettings.location !== 'Any') {
-            // Extract the first part of the location before any commas for broader matching
-            const locationPart = leadSettings.location.split(',')[0].trim().toLowerCase();
-            query = query.ilike('location', `%${locationPart}%`);
-            console.log(`Filtering by location: %${locationPart}%`);
-          }
-          
-          // Filter by work type if specified and not 'any'
-          if (leadSettings.work_type && leadSettings.work_type !== 'any' && leadSettings.work_type !== 'Any') {
-            query = query.eq('work_type', leadSettings.work_type);
-            console.log(`Filtering by work type: ${leadSettings.work_type}`);
-          }
-          
-          // Add additional filters for other fields if needed
-          if (leadSettings.requires_insurance === true) {
-            query = query.eq('requires_insurance', true);
-            console.log('Filtering for projects requiring insurance');
-          }
-          
-          if (leadSettings.requires_site_visits === true) {
-            query = query.eq('requires_site_visits', true);
-            console.log('Filtering for projects requiring site visits');
+            console.log(`Database filtering by role: %${leadSettings.role.toLowerCase()}%`);
           }
         }
         
         // For the My Leads tab (with lead settings), also filter by hiring status
         // For the Available Projects tab (no lead settings), don't filter by hiring status
         if (leadSettings) {
-          query = query.in('hiring_status', ['enquiring', 'hiring']);
-          console.log('Filtering for projects with hiring status: enquiring, hiring');
+          // Use a broader range of hiring statuses to ensure we get results
+          query = query.in('hiring_status', ['enquiring', 'hiring', 'ready', 'urgent']);
+          console.log('Database filtering for projects with hiring status: enquiring, hiring, ready, urgent');
         } else {
           console.log('No lead settings provided - showing all active projects regardless of hiring status');
         }
@@ -78,7 +53,7 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         }
         
         console.log('Fetched projects:', data);
-        console.log('Number of projects fetched:', data ? data.length : 0);
+        console.log('Number of projects fetched from database:', data ? data.length : 0);
         
         // Parse the data to match the ProjectLead type
         const leads = data ? data.map(project => ({
@@ -90,18 +65,18 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           created_at: project.created_at,
           location: project.location,
           work_type: project.work_type,
-          tags: [], // Provide an empty array as default since tags don't exist in DB
+          tags: project.tags || [], // Handle tags safely
           duration: project.duration,
           hiring_status: project.hiring_status,
           requires_equipment: project.requires_equipment || false,
-          requires_security_check: false, // Set default value for field not in DB
+          requires_security_check: project.requires_security_check || false,
           requires_insurance: project.requires_insurance || false,
-          requires_qualifications: false, // Set default value for field not in DB
-          published: true, // Default value
+          requires_qualifications: project.requires_qualifications || false,
+          published: project.published || true,
           client_id: project.user_id, // Assuming user_id is client_id
-          client_name: '', // Default empty string for field not in DB
-          client_company: '', // Default empty string for field not in DB
-          start_date: project.start_date || new Date().toISOString(), // Provide default value
+          client_name: project.client_name || '',
+          client_company: project.client_company || '',
+          start_date: project.start_date || new Date().toISOString(),
           applications: project.applications || 0,
           documents: project.documents || null,
           requires_site_visits: project.requires_site_visits || false,

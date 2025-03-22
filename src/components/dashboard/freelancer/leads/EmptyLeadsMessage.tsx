@@ -31,6 +31,12 @@ const EmptyLeadsMessage: React.FC = () => {
       .join(' ');
   };
 
+  // Helper to safely format filters and handle "any" values
+  const formatFilterValue = (value: any, formatter?: (val: string) => string) => {
+    if (!value || value === 'any' || value === 'Any') return 'Any';
+    return formatter ? formatter(value) : value;
+  };
+
   return (
     <Card>
       <CardHeader>
@@ -50,26 +56,14 @@ const EmptyLeadsMessage: React.FC = () => {
         <div className="mb-4 text-sm text-muted-foreground">
           <p className="font-medium mb-2">Your current filters:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><span className="font-medium">Role:</span> {leadSettings?.role ? formatRole(leadSettings.role) : 'Any'}</li>
-            <li><span className="font-medium">Location:</span> {leadSettings?.location || 'Any'}</li>
-            <li><span className="font-medium">Work Type:</span> {leadSettings?.work_type ? formatWorkType(leadSettings.work_type) : 'Any'}</li>
-            
-            {/* Budget filter */}
-            <li><span className="font-medium">Budget:</span> {leadSettings?.budget ? formatBudget(leadSettings.budget) : 'Any'}</li>
-            
-            {/* Duration filter */}
-            <li><span className="font-medium">Duration:</span> {leadSettings?.duration ? formatDuration(leadSettings.duration) : 'Any'}</li>
-            
-            {/* Hiring Status filter - now using formatted text */}
-            <li><span className="font-medium">Hiring Status:</span> {leadSettings?.hiring_status ? formatHiringStatus(leadSettings.hiring_status) : 'Any'}</li>
-            
-            {/* Insurance Requirements filter */}
+            <li><span className="font-medium">Role:</span> {formatFilterValue(leadSettings?.role, formatRole)}</li>
+            <li><span className="font-medium">Location:</span> {formatFilterValue(leadSettings?.location)}</li>
+            <li><span className="font-medium">Work Type:</span> {formatFilterValue(leadSettings?.work_type, formatWorkType)}</li>
+            <li><span className="font-medium">Budget:</span> {formatFilterValue(leadSettings?.budget, formatBudget)}</li>
+            <li><span className="font-medium">Duration:</span> {formatFilterValue(leadSettings?.duration, formatDuration)}</li>
+            <li><span className="font-medium">Hiring Status:</span> {formatFilterValue(leadSettings?.hiring_status, formatHiringStatus)}</li>
             <li><span className="font-medium">Insurance Required:</span> {leadSettings?.requires_insurance ? 'Yes' : 'Any'}</li>
-            
-            {/* Site Visits Requirements filter */}
             <li><span className="font-medium">Site Visits Required:</span> {leadSettings?.requires_site_visits ? 'Yes' : 'Any'}</li>
-            
-            {/* Keywords filter */}
             <li>
               <span className="font-medium">Keywords:</span> {
                 !leadSettings?.keywords || 

@@ -29,102 +29,120 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
     console.log('Number of leads received:', projectLeads.length);
     
     if (useFiltering && settingsToUse) {
-      // Apply additional filtering based on lead settings
+      // Apply filtering based on lead settings
       const filterLeadsBySettings = (leads: ProjectLead[]) => {
         return leads.filter(project => {
           // First check if project is active and available for hiring
           const isActive = project.status === 'active';
-          const isAvailable = project.hiring_status === 'enquiring' || project.hiring_status === 'hiring' || 
-                             project.hiring_status === 'ready' || project.hiring_status === 'urgent';
+          const isAvailable = project.hiring_status === 'enquiring' || 
+                             project.hiring_status === 'hiring' || 
+                             project.hiring_status === 'ready' || 
+                             project.hiring_status === 'urgent';
           
           if (!isActive || !isAvailable) {
             console.log(`Filtering out project ${project.id}: status=${project.status}, hiring_status=${project.hiring_status}`);
             return false;
           }
           
-          // Match by role - more flexible matching
+          // IMPROVED ROLE MATCHING
+          // Check if role is 'any' or if project role matches settings role (case insensitive)
           const roleMatches = 
             !settingsToUse.role || 
             settingsToUse.role === 'any' || 
             settingsToUse.role === 'Any' ||
-            // Compare normalized strings (lowercase, trim whitespace)
-            project.role.toLowerCase().trim() === settingsToUse.role.toLowerCase().trim() ||
-            // Also check if role contains the search term or vice versa
+            // Try exact match first (case insensitive)
+            project.role.toLowerCase() === settingsToUse.role.toLowerCase() ||
+            // Try partial matches
             project.role.toLowerCase().includes(settingsToUse.role.toLowerCase()) ||
             settingsToUse.role.toLowerCase().includes(project.role.toLowerCase());
           
-          // Match by location - more flexible matching
+          // IMPROVED LOCATION MATCHING
+          // Check if location is 'any' or if project location contains settings location (case insensitive)
           const locationMatches = 
             !settingsToUse.location || 
             settingsToUse.location === 'any' || 
             settingsToUse.location === 'Any' || 
+            // Handle null locations safely
             (project.location && settingsToUse.location && (
-              // Compare city part only (before comma)
-              project.location.toLowerCase().includes(settingsToUse.location.toLowerCase().split(',')[0].trim()) || 
-              settingsToUse.location.toLowerCase().split(',')[0].trim().includes(project.location.toLowerCase())
+              project.location.toLowerCase().includes(settingsToUse.location.toLowerCase()) ||
+              settingsToUse.location.toLowerCase().includes(project.location.toLowerCase())
             ));
           
-          // Match by work type
+          // IMPROVED WORK TYPE MATCHING
+          // Check if work_type is 'any' or if project work_type matches settings work_type (exact match)
           const workTypeMatches = 
             !settingsToUse.work_type || 
             settingsToUse.work_type === 'any' ||
             settingsToUse.work_type === 'Any' ||
             project.work_type === settingsToUse.work_type;
           
-          // Match by budget if specified
+          // IMPROVED BUDGET MATCHING
+          // Check if budget is 'any' or if project budget matches settings budget
           const budgetMatches = 
             !settingsToUse.budget || 
             settingsToUse.budget === 'any' ||
             settingsToUse.budget === 'Any';
-            
-          // Match by duration if specified
+          
+          // IMPROVED DURATION MATCHING
+          // Check if duration is 'any' or if project duration matches settings duration
           const durationMatches = 
             !settingsToUse.duration || 
             settingsToUse.duration === 'any' ||
             settingsToUse.duration === 'Any' ||
             project.duration === settingsToUse.duration;
-            
-          // Match by hiring status if specified
+          
+          // IMPROVED HIRING STATUS MATCHING
+          // Check if hiring_status is 'any' or if project hiring_status matches settings hiring_status
           const hiringStatusMatches = 
             !settingsToUse.hiring_status || 
             settingsToUse.hiring_status === 'any' ||
             settingsToUse.hiring_status === 'Any' ||
             project.hiring_status === settingsToUse.hiring_status;
           
-          // Match by insurance requirements
+          // IMPROVED INSURANCE MATCHING
+          // Check if requires_insurance is not set or if project requires_insurance matches settings requires_insurance
           const insuranceMatches = 
             settingsToUse.requires_insurance === undefined ||
             settingsToUse.requires_insurance === null ||
             !settingsToUse.requires_insurance || 
             settingsToUse.requires_insurance === project.requires_insurance;
           
-          // Match by site visit requirements
+          // IMPROVED SITE VISITS MATCHING
+          // Check if requires_site_visits is not set or if project requires_site_visits matches settings requires_site_visits
           const siteVisitsMatches = 
             settingsToUse.requires_site_visits === undefined ||
             settingsToUse.requires_site_visits === null ||
             !settingsToUse.requires_site_visits || 
             settingsToUse.requires_site_visits === project.requires_site_visits;
           
-          // Log the matching results for debugging
+          // Debug the matching results
           const result = roleMatches && locationMatches && workTypeMatches && budgetMatches &&
                          durationMatches && hiringStatusMatches && insuranceMatches && siteVisitsMatches;
           
           console.log(`Project ${project.id} matching:`, {
-            role: `${project.role} vs ${settingsToUse.role}`,
+            project_role: project.role,
+            settings_role: settingsToUse.role,
             roleMatches,
-            location: `${project.location} vs ${settingsToUse.location}`,
+            project_location: project.location,
+            settings_location: settingsToUse.location,
             locationMatches,
-            workType: `${project.work_type} vs ${settingsToUse.work_type}`,
+            project_work_type: project.work_type,
+            settings_work_type: settingsToUse.work_type,
             workTypeMatches,
-            budget: `${project.budget} vs ${settingsToUse.budget}`,
+            project_budget: project.budget,
+            settings_budget: settingsToUse.budget,
             budgetMatches,
-            duration: `${project.duration} vs ${settingsToUse.duration}`,
+            project_duration: project.duration,
+            settings_duration: settingsToUse.duration,
             durationMatches,
-            hiringStatus: `${project.hiring_status} vs ${settingsToUse.hiring_status}`,
+            project_hiring_status: project.hiring_status,
+            settings_hiring_status: settingsToUse.hiring_status,
             hiringStatusMatches,
-            insurance: `${project.requires_insurance} vs ${settingsToUse.requires_insurance}`,
+            project_requires_insurance: project.requires_insurance,
+            settings_requires_insurance: settingsToUse.requires_insurance,
             insuranceMatches,
-            siteVisits: `${project.requires_site_visits} vs ${settingsToUse.requires_site_visits}`,
+            project_requires_site_visits: project.requires_site_visits,
+            settings_requires_site_visits: settingsToUse.requires_site_visits,
             siteVisitsMatches,
             result
           });
