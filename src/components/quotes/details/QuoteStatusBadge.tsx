@@ -32,7 +32,11 @@ const QuoteStatusBadge: React.FC<QuoteStatusBadgeProps> = ({ status }) => {
         </Badge>
       );
     default:
-      return null;
+      return (
+        <Badge variant="outline" className="bg-gray-100 text-gray-800 border-gray-200">
+          No Quote Issued
+        </Badge>
+      );
   }
 };
 
