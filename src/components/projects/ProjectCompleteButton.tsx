@@ -49,9 +49,14 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   
   const loadCompletionStatus = async () => {
     setIsLoading(true);
-    const status = await checkCompletionStatus();
-    setCompletionStatus(status);
-    setIsLoading(false);
+    try {
+      const status = await checkCompletionStatus();
+      setCompletionStatus(status);
+    } catch (error) {
+      console.error("Error loading completion status:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
   
   useEffect(() => {
@@ -64,10 +69,13 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
     try {
       await markProjectCompleted();
       setDialogOpen(false);
-      loadCompletionStatus();
-      if (onStatusUpdate) {
-        onStatusUpdate();
-      }
+      // Add delay before refreshing status to ensure database has updated
+      setTimeout(() => {
+        loadCompletionStatus();
+        if (onStatusUpdate) {
+          onStatusUpdate();
+        }
+      }, 500);
     } catch (error) {
       console.error('Error completing project:', error);
       toast({
