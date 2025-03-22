@@ -37,10 +37,12 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
         return isActive && isNotHired;
       });
       
+      console.log('Filtered leads for My Leads tab:', activeLeads.length);
       setFilteredLeads(activeLeads);
     } else {
       // When not filtering, show all active projects regardless of hiring status
       const allActiveLeads = projectLeads.filter(project => project.status === 'active');
+      console.log('All active leads for Available Projects tab:', allActiveLeads.length);
       setFilteredLeads(allActiveLeads);
     }
   }, [projectLeads, useFiltering]);

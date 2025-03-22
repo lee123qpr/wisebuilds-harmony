@@ -57,15 +57,13 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
             query = query.eq('requires_site_visits', true);
             console.log('Filtering for projects requiring site visits');
           }
-        } else {
-          console.log('No lead settings provided, fetching all active projects');
-        }
-        
-        // Only filter by hiring status if leadSettings is provided
-        if (leadSettings) {
+          
+          // Only filter by hiring status if leadSettings is provided
           // Add hiring status filter to only get available projects
           query = query.in('hiring_status', ['enquiring', 'hiring']);
           console.log('Filtering for projects with hiring status: enquiring, hiring');
+        } else {
+          console.log('No lead settings provided, fetching all active projects');
         }
         
         // Get the results
