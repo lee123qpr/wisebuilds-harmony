@@ -29,8 +29,8 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       return null;
     }
     
-    // Map database status to frontend status type
-    const status = mapDatabaseStatusToVerificationStatus(data.status);
+    // Map database status to frontend status type with explicit string type to avoid recursion
+    const status = mapDatabaseStatusToVerificationStatus(data.status as string);
     
     // Return typed verification data
     return {

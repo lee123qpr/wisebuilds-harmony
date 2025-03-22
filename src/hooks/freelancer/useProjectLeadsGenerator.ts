@@ -24,6 +24,8 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
         
         // Apply filters only if leadSettings is provided
         if (leadSettings) {
+          console.log('Applying lead setting filters');
+          
           // Filter by role if specified and not 'any'
           if (leadSettings.role && leadSettings.role !== 'any' && leadSettings.role !== 'Any') {
             // Use ilike for case-insensitive partial matching
@@ -55,10 +57,16 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
             query = query.eq('requires_site_visits', true);
             console.log('Filtering for projects requiring site visits');
           }
+        } else {
+          console.log('No lead settings provided, fetching all active projects');
         }
         
-        // Add hiring status filter to only get available projects
-        query = query.in('hiring_status', ['enquiring', 'hiring']);
+        // Only filter by hiring status if leadSettings is provided
+        if (leadSettings) {
+          // Add hiring status filter to only get available projects
+          query = query.in('hiring_status', ['enquiring', 'hiring']);
+          console.log('Filtering for projects with hiring status: enquiring, hiring');
+        }
         
         // Get the results
         const { data, error } = await query;
