@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useCallback } from 'react';
 import { useProjectsWithFiltering } from '@/hooks/projects/useProjectsWithFiltering';
 import { LeadSettings } from '@/hooks/freelancer/types';
 import ProjectListView from '@/components/dashboard/freelancer/ProjectListView';
@@ -48,7 +48,11 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
   useEffect(() => {
     // Refetch leads data when the component mounts
     queryClient.invalidateQueries({ queryKey: ['leads'] });
-  }, [queryClient]);
+    queryClient.refetchQueries({ queryKey: ['leads'] });
+    
+    // Explicitly get fresh data from server
+    refreshProjects();
+  }, [queryClient, refreshProjects]);
 
   // Handle refresh - improved to use the refreshProjects function
   const handleRefresh = async () => {
@@ -61,17 +65,19 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
     });
     
     try {
-      // Use the refreshProjects function from useProjectsWithFiltering
-      await refreshProjects();
-      
-      // Force a refresh of the lead settings as well
+      // Force a full refresh
       await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
       await queryClient.invalidateQueries({ queryKey: ['leads'] });
       await queryClient.refetchQueries({ queryKey: ['leads'] });
       
-      // Sometimes we need a full page refresh to get updated data
+      // Use the refreshProjects function from useProjectsWithFiltering
+      const refreshResult = await refreshProjects();
+      console.log('Projects refresh result:', refreshResult);
+      
+      // Sometimes a more aggressive refresh is needed
       if (filteredProjects.length === 0) {
-        window.location.reload();
+        await queryClient.resetQueries({ queryKey: ['leads'] });
+        await queryClient.refetchQueries({ queryKey: ['leads'] });
       }
     } catch (error) {
       console.error('Error refreshing leads:', error);
@@ -86,11 +92,21 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
   };
 
   // Handle purchase success to refresh leads data
-  const handlePurchaseSuccess = () => {
+  const handlePurchaseSuccess = useCallback(async () => {
     console.log('Lead purchase success, refreshing leads data...');
-    queryClient.invalidateQueries({ queryKey: ['leads'] });
-    queryClient.refetchQueries({ queryKey: ['leads'] });
-  };
+    try {
+      await queryClient.invalidateQueries({ queryKey: ['leads'] });
+      await queryClient.refetchQueries({ queryKey: ['leads'] });
+      await refreshProjects();
+      
+      toast({
+        title: "Lead Purchase Successful",
+        description: "Your lead list has been updated with your new purchase.",
+      });
+    } catch (error) {
+      console.error('Error refreshing after purchase:', error);
+    }
+  }, [queryClient, refreshProjects]);
   
   // If loading or no settings, show alert
   if (isLoadingSettings) {

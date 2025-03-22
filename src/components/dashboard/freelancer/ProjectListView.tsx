@@ -43,7 +43,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
     new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
   );
 
-  const handlePurchaseSuccess = () => {
+  const handlePurchaseSuccess = async () => {
     toast({
       title: 'Lead purchased',
       description: 'You can now view the client contact information',
@@ -59,12 +59,20 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
     }
     
     // Invalidate both applications and leads queries to refresh data
-    queryClient.invalidateQueries({ queryKey: ['applications'] });
-    queryClient.invalidateQueries({ queryKey: ['leads'] });
+    await queryClient.invalidateQueries({ queryKey: ['applications'] });
+    await queryClient.invalidateQueries({ queryKey: ['leads'] });
+    
+    // Force refetch to ensure the UI reflects the update
+    await queryClient.refetchQueries({ queryKey: ['applications'] });
+    await queryClient.refetchQueries({ queryKey: ['leads'] });
+    
+    // Reset the leads query data to force a server refetch
+    queryClient.resetQueries({ queryKey: ['leads'] });
     
     // Call the parent's onPurchaseSuccess if provided
     if (onPurchaseSuccess) {
-      onPurchaseSuccess();
+      console.log('Calling parent onPurchaseSuccess callback');
+      await onPurchaseSuccess();
     }
   };
 

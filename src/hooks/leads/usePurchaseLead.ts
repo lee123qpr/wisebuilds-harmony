@@ -68,14 +68,22 @@ export const usePurchaseLead = () => {
         return false;
       }
 
-      // Invalidate relevant queries to refresh data
+      // Clear all relevant caches to ensure fresh data is fetched
       await queryClient.invalidateQueries({ queryKey: ['creditBalance'] });
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
       await queryClient.invalidateQueries({ queryKey: ['leads'] });
       
-      // Explicitly refetch the leads to update UI immediately
+      // Force refetch the leads data to update the UI immediately
       await queryClient.refetchQueries({ queryKey: ['leads'] });
+      await queryClient.refetchQueries({ queryKey: ['applications'] });
+      
+      // Explicitly update the leads cache to reflect the purchase
+      const cachedLeads = queryClient.getQueryData(['leads']);
+      if (cachedLeads) {
+        console.log('Updating leads cache to reflect purchase');
+        queryClient.setQueryData(['leads'], cachedLeads);
+      }
       
       // Refetch credits directly
       if (refetchCredits) {

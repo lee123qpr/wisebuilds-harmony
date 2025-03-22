@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+
+import { useState, useEffect, useCallback } from 'react';
 import { useLeadSettingsData } from '@/hooks/freelancer/useLeadSettingsData';
 import { useProjectLeadsGenerator } from '@/hooks/freelancer/useProjectLeadsGenerator';
 import { ProjectLead } from '@/types/projects';
@@ -19,20 +20,26 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
     console.log('UseProjectsWithFiltering using settings:', settingsToUse);
   }, [settingsToUse]);
   
-  const { projectLeads, isLoading: isLeadsLoading } = useProjectLeadsGenerator(settingsToUse);
+  const { projectLeads, isLoading: isLeadsLoading, refetch: refetchLeads } = useProjectLeadsGenerator(settingsToUse);
   
   const [filteredLeads, setFilteredLeads] = useState<ProjectLead[]>([]);
   
   useEffect(() => {
     console.log('Project leads updated:', projectLeads);
     console.log('Number of leads received:', projectLeads.length);
-    setFilteredLeads(projectLeads);
+    
+    // Sort leads by newest first (latest created_at date)
+    const sortedLeads = [...projectLeads].sort((a, b) => 
+      new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
+    
+    setFilteredLeads(sortedLeads);
     
     // Update the leads cache when we get new data
-    queryClient.setQueryData(['leads'], projectLeads);
+    queryClient.setQueryData(['leads'], sortedLeads);
   }, [projectLeads, queryClient]);
   
-  const refreshProjects = async () => {
+  const refreshProjects = useCallback(async () => {
     console.log('Refreshing projects...');
     try {
       // Force a refresh of lead settings if available
@@ -46,8 +53,12 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
         description: "Looking for new projects...",
       });
       
-      // Since useProjectLeadsGenerator doesn't have a refresh function,
-      // we need to force a manual refresh by invalidating queries
+      // Explicitly refetch leads using the function from useProjectLeadsGenerator
+      if (refetchLeads) {
+        await refetchLeads();
+      }
+      
+      // Ensure all queries are refetched from the server
       await queryClient.refetchQueries({ queryKey: ['leads'] });
       
       return true;
@@ -60,7 +71,7 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
       });
       return false;
     }
-  };
+  }, [queryClient, refetchLeads]);
   
   return {
     projectLeads: filteredLeads,
