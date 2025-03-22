@@ -4,10 +4,13 @@ import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, AlertTriangle, Clock } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import { useReviewSubmission } from '@/hooks/projects/useReviewSubmission';
+import IncompleteProjectDialog from './completion/IncompleteProjectDialog';
+import { useProjectCompletion } from '@/hooks/projects/useProjectCompletion';
 
 interface ProjectCompletionStatusProps {
   quoteId: string;
@@ -34,12 +37,17 @@ const ProjectCompletionStatus: React.FC<ProjectCompletionStatusProps> = ({
   } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasReviewed, setHasReviewed] = useState(false);
+  const [incompleteDialogOpen, setIncompleteDialogOpen] = useState(false);
   
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
   const revieweeId = isFreelancer ? clientId : freelancerId;
   const revieweeName = isFreelancer ? clientName : freelancerName;
   
   const { checkReviewExists } = useReviewSubmission();
+  const { markProjectIncomplete, isMarkingIncomplete } = useProjectCompletion({ 
+    quoteId, 
+    projectId 
+  });
   
   const loadCompletionStatus = async () => {
     setIsLoading(true);
@@ -76,6 +84,11 @@ const ProjectCompletionStatus: React.FC<ProjectCompletionStatusProps> = ({
   
   const handleReviewSubmitted = () => {
     setHasReviewed(true);
+  };
+  
+  const handleIncomplete = (reason: string) => {
+    markProjectIncomplete({ reason });
+    setIncompleteDialogOpen(false);
   };
   
   if (isLoading) {
@@ -175,16 +188,42 @@ const ProjectCompletionStatus: React.FC<ProjectCompletionStatusProps> = ({
       </CardHeader>
       
       <CardContent>
-        <Alert className={userCompleted 
-          ? "bg-blue-50 text-blue-700 border-blue-200" 
-          : "bg-yellow-50 text-yellow-700 border-yellow-200"}>
-          <AlertTriangle className="h-4 w-4" />
-          <AlertDescription>
-            {userCompleted 
-              ? `You've marked this project as complete. The project will be finalized once the ${otherPartyLabel.toLowerCase()} confirms completion.` 
-              : `The ${otherPartyLabel.toLowerCase()} has marked this project as complete. Please confirm if you agree the work is completed.`}
-          </AlertDescription>
-        </Alert>
+        <div className="space-y-4">
+          <Alert className={userCompleted 
+            ? "bg-blue-50 text-blue-700 border-blue-200" 
+            : "bg-yellow-50 text-yellow-700 border-yellow-200"}>
+            <AlertTriangle className="h-4 w-4" />
+            <AlertDescription>
+              {userCompleted 
+                ? `You've marked this project as complete. The project will be finalized once the ${otherPartyLabel.toLowerCase()} confirms completion.` 
+                : `The ${otherPartyLabel.toLowerCase()} has marked this project as complete. Please confirm if you agree the work is completed.`}
+            </AlertDescription>
+          </Alert>
+          
+          {/* Show an option to mark as incomplete if the user wants to dispute */}
+          {(userCompleted || otherPartyCompleted) && (
+            <div className="flex justify-end">
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="text-red-600 border-red-200 hover:bg-red-50 flex items-center gap-1"
+                onClick={() => setIncompleteDialogOpen(true)}
+              >
+                <X className="h-4 w-4" />
+                Dispute Completion
+              </Button>
+            </div>
+          )}
+        </div>
+        
+        {/* Incomplete dialog for providing a reason */}
+        <IncompleteProjectDialog
+          open={incompleteDialogOpen}
+          onOpenChange={setIncompleteDialogOpen}
+          onConfirm={handleIncomplete}
+          isProcessing={isMarkingIncomplete}
+          otherPartyLabel={otherPartyLabel}
+        />
       </CardContent>
     </Card>
   );

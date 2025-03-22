@@ -82,6 +82,73 @@ const updateQuoteCompletionStatus = async (
 };
 
 /**
+ * Marks a project as incomplete and sends a reason message
+ */
+const revertCompletionStatus = async (
+  quoteId: string,
+  projectId: string,
+  userId: string,
+  isFreelancer: boolean,
+  reason: string
+) => {
+  console.log('Marking project as incomplete:', { projectId, quoteId, userId, isFreelancer });
+  
+  try {
+    // Start a transaction to ensure both operations succeed or fail together
+    const updateField = isFreelancer ? 'freelancer_completed' : 'client_completed';
+    
+    // 1. Update the completion status to false
+    const { error: updateError } = await supabase
+      .from('quotes')
+      .update({ [updateField]: false })
+      .eq('id', quoteId);
+      
+    if (updateError) {
+      console.error('Error reverting completion status:', updateError);
+      throw updateError;
+    }
+    
+    // 2. Create a new message in the conversation
+    // First, get the conversation ID
+    const { data: conversationData, error: convError } = await supabase
+      .from('conversations')
+      .select('id')
+      .eq('project_id', projectId)
+      .single();
+      
+    if (convError) {
+      console.error('Error finding conversation:', convError);
+      throw convError;
+    }
+    
+    // Then, send the message
+    const conversationId = conversationData.id;
+    const completionMessageText = isFreelancer 
+      ? "I've marked this project as incomplete because: " + reason
+      : "I've marked this project as incomplete because: " + reason;
+      
+    const { error: messageError } = await supabase
+      .from('messages')
+      .insert({
+        conversation_id: conversationId,
+        sender_id: userId,
+        message: completionMessageText
+      });
+      
+    if (messageError) {
+      console.error('Error sending completion message:', messageError);
+      throw messageError;
+    }
+    
+    // Return success with conversation details
+    return { success: true, conversationId };
+  } catch (error) {
+    console.error('Exception in project revert completion:', error);
+    throw error;
+  }
+};
+
+/**
  * Handles successful completion status update and shows appropriate toast notifications
  */
 const handleCompletionSuccess = (data: any, isFreelancer: boolean, user: any) => {
@@ -155,9 +222,46 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
     }
   });
   
+  // Add a new mutation for marking a project as incomplete
+  const markProjectIncompleteMutation = useMutation({
+    mutationFn: async ({ reason }: { reason: string }) => {
+      if (!user?.id || !quoteId) {
+        console.error('Error marking project as incomplete: User ID or Quote ID missing');
+        throw new Error('User ID or Quote ID missing');
+      }
+      
+      const isFreelancer = user.user_metadata?.user_type === 'freelancer';
+      console.log('User type:', isFreelancer ? 'freelancer' : 'client');
+      
+      return revertCompletionStatus(quoteId, projectId, user.id, isFreelancer, reason);
+    },
+    onSuccess: (data) => {
+      // Invalidate relevant queries to refresh the data
+      queryClient.invalidateQueries({ queryKey: ['quotes'] });
+      queryClient.invalidateQueries({ queryKey: ['projects'] });
+      queryClient.invalidateQueries({ queryKey: ['messages'] });
+      
+      toast({
+        title: 'Project marked as incomplete',
+        description: 'Your feedback has been sent to the other party.',
+        variant: 'default'
+      });
+    },
+    onError: (error) => {
+      console.error('Error marking project as incomplete:', error);
+      toast({
+        title: 'Failed to mark project as incomplete',
+        description: error instanceof Error ? error.message : 'Please try again',
+        variant: 'destructive'
+      });
+    }
+  });
+  
   return {
     markProjectCompleted: markProjectCompletedMutation.mutate,
     isMarkingComplete: markProjectCompletedMutation.isPending,
+    markProjectIncomplete: markProjectIncompleteMutation.mutate,
+    isMarkingIncomplete: markProjectIncompleteMutation.isPending,
     checkCompletionStatus,
   };
 };
