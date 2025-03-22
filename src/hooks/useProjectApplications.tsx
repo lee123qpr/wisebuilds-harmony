@@ -4,13 +4,13 @@ import { supabase } from '@/integrations/supabase/client';
 
 export const useProjectApplications = (projectId: string) => {
   const [applications, setApplications] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const fetchApplications = async () => {
       try {
-        setLoading(true);
+        setIsLoading(true);
 
         const { data, error } = await supabase
           .from('project_applications')
@@ -46,18 +46,24 @@ export const useProjectApplications = (projectId: string) => {
               });
 
               return {
-                ...application,
+                id: application.id,
+                created_at: application.created_at,
+                message: application.message,
+                user_id: application.user_id,
                 user: {
-                  ...application.user,
+                  ...(application.user || {}),
                   is_verified: isVerified || false
                 }
               };
             } catch (error) {
               console.error('Error checking verification status:', error);
               return {
-                ...application,
+                id: application.id,
+                created_at: application.created_at,
+                message: application.message,
+                user_id: application.user_id,
                 user: {
-                  ...application.user,
+                  ...(application.user || {}),
                   is_verified: false
                 }
               };
@@ -70,7 +76,7 @@ export const useProjectApplications = (projectId: string) => {
         console.error('Error fetching applications:', err);
         setError(err);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -79,6 +85,5 @@ export const useProjectApplications = (projectId: string) => {
     }
   }, [projectId]);
 
-  // Match the expected property names in the component
-  return { applications, isLoading: loading, error };
+  return { applications, isLoading, error };
 };

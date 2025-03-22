@@ -44,9 +44,9 @@ const VerificationList: React.FC<VerificationListProps> = ({
                     <p className="font-medium">{verification.user_full_name}</p>
                     <p className="text-sm text-muted-foreground">{verification.user_email}</p>
                     <div className="flex items-center mt-1 space-x-2">
-                      <VerificationStatusBadge status={verification.verification_status} />
+                      <VerificationStatusBadge status={verification.status || verification.verification_status || 'pending'} />
                       <span className="text-xs text-muted-foreground">
-                        Submitted: {format(new Date(verification.submitted_at), 'MMM d, yyyy')}
+                        Submitted: {verification.submitted_at ? format(new Date(verification.submitted_at), 'MMM d, yyyy') : 'N/A'}
                       </span>
                     </div>
                   </div>

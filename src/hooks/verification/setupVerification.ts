@@ -24,35 +24,41 @@ export const setupVerification = async (): Promise<{ success: boolean; message: 
   }
 };
 
-// Additional helper to create bucket policies using RPC instead of direct API calls
+// Modified to use direct SQL functions instead of RPC
 export const createBucketPolicies = async (bucketName: string): Promise<boolean> => {
   try {
-    // Use RPC calls instead of direct policy creation
+    // Use direct SQL functions instead of RPC calls
     // For upload policy
-    await supabase.rpc('create_storage_policy', {
-      bucket_name: bucketName,
-      policy_name: 'Users can upload their own documents',
-      operation: 'INSERT',
-      policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`
-    });
+    const { error: uploadError } = await supabase.storage.from(bucketName)
+      .createPolicy({
+        name: 'Users can upload their own documents',
+        definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`,
+        allowed_operations: ['INSERT']
+      });
+    
+    if (uploadError) console.error('Error creating upload policy:', uploadError);
     
     // For view policy
-    await supabase.rpc('create_storage_policy', {
-      bucket_name: bucketName,
-      policy_name: 'Users can view their own documents',
-      operation: 'SELECT',
-      policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`
-    });
+    const { error: viewError } = await supabase.storage.from(bucketName)
+      .createPolicy({
+        name: 'Users can view their own documents',
+        definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`,
+        allowed_operations: ['SELECT']
+      });
+    
+    if (viewError) console.error('Error creating view policy:', viewError);
     
     // For delete policy
-    await supabase.rpc('create_storage_policy', {
-      bucket_name: bucketName,
-      policy_name: 'Users can delete their own documents',
-      operation: 'DELETE',
-      policy_definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`
-    });
+    const { error: deleteError } = await supabase.storage.from(bucketName)
+      .createPolicy({
+        name: 'Users can delete their own documents',
+        definition: `(bucket_id = '${bucketName}' AND auth.uid()::text = SPLIT_PART(name, '/', 1))`,
+        allowed_operations: ['DELETE']
+      });
     
-    return true;
+    if (deleteError) console.error('Error creating delete policy:', deleteError);
+    
+    return !(uploadError || viewError || deleteError);
   } catch (error) {
     console.error('Error creating bucket policies:', error);
     return false;

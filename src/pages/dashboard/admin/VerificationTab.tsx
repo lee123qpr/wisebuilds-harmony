@@ -3,24 +3,24 @@ import React, { useState } from 'react';
 import VerificationList from './components/verification/VerificationList';
 import VerificationDetailDialog from './components/verification/VerificationDetailDialog';
 import { useVerifications } from './hooks/useVerifications';
-import { Verification } from './hooks/useVerifications';
+import { Verification } from './types';
 
 const VerificationTab = () => {
   const {
     verifications,
-    loading: isLoading,
+    loading,
     error,
     refreshVerifications
   } = useVerifications();
   
-  // Add missing state for detail dialog
+  // Add state for detail dialog
   const [selectedVerification, setSelectedVerification] = useState<Verification | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [documentUrl, setDocumentUrl] = useState<string | null>(null);
   const [adminNotes, setAdminNotes] = useState('');
   const [isUpdating, setIsUpdating] = useState(false);
   
-  // Add missing functions
+  // Add functions
   const viewDocument = (verification: Verification) => {
     setSelectedVerification(verification);
     setAdminNotes(verification.admin_notes || '');
@@ -54,8 +54,8 @@ const VerificationTab = () => {
   return (
     <>
       <VerificationList 
-        verifications={verifications as any[]}
-        isLoading={isLoading}
+        verifications={verifications}
+        isLoading={loading}
         onViewDocument={viewDocument}
       />
 

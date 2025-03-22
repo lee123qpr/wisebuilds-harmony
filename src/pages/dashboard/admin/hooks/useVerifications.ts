@@ -1,21 +1,9 @@
 
 import { useState, useEffect } from 'react';
 import { fetchAllVerifications, getUserInfoForVerification } from '../services/verificationService';
+import { Verification } from '../types';
 
-export interface Verification {
-  id: string;
-  user_id: string;
-  document_path: string | null;
-  status: 'not_submitted' | 'pending' | 'verified' | 'rejected';
-  submitted_at: string | null;
-  admin_notes: string | null;
-  reviewed_at: string | null;
-  document_name: string | null;
-  document_type: string | null;
-  document_size: number | null;
-  user_email: string;
-  user_full_name: string;
-}
+export type { Verification };
 
 export const useVerifications = () => {
   const [verifications, setVerifications] = useState<Verification[]>([]);
@@ -34,7 +22,10 @@ export const useVerifications = () => {
             const userInfo = await getUserInfoForVerification(verification.user_id);
             return {
               ...verification,
-              ...userInfo
+              ...userInfo,
+              // Ensure all required fields are present
+              verification_status: verification.status,
+              id_document_path: verification.document_path
             };
           })
         );
@@ -62,7 +53,10 @@ export const useVerifications = () => {
           const userInfo = await getUserInfoForVerification(verification.user_id);
           return {
             ...verification,
-            ...userInfo
+            ...userInfo,
+            // Ensure all required fields are present
+            verification_status: verification.status,
+            id_document_path: verification.document_path
           };
         })
       );
