@@ -25,16 +25,22 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
   const [filteredLeads, setFilteredLeads] = useState<ProjectLead[]>([]);
   
   useEffect(() => {
-    console.log('Project leads updated:', projectLeads);
+    console.log('Project leads updated in useProjectsWithFiltering:', projectLeads);
     console.log('Number of leads received:', projectLeads.length);
     
     if (useFiltering) {
-      // For My Leads tab, only show active and available projects (not hired or completed)
+      // For My Leads tab with filtering enabled, ensure we only show active projects
+      // that are neither hired nor completed
       const activeLeads = projectLeads.filter(project => {
-        // Filter out projects that are completed or already hired for
         const isActive = project.status === 'active';
-        const isNotHired = project.hiring_status !== 'hired' && project.hiring_status !== 'completed';
-        return isActive && isNotHired;
+        const isAvailable = project.hiring_status === 'enquiring' || project.hiring_status === 'hiring';
+        const result = isActive && isAvailable;
+        
+        if (!result) {
+          console.log(`Filtering out project ${project.id}: status=${project.status}, hiring_status=${project.hiring_status}`);
+        }
+        
+        return result;
       });
       
       console.log('Filtered leads for My Leads tab:', activeLeads.length);
@@ -51,7 +57,7 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
     console.log('Refreshing projects...');
     try {
       // Force a refresh of lead settings if available
-      queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+      await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
       
       // Force a new fetch of project leads
       toast({
@@ -59,9 +65,7 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
         description: "Looking for new projects...",
       });
       
-      // Since useProjectLeadsGenerator doesn't have a refresh function,
-      // we're reloading the window for now, but in a production app
-      // you'd want to implement a better refresh mechanism
+      // Force reloading the window to ensure a clean refresh
       window.location.reload();
       
       return true;

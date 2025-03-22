@@ -22,7 +22,7 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           .eq('status', 'active')
           .order('created_at', { ascending: false }); // Order by created_at descending (newest first)
         
-        // Apply filters only if leadSettings is provided
+        // Apply filters only if leadSettings is provided (for My Leads tab)
         if (leadSettings) {
           console.log('Applying lead setting filters');
           
@@ -57,18 +57,18 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
             query = query.eq('requires_site_visits', true);
             console.log('Filtering for projects requiring site visits');
           }
-          
-          // For the "My Leads" tab, we want to filter by hiring status
-          // to only show available projects (enquiring or hiring)
+        }
+        
+        // For the My Leads tab (with lead settings), also filter by hiring status
+        // For the Available Projects tab (no lead settings), don't filter by hiring status
+        if (leadSettings) {
           query = query.in('hiring_status', ['enquiring', 'hiring']);
           console.log('Filtering for projects with hiring status: enquiring, hiring');
         } else {
-          console.log('No lead settings provided, fetching all active projects');
-          // When no lead settings are provided (Available Projects tab),
-          // we don't filter by hiring status so we show all active projects
+          console.log('No lead settings provided - showing all active projects regardless of hiring status');
         }
         
-        // Get the results
+        // Execute the query
         const { data, error } = await query;
         
         if (error) {
