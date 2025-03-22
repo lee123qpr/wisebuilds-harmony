@@ -72,6 +72,10 @@ export const usePurchaseLead = () => {
       await queryClient.invalidateQueries({ queryKey: ['creditBalance'] });
       await queryClient.invalidateQueries({ queryKey: ['applications'] });
       await queryClient.invalidateQueries({ queryKey: ['projects'] });
+      await queryClient.invalidateQueries({ queryKey: ['leads'] });
+      
+      // Explicitly refetch the leads to update UI immediately
+      await queryClient.refetchQueries({ queryKey: ['leads'] });
       
       // Refetch credits directly
       if (refetchCredits) {

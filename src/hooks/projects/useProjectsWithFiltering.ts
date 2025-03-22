@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { useLeadSettingsData } from '@/hooks/freelancer/useLeadSettingsData';
 import { useProjectLeadsGenerator } from '@/hooks/freelancer/useProjectLeadsGenerator';
@@ -28,7 +27,10 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
     console.log('Project leads updated:', projectLeads);
     console.log('Number of leads received:', projectLeads.length);
     setFilteredLeads(projectLeads);
-  }, [projectLeads]);
+    
+    // Update the leads cache when we get new data
+    queryClient.setQueryData(['leads'], projectLeads);
+  }, [projectLeads, queryClient]);
   
   const refreshProjects = async () => {
     console.log('Refreshing projects...');
@@ -36,16 +38,17 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
       // Force a refresh of lead settings if available
       queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
       
-      // Force a new fetch of project leads
+      // Force a new fetch of project leads and cache with the 'leads' key
+      queryClient.invalidateQueries({ queryKey: ['leads'] });
+      
       toast({
         title: "Refreshing projects",
         description: "Looking for new projects...",
       });
       
       // Since useProjectLeadsGenerator doesn't have a refresh function,
-      // we're reloading the window for now, but in a production app
-      // you'd want to implement a better refresh mechanism
-      window.location.reload();
+      // we need to force a manual refresh by invalidating queries
+      await queryClient.refetchQueries({ queryKey: ['leads'] });
       
       return true;
     } catch (error) {

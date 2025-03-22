@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
@@ -19,6 +20,7 @@ interface ProjectListViewProps {
   setSelectedProjectId: (id: string) => void;
   selectedProject: Project | null;
   showContactInfo?: boolean;
+  onPurchaseSuccess?: () => void;
 }
 
 const ProjectListView: React.FC<ProjectListViewProps> = ({
@@ -27,7 +29,8 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   selectedProjectId,
   setSelectedProjectId,
   selectedProject,
-  showContactInfo = false
+  showContactInfo = false,
+  onPurchaseSuccess
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -55,7 +58,14 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
       }));
     }
     
+    // Invalidate both applications and leads queries to refresh data
     queryClient.invalidateQueries({ queryKey: ['applications'] });
+    queryClient.invalidateQueries({ queryKey: ['leads'] });
+    
+    // Call the parent's onPurchaseSuccess if provided
+    if (onPurchaseSuccess) {
+      onPurchaseSuccess();
+    }
   };
 
   useEffect(() => {

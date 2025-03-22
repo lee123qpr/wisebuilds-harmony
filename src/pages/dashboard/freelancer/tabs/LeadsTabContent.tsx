@@ -44,6 +44,12 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
     }
   }, [filteredProjects, selectedProjectId]);
 
+  // Refresh leads when the component mounts and after lead purchases
+  useEffect(() => {
+    // Refetch leads data when the component mounts
+    queryClient.invalidateQueries({ queryKey: ['leads'] });
+  }, [queryClient]);
+
   // Handle refresh - improved to use the refreshProjects function
   const handleRefresh = async () => {
     console.log('Refreshing leads...');
@@ -60,6 +66,8 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
       
       // Force a refresh of the lead settings as well
       await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
+      await queryClient.invalidateQueries({ queryKey: ['leads'] });
+      await queryClient.refetchQueries({ queryKey: ['leads'] });
       
       // Sometimes we need a full page refresh to get updated data
       if (filteredProjects.length === 0) {
@@ -75,6 +83,13 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
     } finally {
       setIsRefreshing(false);
     }
+  };
+
+  // Handle purchase success to refresh leads data
+  const handlePurchaseSuccess = () => {
+    console.log('Lead purchase success, refreshing leads data...');
+    queryClient.invalidateQueries({ queryKey: ['leads'] });
+    queryClient.refetchQueries({ queryKey: ['leads'] });
   };
   
   // If loading or no settings, show alert
@@ -106,6 +121,7 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
           selectedProject={selectedProject as any}
+          onPurchaseSuccess={handlePurchaseSuccess}
         />
       )}
     </div>
