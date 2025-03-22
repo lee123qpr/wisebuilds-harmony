@@ -34,7 +34,7 @@ export const useTransactions = () => {
       return data as CreditTransaction[];
     },
     enabled: !!user,
-    staleTime: 5000, // Consider data stale after 5 seconds
+    staleTime: 0, // Always consider data stale to force fresh fetch
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
@@ -47,6 +47,13 @@ export const useTransactions = () => {
       // Force invalidate the query before refetching
       const result = await refetchTransactions({ cancelRefetch: false });
       console.log('Transaction refresh result:', result.data?.length || 0, 'transactions');
+      
+      // Do a second refetch after a brief delay to ensure we have the latest data
+      setTimeout(async () => {
+        const secondResult = await refetchTransactions({ cancelRefetch: false });
+        console.log('Secondary transaction refresh result:', secondResult.data?.length || 0, 'transactions');
+      }, 1000);
+      
       return result;
     } catch (error) {
       console.error('Error refetching transactions:', error);

@@ -17,6 +17,35 @@ const SuccessPage = () => {
   const [processingComplete, setProcessingComplete] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
+  const [manualUpdateAttempted, setManualUpdateAttempted] = useState(false);
+  
+  // Effect to manually force update a pending transaction
+  const forceUpdateTransaction = async () => {
+    if (!sessionId || manualUpdateAttempted) return;
+    
+    try {
+      console.log(`Attempting to manually update transaction for session: ${sessionId}`);
+      setManualUpdateAttempted(true);
+      
+      const response = await supabase.functions.invoke('webhook-stripe', {
+        body: {
+          type: 'manual_update',
+          data: {
+            sessionId
+          }
+        }
+      });
+      
+      console.log('Manual transaction update response:', response);
+      
+      // Wait a bit then refresh data
+      setTimeout(() => {
+        refetchCredits();
+      }, 1500);
+    } catch (error) {
+      console.error('Exception during manual transaction update:', error);
+    }
+  };
   
   // Effect to handle the initial processing
   useEffect(() => {
@@ -40,14 +69,30 @@ const SuccessPage = () => {
           }
         }
         
+        // First check if the transaction is still pending
+        const { data: transaction } = await supabase
+          .from('credit_transactions')
+          .select('status')
+          .eq('stripe_payment_id', sessionId)
+          .maybeSingle();
+        
+        console.log('Transaction current status:', transaction?.status);
+        
         // Process the checkout success
         handleCheckoutSuccess(sessionId);
         setProcessingComplete(true);
         
+        // If transaction is still pending, try to manually update it after processing
+        if (transaction?.status === 'pending') {
+          setTimeout(() => {
+            forceUpdateTransaction();
+          }, 2000);
+        }
+        
         // After processing, automatically refresh data
         setTimeout(async () => {
           await refetchCredits();
-        }, 1500);
+        }, 2000);
       } else if (!sessionId && !isLoading) {
         // If no session ID, redirect back to credits page after a short delay
         const timer = setTimeout(() => {
@@ -63,24 +108,40 @@ const SuccessPage = () => {
   
   // Effect to automatically try refreshing data if credit balance is 0
   useEffect(() => {
-    if (processingComplete && creditBalance === 0 && retryCount < 3 && !isRefreshing) {
+    if (processingComplete && creditBalance === 0 && retryCount < 5 && !isRefreshing) {
       const timer = setTimeout(async () => {
         console.log(`Auto-refreshing credit data (attempt ${retryCount + 1})`);
         setIsRefreshing(true);
         await refetchCredits();
         setIsRefreshing(false);
         setRetryCount(prev => prev + 1);
+        
+        // If we're on the 3rd retry and balance is still 0, try manual update
+        if (retryCount === 2 && creditBalance === 0 && sessionId) {
+          forceUpdateTransaction();
+        }
       }, 2000);
       
       return () => clearTimeout(timer);
     }
-  }, [processingComplete, creditBalance, retryCount, isRefreshing, refetchCredits]);
+  }, [processingComplete, creditBalance, retryCount, isRefreshing, refetchCredits, sessionId]);
   
   // Manual refresh function for users to force refresh credit balance
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
-    await refetchCredits();
-    setTimeout(() => setIsRefreshing(false), 1000);
+    
+    // If transaction is still pending and we haven't tried a manual update yet
+    if (sessionId && !manualUpdateAttempted) {
+      await forceUpdateTransaction();
+      // Wait a bit longer for the manual update
+      setTimeout(async () => {
+        await refetchCredits();
+        setIsRefreshing(false);
+      }, 2000);
+    } else {
+      await refetchCredits();
+      setTimeout(() => setIsRefreshing(false), 1000);
+    }
   };
   
   return (
@@ -103,7 +164,12 @@ const SuccessPage = () => {
             ) : (
               <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-100">
                 <p className="text-gray-700 font-medium">Refreshing your balance...</p>
-                <p className="text-sm text-gray-500">If your credits don't appear, please click the refresh button below.</p>
+                <p className="text-sm text-gray-500 mb-2">
+                  If your credits don't appear, please click the refresh button below.
+                </p>
+                <p className="text-xs text-gray-400">
+                  (Transaction ID: {sessionId ? sessionId.slice(0, 12) + '...' : 'Not available'})
+                </p>
               </div>
             )}
             

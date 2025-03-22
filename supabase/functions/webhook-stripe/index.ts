@@ -54,15 +54,19 @@ serve(async (req) => {
     // Get the raw body
     const body = await req.text();
     
+    // For debugging - log the raw webhook payload
+    console.log('Received webhook payload:', body.substring(0, 500) + '...');
+    
     // Verify webhook signature and extract the event
     let event;
     try {
-      if (endpointSecret) {
-        event = stripe.webhooks.constructEvent(body, signature!, endpointSecret);
+      if (endpointSecret && signature) {
+        event = stripe.webhooks.constructEvent(body, signature, endpointSecret);
+        console.log('Webhook signature verified successfully');
       } else {
         // For testing without a webhook secret
         event = JSON.parse(body);
-        console.warn('Warning: No webhook secret provided, skipping signature verification');
+        console.warn('Warning: Processing webhook without signature verification');
       }
     } catch (err) {
       console.error(`Webhook signature verification failed: ${err.message}`);
@@ -72,16 +76,117 @@ serve(async (req) => {
       );
     }
 
-    console.log(`Received webhook event: ${event.type}`);
+    console.log(`Received webhook event type: ${event.type}`);
+
+    // For manually updating pending transactions during development/testing
+    if (event.type === 'manual_update' && event.data?.sessionId) {
+      const sessionId = event.data.sessionId;
+      console.log(`Processing manual update for session: ${sessionId}`);
+      
+      // Get transaction info
+      const { data: transaction, error: txError } = await supabase
+        .from('credit_transactions')
+        .select('*')
+        .eq('stripe_payment_id', sessionId)
+        .single();
+      
+      if (txError || !transaction) {
+        console.error('Transaction not found:', txError);
+        return new Response(
+          JSON.stringify({ error: 'Transaction not found' }),
+          { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      
+      // Update transaction status
+      await supabase
+        .from('credit_transactions')
+        .update({ status: 'completed' })
+        .eq('stripe_payment_id', sessionId);
+      
+      // Add credits to user's balance
+      const userId = transaction.user_id;
+      const credits = transaction.credits_purchased;
+      
+      // Check if user already has a credit record
+      const { data: creditRecord } = await supabase
+        .from('freelancer_credits')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+      
+      if (creditRecord) {
+        // Update existing record
+        await supabase
+          .from('freelancer_credits')
+          .update({ 
+            credit_balance: creditRecord.credit_balance + credits
+          })
+          .eq('user_id', userId);
+      } else {
+        // Create new record
+        await supabase
+          .from('freelancer_credits')
+          .insert({ 
+            user_id: userId, 
+            credit_balance: credits
+          });
+      }
+      
+      console.log(`Manual update completed for session ${sessionId}: added ${credits} credits for user ${userId}`);
+      return new Response(
+        JSON.stringify({ success: true, message: 'Manual update completed' }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
 
     // Handle the checkout.session.completed event
     if (event.type === 'checkout.session.completed') {
       const session = event.data.object;
-      const { userId, credits } = session.metadata;
-      const paymentStatus = session.payment_status;
+      console.log('Processing completed checkout session:', session.id);
+      
+      // Extract critical info from session
       const sessionId = session.id;
+      const paymentStatus = session.payment_status;
+      let userId, credits;
+      
+      // Get metadata from session or from database if not available
+      if (session.metadata && session.metadata.userId && session.metadata.credits) {
+        userId = session.metadata.userId;
+        credits = parseInt(session.metadata.credits, 10);
+        console.log(`Metadata from session: userId=${userId}, credits=${credits}`);
+      } else {
+        // If metadata is missing, try to get it from the transaction record
+        console.log('Metadata missing from session, fetching from database');
+        const { data: transaction, error: txError } = await supabase
+          .from('credit_transactions')
+          .select('*')
+          .eq('stripe_payment_id', sessionId)
+          .single();
+        
+        if (txError || !transaction) {
+          console.error('Transaction not found:', txError);
+          return new Response(
+            JSON.stringify({ error: 'Transaction not found and no metadata available' }),
+            { status: 404, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          );
+        }
+        
+        userId = transaction.user_id;
+        credits = transaction.credits_purchased;
+        console.log(`Data from transaction record: userId=${userId}, credits=${credits}`);
+      }
 
-      console.log(`Processing completed checkout for user: ${userId}, credits: ${credits}, status: ${paymentStatus}`);
+      // Validate required data
+      if (!userId || !credits) {
+        console.error('Missing required data:', { userId, credits });
+        return new Response(
+          JSON.stringify({ error: 'Missing required data (userId or credits)' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log(`Processing completed checkout: user=${userId}, credits=${credits}, status=${paymentStatus}`);
 
       if (paymentStatus === 'paid') {
         // Update the transaction status to completed
@@ -122,7 +227,7 @@ serve(async (req) => {
           const { error: updateBalanceError } = await supabase
             .from('freelancer_credits')
             .update({ 
-              credit_balance: creditRecord.credit_balance + parseInt(credits, 10) 
+              credit_balance: creditRecord.credit_balance + credits 
             })
             .eq('user_id', userId);
 
@@ -134,14 +239,14 @@ serve(async (req) => {
             );
           }
           
-          console.log(`Updated credit balance for user ${userId}: added ${credits} credits, new balance: ${creditRecord.credit_balance + parseInt(credits, 10)}`);
+          console.log(`Updated credit balance for user ${userId}: added ${credits} credits, new balance: ${creditRecord.credit_balance + credits}`);
         } else {
           // Create new record
           const { error: insertError } = await supabase
             .from('freelancer_credits')
             .insert({ 
               user_id: userId, 
-              credit_balance: parseInt(credits, 10) 
+              credit_balance: credits 
             });
 
           if (insertError) {
