@@ -30,10 +30,15 @@ export const useTransactions = () => {
       
       // Only attempt to update pending transactions that haven't been updated recently
       const pendingTransactions = data?.filter(tx => {
+        // Make sure we have a valid transaction with a status
+        if (!tx || tx.status !== 'pending') return false;
+        
         // Use created_at if updated_at is not available
-        const lastUpdateTime = tx.updated_at || tx.created_at;
-        return tx.status === 'pending' && 
-               new Date(lastUpdateTime).getTime() + 5 * 60 * 1000 < Date.now();
+        // Need to use optional chaining since updated_at might not exist
+        const lastUpdateTime = tx.updated_at ?? tx.created_at;
+        
+        // Check if the last update was more than 5 minutes ago
+        return new Date(lastUpdateTime).getTime() + 5 * 60 * 1000 < Date.now();
       }) || [];
       
       if (pendingTransactions.length > 0) {
