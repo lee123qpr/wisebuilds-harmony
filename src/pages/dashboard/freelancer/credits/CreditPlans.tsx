@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -13,6 +13,13 @@ interface CreditPlansProps {
 }
 
 const CreditPlans = ({ plans, onPurchase, isLoading }: CreditPlansProps) => {
+  const [purchasingPlanId, setPurchasingPlanId] = useState<string | null>(null);
+  
+  const handlePurchase = (planId: string) => {
+    setPurchasingPlanId(planId);
+    onPurchase(planId);
+  };
+  
   if (isLoading) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -51,6 +58,7 @@ const CreditPlans = ({ plans, onPurchase, isLoading }: CreditPlansProps) => {
       {plans.map((plan) => {
         const priceInPounds = (plan.price / 100).toFixed(2);
         const isBestValue = plan.discount_percentage >= 20;
+        const isPurchasing = purchasingPlanId === plan.id;
         
         return (
           <Card key={plan.id} className={`relative ${isBestValue ? 'border-blue-400 shadow-lg' : ''}`}>
@@ -99,11 +107,11 @@ const CreditPlans = ({ plans, onPurchase, isLoading }: CreditPlansProps) => {
             <CardFooter>
               <Button 
                 className="w-full" 
-                onClick={() => onPurchase(plan.id)}
+                onClick={() => handlePurchase(plan.id)}
                 variant={isBestValue ? "default" : "outline"}
-                disabled={isLoading}
+                disabled={isLoading || !!purchasingPlanId}
               >
-                {isLoading ? (
+                {isPurchasing ? (
                   <>
                     <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                     Processing...

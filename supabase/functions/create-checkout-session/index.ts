@@ -33,7 +33,33 @@ serve(async (req) => {
       apiVersion: '2023-10-16',
     });
 
-    // Parse request body
+    // For test requests - GET method for health check
+    if (req.method === 'GET') {
+      try {
+        // Quick test of the Stripe API to verify API key works
+        const testCustomer = await stripe.customers.list({ limit: 1 });
+        console.log('Stripe API test successful');
+        
+        return new Response(
+          JSON.stringify({ 
+            status: 'Edge function is operational',
+            stripeStatus: 'API key valid'
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      } catch (e) {
+        console.error('Stripe API key test failed:', e.message);
+        return new Response(
+          JSON.stringify({ 
+            status: 'Edge function is operational', 
+            stripeStatus: 'API key invalid or error: ' + e.message
+          }),
+          { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+    }
+
+    // Parse request body for POST requests
     const { planId, userId, successUrl, cancelUrl } = await req.json();
 
     console.log(`Creating checkout session for plan: ${planId} and user: ${userId}`);
@@ -66,7 +92,7 @@ serve(async (req) => {
               currency: 'gbp',
               product_data: {
                 name: `${plan.name} Credit Package`,
-                description: `${plan.credits} credits with ${plan.discount_percentage}% discount`,
+                description: `${plan.credits} credits ${plan.discount_percentage > 0 ? `with ${plan.discount_percentage}% discount` : ''}`,
               },
               unit_amount: plan.price,
             },
@@ -84,6 +110,7 @@ serve(async (req) => {
       });
 
       console.log('Created checkout session:', session.id);
+      console.log('Checkout URL:', session.url);
 
       // Create a transaction record in pending state
       const { data: transaction, error: transactionError } = await supabase
