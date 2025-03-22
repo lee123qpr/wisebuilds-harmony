@@ -70,7 +70,7 @@ export const freelancerProfileSchema = z.object({
   accreditations: z
     .array(z.string())
     .default([]),
-  indemnityInsurance: z
+  indemnity_insurance: z
     .object({
       hasInsurance: z.boolean().default(false),
       coverLevel: z.string().optional().or(z.literal('')),

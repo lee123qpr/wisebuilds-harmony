@@ -3,6 +3,7 @@ import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { freelancerProfileSchema } from '../freelancerSchema';
 import * as z from 'zod';
 import FreelancerSkillsField from './FreelancerSkillsField';
@@ -14,6 +15,24 @@ type FreelancerWorkDetailsFieldsProps = {
   form: UseFormReturn<z.infer<typeof freelancerProfileSchema>>;
   disabled?: boolean;
 };
+
+// Experience options
+const experienceOptions = [
+  "Less than 1 year",
+  "1-2 years",
+  "3-5 years",
+  "5-10 years",
+  "10+ years"
+];
+
+// Availability options
+const availabilityOptions = [
+  "Full-time",
+  "Part-time",
+  "Weekends only",
+  "Evenings only",
+  "Flexible hours"
+];
 
 const FreelancerWorkDetailsFields: React.FC<FreelancerWorkDetailsFieldsProps> = ({ form, disabled = false }) => {
   return (
@@ -42,11 +61,26 @@ const FreelancerWorkDetailsFields: React.FC<FreelancerWorkDetailsFieldsProps> = 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Availability</FormLabel>
-              <FormControl>
-                <Input placeholder="Enter your availability" {...field} disabled={disabled} />
-              </FormControl>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value || ""} 
+                disabled={disabled}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your availability" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {availabilityOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormDescription>
-                E.g. "Full-time", "Part-time", "Weekends only"
+                Your typical working schedule
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -61,11 +95,26 @@ const FreelancerWorkDetailsFields: React.FC<FreelancerWorkDetailsFieldsProps> = 
           render={({ field }) => (
             <FormItem>
               <FormLabel>Experience</FormLabel>
-              <FormControl>
-                <Input placeholder="Years of experience" {...field} disabled={disabled} />
-              </FormControl>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value || ""} 
+                disabled={disabled}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your experience level" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {experienceOptions.map((option) => (
+                    <SelectItem key={option} value={option}>
+                      {option}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormDescription>
-                E.g. "10+ years in residential architecture"
+                Your years of professional experience
               </FormDescription>
               <FormMessage />
             </FormItem>
