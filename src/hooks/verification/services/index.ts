@@ -9,3 +9,5 @@ export {
   isUserFreelancer
 } from './verification-status';
 export { getVerificationBucketName } from './storage-utils';
+export { mapDatabaseStatusToVerificationStatus } from './status-utils';
+
