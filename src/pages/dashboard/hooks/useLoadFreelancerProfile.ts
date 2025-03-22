@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
@@ -6,7 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { freelancerProfileSchema } from '../components/profile/freelancerSchema';
-import { UploadedFile } from '@/components/projects/file-upload/types';
+import { FreelancerEmployer, FreelancerProfileFormData } from '@/types/freelancer';
 
 type FreelancerProfileFormValues = z.infer<typeof freelancerProfileSchema>;
 
@@ -31,7 +30,6 @@ export const useLoadFreelancerProfile = ({
 }: UseLoadFreelancerProfileProps) => {
   const { toast } = useToast();
 
-  // Fetch freelancer profile data
   useEffect(() => {
     async function getProfileData() {
       if (!user) return;
@@ -39,7 +37,6 @@ export const useLoadFreelancerProfile = ({
       try {
         setIsLoading(true);
         
-        // Fetch profile data from the freelancer_profiles table
         const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
           .select('*')
@@ -53,52 +50,52 @@ export const useLoadFreelancerProfile = ({
         console.log('Loaded profile data from database:', profileData);
         
         if (profileData) {
-          // Convert dates to Date objects for previousEmployers
-          let previousEmployers = profileData.previous_employers || [];
-          if (previousEmployers.length > 0) {
-            previousEmployers = previousEmployers.map((employer: any) => ({
-              ...employer,
-              startDate: employer.startDate ? new Date(employer.startDate) : new Date(),
-              endDate: employer.endDate ? new Date(employer.endDate) : null
-            }));
-          }
-          
-          // Handle previous work files
-          let previousWork: UploadedFile[] = [];
-          if (profileData.previous_work && Array.isArray(profileData.previous_work)) {
-            previousWork = profileData.previous_work.map((work: any) => ({
-              name: work.name || '',
-              url: work.url || '',
-              type: work.type || '',
-              size: work.size || 0,
-              path: work.path || ''
-            }));
-          }
+          // Ensure arrays are properly typed or default to empty arrays
+          const previousEmployers = Array.isArray(profileData.previous_employers) 
+            ? (profileData.previous_employers as FreelancerEmployer[]) 
+            : [];
+            
+          const skills = Array.isArray(profileData.skills) 
+            ? profileData.skills as string[] 
+            : [];
+            
+          const qualifications = Array.isArray(profileData.qualifications) 
+            ? profileData.qualifications as string[] 
+            : [];
+            
+          const accreditations = Array.isArray(profileData.accreditations) 
+            ? profileData.accreditations as string[] 
+            : [];
+            
+          const previousWork = Array.isArray(profileData.previous_work) 
+            ? profileData.previous_work as any[] 
+            : [];
+
+          // Ensure indemnity_insurance is properly typed
+          const indemnityInsurance = typeof profileData.indemnity_insurance === 'object' 
+            ? profileData.indemnity_insurance as { hasInsurance: boolean; coverLevel?: string }
+            : { hasInsurance: false };
           
           // Combine first name and last name for full name
           const fullName = profileData.display_name || 
                           `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
           
-          // Populate form with data from the database
           form.reset({
-            fullName: fullName,
+            fullName,
             profession: profileData.job_title || '',
-            previousEmployers: previousEmployers,
+            previousEmployers,
             location: profileData.location || '',
             bio: profileData.bio || '',
             phoneNumber: profileData.phone_number || '',
             website: profileData.website || '',
             hourlyRate: profileData.hourly_rate || '',
             availability: profileData.availability || '',
-            skills: profileData.skills || [],
+            skills,
             experience: profileData.experience || '',
-            qualifications: profileData.qualifications || [],
-            accreditations: profileData.accreditations || [],
-            indemnityInsurance: {
-              hasInsurance: profileData.indemnity_insurance?.hasInsurance || false,
-              coverLevel: profileData.indemnity_insurance?.coverLevel || '',
-            },
-            previousWork: previousWork,
+            qualifications,
+            accreditations,
+            indemnityInsurance,
+            previousWork,
             idVerified: profileData.id_verified || false,
           });
           

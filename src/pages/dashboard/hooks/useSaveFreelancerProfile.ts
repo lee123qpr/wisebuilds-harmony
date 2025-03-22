@@ -20,7 +20,14 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
     try {
       console.log('Saving profile with values:', values);
       
-      // Prepare website URL (ensure it has https:// if not empty)
+      // Convert Date objects to ISO strings for database storage
+      const previousEmployers = values.previousEmployers.map(employer => ({
+        ...employer,
+        startDate: employer.startDate.toISOString(),
+        endDate: employer.endDate ? employer.endDate.toISOString() : null
+      }));
+      
+      // Ensure website URL has https:// if not empty
       const websiteUrl = values.website ? 
         (values.website.match(/^https?:\/\//) ? values.website : `https://${values.website}`) : 
         values.website;
@@ -31,15 +38,15 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
         url: work.url,
         type: work.type,
         size: work.size,
-        path: work.path || '' // Ensure path is included, even if empty
+        path: work.path || ''
       }));
       
-      // Update user metadata to keep it in sync
+      // Update user metadata
       const { error: updateUserError } = await supabase.auth.updateUser({
         data: {
           full_name: values.fullName,
           profession: values.profession,
-          previous_employers: values.previousEmployers,
+          previous_employers: previousEmployers,
           location: values.location,
           bio: values.bio,
           phone_number: values.phoneNumber,
@@ -61,7 +68,7 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
         throw updateUserError;
       }
       
-      // 2. Update the freelancer_profiles table directly
+      // Update the freelancer_profiles table
       const { error: updateProfileError } = await supabase
         .from('freelancer_profiles')
         .update({
@@ -80,18 +87,16 @@ export const useSaveFreelancerProfile = (user: User | null, profileImage: string
           experience: values.experience,
           qualifications: values.qualifications,
           accreditations: values.accreditations,
-          previous_employers: values.previousEmployers,
+          previous_employers: previousEmployers,
           indemnity_insurance: values.indemnityInsurance,
           previous_work: previousWork,
           id_verified: values.idVerified,
-          updated_at: new Date()
+          updated_at: new Date().toISOString()
         })
         .eq('id', user.id);
         
       if (updateProfileError) {
         console.error('Error updating freelancer profile:', updateProfileError);
-        // Don't throw here, as we've already updated the user metadata
-        // which will trigger the database trigger to update the profile
       }
       
       toast({
