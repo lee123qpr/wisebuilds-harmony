@@ -97,8 +97,8 @@ export const getUserVerificationStatus = async (): Promise<VerificationStatus> =
     const verificationData = await fetchVerificationStatus();
     if (!verificationData) return 'not_submitted';
     
-    // Use a more explicit approach to break the type recursion
-    const dbStatus: string = verificationData.status;
+    // Break the type recursion by explicitly typing the status as string
+    const dbStatus = verificationData.status as string;
     return mapDatabaseStatusToVerificationStatus(dbStatus);
   } catch (error) {
     console.error('Error getting user verification status:', error);
