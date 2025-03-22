@@ -11,8 +11,6 @@ export const useRefreshCredits = (
 
   // Enhanced refetch function that refreshes all credit-related data
   const refreshAllCreditData = async () => {
-    console.log('Refreshing all credit data');
-    
     if (!user) {
       console.log('No user logged in, cannot refresh credit data');
       return;
@@ -43,22 +41,12 @@ export const useRefreshCredits = (
       
       // Wait for all refetch operations to complete
       const results = await Promise.all(promises);
-      console.log('All credit data refreshed successfully:', results);
-      
-      // Try a second refresh after a short delay to ensure we have the latest data
-      setTimeout(async () => {
-        try {
-          if (refetchCreditsBalance) await refetchCreditsBalance();
-          if (refetchTransactionsHistory) await refetchTransactionsHistory();
-          console.log('Second credit data refresh completed');
-        } catch (err) {
-          console.error('Error in delayed credit refresh:', err);
-        }
-      }, 2000);
+      console.log('Credit data refreshed successfully');
       
       return results;
     } catch (error) {
       console.error('Error refreshing credit data:', error);
+      throw error;
     }
   };
   

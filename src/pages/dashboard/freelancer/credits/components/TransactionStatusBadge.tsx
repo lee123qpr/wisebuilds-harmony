@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { CheckCircle, Clock } from 'lucide-react';
+import { Clock } from 'lucide-react';
 
 interface TransactionStatusBadgeProps {
   isTransactionPending: boolean;
@@ -8,6 +8,11 @@ interface TransactionStatusBadgeProps {
 }
 
 const TransactionStatusBadge = ({ isTransactionPending, sessionId }: TransactionStatusBadgeProps) => {
+  // Only show first 4 and last 4 characters of session ID for security
+  const maskedSessionId = sessionId 
+    ? `${sessionId.substring(0, 4)}...${sessionId.substring(sessionId.length - 4)}`
+    : 'Not available';
+    
   return (
     <div className="mb-6 p-4 bg-yellow-50 rounded-lg border border-yellow-100">
       <p className="text-gray-700 font-medium">Refreshing your balance...</p>
@@ -20,7 +25,7 @@ const TransactionStatusBadge = ({ isTransactionPending, sessionId }: Transaction
         </p>
       )}
       <p className="text-xs text-gray-400">
-        (Transaction ID: {sessionId ? sessionId.slice(0, 12) + '...' : 'Not available'})
+        (Transaction ID: {maskedSessionId})
       </p>
     </div>
   );

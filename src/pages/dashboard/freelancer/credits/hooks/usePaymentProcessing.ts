@@ -17,14 +17,14 @@ export const usePaymentProcessing = (sessionId: string | null) => {
   const [initialLoad, setInitialLoad] = useState(true);
   const { toast } = useToast();
   
-  // Check if the current transaction is pending
+  // Check if the current transaction is pending - but avoid exposing full session ID
   const isTransactionPending = !!(transactions && sessionId && 
     transactions.find(tx => tx.stripe_payment_id === sessionId)?.status === 'pending');
 
-  // Effect to handle initial session check and stripe status
+  // Effect to handle initial session check
   useEffect(() => {
     const checkStripeSession = async () => {
-      if (!sessionId) return;
+      if (!sessionId || !user) return;
       
       try {
         const { data: transaction } = await supabase
@@ -33,10 +33,7 @@ export const usePaymentProcessing = (sessionId: string | null) => {
           .eq('stripe_payment_id', sessionId)
           .maybeSingle();
           
-        console.log('Transaction found with status:', transaction?.status);
-        
         if (transaction?.status === 'completed') {
-          console.log('Transaction already completed');
           setProcessingComplete(true);
           refetchCredits();
         }
@@ -49,17 +46,16 @@ export const usePaymentProcessing = (sessionId: string | null) => {
       checkStripeSession();
       setInitialLoad(false);
     }
-  }, [sessionId, isLoading, initialLoad, refetchCredits]);
+  }, [sessionId, isLoading, initialLoad, refetchCredits, user]);
   
   const forceUpdateTransaction = async () => {
     if (!sessionId || manualUpdateAttempted) return;
     
     try {
-      console.log(`Attempting to manually update transaction for session: ${sessionId}`);
       setManualUpdateAttempted(true);
       setIsRefreshing(true);
       
-      const response = await supabase.functions.invoke('webhook-stripe', {
+      await supabase.functions.invoke('webhook-stripe', {
         body: {
           type: 'manual_update',
           data: {
@@ -67,17 +63,6 @@ export const usePaymentProcessing = (sessionId: string | null) => {
           }
         }
       });
-      
-      console.log('Manual transaction update response:', response);
-      
-      if (response.data?.success) {
-        console.log('Manual update successful');
-        toast({
-          title: 'Update Successful',
-          description: 'Your transaction has been processed',
-          variant: 'default',
-        });
-      }
       
       setTimeout(() => {
         refetchCredits();
@@ -93,13 +78,10 @@ export const usePaymentProcessing = (sessionId: string | null) => {
   useEffect(() => {
     const processCheckout = async () => {
       if (sessionId && !isLoading && !processingComplete) {
-        console.log('Processing checkout success with session ID:', sessionId);
-        
         if (!user) {
           const sessionBackup = localStorage.getItem('sb-session-backup');
           if (sessionBackup) {
             try {
-              console.log('Attempting to restore session from backup');
               await supabase.auth.setSession(JSON.parse(sessionBackup));
               await new Promise(resolve => setTimeout(resolve, 500));
             } catch (error) {
@@ -111,8 +93,8 @@ export const usePaymentProcessing = (sessionId: string | null) => {
         handleCheckoutSuccess(sessionId);
         setProcessingComplete(true);
         
-        setTimeout(async () => {
-          await refetchCredits();
+        setTimeout(() => {
+          refetchCredits();
         }, 2000);
       } else if (!sessionId && !isLoading) {
         const timer = setTimeout(() => {
@@ -126,13 +108,15 @@ export const usePaymentProcessing = (sessionId: string | null) => {
     processCheckout();
   }, [sessionId, handleCheckoutSuccess, navigate, user, isLoading, processingComplete, refetchCredits]);
   
-  // Auto-refresh data if transaction is pending or credit balance is 0
+  // Auto-refresh data but with exponential backoff
   useEffect(() => {
-    const shouldAutoRefresh = isTransactionPending || (processingComplete && creditBalance === 0 && retryCount < 6);
-    
-    if (shouldAutoRefresh && !isRefreshing) {
+    if (isTransactionPending || (processingComplete && creditBalance === 0 && retryCount < 6)) {
+      if (isRefreshing) return;
+      
+      // Use exponential backoff: 2^retryCount * 1000ms
+      const backoffTime = Math.min(Math.pow(2, retryCount) * 1000, 10000);
+      
       const timer = setTimeout(async () => {
-        console.log(`Auto-refreshing credit data (attempt ${retryCount + 1})`);
         setIsRefreshing(true);
         await refetchCredits();
         setIsRefreshing(false);
@@ -141,7 +125,7 @@ export const usePaymentProcessing = (sessionId: string | null) => {
         if (retryCount === 2 && (isTransactionPending || creditBalance === 0) && sessionId && !manualUpdateAttempted) {
           forceUpdateTransaction();
         }
-      }, 3000);
+      }, backoffTime);
       
       return () => clearTimeout(timer);
     }

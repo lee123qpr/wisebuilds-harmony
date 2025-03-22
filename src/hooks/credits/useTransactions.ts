@@ -17,8 +17,6 @@ export const useTransactions = () => {
     queryFn: async () => {
       if (!user) return [];
       
-      console.log(`Fetching credit transactions for user: ${user.id}`);
-      
       const { data, error } = await supabase
         .from('credit_transactions')
         .select('*')
@@ -30,18 +28,21 @@ export const useTransactions = () => {
         throw error;
       }
       
-      console.log(`Found ${data?.length || 0} transactions`);
+      // Only attempt to update pending transactions that haven't been updated recently
+      const pendingTransactions = data?.filter(tx => 
+        tx.status === 'pending' && 
+        new Date(tx.updated_at || tx.created_at).getTime() + 5 * 60 * 1000 < Date.now()
+      ) || [];
       
-      // Check if there are any pending transactions
-      const pendingTransactions = data?.filter(tx => tx.status === 'pending') || [];
       if (pendingTransactions.length > 0) {
         console.log(`Found ${pendingTransactions.length} pending transactions. Will attempt to update them.`);
         
-        // Attempt to manually update each pending transaction
-        for (const tx of pendingTransactions) {
+        // Update at most 3 pending transactions per load to avoid excessive API calls
+        const transactionsToUpdate = pendingTransactions.slice(0, 3);
+        
+        for (const tx of transactionsToUpdate) {
           try {
             if (tx.stripe_payment_id) {
-              console.log(`Attempting to update pending transaction: ${tx.stripe_payment_id}`);
               await supabase.functions.invoke('webhook-stripe', {
                 body: {
                   type: 'manual_update',
@@ -50,7 +51,6 @@ export const useTransactions = () => {
                   }
                 }
               });
-              console.log(`Sent update request for transaction: ${tx.stripe_payment_id}`);
             }
           } catch (err) {
             console.error(`Error updating pending transaction ${tx.id}:`, err);
@@ -61,22 +61,17 @@ export const useTransactions = () => {
       return data as CreditTransaction[];
     },
     enabled: !!user,
-    staleTime: 0, // Always consider data stale
-    gcTime: 1000, // Very short cache time (changed from cacheTime to gcTime)
+    staleTime: 60000, // Consider data stale after 1 minute (reduced from polling every 5 seconds)
+    gcTime: 1000, // Very short cache time
     refetchOnWindowFocus: true,
     refetchOnMount: true,
-    refetchInterval: 5000, // Poll every 5 seconds when active
   });
 
   const refetchTransactionsData = async () => {
     if (!user) return null;
     
-    console.log('Explicitly refetching transaction history with force refresh');
     try {
-      // Force invalidate the query before refetching
       const result = await refetchTransactions({ cancelRefetch: false });
-      console.log('Transaction refresh result:', result.data?.length || 0, 'transactions');
-      
       return result;
     } catch (error) {
       console.error('Error refetching transactions:', error);
