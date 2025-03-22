@@ -74,7 +74,14 @@ const FreelancerApplicationActions: React.FC<FreelancerApplicationActionsProps> 
       return;
     }
     
-    navigate(`/freelancer/${profile.id}`);
+    // Navigate directly to the freelancer's profile page with state data
+    // This ensures FreelancerProfileView knows where to return to
+    navigate(`/freelancer/${profile.id}`, {
+      state: { 
+        from: 'projectApplications', 
+        projectId 
+      }
+    });
   };
 
   return (
