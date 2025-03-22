@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 /**
  * Upload a file to a specified Supabase bucket
+ * File path is constructed as userId/filename to comply with RLS policies
  */
 export const uploadFile = async (
   file: File,
@@ -30,7 +31,15 @@ export const uploadFile = async (
 
     if (uploadError) {
       console.error('Error during upload:', uploadError);
-      throw uploadError;
+      
+      // Handle specific error cases 
+      if (uploadError.message.includes('storage/object-not-found')) {
+        throw new Error('Storage bucket not found. Please contact support.');
+      } else if (uploadError.message.includes('permission denied') || uploadError.message.includes('access denied')) {
+        throw new Error(`Permission denied: You can only upload to your own folder (${userId}/)`);
+      } else {
+        throw new Error(`Upload failed: ${uploadError.message}`);
+      }
     }
 
     if (!uploadData) {
@@ -49,7 +58,7 @@ export const uploadFile = async (
     };
   } catch (error) {
     console.error('Error in uploadFile utility:', error);
-    return null;
+    throw error; // Re-throw to handle in the component
   }
 };
 
@@ -82,14 +91,18 @@ export const removeFile = async (
  */
 export const checkBucketAccess = async (bucketName: string): Promise<boolean> => {
   try {
-    const { data, error } = await supabase.storage.getBucket(bucketName);
+    // A simple way to check bucket access is to list files (with a limit of 0)
+    // This will tell us if we have at least READ access
+    const { data, error } = await supabase.storage
+      .from(bucketName)
+      .list('', { limit: 1 });
     
     if (error) {
       console.error(`Error accessing bucket ${bucketName}:`, error);
       return false;
     }
     
-    return !!data;
+    return true;
   } catch (error) {
     console.error(`Error checking bucket ${bucketName}:`, error);
     return false;
