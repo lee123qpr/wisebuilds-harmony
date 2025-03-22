@@ -54,6 +54,20 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     const fetchNotifications = async () => {
       setIsLoading(true);
       try {
+        // Check if the table exists
+        const { data: exists, error: checkError } = await supabase
+          .from('notifications')
+          .select('id', { count: 'exact', head: true })
+          .limit(1);
+          
+        if (checkError) {
+          console.error('Error checking notifications table:', checkError);
+          setNotifications([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        // Fetch notifications from the table
         const { data, error } = await supabase
           .from('notifications')
           .select('*')
@@ -63,16 +77,19 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
         
         if (error) {
           console.error('Error fetching notifications:', error);
+          setNotifications([]);
+          setIsLoading(false);
           return;
         }
         
         if (data && data.length > 0) {
-          setNotifications(data);
+          setNotifications(data as Notification[]);
         } else {
           setNotifications([]);
         }
       } catch (error) {
         console.error('Error fetching notifications:', error);
+        setNotifications([]);
       } finally {
         setIsLoading(false);
       }
@@ -150,22 +167,47 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           event: 'INSERT',
           schema: 'public',
           table: 'messages',
-          filter: `receiver_id=eq.${userId}`
+          filter: `sender_id=neq.${userId}`
         },
-        (payload) => {
+        async (payload) => {
           console.log('New message received:', payload);
           const message = payload.new;
+          
+          // Get conversation details to determine who sent the message
+          const { data: conversationData } = await supabase
+            .from('conversations')
+            .select(`
+              *,
+              client_info:client_id(display_name, company_name),
+              freelancer_info:freelancer_id(display_name)
+            `)
+            .eq('id', message.conversation_id)
+            .single();
+          
+          if (!conversationData) return;
+          
+          // Determine sender name based on role
+          let senderName = 'Someone';
+          if (conversationData.client_id === message.sender_id) {
+            senderName = conversationData.client_info?.company_name || 
+                        conversationData.client_info?.display_name || 
+                        'A client';
+          } else {
+            senderName = conversationData.freelancer_info?.display_name || 'A freelancer';
+          }
+          
           const notification = {
-            id: `msg_${message.id}`,
             type: 'message' as NotificationType,
-            title: 'New Message',
+            title: `New Message from ${senderName}`,
             description: 'You have received a new message',
-            read: false,
-            created_at: new Date().toISOString(),
-            data: message
+            data: {
+              conversation_id: message.conversation_id,
+              message: message.message,
+              sender_id: message.sender_id
+            }
           };
           
-          addNotificationWithToast(notification);
+          addNotification(notification);
         }
       )
       .subscribe();
@@ -190,16 +232,16 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           // Only notify on status change to 'accepted'
           if (oldStatus !== 'accepted' && newStatus === 'accepted') {
             const notification = {
-              id: `quote_${payload.new.id}`,
               type: 'hired' as NotificationType,
               title: 'You Were Hired!',
               description: 'A client has accepted your quote. Congratulations!',
-              read: false,
-              created_at: new Date().toISOString(),
-              data: payload.new
+              data: {
+                project_id: payload.new.project_id,
+                quote_id: payload.new.id
+              }
             };
             
-            addNotificationWithToast(notification);
+            addNotification(notification);
           }
         }
       )
@@ -217,21 +259,42 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           schema: 'public',
           table: 'projects',
         },
-        (payload) => {
-          // In a full implementation, we would check if this project matches 
-          // the user's lead settings before notifying
-          // For now, we'll notify for all new projects
-          const notification = {
-            id: `project_${payload.new.id}`,
-            type: 'lead' as NotificationType,
-            title: 'New Lead Available',
-            description: 'A new project matching your criteria has been posted',
-            read: false,
-            created_at: new Date().toISOString(),
-            data: payload.new
-          };
+        async (payload) => {
+          // Get user's lead settings
+          const { data: leadSettings } = await supabase
+            .from('lead_settings')
+            .select('*')
+            .eq('user_id', userId)
+            .single();
+            
+          if (!leadSettings) return;
           
-          addNotificationWithToast(notification);
+          // Do basic matching - in a real app this would be more sophisticated
+          const project = payload.new;
+          let isMatch = false;
+          
+          // Simple matching logic - you would expand this in a real application
+          if (
+            (leadSettings.role && project.role === leadSettings.role) ||
+            (leadSettings.location && project.location === leadSettings.location) ||
+            (leadSettings.project_type && leadSettings.project_type.includes(project.work_type))
+          ) {
+            isMatch = true;
+          }
+          
+          if (isMatch) {
+            const notification = {
+              type: 'lead' as NotificationType,
+              title: 'New Lead Available',
+              description: `A new project "${project.title}" matching your criteria has been posted`,
+              data: {
+                id: project.id,
+                title: project.title
+              }
+            };
+            
+            addNotification(notification);
+          }
         }
       )
       .subscribe();
@@ -257,12 +320,9 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           if (newBalance > oldBalance) {
             const addedCredits = newBalance - oldBalance;
             const notification = {
-              id: `credits_${Date.now()}`,
               type: 'credit_update' as NotificationType,
               title: 'Credits Added',
               description: `${addedCredits} credits have been added to your account`,
-              read: false,
-              created_at: new Date().toISOString(),
               data: { 
                 oldBalance, 
                 newBalance, 
@@ -270,7 +330,7 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
               }
             };
             
-            addNotificationWithToast(notification);
+            addNotification(notification);
           }
         }
       )
@@ -293,16 +353,13 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           // Only notify when a transaction is updated to completed
           if (payload.old?.status === 'pending' && payload.new?.status === 'completed') {
             const notification = {
-              id: `payment_${payload.new.id}`,
               type: 'payment' as NotificationType,
               title: 'Payment Completed',
               description: `Your credit purchase of ${payload.new.credits_purchased} credits has been completed`,
-              read: false,
-              created_at: new Date().toISOString(),
               data: payload.new
             };
             
-            addNotificationWithToast(notification);
+            addNotification(notification);
           }
         }
       )
@@ -314,85 +371,129 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
     return channels;
   };
 
-  const addNotificationWithToast = (notification: Notification) => {
-    // Add to notifications state
-    setNotifications(prev => [notification, ...prev]);
+  const addNotification = async (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
+    if (!user) return;
     
-    // Show toast notification
-    toast({
-      title: notification.title,
-      description: notification.description,
-      variant: "default"
-    });
-  };
-
-  const addNotification = (notificationData: Omit<Notification, 'id' | 'created_at' | 'read'>) => {
-    const newNotification: Notification = {
-      ...notificationData,
-      id: `custom_${Date.now()}`,
-      created_at: new Date().toISOString(),
-      read: false
-    };
-    
-    setNotifications(prev => [newNotification, ...prev]);
-    
-    // Create a record in the notifications table
-    if (user) {
-      supabase.from('notifications').insert([{
-        user_id: user.id,
-        type: newNotification.type,
-        title: newNotification.title,
-        description: newNotification.description,
-        data: newNotification.data
-      }]).then(({ error }) => {
-        if (error) {
-          console.error('Error saving notification:', error);
-        }
+    try {
+      // Insert into the notifications table
+      const { data, error } = await supabase
+        .from('notifications')
+        .insert({
+          user_id: user.id,
+          type: notificationData.type,
+          title: notificationData.title,
+          description: notificationData.description,
+          data: notificationData.data || {},
+          read: false
+        })
+        .select()
+        .single();
+      
+      if (error) {
+        console.error('Error adding notification:', error);
+        return;
+      }
+      
+      // The realtime subscription will handle adding this to the state
+      // so we don't need to manually update the state here
+      
+      // Show toast notification
+      toast({
+        title: notificationData.title,
+        description: notificationData.description,
+        variant: "default"
       });
+      
+      return data;
+    } catch (error) {
+      console.error('Error in addNotification:', error);
     }
   };
 
   const markAsRead = async (id: string) => {
-    setNotifications(prev => 
-      prev.map(notification => 
-        notification.id === id 
-          ? { ...notification, read: true } 
-          : notification
-      )
-    );
-    
-    // Update the notification in the database if it's a database record
-    if (user && !id.startsWith('custom_') && !id.startsWith('msg_') && 
-        !id.startsWith('quote_') && !id.startsWith('project_') && 
-        !id.startsWith('credits_') && !id.startsWith('payment_')) {
-      try {
-        await supabase
+    try {
+      // First update the local state for immediate feedback
+      setNotifications(prev => 
+        prev.map(notification => 
+          notification.id === id 
+            ? { ...notification, read: true } 
+            : notification
+        )
+      );
+      
+      // Then update the database
+      if (user) {
+        const { error } = await supabase
           .from('notifications')
           .update({ read: true })
           .eq('id', id)
           .eq('user_id', user.id);
-      } catch (error) {
-        console.error('Error marking notification as read:', error);
+          
+        if (error) {
+          console.error('Error marking notification as read:', error);
+          // Revert the local change if DB update failed
+          setNotifications(prev => 
+            prev.map(notification => 
+              notification.id === id 
+                ? { ...notification, read: false } 
+                : notification
+            )
+          );
+        }
       }
+    } catch (error) {
+      console.error('Error marking notification as read:', error);
     }
   };
 
   const markAllAsRead = async () => {
-    setNotifications(prev => 
-      prev.map(notification => ({ ...notification, read: true }))
-    );
-    
-    // Update all notifications in the database
-    if (user) {
-      try {
-        await supabase
+    try {
+      // First update the local state for immediate feedback
+      setNotifications(prev => 
+        prev.map(notification => ({ ...notification, read: true }))
+      );
+      
+      // Then update the database
+      if (user) {
+        const { error } = await supabase
           .from('notifications')
           .update({ read: true })
           .eq('user_id', user.id)
           .eq('read', false);
-      } catch (error) {
-        console.error('Error marking all notifications as read:', error);
+          
+        if (error) {
+          console.error('Error marking all notifications as read:', error);
+          // Revert if failed (we could be more sophisticated here and only revert those that were unread before)
+          fetchNotifications();
+        }
       }
+    } catch (error) {
+      console.error('Error marking all notifications as read:', error);
+    }
+  };
+  
+  // Helper function to fetch notifications, used when we need to refresh
+  const fetchNotifications = async () => {
+    if (!user) return;
+    
+    try {
+      const { data, error } = await supabase
+        .from('notifications')
+        .select('*')
+        .eq('user_id', user.id)
+        .order('created_at', { ascending: false })
+        .limit(20);
+      
+      if (error) {
+        console.error('Error fetching notifications:', error);
+        return;
+      }
+      
+      if (data) {
+        setNotifications(data as Notification[]);
+      }
+    } catch (error) {
+      console.error('Error fetching notifications:', error);
     }
   };
 
