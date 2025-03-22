@@ -1,8 +1,9 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import { Input } from '@/components/ui/input';
 import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useLocationInputHandlers } from './hooks/useLocationInputHandlers';
 
 interface LocationInputProps {
   field: any;
@@ -17,66 +18,16 @@ export const LocationInput: React.FC<LocationInputProps> = ({
   isLoaded,
   isLoading,
 }) => {
-  // Add global styles for the autocomplete dropdown when component mounts
-  useEffect(() => {
-    const style = document.createElement('style');
-    style.innerHTML = `
-      .pac-container {
-        z-index: 9999 !important;
-        position: absolute !important;
-        pointer-events: auto !important;
-        transform: translateZ(0) !important;
-        max-height: 240px !important;
-        overflow-y: auto !important;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
-        border-radius: 0.375rem !important;
-      }
-      .pac-item {
-        pointer-events: auto !important;
-        cursor: pointer !important;
-        padding: 0.5rem 1rem !important;
-      }
-      .pac-item:hover {
-        background-color: rgba(243, 244, 246, 1) !important;
-      }
-      .pac-container:empty {
-        display: none !important;
-      }
-    `;
-    document.head.appendChild(style);
-
-    return () => {
-      document.head.removeChild(style);
-      // Find and remove any pac-container elements when component unmounts
-      const pacContainers = document.querySelectorAll('.pac-container');
-      pacContainers.forEach(container => {
-        container.remove();
-      });
-    };
-  }, []);
-
-  // Significantly longer delay for blur handling to prevent premature dialog closing
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
-    // Use a much longer delay to ensure the selection can complete
-    // and the dialog doesn't close prematurely
-    setTimeout(() => {
-      if (field.onBlur) field.onBlur();
-    }, 500); // Increased delay time
-  };
-
-  // Make sure inputRef and field.value stay in sync - crucial for showing the selected location
-  useEffect(() => {
-    if (inputRef.current && field.value !== undefined && inputRef.current.value !== field.value) {
-      inputRef.current.value = field.value;
-      console.log('Syncing input with form value:', field.value);
-    }
-  }, [field.value, inputRef]);
-
-  // Prevent event propagation to avoid dialog closing
-  const handleMouseDown = (e: React.MouseEvent) => {
-    // Prevent the event from bubbling up to the dialog
-    e.stopPropagation();
-  };
+  const {
+    handleBlur,
+    handleMouseDown,
+    handleChange,
+    handleKeyDown
+  } = useLocationInputHandlers({
+    inputRef,
+    isLoaded,
+    field
+  });
 
   return (
     <div className="relative" onMouseDown={handleMouseDown}>
@@ -93,17 +44,9 @@ export const LocationInput: React.FC<LocationInputProps> = ({
         // Ensure the value is always controlled by React
         value={field.value || ''}
         // Handle change events
-        onChange={(e) => {
-          const newValue = e.target.value;
-          field.onChange(newValue);
-          console.log('Input changed:', newValue);
-        }}
+        onChange={handleChange}
         // Prevent dialog closing on key events
-        onKeyDown={(e) => {
-          if (e.key === 'Enter') {
-            e.preventDefault(); // Prevent form submission on Enter
-          }
-        }}
+        onKeyDown={handleKeyDown}
       />
       {isLoading && (
         <div className="absolute inset-y-0 right-3 flex items-center">
