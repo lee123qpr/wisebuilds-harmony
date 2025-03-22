@@ -16,10 +16,13 @@ const ProjectMetadata: React.FC<ProjectMetadataProps> = ({
   clientName,
   isLoadingClientInfo
 }) => {
-  // Ensure we have a valid client name display
+  // Enhanced validation for client name
   const displayName = clientName && clientName.trim() !== '' 
     ? clientName 
     : 'Client';
+  
+  console.log('ProjectMetadata rendering with clientName:', clientName);
+  console.log('ProjectMetadata displaying name:', displayName);
     
   return (
     <div className="space-y-4">

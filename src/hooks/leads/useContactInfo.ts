@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 interface ClientInfo {
   contact_name: string | null;
@@ -18,6 +19,7 @@ export const useContactInfo = (projectId: string) => {
   const [clientInfo, setClientInfo] = useState<ClientInfo | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const { user } = useAuth();
 
   const fetchClientInfo = async () => {
     setIsLoading(true);
@@ -52,9 +54,9 @@ export const useContactInfo = (projectId: string) => {
       let userData = null;
       let userError = null;
       
-      const profileHasName = clientProfile && clientProfile.contact_name;
+      const profileMissingName = !clientProfile || !clientProfile.contact_name;
       
-      if (!profileHasName) {
+      if (profileMissingName) {
         console.log('Profile missing contact_name, fetching auth user data');
         const userResponse = await supabase.functions.invoke('get-user-email', {
           body: { userId: project.user_id }
@@ -98,33 +100,36 @@ export const useContactInfo = (projectId: string) => {
         )
       });
       
-      // If client profile doesn't exist but we have data from auth, let's create/update the profile
-      // Only attempt this if we got meaningful data from auth
-      if ((!clientProfile || !profileHasName) && userMetadata && userData?.full_name) {
-        try {
-          // Create a profile in the database using auth data
-          console.log('Creating/updating client profile with auth data');
-          const { error: upsertError } = await supabase
-            .from('client_profiles')
-            .upsert({
-              id: project.user_id,
-              contact_name: userData.full_name,
-              email: userData?.email,
-              phone_number: userMetadata.phone_number || userMetadata.phone,
-              company_name: userMetadata.company_name,
-              company_address: userMetadata.company_address,
-              updated_at: new Date().toISOString()
-            }, {
-              onConflict: 'id'
-            });
-            
-          if (upsertError) {
-            console.error('Error creating/updating client profile:', upsertError);
-          } else {
-            console.log('Successfully synchronized client profile with auth data');
+      // Only attempt to create/update the client profile if:
+      // 1. The current user is the owner of the project/client profile
+      // 2. We have data from auth that could be used to create/update the profile
+      // 3. The profile doesn't exist or is missing important information
+      if (user?.id === project.user_id && userData && userMetadata && userData.full_name) {
+        if (!clientProfile || !clientProfile.contact_name) {
+          try {
+            console.log('Creating/updating client profile with auth data');
+            const { error: upsertError } = await supabase
+              .from('client_profiles')
+              .upsert({
+                id: project.user_id,
+                contact_name: userData.full_name,
+                email: userData?.email,
+                phone_number: userMetadata.phone_number || userMetadata.phone,
+                company_name: userMetadata.company_name,
+                company_address: userMetadata.company_address,
+                updated_at: new Date().toISOString()
+              }, {
+                onConflict: 'id'
+              });
+              
+            if (upsertError) {
+              console.error('Error creating/updating client profile:', upsertError);
+            } else {
+              console.log('Successfully synchronized client profile with auth data');
+            }
+          } catch (syncError) {
+            console.error('Exception during profile synchronization:', syncError);
           }
-        } catch (syncError) {
-          console.error('Exception during profile synchronization:', syncError);
         }
       }
     } catch (error) {
@@ -139,7 +144,7 @@ export const useContactInfo = (projectId: string) => {
     if (projectId) {
       fetchClientInfo();
     }
-  }, [projectId]);
+  }, [projectId, user?.id]);
 
   return {
     clientInfo,

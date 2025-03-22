@@ -44,6 +44,13 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
     ? clientInfo.contact_name 
     : 'Client';
   
+  console.log("ContactInfoContent displaying client info:", {
+    contactName: clientInfo.contact_name,
+    displayName: contactName,
+    email: clientInfo.email,
+    phone: clientInfo.phone_number
+  });
+  
   const hasEssentialContactInfo = !!(contactName || clientInfo.email || clientInfo.phone_number);
 
   if (!hasEssentialContactInfo) {

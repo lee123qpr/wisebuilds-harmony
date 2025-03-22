@@ -11,7 +11,6 @@ import { Button } from '@/components/ui/button';
 import { Quote } from 'lucide-react';
 import QuoteForm from './QuoteForm';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { supabase } from '@/integrations/supabase/client';
 import { useFreelancerQuote } from '@/hooks/quotes/useFreelancerQuote';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -54,7 +53,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
       
       try {
         // First try to get client info from useContactInfo hook if project ID is available
-        if (clientInfo) {
+        if (clientInfo && !isLoadingContactInfo) {
           console.log('Using client info from useContactInfo:', clientInfo);
           if (clientInfo.contact_name) {
             setClientName(clientInfo.contact_name);
@@ -96,7 +95,7 @@ const QuoteDialog: React.FC<QuoteDialogProps> = ({
       console.log('Dialog opened, fetching client info for clientId:', clientId);
       fetchClientInfo();
     }
-  }, [clientId, open, clientInfo]);
+  }, [clientId, open, clientInfo, isLoadingContactInfo]);
 
   const handleSubmitSuccess = () => {
     setOpen(false);
