@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,7 +19,6 @@ const BusinessDashboard = () => {
   const [activeTab, setActiveTab] = useState('projects');
   const [contactName, setContactName] = useState('Business Client');
   const [isLoading, setIsLoading] = useState(true);
-  const [projectCount, setProjectCount] = useState(0);
   
   // Set the active tab based on URL parameters
   useEffect(() => {
@@ -63,19 +61,6 @@ const BusinessDashboard = () => {
         if (data && data.contact_name) {
           setContactName(data.contact_name);
         }
-
-        // Use separate count query for projects with correct field name (user_id instead of client_id)
-        const { count, error: countError } = await supabase
-          .from('projects')
-          .select('id', { count: 'exact', head: true })
-          .eq('user_id', user.id);
-        
-        if (countError) {
-          console.error('Error fetching project count:', countError);
-          return;
-        }
-        
-        setProjectCount(count || 0);
       } catch (error) {
         console.error('Error in fetchClientProfile:', error);
       } finally {
@@ -126,7 +111,7 @@ const BusinessDashboard = () => {
           </TabsList>
           
           <TabsContent value="projects" className="space-y-6">
-            <ProjectsHeader projectCount={projectCount} />
+            <ProjectsHeader />
             <ProjectsTable />
           </TabsContent>
           
