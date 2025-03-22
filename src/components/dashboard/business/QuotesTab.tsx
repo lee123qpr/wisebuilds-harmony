@@ -22,7 +22,8 @@ const QuotesTab: React.FC = () => {
     refreshInterval: 30000 // Change from 5000 (5 seconds) to 30000 (30 seconds)
   });
   
-  const [activeTab, setActiveTab] = useState('pending'); // Changed default tab to pending to see new quotes first
+  // Changed default tab from 'pending' to 'accepted'
+  const [activeTab, setActiveTab] = useState('accepted');
   
   // Force refresh when component mounts but don't set up additional refresh interval
   useEffect(() => {
