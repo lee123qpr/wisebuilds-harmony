@@ -16,8 +16,8 @@ export const useTransactions = () => {
     queryKey: ['creditTransactions', user?.id],
     queryFn: async () => {
       if (!user) return [];
-
-      console.log('Fetching credit transactions for user:', user.id);
+      
+      console.log(`Fetching credit transactions for user: ${user.id}`);
       
       const { data, error } = await supabase
         .from('credit_transactions')
@@ -26,11 +26,11 @@ export const useTransactions = () => {
         .order('created_at', { ascending: false });
       
       if (error) {
-        console.error('Error fetching credit transactions:', error);
+        console.error('Error fetching transactions:', error);
         throw error;
       }
       
-      console.log(`Found ${data.length} transactions`);
+      console.log(`Found ${data?.length || 0} transactions`);
       return data as CreditTransaction[];
     },
     enabled: !!user,
