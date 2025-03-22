@@ -1,206 +1,109 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { Conversation, Message, MessageAttachment } from '@/types/messaging';
-import { fetchMessages, markMessagesAsRead, sendMessage, uploadMessageAttachment } from '@/services/messages';
+import { fetchMessages, markMessagesAsRead, sendMessage } from '@/services/messages/messageService';
+import { uploadMessageAttachment } from '@/services/messages/uploadService';
 import { updateConversationTime } from '@/services/conversations';
-import { supabase } from '@/integrations/supabase/client';
-import { useToast } from '@/hooks/use-toast';
-import { useNotifications } from '@/context/NotificationsContext';
 
 export const useMessages = (selectedConversation: Conversation | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isSending, setIsSending] = useState(false);
-  const [attachments, setAttachments] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
-  const [uploadProgress, setUploadProgress] = useState<{[key: string]: number}>({});
-  const { toast } = useToast();
-  const { addNotification } = useNotifications();
-
+  const [uploadProgress, setUploadProgress] = useState(0);
+  const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
+  
+  // Fetch messages when conversation changes
   useEffect(() => {
-    const getCurrentUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      setCurrentUserId(data.session?.user?.id || null);
-    };
-    
-    getCurrentUser();
-  }, []);
-
-  useEffect(() => {
-    if (!selectedConversation) {
-      setMessages([]);
-      return;
-    }
-
     const getMessages = async () => {
-      const fetchedMessages = await fetchMessages(selectedConversation.id);
-      setMessages(fetchedMessages);
-
-      const unreadMessageIds = fetchedMessages
-        .filter((msg: Message) => !msg.is_read && msg.sender_id !== currentUserId)
-        .map((msg: Message) => msg.id);
-
-      if (unreadMessageIds.length > 0) {
-        markMessagesAsRead(unreadMessageIds);
+      if (selectedConversation) {
+        const conversationMessages = await fetchMessages(selectedConversation.id);
+        setMessages(conversationMessages);
       }
     };
-
+    
     getMessages();
-
-    const messagesSubscription = supabase
-      .channel(`messages:${selectedConversation.id}`)
-      .on('postgres_changes', 
-        { 
-          event: 'INSERT', 
-          schema: 'public', 
-          table: 'messages',
-          filter: `conversation_id=eq.${selectedConversation.id}`
-        }, 
-        payload => {
-          const newMsg = payload.new as Message;
-          setMessages(prev => [...prev, newMsg]);
-          
-          if (newMsg.sender_id !== currentUserId && currentUserId) {
-            markMessagesAsRead([newMsg.id]);
-            
-            // Add notification for message if it's from someone else
-            let senderName = 'Unknown User';
-            
-            // Get sender name based on whether they're the freelancer or client
-            if (selectedConversation.freelancer_id === newMsg.sender_id) {
-              senderName = selectedConversation.freelancer_info?.full_name || 
-                           selectedConversation.freelancer_info?.name || 
-                           'Freelancer';
-            } else if (selectedConversation.client_id === newMsg.sender_id) {
-              senderName = selectedConversation.client_info?.contact_name || 
-                           'Client';
-            }
-              
-            addNotification({
-              type: 'message',
-              title: 'New Message',
-              description: `${senderName} sent you a message`,
-              data: {
-                conversation_id: selectedConversation.id,
-                message_id: newMsg.id
-              }
-            });
-          }
-        }
-      )
-      .subscribe();
-
-    return () => {
-      messagesSubscription.unsubscribe();
-    };
-  }, [selectedConversation, currentUserId, addNotification]);
-
-  const handleFileSelect = useCallback((files: FileList | null) => {
-    if (!files) return;
-    
-    const MAX_FILE_SIZE = 30 * 1024 * 1024; // 30MB
-    
-    const validFiles = Array.from(files).filter(file => {
-      if (file.size > MAX_FILE_SIZE) {
-        toast({
-          title: "File too large",
-          description: `${file.name} exceeds the 30MB size limit. For larger files, consider using WeTransfer or similar services.`,
-          variant: "destructive"
-        });
-        return false;
+  }, [selectedConversation]);
+  
+  // Mark messages as read
+  useEffect(() => {
+    if (messages.length > 0) {
+      const unreadMessages = messages.filter(msg => !msg.is_read).map(msg => msg.id);
+      if (unreadMessages.length > 0) {
+        markMessagesAsRead({ messageIds: unreadMessages });
       }
-      return true;
-    });
+    }
+  }, [messages]);
+  
+  // Handle file selection
+  const handleFileSelect = useCallback(async (files: FileList | null) => {
+    if (!files || !selectedConversation) return;
     
-    setAttachments(prev => [...prev, ...validFiles]);
-  }, [toast]);
-
-  const removeAttachment = useCallback((index: number) => {
+    setIsUploading(true);
+    setUploadProgress(0);
+    
+    const totalFiles = files.length;
+    let uploadedCount = 0;
+    const newAttachments: MessageAttachment[] = [];
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const attachment = await uploadMessageAttachment({ file });
+      
+      if (attachment) {
+        newAttachments.push(attachment);
+      }
+      
+      uploadedCount++;
+      setUploadProgress(Math.round((uploadedCount / totalFiles) * 100));
+    }
+    
+    setAttachments(prev => [...prev, ...newAttachments]);
+    setIsUploading(false);
+  }, [selectedConversation]);
+  
+  // Remove attachment
+  const removeAttachment = (index: number) => {
     setAttachments(prev => prev.filter((_, i) => i !== index));
-  }, []);
-
+  };
+  
+  // Send message
   const handleSendMessage = useCallback(async () => {
-    if (!selectedConversation || (!newMessage.trim() && attachments.length === 0)) return;
+    if (!selectedConversation) return;
+    
+    if (newMessage.trim() === '' && attachments.length === 0) return;
     
     setIsSending(true);
     
-    try {
-      let uploadedAttachments: MessageAttachment[] = [];
+    const success = await sendMessage({
+      conversationId: selectedConversation.id,
+      message: newMessage,
+      attachments
+    });
+    
+    if (success) {
+      setNewMessage('');
+      setAttachments([]);
       
-      if (attachments.length > 0) {
-        setIsUploading(true);
-        setUploadProgress({});
-        
-        for (const [index, file] of attachments.entries()) {
-          setUploadProgress(prev => ({
-            ...prev,
-            [index]: 0
-          }));
-          
-          try {
-            const attachment = await uploadMessageAttachment(file);
-            if (attachment) {
-              uploadedAttachments.push(attachment);
-              setUploadProgress(prev => ({
-                ...prev,
-                [index]: 100
-              }));
-            } else {
-              toast({
-                title: "Upload failed",
-                description: `Failed to upload ${file.name}`,
-                variant: "destructive"
-              });
-              setUploadProgress(prev => ({
-                ...prev,
-                [index]: -1
-              }));
-            }
-          } catch (error) {
-            console.error(`Error uploading file ${file.name}:`, error);
-            setUploadProgress(prev => ({
-              ...prev,
-                [index]: -1
-              }));
-          }
-        }
-        
-        setIsUploading(false);
-      }
+      // Update conversation time
+      await updateConversationTime(selectedConversation.id);
       
-      const success = await sendMessage(
-        selectedConversation.id, 
-        newMessage.trim(),
-        uploadedAttachments
-      );
-      
-      if (success) {
-        setNewMessage('');
-        setAttachments([]);
-        setUploadProgress({});
-        
-        await updateConversationTime(selectedConversation.id);
-      }
-    } catch (error) {
-      console.error('Error sending message:', error);
-      toast({
-        title: "Failed to send message",
-        description: "An unexpected error occurred while sending your message",
-        variant: "destructive"
-      });
-    } finally {
-      setIsSending(false);
+      // Fetch updated messages
+      const updatedMessages = await fetchMessages(selectedConversation.id);
+      setMessages(updatedMessages);
     }
-  }, [selectedConversation, newMessage, attachments, toast]);
-
-  const handleKeyPress = useCallback((e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && !isSending) {
+    
+    setIsSending(false);
+  }, [newMessage, attachments, selectedConversation]);
+  
+  // Handle key press (Enter to send)
+  const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       handleSendMessage();
     }
-  }, [handleSendMessage, isSending]);
-
+  };
+  
   return {
     messages,
     newMessage,
@@ -215,5 +118,3 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     uploadProgress
   };
 };
-
-export default useMessages;

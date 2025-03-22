@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNotifications, NotificationType } from '@/context/NotificationsContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -20,7 +19,7 @@ const NotificationList = () => {
       case 'lead':
         return <Briefcase className="h-4 w-4 text-emerald-500" />;
       case 'hired':
-        return <FileCheck className="h-4 w-4 text-purple-500" />;
+        return <Star className="h-4 w-4 text-purple-500" />;
       case 'project_complete':
         return <Package className="h-4 w-4 text-amber-500" />;
       case 'review':
@@ -43,7 +42,6 @@ const NotificationList = () => {
       markAsRead(notification.id);
     }
     
-    // Handle navigation based on notification type
     if (notification.type === 'message' && notification.data?.conversation_id) {
       navigate(`/dashboard/freelancer/messages?conversation=${notification.data.conversation_id}`);
     } else if (notification.type === 'hired' && notification.data?.project_id) {
