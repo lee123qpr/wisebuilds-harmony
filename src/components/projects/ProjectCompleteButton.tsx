@@ -54,6 +54,11 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
       setCompletionStatus(status);
     } catch (error) {
       console.error("Error loading completion status:", error);
+      toast({
+        title: "Error loading status",
+        description: "Could not load project completion status",
+        variant: "destructive"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -75,7 +80,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
         if (onStatusUpdate) {
           onStatusUpdate();
         }
-      }, 500);
+      }, 1000);
     } catch (error) {
       console.error('Error completing project:', error);
       toast({

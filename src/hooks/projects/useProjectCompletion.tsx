@@ -30,53 +30,59 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
       
       console.log(`Setting ${updateField} to true for quote ${quoteId}`);
       
-      // Update the quote
-      const { data, error } = await supabase
-        .from('quotes')
-        .update({ [updateField]: true })
-        .eq('id', quoteId)
-        .select('*')
-        .single();
+      try {
+        // Update the quote
+        const { data, error } = await supabase
+          .from('quotes')
+          .update({ [updateField]: true })
+          .eq('id', quoteId)
+          .select('*')
+          .single();
+          
+        if (error) {
+          console.error('Error updating quote:', error);
+          throw error;
+        }
         
-      if (error) {
-        console.error('Error updating quote:', error);
+        console.log('Quote updated successfully:', data);
+        
+        // Check if both parties have marked as complete
+        if (data.freelancer_completed && data.client_completed) {
+          console.log('Both parties have marked as complete, setting completed_at timestamp');
+          
+          // Set the completed_at timestamp
+          const { error: completionError } = await supabase
+            .from('quotes')
+            .update({ completed_at: new Date().toISOString() })
+            .eq('id', quoteId);
+            
+          if (completionError) {
+            console.error('Error setting completed_at:', completionError);
+            throw completionError;
+          }
+          
+          // Update project status to completed
+          console.log('Updating project status to completed');
+          const { error: projectError } = await supabase
+            .from('projects')
+            .update({ status: 'completed' })
+            .eq('id', projectId);
+            
+          if (projectError) {
+            console.error('Error updating project status:', projectError);
+            throw projectError;
+          }
+        }
+        
+        return data;
+      } catch (error) {
+        console.error('Exception in project completion:', error);
         throw error;
       }
-      
-      console.log('Quote updated successfully:', data);
-      
-      // Check if both parties have marked as complete
-      if (data.freelancer_completed && data.client_completed) {
-        console.log('Both parties have marked as complete, setting completed_at timestamp');
-        
-        // Set the completed_at timestamp
-        const { error: completionError } = await supabase
-          .from('quotes')
-          .update({ completed_at: new Date().toISOString() })
-          .eq('id', quoteId);
-          
-        if (completionError) {
-          console.error('Error setting completed_at:', completionError);
-          throw completionError;
-        }
-        
-        // Update project status to completed
-        console.log('Updating project status to completed');
-        const { error: projectError } = await supabase
-          .from('projects')
-          .update({ status: 'completed' })
-          .eq('id', projectId);
-          
-        if (projectError) {
-          console.error('Error updating project status:', projectError);
-          throw projectError;
-        }
-      }
-      
-      return data;
     },
     onSuccess: (data) => {
       console.log('Project completion mutation succeeded:', data);
+      // Invalidate relevant queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       
