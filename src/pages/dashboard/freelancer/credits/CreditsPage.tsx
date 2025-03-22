@@ -73,10 +73,10 @@ const CreditsPage = () => {
             <Button 
               variant="outline" 
               size="sm"
-              onClick={handleRefresh}
-              disabled={isLoadingBalance || isLoadingPlans || isLoadingTransactions}
+              onClick={() => refetchCredits()}
+              disabled={isLoadingBalance}
             >
-              <RefreshCw className={`h-4 w-4 mr-2 ${(isLoadingBalance || isLoadingPlans || isLoadingTransactions) ? 'animate-spin' : ''}`} />
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingBalance ? 'animate-spin' : ''}`} />
               Refresh
             </Button>
           </div>
