@@ -5,7 +5,6 @@ import { useCredits } from '@/hooks/useCredits';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import BackButton from '@/components/common/BackButton';
 
 const SuccessPage = () => {
   const [searchParams] = useSearchParams();
@@ -16,8 +15,15 @@ const SuccessPage = () => {
   useEffect(() => {
     if (sessionId) {
       handleCheckoutSuccess(sessionId);
+    } else {
+      // If no session ID, redirect back to credits page after a short delay
+      const timer = setTimeout(() => {
+        navigate('/dashboard/freelancer/credits');
+      }, 3000);
+      
+      return () => clearTimeout(timer);
     }
-  }, [sessionId, handleCheckoutSuccess]);
+  }, [sessionId, handleCheckoutSuccess, navigate]);
   
   return (
     <MainLayout>
@@ -39,11 +45,13 @@ const SuccessPage = () => {
                 View My Credits
               </Button>
               
-              <BackButton 
-                to="/dashboard/freelancer"
+              <Button 
+                onClick={() => navigate('/dashboard/freelancer')}
                 variant="outline"
-                className="w-full justify-center"
-              />
+                className="w-full"
+              >
+                Return to Dashboard
+              </Button>
             </div>
           </div>
         </div>

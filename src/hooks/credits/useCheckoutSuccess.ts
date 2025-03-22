@@ -2,11 +2,14 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
 
 export const useCheckoutSuccess = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   const handleCheckoutSuccess = async (sessionId: string) => {
     if (!user || !sessionId) return;
@@ -22,6 +25,11 @@ export const useCheckoutSuccess = () => {
         description: 'Your credits have been added to your account',
         variant: 'default',
       });
+      
+      // After a short delay, redirect to the credits page
+      setTimeout(() => {
+        navigate('/dashboard/freelancer/credits');
+      }, 3000);
     } catch (error) {
       console.error('Error processing successful checkout:', error);
       toast({
