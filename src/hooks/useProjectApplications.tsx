@@ -1,9 +1,11 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { FreelancerApplication } from '@/types/applications';
+import { toast } from 'sonner';
 
-export const useProjectApplications = (projectId: string) => {
-  const [applications, setApplications] = useState<any[]>([]);
+export const useProjectApplications = (projectId: string | undefined) => {
+  const [applications, setApplications] = useState<FreelancerApplication[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
@@ -13,6 +15,12 @@ export const useProjectApplications = (projectId: string) => {
         setIsLoading(true);
         console.log('Fetching applications for project:', projectId);
 
+        if (!projectId) {
+          throw new Error('No project ID provided');
+        }
+
+        // The previous query was trying to use a join that doesn't exist
+        // Let's modify it to use a proper query structure
         const { data, error } = await supabase
           .from('project_applications')
           .select(`
@@ -20,19 +28,7 @@ export const useProjectApplications = (projectId: string) => {
             created_at,
             message,
             user_id,
-            user:user_id (
-              id,
-              first_name,
-              last_name,
-              display_name,
-              job_title,
-              location,
-              profile_photo,
-              bio,
-              experience,
-              hourly_rate,
-              rating
-            )
+            project_id
           `)
           .eq('project_id', projectId);
 
@@ -40,10 +36,28 @@ export const useProjectApplications = (projectId: string) => {
         
         console.log('Applications data received:', data?.length || 0, 'applications');
 
-        // Fetch verification status for each applicant
-        const applicationsWithVerification = await Promise.all(
-          (data || []).map(async (application) => {
+        if (!data || data.length === 0) {
+          setApplications([]);
+          setIsLoading(false);
+          return;
+        }
+
+        // Fetch freelancer profiles for each application
+        const applicationsWithProfiles = await Promise.all(
+          data.map(async (application) => {
             try {
+              // Get freelancer profile data
+              const { data: profileData, error: profileError } = await supabase
+                .from('freelancer_profiles')
+                .select('*')
+                .eq('id', application.user_id)
+                .single();
+
+              if (profileError) {
+                console.error('Error fetching profile for user:', application.user_id, profileError);
+              }
+
+              // Get verification status
               const { data: isVerified } = await supabase.rpc('is_user_verified', { 
                 check_user_id: application.user_id 
               });
@@ -52,36 +66,35 @@ export const useProjectApplications = (projectId: string) => {
 
               return {
                 id: application.id,
-                created_at: application.created_at,
-                message: application.message,
                 user_id: application.user_id,
-                user: application.user ? {
-                  // Use type assertion to ensure TypeScript knows this is an object
-                  ...(application.user as object),
-                  is_verified: isVerified || false
+                project_id: application.project_id,
+                message: application.message,
+                created_at: application.created_at,
+                freelancer_profile: profileData ? {
+                  ...profileData,
+                  verified: isVerified || false,
+                  email_verified: profileData.email_verified || false
                 } : null
-              };
-            } catch (error) {
-              console.error('Error checking verification status:', error);
+              } as FreelancerApplication;
+            } catch (err) {
+              console.error('Error processing application:', err);
               return {
                 id: application.id,
-                created_at: application.created_at,
-                message: application.message,
                 user_id: application.user_id,
-                user: application.user ? {
-                  // Use type assertion to ensure TypeScript knows this is an object
-                  ...(application.user as object),
-                  is_verified: false
-                } : null
-              };
+                project_id: application.project_id,
+                message: application.message,
+                created_at: application.created_at,
+                freelancer_profile: null
+              } as FreelancerApplication;
             }
           })
         );
 
-        setApplications(applicationsWithVerification);
+        setApplications(applicationsWithProfiles);
       } catch (err: any) {
         console.error('Error fetching applications:', err);
         setError(err);
+        toast.error("Failed to load applications");
       } finally {
         setIsLoading(false);
       }
