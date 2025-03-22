@@ -19,12 +19,12 @@ const QuotesTab: React.FC = () => {
     forClient: true,
     includeAllQuotes: true, // Always get all quotes regardless of status
     excludeCompletedProjects: true, // Always exclude quotes for completed projects
-    refreshInterval: 5000 // Refresh more frequently to catch new quotes
+    refreshInterval: 30000 // Change from 5000 (5 seconds) to 30000 (30 seconds)
   });
   
   const [activeTab, setActiveTab] = useState('pending'); // Changed default tab to pending to see new quotes first
   
-  // Force refresh when component mounts
+  // Force refresh when component mounts but don't set up additional refresh interval
   useEffect(() => {
     console.log("BusinessQuotesTab: Forcing quotes refresh on mount");
     refetch();

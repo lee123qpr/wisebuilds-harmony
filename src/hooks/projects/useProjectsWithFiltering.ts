@@ -168,14 +168,14 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
       // Force a refresh of lead settings if available
       await queryClient.invalidateQueries({ queryKey: ['leadSettings'] });
       
-      // Force a new fetch of project leads
+      // Force a new fetch of project leads - use queryClient.invalidateQueries
+      // instead of window.location.reload()
+      await queryClient.invalidateQueries({ queryKey: ['projectLeads'] });
+      
       toast({
         title: "Refreshing projects",
         description: "Looking for new projects...",
       });
-      
-      // Force reloading the window to ensure a clean refresh
-      window.location.reload();
       
       return true;
     } catch (error) {

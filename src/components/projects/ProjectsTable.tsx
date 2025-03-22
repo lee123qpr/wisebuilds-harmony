@@ -11,11 +11,15 @@ const ProjectsTable = () => {
     refreshProjects
   } = useProjects();
 
-  // Refresh projects data periodically to ensure real-time updates
+  // Refresh projects data periodically with a longer interval
   useEffect(() => {
+    // Initial load is handled by useProjects
+    
+    // Set up a longer refresh interval - 60 seconds instead of 15
     const intervalId = setInterval(() => {
+      console.log('Auto-refreshing projects (60s interval)');
       refreshProjects();
-    }, 15000); // Refresh every 15 seconds
+    }, 60000); // Refresh every 60 seconds instead of 15
     
     return () => clearInterval(intervalId);
   }, [refreshProjects]);
