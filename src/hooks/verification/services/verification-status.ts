@@ -1,46 +1,59 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import type { VerificationData } from '../types';
+import { VerificationData } from '../types';
+import { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
+import { mapDatabaseStatusToVerificationStatus } from './status-utils';
 
-/**
- * Fetches verification status for a user
- */
-export const fetchVerificationStatus = async (userId: string): Promise<VerificationData | null> => {
+export const fetchVerificationStatus = async (): Promise<VerificationData | null> => {
   try {
-    // Get the verification record for the user
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) return null;
+    
     const { data, error } = await supabase
       .from('freelancer_verification')
       .select('*')
-      .eq('user_id', userId)
+      .eq('user_id', user.user.id)
       .maybeSingle();
     
     if (error) {
-      console.error('Error fetching verification status:', error);
-      throw error;
+      console.error('Error in fetchVerificationStatus:', error);
+      return null;
     }
     
-    console.log('Fetched verification status:', data);
     return data;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in fetchVerificationStatus:', error);
     return null;
   }
 };
 
-/**
- * Deletes verification document for a user
- */
-export const deleteVerificationDocument = async (
-  userId: string,
-  documentPath: string
-): Promise<{ 
-  success: boolean;
-  error?: any;
-}> => {
+export const deleteVerificationDocument = async (): Promise<boolean> => {
   try {
-    console.log('Deleting document for user:', userId, 'path:', documentPath);
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) return false;
     
-    // First, update the verification record
+    const { data: verificationData, error: fetchError } = await supabase
+      .from('freelancer_verification')
+      .select('document_path')
+      .eq('user_id', user.user.id)
+      .maybeSingle();
+    
+    if (fetchError || !verificationData?.document_path) {
+      console.error('Error fetching document path:', fetchError);
+      return false;
+    }
+    
+    // Delete from storage
+    const { error: storageError } = await supabase.storage
+      .from('verification_documents')
+      .remove([verificationData.document_path]);
+    
+    if (storageError) {
+      console.error('Error deleting document from storage:', storageError);
+      return false;
+    }
+    
+    // Update the verification record
     const { error: updateError } = await supabase
       .from('freelancer_verification')
       .update({
@@ -48,106 +61,59 @@ export const deleteVerificationDocument = async (
         document_name: null,
         document_size: null,
         document_type: null,
-        status: 'not_submitted',
+        verification_status: 'not_submitted',
         admin_notes: null,
         submitted_at: null,
-        reviewed_at: null
+        verified_at: null
       })
-      .eq('user_id', userId);
+      .eq('user_id', user.user.id);
     
     if (updateError) {
       console.error('Error updating verification record:', updateError);
-      return { 
-        success: false, 
-        error: updateError 
-      };
+      return false;
     }
     
-    // Then, delete the file from storage
-    const bucketName = await getVerificationBucketName();
-    const { error: deleteError } = await supabase.storage
-      .from(bucketName)
-      .remove([documentPath]);
-    
-    if (deleteError) {
-      console.error('Error deleting file from storage:', deleteError);
-      return { 
-        success: false, 
-        error: deleteError 
-      };
-    }
-    
-    return { success: true };
-  } catch (error) {
+    return true;
+  } catch (error: any) {
     console.error('Error in deleteVerificationDocument:', error);
-    return { 
-      success: false, 
-      error 
-    };
-  }
-};
-
-/**
- * Checks if a user is verified
- */
-export const isUserVerified = async (userId: string): Promise<boolean> => {
-  try {
-    const data = await fetchVerificationStatus(userId);
-    return data?.status === 'verified';
-  } catch (error) {
-    console.error('Error in isUserVerified:', error);
     return false;
   }
 };
 
-/**
- * Gets user verification status
- */
-export const getUserVerificationStatus = async (userId: string): Promise<string> => {
+export const isUserVerified = async (): Promise<boolean> => {
   try {
-    const data = await fetchVerificationStatus(userId);
-    return data?.status || 'not_submitted';
+    const verificationData = await fetchVerificationStatus();
+    if (!verificationData) return false;
+    
+    return verificationData.verification_status === 'approved';
   } catch (error) {
-    console.error('Error in getUserVerificationStatus:', error);
+    console.error('Error checking user verification status:', error);
+    return false;
+  }
+};
+
+export const getUserVerificationStatus = async (): Promise<VerificationStatus> => {
+  try {
+    const verificationData = await fetchVerificationStatus();
+    if (!verificationData) return 'not_submitted';
+    
+    return mapDatabaseStatusToVerificationStatus(verificationData.verification_status);
+  } catch (error) {
+    console.error('Error getting user verification status:', error);
     return 'not_submitted';
   }
 };
 
-/**
- * Determines which verification bucket to use
- */
-export const getVerificationBucketName = async (): Promise<string> => {
-  // Check available buckets
-  const { data: bucketsData, error: bucketsError } = await supabase.storage
-    .listBuckets();
-  
-  if (bucketsError) {
-    console.error('Error checking buckets:', bucketsError);
-  }
-  
-  console.log('Available buckets:', bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none');
-  
-  // Check if verification_documents or verification-documents exists
-  const bucketWithUnderscore = bucketsData?.find(b => b.name === 'verification_documents');
-  const bucketWithHyphen = bucketsData?.find(b => b.name === 'verification-documents');
-  
-  console.log('Bucket with underscore exists:', !!bucketWithUnderscore);
-  console.log('Bucket with hyphen exists:', !!bucketWithHyphen);
-  
-  // Return the correct bucket name
-  return bucketWithUnderscore ? 'verification_documents' : 
-         bucketWithHyphen ? 'verification-documents' : 'verification_documents';
-};
-
-/**
- * Checks if user is a freelancer
- */
-export const isUserFreelancer = async (userId: string): Promise<boolean> => {
+export const isUserFreelancer = async (): Promise<boolean> => {
   try {
+    const { data: user } = await supabase.auth.getUser();
+    if (!user?.user) return false;
+    
+    // Check if user exists in freelancer_profiles
     const { data, error } = await supabase
       .from('freelancer_profiles')
       .select('id')
-      .eq('id', userId)
+      .eq('user_id', user.user.id)
       .maybeSingle();
     
     if (error) {
