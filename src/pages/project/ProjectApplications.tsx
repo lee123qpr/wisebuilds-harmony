@@ -8,6 +8,8 @@ import { useProjectDetails } from '@/hooks/useProjectDetails';
 import FreelancerApplicationCard from '@/components/applications/FreelancerApplicationCard';
 import BackButton from '@/components/common/BackButton';
 import { toast } from 'sonner';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { AlertCircle } from 'lucide-react';
 
 const ProjectApplications = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -23,12 +25,13 @@ const ProjectApplications = () => {
   useEffect(() => {
     // Log for debugging
     console.log("ProjectApplications page - Applications:", applications?.length);
+    console.log("Project ID:", projectId);
     
     if (error) {
       console.error("Error loading applications:", error);
       toast.error("Failed to load applications");
     }
-  }, [applications, error]);
+  }, [applications, error, projectId]);
   
   const handleGoBack = () => {
     if (fromBusinessDashboard) {
@@ -60,6 +63,16 @@ const ProjectApplications = () => {
             </CardDescription>
           </CardHeader>
           <CardContent>
+            {error && (
+              <Alert variant="destructive" className="mb-4">
+                <AlertCircle className="h-4 w-4" />
+                <AlertTitle>Error</AlertTitle>
+                <AlertDescription>
+                  {error.message || "Failed to load applications. Please try again."}
+                </AlertDescription>
+              </Alert>
+            )}
+            
             {isLoading ? (
               <div className="space-y-4">
                 {[...Array(3)].map((_, i) => (

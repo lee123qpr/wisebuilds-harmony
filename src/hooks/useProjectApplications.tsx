@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { FreelancerApplication } from '@/types/applications';
+import { FreelancerApplication, FreelancerProfile } from '@/types/applications';
 import { toast } from 'sonner';
 
 export const useProjectApplications = (projectId: string | undefined) => {
@@ -19,8 +19,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
           throw new Error('No project ID provided');
         }
 
-        // The previous query was trying to use a join that doesn't exist
-        // Let's modify it to use a proper query structure
+        // Step 1: Get basic application data
         const { data, error } = await supabase
           .from('project_applications')
           .select(`
@@ -42,7 +41,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
           return;
         }
 
-        // Fetch freelancer profiles for each application
+        // Step 2: Fetch freelancer profiles for each application and map them together
         const applicationsWithProfiles = await Promise.all(
           data.map(async (application) => {
             try {
@@ -51,7 +50,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
                 .from('freelancer_profiles')
                 .select('*')
                 .eq('id', application.user_id)
-                .single();
+                .maybeSingle();
 
               if (profileError) {
                 console.error('Error fetching profile for user:', application.user_id, profileError);
@@ -64,17 +63,60 @@ export const useProjectApplications = (projectId: string | undefined) => {
 
               console.log(`User ${application.user_id} verification status:`, isVerified);
 
+              // Create a properly typed FreelancerProfile object
+              const typedProfile: FreelancerProfile | null = profileData ? {
+                id: profileData.id,
+                first_name: profileData.first_name,
+                last_name: profileData.last_name,
+                display_name: profileData.display_name,
+                profile_photo: profileData.profile_photo,
+                job_title: profileData.job_title,
+                location: profileData.location,
+                bio: profileData.bio,
+                skills: profileData.skills as string[] | undefined,
+                rating: profileData.rating,
+                reviews_count: profileData.reviews_count,
+                verified: isVerified || false,
+                email_verified: profileData.id_verified || false, // map id_verified to email_verified
+                hourly_rate: profileData.hourly_rate,
+                day_rate: profileData.day_rate,
+                email: profileData.email,
+                phone_number: profileData.phone_number,
+                website: profileData.website,
+                member_since: profileData.member_since,
+                jobs_completed: profileData.jobs_completed,
+                experience: profileData.experience,
+                availability: profileData.availability,
+                qualifications: profileData.qualifications as string[] | undefined,
+                accreditations: profileData.accreditations as string[] | undefined,
+                previous_employers: profileData.previous_employers as {
+                  employerName: string;
+                  position: string;
+                  startDate: string;
+                  endDate?: string;
+                  current: boolean;
+                }[] | undefined,
+                indemnity_insurance: profileData.indemnity_insurance as {
+                  hasInsurance: boolean;
+                  coverLevel?: string;
+                } | undefined,
+                previousWork: profileData.previous_work as {
+                  name: string;
+                  url: string;
+                  type: string;
+                  size: number;
+                  path: string;
+                }[] | undefined
+              } : null;
+
+              // Return the application with the typed profile
               return {
                 id: application.id,
                 user_id: application.user_id,
                 project_id: application.project_id,
                 message: application.message,
                 created_at: application.created_at,
-                freelancer_profile: profileData ? {
-                  ...profileData,
-                  verified: isVerified || false,
-                  email_verified: profileData.email_verified || false
-                } : null
+                freelancer_profile: typedProfile
               } as FreelancerApplication;
             } catch (err) {
               console.error('Error processing application:', err);
