@@ -25,13 +25,20 @@ const QuotesTab: React.FC = () => {
     console.error('Error loading applications:', error);
   }
   
+  // Filter out completed applications/quotes
+  const activeApplications = applications?.filter(app => {
+    // Filter out applications where the quote has been marked as complete
+    // A quote is complete when it has a completed_at timestamp set
+    return !app.completed_at;
+  });
+  
   // If no applications or still loading with no data yet
-  if (!isLoading && (!applications || applications.length === 0)) {
+  if (!isLoading && (!activeApplications || activeApplications.length === 0)) {
     return <QuotesEmptyState />;
   }
   
   // Count accepted quotes for the info alert - do this without making another API call
-  const acceptedCount = applications?.filter(p => p.quote_status === 'accepted').length || 0;
+  const acceptedCount = activeApplications?.filter(p => p.quote_status === 'accepted').length || 0;
   
   return (
     <div className="space-y-4">
@@ -40,7 +47,7 @@ const QuotesTab: React.FC = () => {
         <h2 className="text-2xl font-bold tracking-tight">
           My Quotes
           <Badge variant="secondary" className="ml-2 text-sm font-medium">
-            {applications?.length || 0}
+            {activeApplications?.length || 0}
           </Badge>
         </h2>
       </div>
@@ -51,11 +58,11 @@ const QuotesTab: React.FC = () => {
       <QuotesInfoAlert acceptedCount={acceptedCount} />
       
       {/* Quote status summary */}
-      <QuoteStatsSummary applications={applications} />
+      <QuoteStatsSummary applications={activeApplications} />
       
       {/* List of quotes - applications are sorted in the QuotesList component */}
       <QuotesList 
-        applications={applications}
+        applications={activeApplications}
         isLoading={isLoading}
       />
     </div>

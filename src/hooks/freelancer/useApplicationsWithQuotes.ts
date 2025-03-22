@@ -15,6 +15,7 @@ export interface ApplicationWithProject extends Project {
   application_id: string;
   application_created_at: string;
   quote_status?: Quote['status'];
+  completed_at?: string | null;
 }
 
 export const useApplicationsWithQuotes = () => {
@@ -78,9 +79,10 @@ export const useApplicationsWithQuotes = () => {
         }));
         
         // Fetch all quotes for this user in a single query instead of multiple queries
+        // Also fetch the completed_at field to determine if a job is completed
         const { data: quotesData, error: quotesError } = await supabase
           .from('quotes')
-          .select('status, project_id')
+          .select('status, project_id, completed_at')
           .eq('freelancer_id', user.id)
           .in('project_id', applicationProjects.map(p => p.id));
           
@@ -88,19 +90,23 @@ export const useApplicationsWithQuotes = () => {
           console.error('Error fetching quotes:', quotesError);
         }
         
-        // Create a map of project_id -> quote status for faster lookup
-        const quoteStatusMap = (quotesData || []).reduce((map, quote) => {
-          map[quote.project_id] = quote.status;
+        // Create a map of project_id -> quote data for faster lookup
+        const quoteDataMap = (quotesData || []).reduce((map, quote) => {
+          map[quote.project_id] = {
+            status: quote.status,
+            completed_at: quote.completed_at
+          };
           return map;
         }, {});
         
-        // Merge quote status into the application data
-        const projectsWithQuoteStatus = applicationProjects.map(project => ({
+        // Merge quote status and completed_at into the application data
+        const projectsWithQuoteData = applicationProjects.map(project => ({
           ...project,
-          quote_status: quoteStatusMap[project.id]
+          quote_status: quoteDataMap[project.id]?.status,
+          completed_at: quoteDataMap[project.id]?.completed_at
         }));
         
-        return projectsWithQuoteStatus as ApplicationWithProject[];
+        return projectsWithQuoteData as ApplicationWithProject[];
       } catch (error) {
         console.error('Error fetching applications:', error);
         return [];
