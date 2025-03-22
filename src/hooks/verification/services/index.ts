@@ -5,3 +5,4 @@ export { uploadVerificationDocument } from './document-upload';
 export { deleteVerificationDocument } from './document-deletion';
 export { mapDatabaseStatusToVerificationStatus } from './status-utils';
 export { getVerificationBucketName } from './storage-utils';
+export { isUserVerified, getUserVerificationStatus } from './user-verification';

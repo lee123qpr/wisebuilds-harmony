@@ -7,5 +7,7 @@ export {
   fetchVerificationStatus,
   uploadVerificationDocument,
   deleteVerificationDocument,
-  mapDatabaseStatusToVerificationStatus
+  mapDatabaseStatusToVerificationStatus,
+  isUserVerified,
+  getUserVerificationStatus
 } from './services';

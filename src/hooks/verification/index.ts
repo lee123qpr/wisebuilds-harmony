@@ -7,6 +7,8 @@ export {
   setupVerification,
   fetchVerificationStatus,
   uploadVerificationDocument,
-  deleteVerificationDocument
+  deleteVerificationDocument,
+  isUserVerified,
+  getUserVerificationStatus
 } from './services';
 export type { VerificationData, UseVerificationResult } from './types';
