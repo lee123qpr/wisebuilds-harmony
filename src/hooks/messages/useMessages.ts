@@ -65,9 +65,17 @@ export const useMessages = (selectedConversation: Conversation | null) => {
             markMessagesAsRead([newMsg.id]);
             
             // Add notification for message if it's from someone else
-            const senderName = selectedConversation.freelancer_id === newMsg.sender_id
-              ? selectedConversation.freelancer_name
-              : selectedConversation.client_name;
+            let senderName = 'Unknown User';
+            
+            // Get sender name based on whether they're the freelancer or client
+            if (selectedConversation.freelancer_id === newMsg.sender_id) {
+              senderName = selectedConversation.freelancer_info?.full_name || 
+                           selectedConversation.freelancer_info?.name || 
+                           'Freelancer';
+            } else if (selectedConversation.client_id === newMsg.sender_id) {
+              senderName = selectedConversation.client_info?.contact_name || 
+                           'Client';
+            }
               
             addNotification({
               type: 'message',
