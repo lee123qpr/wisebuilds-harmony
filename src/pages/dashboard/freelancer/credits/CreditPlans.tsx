@@ -1,50 +1,45 @@
 
-import React, { useState } from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import React from 'react';
 import { Button } from '@/components/ui/button';
+import { CreditPlan } from '@/hooks/credits/types';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Check, Sparkles, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
-import { CreditPlan } from '@/hooks/useCredits';
 import { Skeleton } from '@/components/ui/skeleton';
+import { AlertTriangle, RefreshCw } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface CreditPlansProps {
   plans: CreditPlan[] | undefined;
   onPurchase: (planId: string) => void;
   isLoading: boolean;
-  onRefresh?: () => void;
+  onRefresh: () => void;
 }
 
-const CreditPlans = ({ plans, onPurchase, isLoading, onRefresh }: CreditPlansProps) => {
-  const [purchasingPlanId, setPurchasingPlanId] = useState<string | null>(null);
-  
-  const handlePurchase = (planId: string) => {
-    setPurchasingPlanId(planId);
-    onPurchase(planId);
+const CreditPlans: React.FC<CreditPlansProps> = ({ 
+  plans, 
+  onPurchase, 
+  isLoading,
+  onRefresh
+}) => {
+  const formatPrice = (price: number) => {
+    // Convert from pence/cents to pounds/dollars
+    const formattedPrice = (price / 100).toFixed(2);
+    return `£${formattedPrice}`;
   };
-  
-  // Reset the purchasing state if we're no longer loading
-  React.useEffect(() => {
-    if (!isLoading && purchasingPlanId) {
-      setPurchasingPlanId(null);
-    }
-  }, [isLoading]);
-  
+
   if (isLoading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {[1, 2, 3, 4].map((i) => (
-          <Card key={i} className="bg-white">
-            <CardHeader className="pb-3">
-              <Skeleton className="h-6 w-24 mb-2" />
-              <Skeleton className="h-4 w-36" />
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {[1, 2, 3].map((i) => (
+          <Card key={i} className="bg-white shadow-md">
+            <CardHeader className="pb-2">
+              <Skeleton className="h-7 w-32 mb-2" />
+              <Skeleton className="h-16 w-full" />
             </CardHeader>
-            <CardContent>
-              <Skeleton className="h-10 w-20 mb-4" />
-              <div className="space-y-2">
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-4 w-3/4" />
-                <Skeleton className="h-4 w-5/6" />
-              </div>
+            <CardContent className="py-4">
+              <Skeleton className="h-12 w-24 mb-4" />
+              <Skeleton className="h-5 w-full mb-2" />
+              <Skeleton className="h-5 w-2/3" />
             </CardContent>
             <CardFooter>
               <Skeleton className="h-10 w-full" />
@@ -57,93 +52,51 @@ const CreditPlans = ({ plans, onPurchase, isLoading, onRefresh }: CreditPlansPro
 
   if (!plans || plans.length === 0) {
     return (
-      <Card className="col-span-full bg-white">
-        <CardContent className="pt-6 flex flex-col items-center justify-center p-10 text-center">
-          <AlertCircle className="h-12 w-12 text-amber-500 mb-4" />
-          <h3 className="text-lg font-semibold mb-2">No Credit Plans Available</h3>
-          <p className="text-gray-500 mb-4">We couldn't find any active credit plans at the moment.</p>
-          {onRefresh && (
-            <Button onClick={onRefresh} variant="outline" className="flex items-center gap-2">
-              <RefreshCw className="h-4 w-4" />
-              Refresh Plans
-            </Button>
-          )}
-        </CardContent>
-      </Card>
+      <Alert variant="destructive" className="mb-6">
+        <AlertTriangle className="h-4 w-4" />
+        <AlertDescription className="flex items-center justify-between">
+          <span>Unable to load credit plans. Please try again later.</span>
+          <Button variant="outline" size="sm" onClick={onRefresh} className="ml-4">
+            <RefreshCw className="h-4 w-4 mr-2" /> Retry
+          </Button>
+        </AlertDescription>
+      </Alert>
     );
   }
-  
+
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-      {plans.map((plan) => {
-        const priceInPounds = (plan.price / 100).toFixed(2);
-        const isBestValue = plan.discount_percentage >= 20;
-        const isPurchasing = purchasingPlanId === plan.id;
-        
-        return (
-          <Card key={plan.id} className={`relative bg-white ${isBestValue ? 'border-blue-400 shadow-lg' : ''}`}>
-            {isBestValue && (
-              <div className="absolute -top-3 -right-3">
-                <Badge className="bg-blue-500 hover:bg-blue-600 flex items-center gap-1">
-                  <Sparkles className="h-3.5 w-3.5" />
-                  Best Value
-                </Badge>
-              </div>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {plans.map((plan) => (
+        <Card key={plan.id} className="bg-white shadow-md transition-shadow hover:shadow-lg">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-xl font-bold">{plan.name}</CardTitle>
+            {plan.discount_percentage > 0 && (
+              <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-200">
+                Save {plan.discount_percentage}%
+              </Badge>
             )}
-            
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl">{plan.name}</CardTitle>
-              <CardDescription>
-                {plan.discount_percentage > 0 ? (
-                  <span>Save {plan.discount_percentage}%</span>
-                ) : (
-                  <span>Starter package</span>
-                )}
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent>
-              <div className="mb-4">
-                <span className="text-3xl font-bold">£{priceInPounds}</span>
-                <span className="text-gray-500"> / {plan.credits} credits</span>
-              </div>
-              
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  <span>{plan.credits} credits to use</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  <span>Apply to projects</span>
-                </li>
-                <li className="flex items-center gap-2">
-                  <Check className="h-4 w-4 text-green-500" />
-                  <span>Contact clients directly</span>
-                </li>
-              </ul>
-            </CardContent>
-            
-            <CardFooter>
-              <Button 
-                className="w-full" 
-                onClick={() => handlePurchase(plan.id)}
-                variant={isBestValue ? "default" : "outline"}
-                disabled={isLoading || !!purchasingPlanId}
-              >
-                {isPurchasing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Processing...
-                  </>
-                ) : (
-                  'Purchase'
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        );
-      })}
+          </CardHeader>
+          <CardContent className="py-4">
+            <div className="text-3xl font-bold mb-4">
+              {formatPrice(plan.price)}
+            </div>
+            <p className="text-gray-600">
+              {plan.credits} credits
+              {plan.discount_percentage > 0 && (
+                <span className="text-green-600 font-medium"> (Best value)</span>
+              )}
+            </p>
+          </CardContent>
+          <CardFooter>
+            <Button 
+              onClick={() => onPurchase(plan.id)} 
+              className="w-full bg-green-600 hover:bg-green-700 text-white"
+            >
+              Purchase Now
+            </Button>
+          </CardFooter>
+        </Card>
+      ))}
     </div>
   );
 };

@@ -52,13 +52,13 @@ export const usePurchaseCredits = () => {
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
-      setIsCheckoutLoading(false);
       setCheckoutError(error.message || 'Failed to start checkout process');
       toast({
         title: 'Checkout Error',
         description: error.message || 'Failed to start checkout process. Please try again later.',
         variant: 'destructive',
       });
+      setIsCheckoutLoading(false);
     }
   };
 
