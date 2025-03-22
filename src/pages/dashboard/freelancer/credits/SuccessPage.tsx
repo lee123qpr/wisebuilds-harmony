@@ -5,14 +5,19 @@ import { useCredits } from '@/hooks/useCredits';
 import { Button } from '@/components/ui/button';
 import { CheckCircle } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useAuth } from '@/context/AuthContext';
 
 const SuccessPage = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
   const { handleCheckoutSuccess } = useCredits();
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   useEffect(() => {
+    // Make sure we have a user first
+    if (!user) return;
+    
     if (sessionId) {
       handleCheckoutSuccess(sessionId);
     } else {
@@ -23,7 +28,7 @@ const SuccessPage = () => {
       
       return () => clearTimeout(timer);
     }
-  }, [sessionId, handleCheckoutSuccess, navigate]);
+  }, [sessionId, handleCheckoutSuccess, navigate, user]);
   
   return (
     <MainLayout>

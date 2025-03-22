@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 
@@ -22,6 +22,15 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
 
   // If not authenticated, redirect to login
   if (!user) {
+    // Preserve the success URL parameters when redirecting
+    const searchParams = new URLSearchParams(location.search);
+    const sessionId = searchParams.get('session_id');
+    
+    // If we're on the success page with a session ID, don't redirect
+    if (location.pathname.includes('/credits/success') && sessionId) {
+      return <>{children}</>;
+    }
+    
     return <Navigate to="/auth/login" state={{ from: location }} replace />;
   }
 
