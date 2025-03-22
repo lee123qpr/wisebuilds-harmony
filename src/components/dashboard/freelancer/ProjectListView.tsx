@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Project } from '@/components/projects/useProjects';
 import ProjectDetails from '@/components/projects/ProjectDetails';
@@ -19,6 +20,7 @@ interface ProjectListViewProps {
   setSelectedProjectId: (id: string) => void;
   selectedProject: Project | null;
   showContactInfo?: boolean;
+  isLeadsTab?: boolean; // New prop to indicate if we're in the My Leads tab
 }
 
 const ProjectListView: React.FC<ProjectListViewProps> = ({
@@ -27,7 +29,8 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
   selectedProjectId,
   setSelectedProjectId,
   selectedProject,
-  showContactInfo = false
+  showContactInfo = false,
+  isLeadsTab = false // Default to false (Available Projects tab)
 }) => {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -109,6 +112,7 @@ const ProjectListView: React.FC<ProjectListViewProps> = ({
               isSelected={project.id === selectedProjectId}
               onClick={() => setSelectedProjectId(project.id)}
               isPurchased={purchasedProjects[project.id] || false}
+              isLeadsTab={isLeadsTab} // Pass the isLeadsTab prop
             />
           ))}
         </div>

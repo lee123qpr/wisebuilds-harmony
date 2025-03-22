@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useProjectsWithFiltering } from '@/hooks/projects/useProjectsWithFiltering';
 import { LeadSettings } from '@/hooks/freelancer/types';
@@ -105,6 +104,7 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
           selectedProject={selectedProject as any}
+          isLeadsTab={true} // Set to true for My Leads tab
         />
       )}
     </div>

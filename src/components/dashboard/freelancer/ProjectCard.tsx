@@ -14,19 +14,35 @@ interface ProjectCardProps {
   isSelected: boolean;
   onClick: () => void;
   isPurchased?: boolean;
+  isLeadsTab?: boolean; // New prop to indicate if we're in the My Leads tab
 }
 
 const ProjectCard: React.FC<ProjectCardProps> = ({
   project,
   isSelected,
   onClick,
-  isPurchased = false
+  isPurchased = false,
+  isLeadsTab = false, // Default to false (Available Projects tab)
 }) => {
   // Format dates as "X days ago"
   const postedDateAgo = formatDateAgo(project.created_at);
   const purchasesCount = project.purchases_count || 0;
   
-  return <div className={`p-3 cursor-pointer transition-all ${isSelected ? 'bg-primary/5 border-l-4 border-primary' : 'hover:bg-muted/50 border-l-4 border-transparent'}`} onClick={onClick}>
+  // Set border color based on which tab we're in
+  const borderColor = isLeadsTab 
+    ? (isSelected ? 'border-green-500' : 'border-transparent hover:bg-muted/50') 
+    : (isSelected ? 'border-primary' : 'border-transparent hover:bg-muted/50');
+  
+  // Set highlight background color based on which tab we're in
+  const bgColor = isSelected 
+    ? isLeadsTab ? 'bg-green-50' : 'bg-primary/5'
+    : '';
+  
+  return (
+    <div 
+      className={`p-3 cursor-pointer transition-all ${bgColor} border-l-4 ${borderColor}`} 
+      onClick={onClick}
+    >
       <div>
         <h3 className="font-semibold text-lg truncate">{project.title}</h3>
       </div>
@@ -72,7 +88,8 @@ const ProjectCard: React.FC<ProjectCardProps> = ({
         <BudgetBadge budget={project.budget} />
         <HiringStatusBadge status={project.hiring_status || 'enquiring'} />
       </div>
-    </div>;
+    </div>
+  );
 };
 
 export default ProjectCard;

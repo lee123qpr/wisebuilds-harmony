@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import { useProjectsWithFiltering } from '@/hooks/projects/useProjectsWithFiltering';
 import ProjectListView from '@/components/dashboard/freelancer/ProjectListView';
@@ -125,6 +124,7 @@ const AvailableTabContent: React.FC = () => {
           selectedProjectId={selectedProjectId}
           setSelectedProjectId={setSelectedProjectId}
           selectedProject={selectedProject as any}
+          isLeadsTab={false} // Explicitly set to false for Available Projects tab
         />
       )}
     </div>
