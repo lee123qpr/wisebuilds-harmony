@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useProjectCompletion } from '@/hooks/projects/useProjectCompletion';
 import { useAuth } from '@/context/AuthContext';
