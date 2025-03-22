@@ -8,7 +8,8 @@ export const buildQuotesQuery = (
   projectId?: string, 
   forClient: boolean = false, 
   userId?: string,
-  includeAllQuotes: boolean = false
+  includeAllQuotes: boolean = false,
+  excludeCompletedProjects: boolean = false
 ) => {
   let query = supabase
     .from('quotes')
@@ -46,6 +47,13 @@ export const buildQuotesQuery = (
     }
   } else if (includeAllQuotes) {
     console.log('Bypassing client/freelancer filter to see all quotes for this project');
+  }
+  
+  // If we want to exclude quotes for completed projects, add a join filter
+  if (excludeCompletedProjects) {
+    // Filter out quotes where the project status is 'completed'
+    query = query.not('projects.status', 'eq', 'completed');
+    console.log('Excluding quotes for completed projects');
   }
   
   return query;

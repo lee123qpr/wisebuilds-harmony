@@ -16,13 +16,15 @@ interface UseQuotesProps {
   forClient?: boolean;
   refreshInterval?: number;
   includeAllQuotes?: boolean;
+  excludeCompletedProjects?: boolean;
 }
 
 export const useQuotes = ({ 
   projectId, 
   forClient = false,
   refreshInterval = 30000,
-  includeAllQuotes = true  // Default to showing all quotes for clients
+  includeAllQuotes = true,  // Default to showing all quotes for clients
+  excludeCompletedProjects = false // Default to showing all quotes, including for completed projects
 }: UseQuotesProps = {}) => {
   const { user } = useAuth();
   const didLogRef = useRef(false);
@@ -33,13 +35,14 @@ export const useQuotes = ({
       projectId, 
       forClient, 
       user: user?.id, 
-      includeAllQuotes 
+      includeAllQuotes,
+      excludeCompletedProjects 
     });
     didLogRef.current = true;
   }
   
   const queryResult = useQuery({
-    queryKey: ['quotes', projectId, user?.id, forClient, includeAllQuotes],
+    queryKey: ['quotes', projectId, user?.id, forClient, includeAllQuotes, excludeCompletedProjects],
     queryFn: async (): Promise<QuoteWithFreelancer[]> => {
       if (!user) {
         console.log("No user found, returning empty quotes array");
@@ -75,12 +78,20 @@ export const useQuotes = ({
             quotesData = data;
           } else {
             // For clients, get quotes for their projects
-            const { data, error } = await supabase
+            let query = supabase
               .from('quotes')
               .select('*, project:projects(*)')
               .eq('client_id', user.id)
               .eq('status', 'accepted'); // Get only accepted quotes for active jobs
               
+            // If we want to exclude quotes for completed projects, add a filter
+            if (excludeCompletedProjects) {
+              query = query.not('project.status', 'eq', 'completed');
+              console.log('Excluding quotes for completed projects');
+            }
+              
+            const { data, error } = await query;
+            
             if (error) {
               console.error('Error fetching quotes for client:', error);
               throw error;
@@ -95,7 +106,7 @@ export const useQuotes = ({
           logQuoteFetchDiagnostics(projectId, forClient, user.id, includeAllQuotes);
           
           // Build and execute the main quotes query
-          const query = buildQuotesQuery(projectId, forClient, user.id, includeAllQuotes);
+          const query = buildQuotesQuery(projectId, forClient, user.id, includeAllQuotes, excludeCompletedProjects);
           const { data, error } = await query;
           
           if (error) {

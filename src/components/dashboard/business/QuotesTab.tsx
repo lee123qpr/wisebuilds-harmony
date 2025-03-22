@@ -15,10 +15,11 @@ import QuotesHeader from './quotes/QuotesHeader';
 const QuotesTab: React.FC = () => {
   const { user } = useAuth();
   
-  // Fetch quotes for this client
+  // Fetch quotes for this client, excluding quotes for completed projects
   const { data: quotes, isLoading, refetch } = useQuotes({
     forClient: true,
-    includeAllQuotes: true
+    includeAllQuotes: true,
+    excludeCompletedProjects: true // Exclude quotes for completed projects
   });
   
   const [activeTab, setActiveTab] = useState('accepted');
