@@ -35,7 +35,10 @@ export const useTransactions = () => {
         
         // Use created_at if updated_at is not available
         // Need to use optional chaining since updated_at might not exist
-        const lastUpdateTime = tx.updated_at ?? tx.created_at;
+        const lastUpdateTime = tx.created_at;
+        if (tx.updated_at) {
+          lastUpdateTime = tx.updated_at;
+        }
         
         // Check if the last update was more than 5 minutes ago
         return new Date(lastUpdateTime).getTime() + 5 * 60 * 1000 < Date.now();
