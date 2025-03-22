@@ -27,7 +27,16 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
   useEffect(() => {
     console.log('Project leads updated:', projectLeads);
     console.log('Number of leads received:', projectLeads.length);
-    setFilteredLeads(projectLeads);
+    
+    // Filter out completed and hired projects
+    const activeLeads = projectLeads.filter(project => {
+      // Filter out projects that are completed or already hired for
+      const isActive = project.status === 'active';
+      const isNotHired = project.hiring_status !== 'hired' && project.hiring_status !== 'completed';
+      return isActive && isNotHired;
+    });
+    
+    setFilteredLeads(activeLeads);
   }, [projectLeads]);
   
   const refreshProjects = async () => {

@@ -97,6 +97,10 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
         leadsCount={filteredProjects.length}
       />
       
+      <p className="text-muted-foreground mb-4">
+        Projects matching your lead settings that are open for applications
+      </p>
+      
       {filteredProjects.length === 0 && !isLoadingLeads && !isRefreshing ? (
         <EmptyLeadsMessage />
       ) : (

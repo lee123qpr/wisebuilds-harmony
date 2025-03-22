@@ -93,6 +93,10 @@ const AvailableTabContent: React.FC = () => {
         </div>
       </div>
       
+      <p className="text-muted-foreground mb-4">
+        Open projects that are currently available for quotes and applications
+      </p>
+      
       {projects.length === 0 && !isLoading ? (
         <Card>
           <CardHeader>

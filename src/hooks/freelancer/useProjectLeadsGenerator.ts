@@ -57,6 +57,9 @@ export const useProjectLeadsGenerator = (leadSettings: LeadSettings | null) => {
           }
         }
         
+        // Add hiring status filter to only get available projects
+        query = query.in('hiring_status', ['enquiring', 'hiring']);
+        
         // Get the results
         const { data, error } = await query;
         

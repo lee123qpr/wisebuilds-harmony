@@ -14,6 +14,16 @@ export const useLeadFiltering = (leadSettings: LeadSettings | null, projectLeads
     console.log('Available leads to filter:', projectLeads);
     
     return projectLeads.filter(lead => {
+      // First check if project is active and not hired/completed
+      const isAvailable = lead.status === 'active' && 
+                          lead.hiring_status !== 'hired' && 
+                          lead.hiring_status !== 'completed';
+      
+      if (!isAvailable) {
+        console.log(`Lead ${lead.id} filtered out - not available (status: ${lead.status}, hiring: ${lead.hiring_status})`);
+        return false;
+      }
+      
       // Log each lead processing to debug
       console.log(`Processing lead: ${lead.id}, role: ${lead.role}, location: ${lead.location}`);
       
