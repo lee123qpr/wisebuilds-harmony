@@ -19,6 +19,14 @@ serve(async (req) => {
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') || '';
     const stripeSecretKey = Deno.env.get('STRIPE_SECRET_KEY') || '';
 
+    if (!stripeSecretKey) {
+      console.error('Stripe secret key is missing');
+      return new Response(
+        JSON.stringify({ error: 'Server configuration error: Missing Stripe API key' }),
+        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     // Initialize Supabase client with service role key
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
     const stripe = new Stripe(stripeSecretKey, {
@@ -29,6 +37,7 @@ serve(async (req) => {
     const { planId, userId, successUrl, cancelUrl } = await req.json();
 
     console.log(`Creating checkout session for plan: ${planId} and user: ${userId}`);
+    console.log(`Success URL: ${successUrl}, Cancel URL: ${cancelUrl}`);
 
     // Get plan details from database
     const { data: plan, error: planError } = await supabase
@@ -45,57 +54,75 @@ serve(async (req) => {
       );
     }
 
-    // Create Stripe checkout session
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price_data: {
-            currency: 'gbp',
-            product_data: {
-              name: `${plan.name} Credit Package`,
-              description: `${plan.credits} credits with ${plan.discount_percentage}% discount`,
+    console.log('Found plan:', plan);
+
+    try {
+      // Create Stripe checkout session
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        line_items: [
+          {
+            price_data: {
+              currency: 'gbp',
+              product_data: {
+                name: `${plan.name} Credit Package`,
+                description: `${plan.credits} credits with ${plan.discount_percentage}% discount`,
+              },
+              unit_amount: plan.price,
             },
-            unit_amount: plan.price,
+            quantity: 1,
           },
-          quantity: 1,
+        ],
+        mode: 'payment',
+        success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
+        cancel_url: cancelUrl,
+        metadata: {
+          userId,
+          planId,
+          credits: plan.credits.toString(),
         },
-      ],
-      mode: 'payment',
-      success_url: `${successUrl}?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: cancelUrl,
-      metadata: {
-        userId,
-        planId,
-        credits: plan.credits.toString(),
-      },
-    });
+      });
 
-    // Create a transaction record in pending state
-    const { data: transaction, error: transactionError } = await supabase
-      .from('credit_transactions')
-      .insert({
-        user_id: userId,
-        amount: plan.price,
-        credits_purchased: plan.credits,
-        stripe_payment_id: session.id,
-        status: 'pending'
-      })
-      .select()
-      .single();
+      console.log('Created checkout session:', session.id);
 
-    if (transactionError) {
-      console.error('Error creating transaction record:', transactionError);
+      // Create a transaction record in pending state
+      const { data: transaction, error: transactionError } = await supabase
+        .from('credit_transactions')
+        .insert({
+          user_id: userId,
+          amount: plan.price,
+          credits_purchased: plan.credits,
+          stripe_payment_id: session.id,
+          status: 'pending'
+        })
+        .select()
+        .single();
+
+      if (transactionError) {
+        console.error('Error creating transaction record:', transactionError);
+        return new Response(
+          JSON.stringify({ error: 'Failed to create transaction record' }),
+          { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      console.log('Created transaction record:', transaction.id);
+      console.log('Redirecting to:', session.url);
+
       return new Response(
-        JSON.stringify({ error: 'Failed to create transaction record' }),
+        JSON.stringify({ 
+          sessionId: session.id, 
+          sessionUrl: session.url 
+        }),
+        { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    } catch (stripeError) {
+      console.error('Stripe error:', stripeError);
+      return new Response(
+        JSON.stringify({ error: `Stripe error: ${stripeError.message}` }),
         { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
-
-    return new Response(
-      JSON.stringify({ sessionId: session.id, sessionUrl: session.url }),
-      { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
   } catch (error) {
     console.error('Error creating checkout session:', error);
     return new Response(

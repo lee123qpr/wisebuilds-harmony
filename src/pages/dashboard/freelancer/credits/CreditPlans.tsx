@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Sparkles, Loader2 } from 'lucide-react';
 import { CreditPlan } from '@/hooks/useCredits';
 
 interface CreditPlansProps {
@@ -101,8 +101,16 @@ const CreditPlans = ({ plans, onPurchase, isLoading }: CreditPlansProps) => {
                 className="w-full" 
                 onClick={() => onPurchase(plan.id)}
                 variant={isBestValue ? "default" : "outline"}
+                disabled={isLoading}
               >
-                Purchase
+                {isLoading ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Processing...
+                  </>
+                ) : (
+                  'Purchase'
+                )}
               </Button>
             </CardFooter>
           </Card>

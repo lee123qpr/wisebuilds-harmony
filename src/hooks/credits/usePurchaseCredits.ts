@@ -22,6 +22,8 @@ export const usePurchaseCredits = () => {
     setIsCheckoutLoading(true);
     
     try {
+      console.log('Creating checkout session for planId:', planId);
+      
       const response = await supabase.functions.invoke('create-checkout-session', {
         body: {
           planId,
@@ -32,24 +34,28 @@ export const usePurchaseCredits = () => {
       });
       
       if (response.error) {
+        console.error('Checkout error response:', response.error);
         throw new Error(response.error.message || 'Failed to create checkout session');
       }
       
+      console.log('Checkout session response:', response.data);
+      
       // Redirect to Stripe Checkout
-      if (response.data.sessionUrl) {
+      if (response.data && response.data.sessionUrl) {
+        console.log('Redirecting to Stripe checkout:', response.data.sessionUrl);
         window.location.href = response.data.sessionUrl;
       } else {
-        throw new Error('No checkout URL returned');
+        console.error('No checkout URL returned', response.data);
+        throw new Error('No checkout URL returned from server');
       }
     } catch (error) {
       console.error('Error creating checkout session:', error);
+      setIsCheckoutLoading(false);
       toast({
         title: 'Checkout Error',
         description: error.message || 'Failed to start checkout process',
         variant: 'destructive',
       });
-    } finally {
-      setIsCheckoutLoading(false);
     }
   };
 
