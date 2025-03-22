@@ -28,20 +28,20 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
     }
     
     // Map database status to frontend status type
-    const status = mapDatabaseStatusToVerificationStatus(data.verification_status || data.status);
+    const status = mapDatabaseStatusToVerificationStatus(data.status);
     
     // Return typed verification data
     return {
       id: data.id,
       user_id: data.user_id,
-      document_path: data.id_document_path || data.document_path,
+      document_path: data.document_path,
       document_name: data.document_name,
       document_type: data.document_type,
       document_size: data.document_size,
       status: status,
       admin_notes: data.admin_notes,
       submitted_at: data.submitted_at,
-      reviewed_at: data.verified_at || data.reviewed_at
+      reviewed_at: data.reviewed_at
     };
   } catch (error) {
     console.error('Error in fetchVerificationStatus:', error);
@@ -119,16 +119,14 @@ export const uploadVerificationDocument = async (
       const { error } = await supabase
         .from('freelancer_verification')
         .update({
-          id_document_path: filePath,
           document_path: filePath,
           document_name: file.name,
           document_size: file.size,
           document_type: file.type,
-          verification_status: 'pending',
           status: 'pending',
           submitted_at: new Date().toISOString(),
           admin_notes: null,
-          verified_at: null
+          reviewed_at: null
         })
         .eq('user_id', userId);
       
@@ -140,12 +138,10 @@ export const uploadVerificationDocument = async (
         .from('freelancer_verification')
         .insert({
           user_id: userId,
-          id_document_path: filePath,
           document_path: filePath,
           document_name: file.name,
           document_size: file.size,
           document_type: file.type,
-          verification_status: 'pending',
           status: 'pending',
           submitted_at: new Date().toISOString()
         });
