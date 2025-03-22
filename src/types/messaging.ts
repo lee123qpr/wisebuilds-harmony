@@ -47,7 +47,7 @@ export interface FreelancerInfo {
   name?: string;
   profilePhoto?: string;
   jobTitle?: string;
-  job_title?: string; // Add this for compatibility
+  job_title?: string; // This property is used in some components
   isVerified?: boolean;
 }
 

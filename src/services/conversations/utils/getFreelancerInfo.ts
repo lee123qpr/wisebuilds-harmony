@@ -41,7 +41,7 @@ export async function getFreelancerInfo(freelancerId: string) {
       profilePhoto: freelancer?.profile_photo,
       profile_image: freelancer?.profile_photo,
       jobTitle: freelancer?.job_title,
-      job_title: freelancer?.job_title, // Add this for consistency
+      job_title: freelancer?.job_title, // Keep both versions for compatibility
       rating: freelancer?.rating,
       isVerified: isVerified || false,
       verified: isVerified || false,
@@ -61,7 +61,7 @@ export async function getFreelancerInfo(freelancerId: string) {
       profilePhoto: null,
       profile_image: null,
       jobTitle: null,
-      job_title: null, // Add this for consistency
+      job_title: null, // Keep both versions for compatibility
       rating: null,
       isVerified: false,
       verified: false

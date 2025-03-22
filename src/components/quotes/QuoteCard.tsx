@@ -102,7 +102,7 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
                   }
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {freelancer.job_title || freelancerInfo?.job_title || 'Freelancer'}
+                  {freelancer.job_title || freelancerInfo?.jobTitle || freelancerInfo?.job_title || 'Freelancer'}
                 </p>
               </div>
             </>
