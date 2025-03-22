@@ -42,6 +42,7 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   
   const handleInterestedClick = (e: React.MouseEvent) => {
     e.stopPropagation(); // Prevent the card click event from firing
+    console.log(`Navigating to applications for project: ${project.id} with ${interestedCount} applications`);
     navigate(`/project/${project.id}/applications`, {
       state: { from: 'businessDashboard' }
     });
@@ -79,6 +80,8 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
             <div 
               className="border rounded-md p-4 flex items-center cursor-pointer hover:bg-slate-50"
               onClick={handleInterestedClick}
+              role="button"
+              aria-label={`View ${interestedCount} interested freelancers`}
             >
               <div className="flex items-center justify-center w-12 h-12 rounded-full bg-primary/10 mr-3">
                 <span className="text-2xl font-bold text-primary">{interestedCount}</span>

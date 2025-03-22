@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -6,6 +7,7 @@ import { useProjectApplications } from '@/hooks/useProjectApplications';
 import { useProjectDetails } from '@/hooks/useProjectDetails';
 import FreelancerApplicationCard from '@/components/applications/FreelancerApplicationCard';
 import BackButton from '@/components/common/BackButton';
+import { toast } from 'sonner';
 
 const ProjectApplications = () => {
   const { projectId } = useParams<{ projectId: string }>();
@@ -15,8 +17,18 @@ const ProjectApplications = () => {
   // Check if we came from the business dashboard
   const fromBusinessDashboard = location.state?.from === 'businessDashboard';
   
-  const { applications, isLoading: isLoadingApplications } = useProjectApplications(projectId);
+  const { applications, isLoading: isLoadingApplications, error } = useProjectApplications(projectId);
   const { project, loading: isLoadingProject } = useProjectDetails(projectId);
+  
+  useEffect(() => {
+    // Log for debugging
+    console.log("ProjectApplications page - Applications:", applications?.length);
+    
+    if (error) {
+      console.error("Error loading applications:", error);
+      toast.error("Failed to load applications");
+    }
+  }, [applications, error]);
   
   const handleGoBack = () => {
     if (fromBusinessDashboard) {

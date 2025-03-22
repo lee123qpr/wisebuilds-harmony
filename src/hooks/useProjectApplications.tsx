@@ -11,6 +11,7 @@ export const useProjectApplications = (projectId: string) => {
     const fetchApplications = async () => {
       try {
         setIsLoading(true);
+        console.log('Fetching applications for project:', projectId);
 
         const { data, error } = await supabase
           .from('project_applications')
@@ -36,6 +37,8 @@ export const useProjectApplications = (projectId: string) => {
           .eq('project_id', projectId);
 
         if (error) throw error;
+        
+        console.log('Applications data received:', data?.length || 0, 'applications');
 
         // Fetch verification status for each applicant
         const applicationsWithVerification = await Promise.all(
@@ -44,6 +47,8 @@ export const useProjectApplications = (projectId: string) => {
               const { data: isVerified } = await supabase.rpc('is_user_verified', { 
                 check_user_id: application.user_id 
               });
+
+              console.log(`User ${application.user_id} verification status:`, isVerified);
 
               return {
                 id: application.id,
@@ -84,6 +89,11 @@ export const useProjectApplications = (projectId: string) => {
 
     if (projectId) {
       fetchApplications();
+    } else {
+      // Reset state if no projectId is provided
+      setApplications([]);
+      setIsLoading(false);
+      setError(null);
     }
   }, [projectId]);
 
