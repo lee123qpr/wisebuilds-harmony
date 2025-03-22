@@ -16,4 +16,5 @@ export interface CreditTransaction {
   stripe_payment_id: string | null;
   status: 'pending' | 'completed' | 'failed';
   created_at: string;
+  updated_at?: string; // Adding this field as optional
 }

@@ -29,10 +29,12 @@ export const useTransactions = () => {
       }
       
       // Only attempt to update pending transactions that haven't been updated recently
-      const pendingTransactions = data?.filter(tx => 
-        tx.status === 'pending' && 
-        new Date(tx.updated_at || tx.created_at).getTime() + 5 * 60 * 1000 < Date.now()
-      ) || [];
+      const pendingTransactions = data?.filter(tx => {
+        // Use created_at if updated_at is not available
+        const lastUpdateTime = tx.updated_at || tx.created_at;
+        return tx.status === 'pending' && 
+               new Date(lastUpdateTime).getTime() + 5 * 60 * 1000 < Date.now();
+      }) || [];
       
       if (pendingTransactions.length > 0) {
         console.log(`Found ${pendingTransactions.length} pending transactions. Will attempt to update them.`);
@@ -61,7 +63,7 @@ export const useTransactions = () => {
       return data as CreditTransaction[];
     },
     enabled: !!user,
-    staleTime: 60000, // Consider data stale after 1 minute (reduced from polling every 5 seconds)
+    staleTime: 60000, // Consider data stale after 1 minute
     gcTime: 1000, // Very short cache time
     refetchOnWindowFocus: true,
     refetchOnMount: true,
