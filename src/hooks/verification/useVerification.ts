@@ -64,7 +64,7 @@ export const useVerification = (): UseVerificationResult => {
     setIsUploading(true);
     try {
       console.log('Starting document upload for user:', user.id);
-      const result = await uploadVerificationDocument(user.id, file);
+      const result = await uploadVerificationDocument(file);
       
       if (!result.success) {
         console.error('Upload failed with result:', result);
@@ -131,7 +131,7 @@ export const useVerification = (): UseVerificationResult => {
 
   return {
     verificationData,
-    verificationStatus: verificationData?.status || 'not_submitted',
+    verificationStatus: verificationData?.status as VerificationStatus || 'not_submitted',
     isVerified: verificationData?.status === 'verified',
     isLoading,
     isUploading,

@@ -9,7 +9,6 @@ import type { VerificationData } from '../types';
  * Uploads verification document for a user
  */
 export const uploadVerificationDocument = async (
-  userId: string,
   file: File
 ): Promise<{ 
   success: boolean;
@@ -18,6 +17,18 @@ export const uploadVerificationDocument = async (
   verificationData?: VerificationData
 }> => {
   try {
+    // Get the current user's ID
+    const { data: { user } } = await supabase.auth.getUser();
+    
+    if (!user) {
+      console.error('No authenticated user found');
+      return { 
+        success: false, 
+        error: new Error('Authentication required') 
+      };
+    }
+    
+    const userId = user.id;
     console.log('Starting document upload for user:', userId);
     
     // Create a unique file path - make sure the userId is the first part of the path
@@ -52,7 +63,7 @@ export const uploadVerificationDocument = async (
       .from(bucketName)
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: true // Changed to true to overwrite existing files
       });
     
     if (uploadError) {

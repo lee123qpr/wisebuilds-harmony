@@ -59,7 +59,6 @@ const VerificationDialog: React.FC = () => {
               <Button 
                 variant={verificationStatus === 'verified' ? 'ghost' : 'outline'} 
                 className="flex items-center gap-2"
-                disabled={verificationStatus === 'verified' || isLoading}
                 onClick={handleOpenDialog}
               >
                 <ShieldCheck className="h-4 w-4" />

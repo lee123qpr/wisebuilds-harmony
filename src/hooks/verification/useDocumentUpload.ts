@@ -1,6 +1,6 @@
+
 import { useState } from 'react';
 import { useVerification } from './useVerification';
-import { validateFile } from '@/components/quotes/components/file-upload/utils/validation';
 import { useToast } from '@/hooks/use-toast';
 
 export const useDocumentUpload = (onClose: () => void) => {
@@ -37,7 +37,11 @@ export const useDocumentUpload = (onClose: () => void) => {
     try {
       console.log('Submitting document for verification:', selectedFile.name);
       
-      await uploadVerificationDocument(selectedFile);
+      const result = await uploadVerificationDocument(selectedFile);
+      
+      if (!result) {
+        throw new Error("Upload failed. Please try again later.");
+      }
       
       toast({
         title: "Document submitted",
