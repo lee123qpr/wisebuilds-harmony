@@ -39,7 +39,18 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       console.log('Uploading to path:', filePath);
       
-      // Upload to freelancer-avatar bucket - removed the bucket existence check
+      // First check if we can access the bucket - this helps diagnose permission issues
+      const { data: bucketInfo, error: bucketError } = await supabase.storage
+        .getBucket('freelancer-avatar');
+        
+      if (bucketError) {
+        console.error('Error accessing bucket:', bucketError);
+        throw new Error(`Cannot access storage bucket: ${bucketError.message}`);
+      }
+      
+      console.log('Bucket exists and is accessible:', bucketInfo);
+      
+      // Upload to freelancer-avatar bucket
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('freelancer-avatar')
         .upload(filePath, file, { 
@@ -49,7 +60,15 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
 
       if (uploadError) {
         console.error('Error during upload:', uploadError);
-        throw new Error(`Upload failed: ${uploadError.message}`);
+        
+        // Handle specific storage error cases
+        if (uploadError.message.includes('storage/object-not-found')) {
+          throw new Error('Storage bucket not found. Please contact support.');
+        } else if (uploadError.message.includes('storage/permission-denied') || uploadError.status === 403) {
+          throw new Error('Permission denied. Make sure your account has correct permissions.');
+        } else {
+          throw new Error(`Upload failed: ${uploadError.message}`);
+        }
       }
 
       if (!uploadData) {
@@ -73,6 +92,10 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         title: 'Image Uploaded',
         description: 'Your profile image has been updated.',
       });
+      
+      // Return the URL for use in updating profile if needed
+      return publicUrl;
+      
     } catch (error) {
       console.error('Error in image upload process:', error);
       toast({
@@ -82,6 +105,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
           ? error.message 
           : 'There was an error uploading your image. Please verify your account type and permissions.',
       });
+      return null;
     } finally {
       setUploadingImage(false);
     }

@@ -3,6 +3,8 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Camera, Loader2 } from 'lucide-react';
+import { checkBucketAccess } from '@/utils/supabaseStorage';
+import { useToast } from '@/hooks/use-toast';
 
 interface FreelancerAvatarProps {
   profileImageUrl: string | null;
@@ -22,6 +24,23 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   // Create a ref for the file input
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [imageError, setImageError] = React.useState(false);
+  const { toast } = useToast();
+  const [bucketAccessChecked, setBucketAccessChecked] = React.useState(false);
+
+  // Check bucket access on component mount
+  React.useEffect(() => {
+    const verifyBucketAccess = async () => {
+      if (!bucketAccessChecked) {
+        const hasAccess = await checkBucketAccess('freelancer-avatar');
+        if (!hasAccess) {
+          console.warn('Cannot access freelancer-avatar bucket - uploads may fail');
+        }
+        setBucketAccessChecked(true);
+      }
+    };
+    
+    verifyBucketAccess();
+  }, [bucketAccessChecked]);
 
   // When the button is clicked, trigger the hidden file input
   const handleButtonClick = () => {
@@ -36,6 +55,29 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
     const file = e.target.files?.[0];
     if (file) {
       console.log('File selected for upload:', file.name);
+      
+      // Validate file type and size
+      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
+      
+      if (!validImageTypes.includes(file.type)) {
+        toast({
+          title: "Invalid file type",
+          description: "Please upload an image file (JPEG, PNG, GIF, WEBP)",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      if (file.size > maxSizeInBytes) {
+        toast({
+          title: "File too large",
+          description: "Please upload an image smaller than 5MB",
+          variant: "destructive"
+        });
+        return;
+      }
+      
       setImageError(false); // Reset error state when new file is selected
       handleImageUpload(e);
     } else {
