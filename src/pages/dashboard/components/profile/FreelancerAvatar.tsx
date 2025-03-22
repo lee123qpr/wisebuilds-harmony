@@ -34,11 +34,14 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
         const hasAccess = await checkBucketAccess('freelancer-avatar');
         if (!hasAccess) {
           console.warn('Cannot access freelancer-avatar bucket - uploads may fail');
-          toast({
-            variant: 'destructive',
-            title: 'Storage Access Issue',
-            description: 'There might be an issue accessing the avatar storage. Contact support if uploads fail.'
-          });
+          // Only show toast in development environment to avoid alarming users unnecessarily
+          if (process.env.NODE_ENV === 'development') {
+            toast({
+              variant: 'default',
+              title: 'Developer Note',
+              description: 'Storage access check failed. Check console for details.'
+            });
+          }
         }
         setBucketAccessChecked(true);
       }

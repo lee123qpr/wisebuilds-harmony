@@ -105,6 +105,13 @@ export const removeFile = async (
  */
 export const checkBucketAccess = async (bucketName: string): Promise<boolean> => {
   try {
+    // First check if user is authenticated
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session) {
+      console.warn('User not authenticated, cannot check bucket access');
+      return false;
+    }
+    
     // A simple way to check bucket access is to list files (with a limit of 0)
     // This will tell us if we have at least READ access
     const { data, error } = await supabase.storage
