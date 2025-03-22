@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useCredits } from '@/hooks/useCredits';
 import { Button } from '@/components/ui/button';
@@ -12,15 +12,16 @@ const SuccessPage = () => {
   const sessionId = searchParams.get('session_id');
   const { handleCheckoutSuccess } = useCredits();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, isLoading } = useAuth();
+  const [processingComplete, setProcessingComplete] = useState(false);
   
   useEffect(() => {
-    // Make sure we have a user first
-    if (!user) return;
-    
-    if (sessionId) {
+    // Only process once when we have sessionId and auth is loaded
+    if (sessionId && !isLoading && !processingComplete) {
+      console.log('Processing checkout success with session ID:', sessionId);
       handleCheckoutSuccess(sessionId);
-    } else {
+      setProcessingComplete(true);
+    } else if (!sessionId && !isLoading) {
       // If no session ID, redirect back to credits page after a short delay
       const timer = setTimeout(() => {
         navigate('/dashboard/freelancer/credits');
@@ -28,7 +29,7 @@ const SuccessPage = () => {
       
       return () => clearTimeout(timer);
     }
-  }, [sessionId, handleCheckoutSuccess, navigate, user]);
+  }, [sessionId, handleCheckoutSuccess, navigate, user, isLoading, processingComplete]);
   
   return (
     <MainLayout>

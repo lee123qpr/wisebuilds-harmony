@@ -3,7 +3,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
-import { useEffect } from 'react';
 
 export const useCheckoutSuccess = () => {
   const { user } = useAuth();
@@ -12,13 +11,14 @@ export const useCheckoutSuccess = () => {
   const navigate = useNavigate();
 
   const handleCheckoutSuccess = async (sessionId: string) => {
-    if (!user || !sessionId) return;
+    if (!sessionId) return;
     
     try {
-      // We don't need to do anything here as the webhook will handle
-      // adding credits to the user's account, but we can refresh the data
-      await queryClient.invalidateQueries({ queryKey: ['creditBalance', user.id] });
-      await queryClient.invalidateQueries({ queryKey: ['creditTransactions', user.id] });
+      // If user exists, we can update their data immediately
+      if (user) {
+        await queryClient.invalidateQueries({ queryKey: ['creditBalance', user.id] });
+        await queryClient.invalidateQueries({ queryKey: ['creditTransactions', user.id] });
+      }
       
       toast({
         title: 'Purchase Successful',

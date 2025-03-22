@@ -24,6 +24,9 @@ export const usePurchaseCredits = () => {
     try {
       console.log('Creating checkout session for planId:', planId);
       
+      // Get current auth token to persist the session
+      const { data: { session } } = await supabase.auth.getSession();
+      
       const response = await supabase.functions.invoke('create-checkout-session', {
         body: {
           planId,
@@ -43,6 +46,12 @@ export const usePurchaseCredits = () => {
       // Open Stripe Checkout in a new window to avoid iframe restrictions
       if (response.data && response.data.sessionUrl) {
         console.log('Opening Stripe checkout in new window:', response.data.sessionUrl);
+        
+        // Add session token to localStorage before opening Stripe
+        if (session) {
+          localStorage.setItem('sb-session-backup', JSON.stringify(session));
+        }
+        
         window.open(response.data.sessionUrl, '_blank');
         
         // Also reduce loading state since we're not leaving the page
