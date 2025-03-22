@@ -34,6 +34,8 @@ export const useTransactions = () => {
       return data as CreditTransaction[];
     },
     enabled: !!user,
+    staleTime: 30000, // Consider data stale after 30 seconds
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   return {

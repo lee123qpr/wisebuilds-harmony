@@ -29,12 +29,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
         const sessionBackup = localStorage.getItem('sb-session-backup');
         if (sessionBackup) {
           try {
-            console.log('Attempting to restore session from backup');
-            // We don't actually set the session directly, just let the user know
-            // we found the backup and are working on it
-            console.log('Found session backup, restoring'); 
+            console.log('Attempting to restore session from backup in ProtectedRoute');
+            await supabase.auth.setSession(JSON.parse(sessionBackup));
           } catch (error) {
-            console.error('Error restoring session:', error);
+            console.error('Error restoring session in ProtectedRoute:', error);
           }
         }
       }
@@ -48,7 +46,7 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
     return null;
   }
 
-  // Special case: Allow access to the success page with a session ID even if not authenticated
+  // Special case: Always allow access to the success page with a session ID
   if (isSuccessPage && sessionId) {
     console.log('Allowing access to success page with session ID');
     return <>{children}</>;

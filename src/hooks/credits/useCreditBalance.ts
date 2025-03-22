@@ -27,13 +27,17 @@ export const useCreditBalance = () => {
         throw error;
       }
       
+      console.log(`Retrieved credit balance for user ${user.id}: ${data?.credit_balance || 0}`);
       return data?.credit_balance || 0;
     },
     enabled: !!user,
+    staleTime: 30000, // Consider data stale after 30 seconds
+    refetchOnWindowFocus: true, // Refetch when window regains focus
   });
 
   const refetchCredits = async () => {
     if (refetchCreditBalance) {
+      console.log('Explicitly refetching credit balance');
       return refetchCreditBalance();
     }
   };

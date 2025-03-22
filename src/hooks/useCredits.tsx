@@ -37,8 +37,23 @@ export const useCredits = () => {
   // Enhanced refetch function that refreshes all credit-related data
   const refreshAllCreditData = async () => {
     console.log('Refreshing all credit data');
-    if (refetchCredits) await refetchCredits();
-    if (refetchTransactions) await refetchTransactions();
+    try {
+      const promises = [];
+      
+      if (refetchCredits) {
+        promises.push(refetchCredits());
+      }
+      
+      if (refetchTransactions) {
+        promises.push(refetchTransactions());
+      }
+      
+      // Wait for all refetch operations to complete
+      await Promise.all(promises);
+      console.log('All credit data refreshed successfully');
+    } catch (error) {
+      console.error('Error refreshing credit data:', error);
+    }
   };
   
   return {
