@@ -34,13 +34,18 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
         const hasAccess = await checkBucketAccess('freelancer-avatar');
         if (!hasAccess) {
           console.warn('Cannot access freelancer-avatar bucket - uploads may fail');
+          toast({
+            variant: 'destructive',
+            title: 'Storage Access Issue',
+            description: 'There might be an issue accessing the avatar storage. Contact support if uploads fail.'
+          });
         }
         setBucketAccessChecked(true);
       }
     };
     
     verifyBucketAccess();
-  }, [bucketAccessChecked]);
+  }, [bucketAccessChecked, toast]);
 
   // When the button is clicked, trigger the hidden file input
   const handleButtonClick = () => {
@@ -98,6 +103,11 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   const handleImageError = () => {
     console.error("Failed to load image:", profileImageUrl);
     setImageError(true);
+    toast({
+      variant: "destructive",
+      title: "Image Load Error",
+      description: "Your profile image couldn't be loaded. Try uploading a new one."
+    });
   };
 
   return (

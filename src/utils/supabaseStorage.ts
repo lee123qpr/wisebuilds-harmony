@@ -12,6 +12,11 @@ export const uploadFile = async (
   namePrefix: string = 'file'
 ): Promise<{ url: string; path: string } | null> => {
   try {
+    if (!userId) {
+      console.error('Error: userId is required for storage RLS policies');
+      throw new Error('User ID is required for uploading files');
+    }
+
     // Create unique file name with proper extension
     const fileExt = file.name.split('.').pop();
     const fileName = `${namePrefix.trim() || 'file'}-${Date.now()}.${fileExt}`;
@@ -37,6 +42,8 @@ export const uploadFile = async (
         throw new Error('Storage bucket not found. Please contact support.');
       } else if (uploadError.message.includes('permission denied') || uploadError.message.includes('access denied')) {
         throw new Error(`Permission denied: You can only upload to your own folder (${userId}/)`);
+      } else if (uploadError.message.includes('not authorized')) {
+        throw new Error('Authentication required: Please log in before uploading files');
       } else {
         throw new Error(`Upload failed: ${uploadError.message}`);
       }
@@ -52,6 +59,7 @@ export const uploadFile = async (
       .from(bucketName)
       .getPublicUrl(filePath);
       
+    console.log('File uploaded successfully to path:', filePath);
     return {
       url: publicUrl,
       path: filePath
@@ -70,6 +78,12 @@ export const removeFile = async (
   filePath: string
 ): Promise<boolean> => {
   try {
+    // Validate path
+    if (!filePath.includes('/')) {
+      console.error('Invalid file path:', filePath);
+      throw new Error('Invalid file path format - must include user ID as first segment');
+    }
+
     const { error } = await supabase.storage
       .from(bucketName)
       .remove([filePath]);
@@ -102,6 +116,7 @@ export const checkBucketAccess = async (bucketName: string): Promise<boolean> =>
       return false;
     }
     
+    console.log(`Successfully verified access to bucket: ${bucketName}`);
     return true;
   } catch (error) {
     console.error(`Error checking bucket ${bucketName}:`, error);

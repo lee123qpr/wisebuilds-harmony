@@ -31,6 +31,12 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       console.log('Uploading image for user:', userId);
       console.log('File details:', { name: file.name, type: file.type, size: file.size });
       
+      // Verify user is authenticated before attempting upload
+      const { data: session } = await supabase.auth.getSession();
+      if (!session.session) {
+        throw new Error('Authentication required: Please log in before uploading');
+      }
+      
       // Use the centralized upload utility
       const result = await uploadFile(file, userId, 'freelancer-avatar', namePrefix || 'profile');
       
@@ -59,7 +65,9 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       
       if (error instanceof Error) {
         if (error.message.includes('permission denied') || error.message.includes('access denied')) {
-          errorMessage = 'Permission denied. Make sure you\'re uploading to your own folder.';
+          errorMessage = 'Permission denied. Make sure you\'re logged in and uploading to your own folder.';
+        } else if (error.message.includes('authentication required')) {
+          errorMessage = 'You need to be logged in to upload files.';
         } else {
           errorMessage = error.message;
         }
