@@ -2,8 +2,6 @@
 import React from 'react';
 import { FolderKanban } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import NewProjectDialog from '@/components/projects/NewProjectDialog';
 
 interface ProjectsHeaderProps {
   projectCount: number;
@@ -21,7 +19,6 @@ const ProjectsHeader: React.FC<ProjectsHeaderProps> = ({ projectCount }) => {
           {projectCount}
         </Badge>
       </div>
-      <NewProjectDialog />
     </div>
   );
 };

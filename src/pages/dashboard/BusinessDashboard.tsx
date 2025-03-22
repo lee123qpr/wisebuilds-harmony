@@ -11,6 +11,9 @@ import BusinessQuotesTab from '@/components/dashboard/business/QuotesTab';
 import BusinessJobsTab from '@/components/dashboard/business/BusinessJobsTab';
 import { supabase } from '@/integrations/supabase/client';
 import ProjectsHeader from '@/components/dashboard/business/projects/ProjectsHeader';
+import { Button } from '@/components/ui/button';
+import { PlusCircle } from 'lucide-react';
+import NewProjectDialog from '@/components/projects/NewProjectDialog';
 
 const BusinessDashboard = () => {
   const { user } = useAuth();
@@ -88,9 +91,12 @@ const BusinessDashboard = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold mb-2">{getTimeBasedGreeting()}, {isLoading ? 'Loading...' : contactName}</h1>
-          <p className="text-muted-foreground">Your business dashboard</p>
+        <div className="mb-8 flex justify-between items-center">
+          <div>
+            <h1 className="text-3xl font-bold mb-2">{getTimeBasedGreeting()}, {isLoading ? 'Loading...' : contactName}</h1>
+            <p className="text-muted-foreground">Your business dashboard</p>
+          </div>
+          <NewProjectDialog />
         </div>
 
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
