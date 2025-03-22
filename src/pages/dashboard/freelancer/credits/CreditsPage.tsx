@@ -4,7 +4,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { useCredits } from '@/hooks/useCredits';
 import CreditPlans from './CreditPlans';
 import TransactionHistory from './TransactionHistory';
-import { ArrowLeft, CreditCard, RefreshCw } from 'lucide-react';
+import { ArrowLeft, CreditCard, RefreshCw, History } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -18,6 +18,7 @@ const CreditsPage = () => {
     isLoadingBalance,
     isCheckoutLoading,
     purchaseCredits,
+    refetchCredits
   } = useCredits();
   
   const navigate = useNavigate();
@@ -43,6 +44,15 @@ const CreditsPage = () => {
                 Balance: <span className="font-bold">{creditBalance || 0}</span> credits
               </div>
             )}
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => refetchCredits()}
+              disabled={isLoadingBalance}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoadingBalance ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
           </div>
         </div>
 
@@ -66,7 +76,7 @@ const CreditsPage = () => {
           
           <div className="mt-10">
             <h2 className="text-xl font-semibold mb-4 flex items-center gap-2">
-              <RefreshCw className="h-5 w-5" />
+              <History className="h-5 w-5" />
               Transaction History
             </h2>
             

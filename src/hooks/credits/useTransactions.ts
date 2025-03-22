@@ -11,10 +11,13 @@ export const useTransactions = () => {
     data: transactions,
     isLoading: isLoadingTransactions,
     error: transactionsError,
+    refetch: refetchTransactions
   } = useQuery({
     queryKey: ['creditTransactions', user?.id],
     queryFn: async () => {
       if (!user) return [];
+      
+      console.log(`Fetching credit transactions for user: ${user.id}`);
       
       const { data, error } = await supabase
         .from('credit_transactions')
@@ -27,6 +30,7 @@ export const useTransactions = () => {
         throw error;
       }
       
+      console.log(`Found ${data?.length || 0} transactions`);
       return data as CreditTransaction[];
     },
     enabled: !!user,
@@ -36,5 +40,6 @@ export const useTransactions = () => {
     transactions,
     isLoadingTransactions,
     transactionsError,
+    refetchTransactions
   };
 };

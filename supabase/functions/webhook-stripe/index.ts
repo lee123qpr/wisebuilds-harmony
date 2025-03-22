@@ -74,6 +74,9 @@ serve(async (req) => {
           );
         }
 
+        // Log transaction update
+        console.log(`Updated transaction status to completed for session: ${sessionId}`);
+
         // Check if user already has a credit record
         const { data: creditRecord, error: creditError } = await supabase
           .from('freelancer_credits')
@@ -106,6 +109,8 @@ serve(async (req) => {
               { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
           }
+          
+          console.log(`Updated credit balance for user ${userId}: added ${credits} credits, new balance: ${creditRecord.credit_balance + parseInt(credits, 10)}`);
         } else {
           // Create new record
           const { error: insertError } = await supabase
@@ -122,8 +127,14 @@ serve(async (req) => {
               { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
             );
           }
+          
+          console.log(`Created new credit record for user ${userId} with initial balance: ${credits}`);
         }
+      } else {
+        console.log(`Payment status not paid: ${paymentStatus}, not updating credits`);
       }
+    } else {
+      console.log(`Received webhook event: ${event.type}, not processing`);
     }
 
     return new Response(
