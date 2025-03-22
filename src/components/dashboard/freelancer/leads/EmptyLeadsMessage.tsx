@@ -16,12 +16,13 @@ const EmptyLeadsMessage: React.FC = () => {
 
   // Format the hiring status for display
   const formatHiringStatus = (status: string) => {
-    if (!status) return 'Any';
+    if (!status || status === 'any' || status === 'Any') return 'Any';
     
     const statusMap: Record<string, string> = {
       'enquiring': 'Just Enquiring',
       'ready': 'Ready to Hire',
-      'urgent': 'Urgent'
+      'urgent': 'Urgent',
+      'hiring': 'Currently Hiring'
     };
     
     return statusMap[status] || status
@@ -49,9 +50,9 @@ const EmptyLeadsMessage: React.FC = () => {
         <div className="mb-4 text-sm text-muted-foreground">
           <p className="font-medium mb-2">Your current filters:</p>
           <ul className="list-disc pl-5 space-y-1">
-            <li><span className="font-medium">Role:</span> {formatRole(leadSettings?.role || 'Not set')}</li>
-            <li><span className="font-medium">Location:</span> {leadSettings?.location || 'Not set'}</li>
-            <li><span className="font-medium">Work Type:</span> {formatWorkType(leadSettings?.work_type || 'Any')}</li>
+            <li><span className="font-medium">Role:</span> {leadSettings?.role ? formatRole(leadSettings.role) : 'Any'}</li>
+            <li><span className="font-medium">Location:</span> {leadSettings?.location || 'Any'}</li>
+            <li><span className="font-medium">Work Type:</span> {leadSettings?.work_type ? formatWorkType(leadSettings.work_type) : 'Any'}</li>
             
             {/* Budget filter */}
             <li><span className="font-medium">Budget:</span> {leadSettings?.budget ? formatBudget(leadSettings.budget) : 'Any'}</li>

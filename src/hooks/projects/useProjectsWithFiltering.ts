@@ -34,7 +34,8 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
         return leads.filter(project => {
           // First check if project is active and available for hiring
           const isActive = project.status === 'active';
-          const isAvailable = project.hiring_status === 'enquiring' || project.hiring_status === 'hiring';
+          const isAvailable = project.hiring_status === 'enquiring' || project.hiring_status === 'hiring' || 
+                             project.hiring_status === 'ready' || project.hiring_status === 'urgent';
           
           if (!isActive || !isAvailable) {
             console.log(`Filtering out project ${project.id}: status=${project.status}, hiring_status=${project.hiring_status}`);
@@ -46,6 +47,9 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
             !settingsToUse.role || 
             settingsToUse.role === 'any' || 
             settingsToUse.role === 'Any' ||
+            // Compare normalized strings (lowercase, trim whitespace)
+            project.role.toLowerCase().trim() === settingsToUse.role.toLowerCase().trim() ||
+            // Also check if role contains the search term or vice versa
             project.role.toLowerCase().includes(settingsToUse.role.toLowerCase()) ||
             settingsToUse.role.toLowerCase().includes(project.role.toLowerCase());
           
@@ -55,6 +59,7 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
             settingsToUse.location === 'any' || 
             settingsToUse.location === 'Any' || 
             (project.location && settingsToUse.location && (
+              // Compare city part only (before comma)
               project.location.toLowerCase().includes(settingsToUse.location.toLowerCase().split(',')[0].trim()) || 
               settingsToUse.location.toLowerCase().split(',')[0].trim().includes(project.location.toLowerCase())
             ));
@@ -66,19 +71,43 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
             settingsToUse.work_type === 'Any' ||
             project.work_type === settingsToUse.work_type;
           
+          // Match by budget if specified
+          const budgetMatches = 
+            !settingsToUse.budget || 
+            settingsToUse.budget === 'any' ||
+            settingsToUse.budget === 'Any';
+            
+          // Match by duration if specified
+          const durationMatches = 
+            !settingsToUse.duration || 
+            settingsToUse.duration === 'any' ||
+            settingsToUse.duration === 'Any' ||
+            project.duration === settingsToUse.duration;
+            
+          // Match by hiring status if specified
+          const hiringStatusMatches = 
+            !settingsToUse.hiring_status || 
+            settingsToUse.hiring_status === 'any' ||
+            settingsToUse.hiring_status === 'Any' ||
+            project.hiring_status === settingsToUse.hiring_status;
+          
           // Match by insurance requirements
           const insuranceMatches = 
+            settingsToUse.requires_insurance === undefined ||
+            settingsToUse.requires_insurance === null ||
             !settingsToUse.requires_insurance || 
             settingsToUse.requires_insurance === project.requires_insurance;
           
           // Match by site visit requirements
           const siteVisitsMatches = 
+            settingsToUse.requires_site_visits === undefined ||
+            settingsToUse.requires_site_visits === null ||
             !settingsToUse.requires_site_visits || 
             settingsToUse.requires_site_visits === project.requires_site_visits;
           
           // Log the matching results for debugging
-          const result = roleMatches && locationMatches && workTypeMatches && 
-                         insuranceMatches && siteVisitsMatches;
+          const result = roleMatches && locationMatches && workTypeMatches && budgetMatches &&
+                         durationMatches && hiringStatusMatches && insuranceMatches && siteVisitsMatches;
           
           console.log(`Project ${project.id} matching:`, {
             role: `${project.role} vs ${settingsToUse.role}`,
@@ -87,6 +116,12 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
             locationMatches,
             workType: `${project.work_type} vs ${settingsToUse.work_type}`,
             workTypeMatches,
+            budget: `${project.budget} vs ${settingsToUse.budget}`,
+            budgetMatches,
+            duration: `${project.duration} vs ${settingsToUse.duration}`,
+            durationMatches,
+            hiringStatus: `${project.hiring_status} vs ${settingsToUse.hiring_status}`,
+            hiringStatusMatches,
             insurance: `${project.requires_insurance} vs ${settingsToUse.requires_insurance}`,
             insuranceMatches,
             siteVisits: `${project.requires_site_visits} vs ${settingsToUse.requires_site_visits}`,
