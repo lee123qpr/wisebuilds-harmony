@@ -110,7 +110,6 @@ serve(async (req) => {
       });
 
       console.log('Created checkout session:', session.id);
-      console.log('Checkout URL:', session.url);
 
       // Create a transaction record in pending state
       const { data: transaction, error: transactionError } = await supabase
@@ -134,11 +133,10 @@ serve(async (req) => {
       }
 
       console.log('Created transaction record:', transaction.id);
-      console.log('Redirecting to:', session.url);
 
       return new Response(
         JSON.stringify({ 
-          sessionId: session.id, 
+          sessionId: session.id,
           sessionUrl: session.url 
         }),
         { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

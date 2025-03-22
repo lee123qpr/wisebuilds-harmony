@@ -3,6 +3,11 @@ import { useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { loadStripe } from '@stripe/stripe-js';
+
+// Initialize Stripe with the publishable key
+// This is a publishable key, so it's safe to include in the frontend code
+const stripePromise = loadStripe('pk_test_51OxbboP1oDKULakIOtkLl3DmLI5QrPXrNbQrwKBNRkLQzsvGY6EafB9j4FQnVFFP4QHvRrIvMaLSb46B7MSlPY7c00PJtY0eZo');
 
 export const usePurchaseCredits = () => {
   const { user } = useAuth();
@@ -26,6 +31,13 @@ export const usePurchaseCredits = () => {
     try {
       console.log('Creating checkout session for planId:', planId);
       
+      // Get the Stripe instance
+      const stripe = await stripePromise;
+      if (!stripe) {
+        throw new Error('Failed to initialize Stripe.');
+      }
+      
+      // Create a checkout session via our Supabase Edge Function
       const response = await supabase.functions.invoke('create-checkout-session', {
         body: {
           planId,
@@ -42,14 +54,20 @@ export const usePurchaseCredits = () => {
       
       console.log('Checkout session response:', response.data);
       
-      // Redirect to Stripe Checkout
-      if (response.data && response.data.sessionUrl) {
-        console.log('Redirecting to Stripe checkout:', response.data.sessionUrl);
-        window.location.href = response.data.sessionUrl;
-      } else {
-        console.error('No checkout URL returned', response.data);
-        throw new Error('No checkout URL returned from server');
+      if (!response.data || !response.data.sessionId) {
+        throw new Error('Invalid response from server');
       }
+      
+      // Redirect to Stripe Checkout using the Stripe JS SDK
+      const result = await stripe.redirectToCheckout({
+        sessionId: response.data.sessionId
+      });
+      
+      if (result.error) {
+        console.error('Stripe redirect error:', result.error);
+        throw new Error(result.error.message || 'Failed to redirect to checkout');
+      }
+      
     } catch (error) {
       console.error('Error creating checkout session:', error);
       setIsCheckoutLoading(false);
