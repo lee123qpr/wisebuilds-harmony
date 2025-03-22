@@ -50,10 +50,10 @@ export const useProjectApplications = (projectId: string) => {
                 created_at: application.created_at,
                 message: application.message,
                 user_id: application.user_id,
-                user: {
+                user: application.user ? {
                   ...(application.user || {}),
                   is_verified: isVerified || false
-                }
+                } : null
               };
             } catch (error) {
               console.error('Error checking verification status:', error);
@@ -62,10 +62,10 @@ export const useProjectApplications = (projectId: string) => {
                 created_at: application.created_at,
                 message: application.message,
                 user_id: application.user_id,
-                user: {
+                user: application.user ? {
                   ...(application.user || {}),
                   is_verified: false
-                }
+                } : null
               };
             }
           })
