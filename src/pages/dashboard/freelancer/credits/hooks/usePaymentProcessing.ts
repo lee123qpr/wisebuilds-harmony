@@ -1,0 +1,172 @@
+
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useCredits } from '@/hooks/useCredits';
+import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/context/AuthContext';
+import { useNavigate } from 'react-router-dom';
+
+export const usePaymentProcessing = (sessionId: string | null) => {
+  const { handleCheckoutSuccess, creditBalance, refetchCredits, transactions } = useCredits();
+  const navigate = useNavigate();
+  const { user, isLoading } = useAuth();
+  const [processingComplete, setProcessingComplete] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [retryCount, setRetryCount] = useState(0);
+  const [manualUpdateAttempted, setManualUpdateAttempted] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+  const { toast } = useToast();
+  
+  // Check if the current transaction is pending
+  const isTransactionPending = !!(transactions && sessionId && 
+    transactions.find(tx => tx.stripe_payment_id === sessionId)?.status === 'pending');
+
+  // Effect to handle initial session check and stripe status
+  useEffect(() => {
+    const checkStripeSession = async () => {
+      if (!sessionId) return;
+      
+      try {
+        const { data: transaction } = await supabase
+          .from('credit_transactions')
+          .select('status')
+          .eq('stripe_payment_id', sessionId)
+          .maybeSingle();
+          
+        console.log('Transaction found with status:', transaction?.status);
+        
+        if (transaction?.status === 'completed') {
+          console.log('Transaction already completed');
+          setProcessingComplete(true);
+          refetchCredits();
+        }
+      } catch (error) {
+        console.error('Error checking transaction status:', error);
+      }
+    };
+    
+    if (sessionId && !isLoading && initialLoad) {
+      checkStripeSession();
+      setInitialLoad(false);
+    }
+  }, [sessionId, isLoading, initialLoad, refetchCredits]);
+  
+  const forceUpdateTransaction = async () => {
+    if (!sessionId || manualUpdateAttempted) return;
+    
+    try {
+      console.log(`Attempting to manually update transaction for session: ${sessionId}`);
+      setManualUpdateAttempted(true);
+      setIsRefreshing(true);
+      
+      const response = await supabase.functions.invoke('webhook-stripe', {
+        body: {
+          type: 'manual_update',
+          data: {
+            sessionId
+          }
+        }
+      });
+      
+      console.log('Manual transaction update response:', response);
+      
+      if (response.data?.success) {
+        console.log('Manual update successful');
+        toast({
+          title: 'Update Successful',
+          description: 'Your transaction has been processed',
+          variant: 'default',
+        });
+      }
+      
+      setTimeout(() => {
+        refetchCredits();
+        setIsRefreshing(false);
+      }, 2000);
+    } catch (error) {
+      console.error('Exception during manual transaction update:', error);
+      setIsRefreshing(false);
+    }
+  };
+  
+  // Effect to handle the initial processing
+  useEffect(() => {
+    const processCheckout = async () => {
+      if (sessionId && !isLoading && !processingComplete) {
+        console.log('Processing checkout success with session ID:', sessionId);
+        
+        if (!user) {
+          const sessionBackup = localStorage.getItem('sb-session-backup');
+          if (sessionBackup) {
+            try {
+              console.log('Attempting to restore session from backup');
+              await supabase.auth.setSession(JSON.parse(sessionBackup));
+              await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (error) {
+              console.error('Error restoring session:', error);
+            }
+          }
+        }
+        
+        handleCheckoutSuccess(sessionId);
+        setProcessingComplete(true);
+        
+        setTimeout(async () => {
+          await refetchCredits();
+        }, 2000);
+      } else if (!sessionId && !isLoading) {
+        const timer = setTimeout(() => {
+          navigate('/dashboard/freelancer/credits');
+        }, 2000);
+        
+        return () => clearTimeout(timer);
+      }
+    };
+    
+    processCheckout();
+  }, [sessionId, handleCheckoutSuccess, navigate, user, isLoading, processingComplete, refetchCredits]);
+  
+  // Auto-refresh data if transaction is pending or credit balance is 0
+  useEffect(() => {
+    const shouldAutoRefresh = isTransactionPending || (processingComplete && creditBalance === 0 && retryCount < 6);
+    
+    if (shouldAutoRefresh && !isRefreshing) {
+      const timer = setTimeout(async () => {
+        console.log(`Auto-refreshing credit data (attempt ${retryCount + 1})`);
+        setIsRefreshing(true);
+        await refetchCredits();
+        setIsRefreshing(false);
+        setRetryCount(prev => prev + 1);
+        
+        if (retryCount === 2 && (isTransactionPending || creditBalance === 0) && sessionId && !manualUpdateAttempted) {
+          forceUpdateTransaction();
+        }
+      }, 3000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [processingComplete, creditBalance, retryCount, isRefreshing, refetchCredits, sessionId, isTransactionPending, manualUpdateAttempted]);
+  
+  const handleManualRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    
+    if (sessionId && !manualUpdateAttempted && isTransactionPending) {
+      await forceUpdateTransaction();
+      setTimeout(async () => {
+        await refetchCredits();
+        setIsRefreshing(false);
+      }, 2000);
+    } else {
+      await refetchCredits();
+      setTimeout(() => setIsRefreshing(false), 1000);
+    }
+  }, [sessionId, manualUpdateAttempted, isTransactionPending, refetchCredits]);
+
+  return {
+    creditBalance,
+    isRefreshing,
+    processingComplete,
+    isTransactionPending,
+    handleManualRefresh
+  };
+};
