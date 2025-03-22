@@ -12,14 +12,11 @@ const DashboardSummary: React.FC<DashboardSummaryProps> = ({
   isLoadingBalance 
 }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6 mb-8">
-      <div className="md:col-span-1">
-        <CreditBalanceCard 
-          creditBalance={creditBalance} 
-          isLoading={isLoadingBalance} 
-        />
-      </div>
-      {/* Additional summary cards can be added here in the future */}
+    <div className="mb-8">
+      <CreditBalanceCard 
+        creditBalance={creditBalance} 
+        isLoading={isLoadingBalance} 
+      />
     </div>
   );
 };

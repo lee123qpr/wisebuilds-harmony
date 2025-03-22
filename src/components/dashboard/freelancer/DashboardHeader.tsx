@@ -3,6 +3,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Settings } from 'lucide-react';
+import VerificationDialog from '@/components/dashboard/freelancer/VerificationDialog';
+import { useVerification } from '@/hooks/verification';
 
 interface DashboardHeaderProps {
   fullName: string;
@@ -11,6 +13,7 @@ interface DashboardHeaderProps {
 
 const DashboardHeader: React.FC<DashboardHeaderProps> = ({ fullName, hasLeadSettings }) => {
   const navigate = useNavigate();
+  const { verificationStatus } = useVerification();
   
   // Helper function to get the appropriate greeting based on time of day
   const getTimeBasedGreeting = () => {
@@ -31,13 +34,16 @@ const DashboardHeader: React.FC<DashboardHeaderProps> = ({ fullName, hasLeadSett
         <h1 className="text-3xl font-bold mb-2">{getTimeBasedGreeting()}, {fullName}</h1>
         <p className="text-muted-foreground">Your freelancer dashboard</p>
       </div>
-      <Button 
-        onClick={() => navigate('/dashboard/freelancer/lead-settings')}
-        className="flex items-center gap-2"
-      >
-        <Settings size={16} />
-        {hasLeadSettings ? 'Update Lead Settings' : 'Set Up Lead Settings'}
-      </Button>
+      <div className="flex items-center gap-3">
+        {verificationStatus !== 'verified' && <VerificationDialog />}
+        <Button 
+          onClick={() => navigate('/dashboard/freelancer/lead-settings')}
+          className="flex items-center gap-2"
+        >
+          <Settings size={16} />
+          {hasLeadSettings ? 'Update Lead Settings' : 'Set Up Lead Settings'}
+        </Button>
+      </div>
     </div>
   );
 };
