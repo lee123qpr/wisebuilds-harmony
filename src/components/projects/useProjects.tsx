@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -36,8 +35,8 @@ export interface Project {
   documents?: ProjectDocument[];
   requires_site_visits: boolean;
   status: string;
-  chat_count?: number; // Added for chat count
-  quote_count?: number; // Added for quote count
+  chat_count?: number;
+  quote_count?: number;
   updated_at: string;
   user_id: string;
   purchases_count?: number;
@@ -46,12 +45,9 @@ export interface Project {
 export const useProjects = () => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null); // Add error state
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const { toast } = useToast();
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [hiringFilter, setHiringFilter] = useState('all');
 
   useEffect(() => {
     fetchProjects();
@@ -62,7 +58,7 @@ export const useProjects = () => {
     
     try {
       setIsLoading(true);
-      setError(null); // Reset error state
+      setError(null);
       
       // Fetch projects with specific fields to avoid TypeScript type recursion issues
       const { data: projectsData, error } = await supabase
@@ -146,12 +142,6 @@ export const useProjects = () => {
     projects, 
     isLoading, 
     refreshProjects,
-    searchQuery,
-    setSearchQuery,
-    statusFilter,
-    setStatusFilter,
-    hiringFilter,
-    setHiringFilter,
-    error // Return the error state
+    error
   };
 };
