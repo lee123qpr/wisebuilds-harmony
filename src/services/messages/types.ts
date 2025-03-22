@@ -15,3 +15,12 @@ export interface FileUploadParams {
   file: File;
 }
 
+export interface ClientContactInfo {
+  contact_name: string | null;
+  company_name: string | null;
+  phone_number: string | null;
+  email: string | null;
+  website: string | null;
+  company_address: string | null;
+}
+

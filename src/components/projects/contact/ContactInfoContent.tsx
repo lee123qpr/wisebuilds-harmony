@@ -83,7 +83,7 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
           icon={<Globe className="h-4 w-4 text-green-700" />}
           label="Website"
           value={clientInfo.website}
-          link={clientInfo.website}
+          link={clientInfo.website.startsWith('http') ? clientInfo.website : `https://${clientInfo.website}`}
         />
       )}
       
