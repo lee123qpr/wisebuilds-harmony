@@ -29,14 +29,21 @@ export const fetchQuotesData = async ({
     
     // For dashboard views where we need all quotes for a user
     if (!projectId) {
-      console.log("Fetching all quotes for user:", user.id, "isFreelancer:", isFreelancer);
+      console.log("Fetching all quotes for user:", user.id, "isFreelancer:", isFreelancer, "excludeCompletedProjects:", excludeCompletedProjects);
       
       if (isFreelancer) {
         // For freelancers, get their submitted quotes
-        const { data, error } = await supabase
+        let query = supabase
           .from('quotes')
-          .select('*, project:projects(*)')
+          .select('*, project:projects(*))')
           .eq('freelancer_id', user.id);
+          
+        // If we should exclude completed projects, add that filter
+        if (excludeCompletedProjects) {
+          query = query.not('project.status', 'eq', 'completed');
+        }
+        
+        const { data, error } = await query;
           
         if (error) {
           console.error('Error fetching quotes for freelancer:', error);
@@ -47,17 +54,24 @@ export const fetchQuotesData = async ({
         quotesData = data;
       } else {
         // For clients, get quotes for their projects
-        const { data, error } = await supabase
+        let query = supabase
           .from('quotes')
           .select('*, project:projects(*)')
           .eq('client_id', user.id);
+          
+        // If we should exclude completed projects, add that filter
+        if (excludeCompletedProjects) {
+          query = query.not('project.status', 'eq', 'completed');
+        }
+          
+        const { data, error } = await query;
           
         if (error) {
           console.error('Error fetching quotes for client:', error);
           throw error;
         }
         
-        console.log("Fetched quotes for client:", data?.length);
+        console.log("Fetched quotes for client:", data?.length, data);
         quotesData = data;
       }
     } else {
@@ -97,6 +111,14 @@ export const fetchQuotesData = async ({
     }
     
     console.log(`Found ${quotesData.length} quotes:`, quotesData);
+    
+    // Filter out quotes for completed projects if requested
+    if (excludeCompletedProjects) {
+      quotesData = quotesData.filter(quote => 
+        quote.project && quote.project.status !== 'completed'
+      );
+      console.log(`After filtering completed projects, ${quotesData.length} quotes remain`);
+    }
     
     // Fetch freelancer profiles for these quotes
     const freelancerIds = quotesData.map(quote => quote.freelancer_id);

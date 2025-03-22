@@ -3,7 +3,6 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
-import { QuoteWithFreelancer } from '@/types/quotes';
 
 // Import the smaller components
 import LoadingSkeleton from './quotes/LoadingSkeleton';
@@ -40,14 +39,14 @@ const QuotesTab: React.FC = () => {
   
   // Filter quotes based on tab
   const filteredQuotes = quotes?.filter(quote => {
-    if (activeTab === 'accepted') return quote.status === 'accepted';
+    if (activeTab === 'accepted') return quote.status === 'accepted' && quote.project?.status !== 'completed';
     if (activeTab === 'pending') return quote.status === 'pending';
     if (activeTab === 'declined') return quote.status === 'declined';
     return true;
   }) || [];
   
   const tabCounts = {
-    accepted: quotes?.filter(q => q.status === 'accepted')?.length || 0,
+    accepted: quotes?.filter(q => q.status === 'accepted' && q.project?.status !== 'completed')?.length || 0,
     pending: quotes?.filter(q => q.status === 'pending')?.length || 0,
     declined: quotes?.filter(q => q.status === 'declined')?.length || 0
   };

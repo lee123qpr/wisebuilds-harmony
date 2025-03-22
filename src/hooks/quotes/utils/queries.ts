@@ -16,6 +16,7 @@ export const buildQuotesQuery = (
     .select(`
       *,
       projects:project_id (
+        id,
         title,
         budget,
         status
@@ -43,15 +44,14 @@ export const buildQuotesQuery = (
     }
   }
   
-  // If we want to exclude quotes for completed projects, add a join filter
+  // If we want to exclude quotes for completed projects, add a filter
   if (excludeCompletedProjects) {
-    // Filter out quotes where the project status is 'completed'
+    // Join with projects and filter out completed projects
     query = query.not('projects.status', 'eq', 'completed');
+    console.log('Excluding quotes for completed projects');
     
-    // Also filter out quotes that have been marked as completed by both parties
-    query = query.or('freelancer_completed.is.null,client_completed.is.null');
-    
-    console.log('Excluding quotes for completed projects and fully completed quotes');
+    // Also filter out quotes that have been marked as completed
+    query = query.or('completed_at.is.null');
   }
   
   return query;
