@@ -3,24 +3,16 @@ import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { Info, Plus } from 'lucide-react';
+import { Info } from 'lucide-react';
 import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
-import { useCreateTestProject } from '@/hooks/projects/useCreateTestProject';
 import { formatBudget, formatRole } from '@/utils/projectFormatters';
 
 const EmptyLeadsMessage: React.FC = () => {
   const navigate = useNavigate();
   const { leadSettings } = useFreelancerDashboard();
-  const { createTestProject, isCreating } = useCreateTestProject();
 
   // Debug - let's check what lead settings we actually have
   console.log('EmptyLeadsMessage - current lead settings:', leadSettings);
-
-  const handleCreateTestProject = () => {
-    if (leadSettings?.role) {
-      createTestProject(leadSettings.role);
-    }
-  };
 
   // Format the duration for display
   const formatDuration = (duration: string) => {
@@ -119,17 +111,6 @@ const EmptyLeadsMessage: React.FC = () => {
           >
             Update Lead Settings
           </Button>
-          
-          {process.env.NODE_ENV !== 'production' && leadSettings?.role && (
-            <Button 
-              onClick={handleCreateTestProject}
-              variant="secondary"
-              disabled={isCreating}
-            >
-              <Plus className="h-4 w-4 mr-2" /> 
-              {isCreating ? 'Creating...' : 'Create Test Project'}
-            </Button>
-          )}
         </div>
       </CardContent>
     </Card>
