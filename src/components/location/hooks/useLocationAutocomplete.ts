@@ -1,23 +1,23 @@
 
 import { useRef, useState, useEffect } from 'react';
-import { useLoadScript } from '@react-google-maps/api';
 import { useToast } from '@/hooks/use-toast';
-
-// Define libraries as a constant to prevent recreation on each render
-// The type needs to match what @react-google-maps/api expects
-const libraries: ["places"] = ["places"];
+import { useGoogleMapsLoader } from './useGoogleMapsLoader';
+import { useAutocompleteEvents } from './useAutocompleteEvents';
+import { useAutocompleteDomObserver } from './useAutocompleteDomObserver';
 
 // Custom hook for Google Maps Places Autocomplete on location inputs
 export const useLocationAutocomplete = (form: any, fieldName: string) => {
   const inputRef = useRef<HTMLInputElement>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const eventListenersRef = useRef<google.maps.MapsEventListener[]>([]);
-  const { isLoaded, loadError } = useLoadScript({
-    googleMapsApiKey: "AIzaSyBJsbbC2Pv91pusMWPaF979yK-XpyHzLtM",
-    libraries,
-  });
   const [isInitialized, setIsInitialized] = useState(false);
   const { toast } = useToast();
+
+  // Use our Google Maps loader hook
+  const { isLoaded, loadError } = useGoogleMapsLoader({
+    googleMapsApiKey: "AIzaSyBJsbbC2Pv91pusMWPaF979yK-XpyHzLtM",
+    libraries: ["places"],
+  });
 
   // Clean up function to remove event listeners and disconnect autocomplete
   const cleanup = () => {
@@ -56,164 +56,7 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
         options
       );
 
-      // When a place is selected, extract and update the form field
-      const placeChangedListener = google.maps.event.addListener(
-        autocompleteRef.current, 
-        'place_changed', 
-        () => {
-          const place = autocompleteRef.current?.getPlace();
-          if (place && place.formatted_address) {
-            const formattedAddress = place.formatted_address;
-            
-            // Update the form field
-            form.setValue(fieldName, formattedAddress, { 
-              shouldValidate: true,
-              shouldDirty: true,
-              shouldTouch: true
-            });
-            
-            // Directly update input value
-            if (inputRef.current) {
-              inputRef.current.value = formattedAddress;
-              
-              // Ensure the input retains focus to prevent dialog closing
-              // This is crucial for dialog-based forms
-              setTimeout(() => {
-                if (inputRef.current) {
-                  // Set focus to another element briefly then back to prevent
-                  // the dialog from closing due to focus changes
-                  document.body.focus();
-                  // Then return focus to the input (but don't trigger autocomplete)
-                  setTimeout(() => {
-                    if (inputRef.current && document.contains(inputRef.current)) {
-                      inputRef.current.focus();
-                    }
-                  }, 50);
-                }
-              }, 10);
-            }
-            
-            // Force a React change event to update state
-            const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-              window.HTMLInputElement.prototype, 
-              "value"
-            )?.set;
-            
-            if (inputRef.current && nativeInputValueSetter) {
-              nativeInputValueSetter.call(inputRef.current, formattedAddress);
-              
-              // Create and dispatch events for React to detect
-              const event = new Event('input', { bubbles: true });
-              inputRef.current.dispatchEvent(event);
-              
-              // Also dispatch a change event
-              const changeEvent = new Event('change', { bubbles: true });
-              inputRef.current.dispatchEvent(changeEvent);
-            }
-            
-            console.log('Place selected and saved:', formattedAddress);
-          }
-        }
-      );
-      
-      // Store the listener reference for cleanup
-      eventListenersRef.current.push(placeChangedListener);
-
-      // Add input listener to handle when user clears the input field
-      const inputHandler = (e: Event) => {
-        const target = e.target as HTMLInputElement;
-        if (target.value === '') {
-          // Update the form when input is cleared
-          form.setValue(fieldName, '', {
-            shouldValidate: true,
-            shouldDirty: true,
-            shouldTouch: true
-          });
-        }
-      };
-      
-      if (inputRef.current) {
-        inputRef.current.addEventListener('input', inputHandler);
-      }
-      
-      // Create a mutation observer to adjust the position of pac-container
-      const observer = new MutationObserver(mutations => {
-        mutations.forEach(mutation => {
-          if (mutation.type === 'childList') {
-            const pacContainers = document.querySelectorAll('.pac-container');
-            pacContainers.forEach(container => {
-              // Find the position of the input field
-              if (inputRef.current) {
-                const rect = inputRef.current.getBoundingClientRect();
-                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-                const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-                
-                // Position the dropdown directly under the input
-                (container as HTMLElement).style.top = `${rect.bottom + scrollTop}px`;
-                (container as HTMLElement).style.left = `${rect.left + scrollLeft}px`;
-                (container as HTMLElement).style.width = `${rect.width}px`;
-              }
-            });
-          }
-        });
-      });
-      
-      // Start observing the document for added pac-container
-      observer.observe(document.body, { childList: true, subtree: true });
-      
-      // Handle blur events to hide the autocomplete when input loses focus
-      const blurHandler = () => {
-        // Add a delay to allow for autocomplete selection
-        setTimeout(() => {
-          // Find any pac-container elements and hide them when not needed
-          const pacContainers = document.querySelectorAll('.pac-container');
-          pacContainers.forEach(container => {
-            container.setAttribute('style', 'display: none !important;');
-          });
-        }, 500); // Longer delay to ensure selection completes
-      };
-      
-      if (inputRef.current) {
-        inputRef.current.addEventListener('blur', blurHandler);
-      }
-      
-      // Handle focus events to show the autocomplete when input gains focus
-      const focusHandler = () => {
-        const pacContainers = document.querySelectorAll('.pac-container');
-        pacContainers.forEach(container => {
-          container.removeAttribute('style');
-          
-          // Reposition the dropdown when focus is gained
-          if (inputRef.current) {
-            const rect = inputRef.current.getBoundingClientRect();
-            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            const scrollLeft = window.pageXOffset || document.documentElement.scrollLeft;
-            
-            (container as HTMLElement).style.top = `${rect.bottom + scrollTop}px`;
-            (container as HTMLElement).style.left = `${rect.left + scrollLeft}px`;
-            (container as HTMLElement).style.width = `${rect.width}px`;
-          }
-        });
-      };
-      
-      if (inputRef.current) {
-        inputRef.current.addEventListener('focus', focusHandler);
-      }
-
-      // Store cleanup function to remove event listeners
-      const inputCleanup = () => {
-        if (inputRef.current) {
-          inputRef.current.removeEventListener('input', inputHandler);
-          inputRef.current.removeEventListener('blur', blurHandler);
-          inputRef.current.removeEventListener('focus', focusHandler);
-        }
-        observer.disconnect();
-      };
-
       setIsInitialized(true);
-
-      // Return cleanup function
-      return inputCleanup;
     } catch (error) {
       console.error('Error initializing Google Places Autocomplete:', error);
       toast({
@@ -222,7 +65,7 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
         description: 'Unable to initialize location search.'
       });
     }
-  }, [isLoaded, form, fieldName, isInitialized, toast]);
+  }, [isLoaded, isInitialized, toast]);
 
   // Handle errors from the Google Maps API
   useEffect(() => {
@@ -235,6 +78,21 @@ export const useLocationAutocomplete = (form: any, fieldName: string) => {
       });
     }
   }, [loadError, toast]);
+
+  // Use our hooks for events and DOM observations
+  useAutocompleteEvents({
+    inputRef,
+    autocompleteRef,
+    form,
+    fieldName,
+    eventListenersRef,
+    isInitialized
+  });
+
+  useAutocompleteDomObserver({
+    inputRef,
+    isInitialized
+  });
 
   // Clean up when component unmounts
   useEffect(() => {
