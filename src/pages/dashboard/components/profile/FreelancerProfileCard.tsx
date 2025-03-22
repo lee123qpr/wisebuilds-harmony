@@ -104,21 +104,24 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   };
 
   return (
-    <Card>
-      <CardContent className="p-4">
-        <div className="flex flex-row items-center gap-4">
-          <FreelancerAvatar
-            profileImageUrl={imageUrl}
-            uploadingImage={uploadingImage}
-            imageKey={imageKey}
-            initials={getInitials()}
-            handleImageUpload={handleImageUploadProxy}
-          />
+    <Card className="w-full">
+      <CardContent className="p-6">
+        <div className="flex flex-col sm:flex-row items-center gap-6">
+          <div className="flex-shrink-0">
+            <FreelancerAvatar
+              profileImageUrl={imageUrl}
+              uploadingImage={uploadingImage}
+              imageKey={imageKey}
+              initials={getInitials()}
+              handleImageUpload={handleImageUploadProxy}
+              size="xl" // Larger size for top banner
+            />
+          </div>
 
-          <div className="flex-1 min-w-0">
-            <div className="mb-1">
-              <h2 className="text-xl font-semibold truncate">{fullName || 'Your Name'}</h2>
-              <p className="text-sm text-muted-foreground">{profession || 'Your Profession'}</p>
+          <div className="flex-1 min-w-0 text-center sm:text-left">
+            <div className="mb-2">
+              <h2 className="text-2xl font-semibold truncate">{fullName || 'Your Name'}</h2>
+              <p className="text-lg text-muted-foreground">{profession || 'Your Profession'}</p>
             </div>
 
             <ProfileInfoBadges

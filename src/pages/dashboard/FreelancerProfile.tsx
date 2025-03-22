@@ -49,48 +49,48 @@ const FreelancerProfile = () => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <FreelancerProfileCard
-              profileImage={profileImage}
-              uploadingImage={uploadingImage}
-              setUploadingImage={setUploadingImage}
-              setProfileImage={setProfileImage}
-              fullName={form.watch('fullName')}
-              profession={form.watch('profession')}
-              userId={user?.id || ''}
-              memberSince={memberSince}
-              emailVerified={emailVerified}
-              jobsCompleted={jobsCompleted}
-              idVerified={idVerified}
-            />
-          </div>
+        {/* Profile Card moved to top */}
+        <div className="w-full mb-8">
+          <FreelancerProfileCard
+            profileImage={profileImage}
+            uploadingImage={uploadingImage}
+            setUploadingImage={setUploadingImage}
+            setProfileImage={setProfileImage}
+            fullName={form.watch('fullName')}
+            profession={form.watch('profession')}
+            userId={user?.id || ''}
+            memberSince={memberSince}
+            emailVerified={emailVerified}
+            jobsCompleted={jobsCompleted}
+            idVerified={idVerified}
+          />
+        </div>
 
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="mb-6">
-                <TabsTrigger value="profile">Profile Information</TabsTrigger>
-                <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                <TabsTrigger value="account">Account Settings</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="profile">
-                <FreelancerProfileInfoTab
-                  form={form}
-                  isSaving={isSaving}
-                  onSubmit={saveProfile}
-                />
-              </TabsContent>
-              
-              <TabsContent value="reviews">
-                <ReviewsTab userId={user?.id || ''} />
-              </TabsContent>
-              
-              <TabsContent value="account">
-                <AccountSettingsTab />
-              </TabsContent>
-            </Tabs>
-          </div>
+        {/* Tabs take full width */}
+        <div className="w-full">
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="profile">Profile Information</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+              <TabsTrigger value="account">Account Settings</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="profile">
+              <FreelancerProfileInfoTab
+                form={form}
+                isSaving={isSaving}
+                onSubmit={saveProfile}
+              />
+            </TabsContent>
+            
+            <TabsContent value="reviews">
+              <ReviewsTab userId={user?.id || ''} />
+            </TabsContent>
+            
+            <TabsContent value="account">
+              <AccountSettingsTab />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </MainLayout>

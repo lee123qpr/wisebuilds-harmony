@@ -1,136 +1,86 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
-import { Camera, Loader2 } from 'lucide-react';
-import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface FreelancerAvatarProps {
   profileImageUrl: string | null;
   uploadingImage: boolean;
-  imageKey: string;
+  imageKey?: string;
   initials: string;
   handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  className?: string;
+  size?: 'default' | 'lg' | 'xl';
 }
 
 const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   profileImageUrl,
   uploadingImage,
-  imageKey,
+  imageKey = '',
   initials,
-  handleImageUpload
+  handleImageUpload,
+  className,
+  size = 'default'
 }) => {
-  const fileInputRef = React.useRef<HTMLInputElement>(null);
-  const [imageError, setImageError] = React.useState(false);
-  const { toast } = useToast();
+  // Determine size classes
+  const sizeClasses = {
+    default: 'h-16 w-16',
+    lg: 'h-24 w-24',
+    xl: 'h-32 w-32'
+  };
 
-  // When the button is clicked, trigger the hidden file input
-  const handleButtonClick = () => {
-    console.log('Avatar upload button clicked');
+  // Avatar size class
+  const avatarSizeClass = sizeClasses[size];
+  
+  // File input ref
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
+  
+  // Handle click on avatar to trigger file input
+  const handleAvatarClick = () => {
     if (fileInputRef.current) {
       fileInputRef.current.click();
     }
   };
 
-  // Log when file is selected before handling upload
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      console.log('File selected for upload:', file.name);
-      
-      // Validate file type and size
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-      const maxSizeInBytes = 5 * 1024 * 1024; // 5MB
-      
-      if (!validImageTypes.includes(file.type)) {
-        toast({
-          title: "Invalid file type",
-          description: "Please upload an image file (JPEG, PNG, GIF, WEBP)",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      if (file.size > maxSizeInBytes) {
-        toast({
-          title: "File too large",
-          description: "Please upload an image smaller than 5MB",
-          variant: "destructive"
-        });
-        return;
-      }
-      
-      setImageError(false); // Reset error state when new file is selected
-      handleImageUpload(e);
-    } else {
-      console.log('No file selected');
-    }
-  };
-
-  // Log the current profile image URL for debugging
-  React.useEffect(() => {
-    if (profileImageUrl) {
-      console.log('Avatar rendering with URL:', profileImageUrl);
-      setImageError(false); // Reset error state when URL changes
-    } else {
-      console.log('Avatar rendering with no image URL, showing initials:', initials);
-    }
-  }, [profileImageUrl, imageKey, initials]);
-
-  const handleImageError = () => {
-    console.error("Failed to load image:", profileImageUrl);
-    setImageError(true);
-    toast({
-      variant: "destructive",
-      title: "Image Load Error",
-      description: "Your profile image couldn't be loaded. Try uploading a new one."
-    });
-  };
-
   return (
     <div className="relative">
-      <Avatar className="h-20 w-20 border-2 border-white shadow-md">
-        {profileImageUrl && !imageError ? (
-          <AvatarImage
-            src={profileImageUrl}
-            alt="Profile"
-            className="object-cover"
-            key={imageKey}
-            onError={handleImageError}
-          />
-        ) : (
-          <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-            {initials}
-          </AvatarFallback>
+      <Avatar 
+        className={cn(
+          avatarSizeClass,
+          "cursor-pointer border-2 border-primary/10 hover:border-primary/30 transition-colors", 
+          className
         )}
-      </Avatar>
-      <div className="absolute -bottom-2 -right-2">
-        <div className="relative">
-          <Button
-            type="button"
-            variant="secondary"
-            size="icon"
-            className="h-8 w-8 rounded-full shadow"
-            disabled={uploadingImage}
-            onClick={handleButtonClick}
-            aria-label="Upload profile picture"
-          >
-            {uploadingImage ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Camera className="h-4 w-4" />
-            )}
-          </Button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={uploadingImage}
+        onClick={handleAvatarClick}
+      >
+        {profileImageUrl ? (
+          <AvatarImage 
+            src={profileImageUrl + `?key=${imageKey}`} 
+            alt="Profile" 
+            className="object-cover"
           />
+        ) : null}
+        <AvatarFallback className="text-lg">
+          {initials}
+        </AvatarFallback>
+      </Avatar>
+      
+      {uploadingImage && (
+        <div className={cn(
+          "absolute inset-0 flex items-center justify-center rounded-full bg-black/20",
+          avatarSizeClass
+        )}>
+          <Loader2 className="h-8 w-8 animate-spin text-white" />
         </div>
-      </div>
+      )}
+      
+      <input
+        type="file"
+        ref={fileInputRef}
+        onChange={handleImageUpload}
+        accept="image/*"
+        className="hidden"
+      />
     </div>
   );
 };
