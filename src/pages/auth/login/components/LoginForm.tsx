@@ -11,10 +11,12 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loader2 } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const loginSchema = z.object({
   email: z.string().email({ message: 'Please enter a valid email address' }),
   password: z.string().min(8, { message: 'Password must be at least 8 characters' }),
+  rememberMe: z.boolean().default(false),
 });
 
 export type LoginFormValues = z.infer<typeof loginSchema>;
@@ -30,6 +32,7 @@ const LoginForm = () => {
     defaultValues: {
       email: '',
       password: '',
+      rememberMe: false,
     },
   });
 
@@ -41,6 +44,10 @@ const LoginForm = () => {
       const { data: authData, error } = await supabase.auth.signInWithPassword({
         email: data.email,
         password: data.password,
+        options: {
+          // Set longer expiry when remember me is checked
+          expiresIn: data.rememberMe ? 60 * 60 * 24 * 30 : 60 * 60 * 8, // 30 days vs 8 hours
+        }
       });
       
       if (error) {
@@ -110,6 +117,31 @@ const LoginForm = () => {
                   <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
                 </FormControl>
                 <FormMessage />
+              </FormItem>
+            )}
+          />
+          
+          <FormField
+            control={form.control}
+            name="rememberMe"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-2 space-y-0">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isLoading}
+                    id="rememberMe"
+                  />
+                </FormControl>
+                <div className="leading-none">
+                  <FormLabel
+                    htmlFor="rememberMe"
+                    className="text-sm cursor-pointer font-normal text-muted-foreground"
+                  >
+                    Remember me for 30 days
+                  </FormLabel>
+                </div>
               </FormItem>
             )}
           />
