@@ -80,8 +80,11 @@ export const useQuotes = ({
             // For clients, get quotes for their projects
             let query = supabase
               .from('quotes')
-              .select('*, project:projects(*)') 
-              .eq('client_id', user.id);
+              .select('*, project:projects(*)');
+              
+            // This is a critical change: We need to use client_id to filter 
+            // quotes for specific client instead of project.user_id
+            query = query.eq('client_id', user.id);
               
             // If we're only looking for accepted quotes
             if (!includeAllQuotes) {
@@ -173,18 +176,33 @@ export const useQuotes = ({
   useEffect(() => {
     if (!user?.id) return;
     
-    const channel = setupQuotesRealtimeListener(
-      projectId, 
-      user.id, 
-      forClient, 
-      queryResult.refetch
-    );
+    // Set up a more comprehensive realtime listener
+    const channel = supabase
+      .channel(`quotes-changes-${user.id}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
+          schema: 'public',
+          table: 'quotes',
+          filter: `client_id=eq.${user.id}`, // Filter by client_id for client dashboard
+        },
+        (payload) => {
+          console.log('Real-time quote update received:', payload);
+          // Force refetch the data when quotes change
+          queryResult.refetch();
+        }
+      )
+      .subscribe((status) => {
+        console.log('Realtime subscription status for quotes:', status);
+      });
 
     // Cleanup function to remove the listener when component unmounts
     return () => {
-      removeRealtimeListener(channel);
+      console.log('Removing realtime listener for quotes');
+      supabase.removeChannel(channel);
     };
-  }, [projectId, user, queryResult.refetch, forClient]);
+  }, [user?.id, queryResult.refetch]);
 
   return {
     ...queryResult,

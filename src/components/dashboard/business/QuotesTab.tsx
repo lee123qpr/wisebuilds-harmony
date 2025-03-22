@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useQuotes } from '@/hooks/quotes/useQuotes';
 import { Tabs, TabsContent } from '@/components/ui/tabs';
@@ -18,11 +18,25 @@ const QuotesTab: React.FC = () => {
   // Fetch quotes for this client, forcefully excluding quotes for completed projects
   const { data: quotes, isLoading, refetch } = useQuotes({
     forClient: true,
-    includeAllQuotes: true,
-    excludeCompletedProjects: true // Always exclude quotes for completed projects
+    includeAllQuotes: true, // Always get all quotes regardless of status
+    excludeCompletedProjects: true, // Always exclude quotes for completed projects
+    refreshInterval: 10000 // Refresh more frequently to catch new quotes
   });
   
   const [activeTab, setActiveTab] = useState('accepted');
+  
+  // Force refresh when component mounts
+  useEffect(() => {
+    console.log("BusinessQuotesTab: Forcing quotes refresh on mount");
+    refetch();
+  }, [refetch]);
+  
+  // Log quotes data for debugging
+  useEffect(() => {
+    if (quotes) {
+      console.log(`BusinessQuotesTab: Got ${quotes.length} quotes`, quotes);
+    }
+  }, [quotes]);
   
   // Filter quotes based on tab
   const filteredQuotes = quotes?.filter(quote => {
