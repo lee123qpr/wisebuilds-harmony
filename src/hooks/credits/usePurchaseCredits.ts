@@ -53,7 +53,7 @@ export const usePurchaseCredits = () => {
       setIsCheckoutLoading(false);
       toast({
         title: 'Checkout Error',
-        description: error.message || 'Failed to start checkout process',
+        description: error.message || 'Failed to start checkout process. Please check if the API key is valid.',
         variant: 'destructive',
       });
     }
