@@ -34,14 +34,30 @@ export const useTransactions = () => {
       return data as CreditTransaction[];
     },
     enabled: !!user,
-    staleTime: 30000, // Consider data stale after 30 seconds
-    refetchOnWindowFocus: true, // Refetch when window regains focus
+    staleTime: 5000, // Consider data stale after 5 seconds
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
   });
+
+  const refetchTransactionsData = async () => {
+    if (!user) return null;
+    
+    console.log('Explicitly refetching transaction history with force refresh');
+    try {
+      // Force invalidate the query before refetching
+      const result = await refetchTransactions({ cancelRefetch: false });
+      console.log('Transaction refresh result:', result.data?.length || 0, 'transactions');
+      return result;
+    } catch (error) {
+      console.error('Error refetching transactions:', error);
+      throw error;
+    }
+  };
 
   return {
     transactions,
     isLoadingTransactions,
     transactionsError,
-    refetchTransactions
+    refetchTransactions: refetchTransactionsData
   };
 };

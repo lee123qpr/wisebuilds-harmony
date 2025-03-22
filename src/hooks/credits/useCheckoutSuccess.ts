@@ -17,7 +17,7 @@ export const useCheckoutSuccess = () => {
       console.log('Processing checkout success with session ID:', sessionId);
       
       // Add a short delay to ensure all backend processes complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Force an immediate invalidation AND refetch of credit-related queries
       if (user?.id) {
@@ -28,19 +28,42 @@ export const useCheckoutSuccess = () => {
         await queryClient.invalidateQueries({ queryKey: ['creditTransactions', user.id] });
         
         // Then force immediate refetches to update the UI
-        const balancePromise = queryClient.refetchQueries({ 
-          queryKey: ['creditBalance', user.id],
-          exact: true 
-        });
-        
-        const transactionsPromise = queryClient.refetchQueries({ 
-          queryKey: ['creditTransactions', user.id],
-          exact: true 
-        });
-        
-        // Wait for both refetches to complete
-        await Promise.all([balancePromise, transactionsPromise]);
-        console.log('Credit data refresh completed');
+        try {
+          const balancePromise = queryClient.refetchQueries({ 
+            queryKey: ['creditBalance', user.id],
+            exact: true 
+          });
+          
+          const transactionsPromise = queryClient.refetchQueries({ 
+            queryKey: ['creditTransactions', user.id],
+            exact: true 
+          });
+          
+          // Wait for both refetches to complete
+          await Promise.all([balancePromise, transactionsPromise]);
+          console.log('Initial credit data refresh completed');
+          
+          // Do a second refresh after a short delay to ensure we have the most up-to-date data
+          setTimeout(async () => {
+            try {
+              await queryClient.refetchQueries({ 
+                queryKey: ['creditBalance', user.id],
+                exact: true 
+              });
+              
+              await queryClient.refetchQueries({ 
+                queryKey: ['creditTransactions', user.id],
+                exact: true 
+              });
+              
+              console.log('Secondary refresh completed');
+            } catch (err) {
+              console.error('Error in secondary refresh:', err);
+            }
+          }, 3000);
+        } catch (err) {
+          console.error('Error during refetch operations:', err);
+        }
       } else {
         console.log('No user ID available for credit refresh');
       }

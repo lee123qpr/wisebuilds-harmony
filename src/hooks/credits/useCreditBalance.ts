@@ -16,6 +16,8 @@ export const useCreditBalance = () => {
     queryFn: async () => {
       if (!user) return null;
       
+      console.log(`Fetching credit balance for user ${user.id}...`);
+      
       const { data, error } = await supabase
         .from('freelancer_credits')
         .select('credit_balance')
@@ -31,14 +33,24 @@ export const useCreditBalance = () => {
       return data?.credit_balance || 0;
     },
     enabled: !!user,
-    staleTime: 30000, // Consider data stale after 30 seconds
-    refetchOnWindowFocus: true, // Refetch when window regains focus
+    staleTime: 5000, // Consider data stale after 5 seconds to force more frequent refreshes
+    refetchOnWindowFocus: true,
+    refetchOnMount: true,
+    refetchOnReconnect: true,
   });
 
   const refetchCredits = async () => {
-    if (refetchCreditBalance) {
-      console.log('Explicitly refetching credit balance');
-      return refetchCreditBalance();
+    if (!user) return null;
+    
+    console.log('Explicitly refetching credit balance with force refresh');
+    try {
+      // Force invalidate the query before refetching
+      const result = await refetchCreditBalance({ cancelRefetch: false });
+      console.log('Credit balance refresh result:', result.data);
+      return result;
+    } catch (error) {
+      console.error('Error refetching credit balance:', error);
+      throw error;
     }
   };
 
