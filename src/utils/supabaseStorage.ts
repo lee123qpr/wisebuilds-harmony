@@ -26,6 +26,12 @@ export const uploadFile = async (
     
     console.log(`Uploading to ${bucketName}, path: ${filePath}`);
     
+    // Check if bucket exists before attempting upload
+    const bucketExists = await checkBucketAccess(bucketName);
+    if (!bucketExists) {
+      console.warn(`Bucket ${bucketName} doesn't exist or is inaccessible`);
+    }
+    
     // Upload to specified bucket
     const { data: uploadData, error: uploadError } = await supabase.storage
       .from(bucketName)
