@@ -19,7 +19,8 @@ export const buildQuotesQuery = (
         id,
         title,
         budget,
-        status
+        status,
+        role
       )
     `);
   

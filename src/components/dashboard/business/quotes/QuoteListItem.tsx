@@ -29,8 +29,8 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
   
   console.log('Quote project data:', quote.project);
   
-  // Format role for display
-  const role = quote.project?.role || 'Any';
+  // Safely access role with proper fallback
+  const role = quote.project?.role || 'Not specified';
   const roleFormatted = formatRole(role);
   
   const formattedDate = quote.created_at 

@@ -27,6 +27,7 @@ export interface QuoteWithProject extends Quote {
     title: string;
     budget: string;
     status: string;
+    role?: string;
   };
 }
 
@@ -35,6 +36,7 @@ export interface QuoteWithFreelancer extends Quote {
     title: string;
     budget: string;
     status: string;
+    role?: string;
   };
   freelancer_profile?: {
     first_name?: string;

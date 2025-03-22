@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { QuoteWithFreelancer } from '@/types/quotes';
@@ -35,7 +34,7 @@ export const fetchQuotesData = async ({
         // For freelancers, get their submitted quotes
         let query = supabase
           .from('quotes')
-          .select('*, project:projects(*))')
+          .select('*, project:projects(id, title, budget, status, role))')
           .eq('freelancer_id', user.id);
           
         // If we should exclude completed projects, add that filter
@@ -56,7 +55,7 @@ export const fetchQuotesData = async ({
         // For clients, get quotes for their projects
         let query = supabase
           .from('quotes')
-          .select('*, project:projects(*)')
+          .select('*, project:projects(id, title, budget, status, role)')
           .eq('client_id', user.id);
           
         // If we should exclude completed projects, add that filter

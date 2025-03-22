@@ -26,8 +26,8 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
   // Format the created date
   const formattedDate = format(new Date(quote.created_at), 'MMM d, yyyy');
   
-  // Get project role if available
-  const role = quote.project?.role || 'Any';
+  // Get project role if available - with proper fallback
+  const role = quote.project?.role || 'Not specified';
   const roleFormatted = formatRole(role);
   
   // Get freelancer info
