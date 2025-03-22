@@ -131,15 +131,18 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
     );
   }
   
+  // If the other party has completed but user hasn't, show a more prominent button
+  const buttonVariant = otherPartyCompleted ? "default" : "outline";
+  const buttonClass = otherPartyCompleted 
+    ? "bg-green-600 hover:bg-green-700 gap-2" 
+    : "gap-2";
+  
   return (
     <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
       <DialogTrigger asChild>
         <Button 
-          variant={otherPartyCompleted ? "default" : "outline"} 
-          className={otherPartyCompleted 
-            ? "bg-green-600 hover:bg-green-700 gap-2" 
-            : "gap-2"
-          }
+          variant={buttonVariant} 
+          className={buttonClass}
         >
           <CheckCircle2 className="h-4 w-4" />
           {otherPartyCompleted 
