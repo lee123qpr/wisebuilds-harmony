@@ -31,8 +31,9 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
   
   const quoteStatus = project.quote_status || existingQuote?.status;
   
+  // Add a proper navigate implementation to view project details
   const handleViewDetails = () => {
-    navigate(`/marketplace/${project.id}`);
+    navigate(`/project/${project.id}`);
   };
   
   const formattedDate = project.created_at 
