@@ -27,29 +27,6 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   const { toast } = useToast();
   const [bucketAccessChecked, setBucketAccessChecked] = React.useState(false);
 
-  // Check bucket access on component mount
-  React.useEffect(() => {
-    const verifyBucketAccess = async () => {
-      if (!bucketAccessChecked) {
-        const hasAccess = await checkBucketAccess('freelancer-avatar');
-        if (!hasAccess) {
-          console.warn('Cannot access freelancer-avatar bucket - uploads may fail');
-          // Only show toast in development environment to avoid alarming users unnecessarily
-          if (process.env.NODE_ENV === 'development') {
-            toast({
-              variant: 'default',
-              title: 'Developer Note',
-              description: 'Storage access check failed. Check console for details.'
-            });
-          }
-        }
-        setBucketAccessChecked(true);
-      }
-    };
-    
-    verifyBucketAccess();
-  }, [bucketAccessChecked, toast]);
-
   // When the button is clicked, trigger the hidden file input
   const handleButtonClick = () => {
     console.log('Avatar upload button clicked');

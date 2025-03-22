@@ -3,12 +3,11 @@ import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { isUserFreelancer } from '@/hooks/verification/services/user-verification';
 import { uploadFile } from '@/utils/supabaseStorage';
 
 interface UseImageUploadProps {
   userId: string;
-  folder: string; // Keeping this for backward compatibility, but it's no longer used
+  folder: string; // Kept for backward compatibility
   namePrefix: string;
 }
 
@@ -64,13 +63,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       let errorMessage = 'There was an error uploading your image.';
       
       if (error instanceof Error) {
-        if (error.message.includes('permission denied') || error.message.includes('access denied')) {
-          errorMessage = 'Permission denied. Make sure you\'re logged in and uploading to your own folder.';
-        } else if (error.message.includes('authentication required')) {
-          errorMessage = 'You need to be logged in to upload files.';
-        } else {
-          errorMessage = error.message;
-        }
+        errorMessage = error.message;
       }
       
       toast({

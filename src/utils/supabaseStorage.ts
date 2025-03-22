@@ -17,6 +17,16 @@ export const uploadFile = async (
       throw new Error('User ID is required for uploading files');
     }
 
+    // Verify the user is authenticated before attempting upload
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session) {
+      throw new Error('Authentication required: Please log in before uploading files');
+    }
+
+    if (session.session.user.id !== userId) {
+      throw new Error('Permission denied: You can only upload to your own folder');
+    }
+
     // Create unique file name with proper extension
     const fileExt = file.name.split('.').pop();
     const fileName = `${namePrefix.trim() || 'file'}-${Date.now()}.${fileExt}`;
@@ -42,17 +52,7 @@ export const uploadFile = async (
 
     if (uploadError) {
       console.error('Error during upload:', uploadError);
-      
-      // Handle specific error cases 
-      if (uploadError.message.includes('storage/object-not-found')) {
-        throw new Error('Storage bucket not found. Please contact support.');
-      } else if (uploadError.message.includes('permission denied') || uploadError.message.includes('access denied')) {
-        throw new Error(`Permission denied: You can only upload to your own folder (${userId}/)`);
-      } else if (uploadError.message.includes('not authorized')) {
-        throw new Error('Authentication required: Please log in before uploading files');
-      } else {
-        throw new Error(`Upload failed: ${uploadError.message}`);
-      }
+      throw new Error(`Upload failed: ${uploadError.message}`);
     }
 
     if (!uploadData) {
@@ -90,6 +90,23 @@ export const removeFile = async (
       throw new Error('Invalid file path format - must include user ID as first segment');
     }
 
+    // Verify the user is authenticated before attempting deletion
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session) {
+      throw new Error('Authentication required: Please log in before deleting files');
+    }
+
+    // Get user ID from session
+    const userId = session.session.user.id;
+    
+    // Extract user ID from path to check permissions
+    const pathUserId = filePath.split('/')[0];
+    
+    // Check if user owns the file
+    if (userId !== pathUserId) {
+      throw new Error('Permission denied: You can only delete your own files');
+    }
+
     const { error } = await supabase.storage
       .from(bucketName)
       .remove([filePath]);
@@ -115,6 +132,22 @@ export const checkBucketAccess = async (bucketName: string): Promise<boolean> =>
     const { data: session } = await supabase.auth.getSession();
     if (!session.session) {
       console.warn('User not authenticated, cannot check bucket access');
+      return false;
+    }
+    
+    // List the buckets to check if the bucket exists
+    const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
+    
+    if (bucketsError) {
+      console.error('Error listing buckets:', bucketsError);
+      return false;
+    }
+    
+    // Check if the bucket exists in the list
+    const bucketExists = buckets.some(bucket => bucket.name === bucketName);
+    
+    if (!bucketExists) {
+      console.error(`Bucket ${bucketName} does not exist`);
       return false;
     }
     
