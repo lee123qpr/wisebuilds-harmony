@@ -173,41 +173,77 @@ export const NotificationsProvider: React.FC<{ children: React.ReactNode }> = ({
           console.log('New message received:', payload);
           const message = payload.new;
           
-          // Get conversation details to determine who sent the message
-          const { data: conversationData } = await supabase
-            .from('conversations')
-            .select(`
-              *,
-              client_info:client_id(display_name, company_name),
-              freelancer_info:freelancer_id(display_name)
-            `)
-            .eq('id', message.conversation_id)
-            .single();
-          
-          if (!conversationData) return;
-          
-          // Determine sender name based on role
-          let senderName = 'Someone';
-          if (conversationData.client_id === message.sender_id) {
-            senderName = conversationData.client_info?.company_name || 
-                        conversationData.client_info?.display_name || 
-                        'A client';
-          } else {
-            senderName = conversationData.freelancer_info?.display_name || 'A freelancer';
-          }
-          
-          const notification = {
-            type: 'message' as NotificationType,
-            title: `New Message from ${senderName}`,
-            description: 'You have received a new message',
-            data: {
-              conversation_id: message.conversation_id,
-              message: message.message,
-              sender_id: message.sender_id
+          try {
+            // Get conversation details to determine who sent the message
+            const { data: conversationData, error: convError } = await supabase
+              .from('conversations')
+              .select('*')
+              .eq('id', message.conversation_id)
+              .single();
+            
+            if (convError || !conversationData) {
+              console.error('Error fetching conversation data:', convError);
+              return;
             }
-          };
-          
-          addNotification(notification);
+            
+            let senderName = 'Someone';
+            
+            // If the sender is the client, get client info
+            if (conversationData.client_id === message.sender_id) {
+              const { data: clientData } = await supabase
+                .from('client_profiles')
+                .select('company_name, contact_name')
+                .eq('id', message.sender_id)
+                .maybeSingle();
+                
+              if (clientData) {
+                senderName = clientData.company_name || clientData.contact_name || 'A client';
+              } else {
+                // Try to get from auth via edge function
+                try {
+                  const { data: userData } = await supabase.functions.invoke(
+                    'get-user-email',
+                    { body: { userId: message.sender_id } }
+                  );
+                  
+                  if (userData) {
+                    senderName = userData.full_name || userData.email?.split('@')[0] || 'A client';
+                  }
+                } catch (err) {
+                  console.error('Error fetching user data from edge function:', err);
+                }
+              }
+            } 
+            // If the sender is the freelancer, get freelancer info
+            else if (conversationData.freelancer_id === message.sender_id) {
+              const { data: freelancerData } = await supabase
+                .from('freelancer_profiles')
+                .select('display_name, first_name, last_name')
+                .eq('id', message.sender_id)
+                .maybeSingle();
+                
+              if (freelancerData) {
+                senderName = freelancerData.display_name || 
+                             `${freelancerData.first_name || ''} ${freelancerData.last_name || ''}`.trim() || 
+                             'A freelancer';
+              }
+            }
+            
+            const notification = {
+              type: 'message' as NotificationType,
+              title: `New Message from ${senderName}`,
+              description: 'You have received a new message',
+              data: {
+                conversation_id: message.conversation_id,
+                message: message.message,
+                sender_id: message.sender_id
+              }
+            };
+            
+            addNotification(notification);
+          } catch (error) {
+            console.error('Error processing message notification:', error);
+          }
         }
       )
       .subscribe();
