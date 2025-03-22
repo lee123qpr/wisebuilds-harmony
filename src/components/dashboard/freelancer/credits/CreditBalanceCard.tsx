@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Coins } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
@@ -25,23 +25,25 @@ const CreditBalanceCard = ({ creditBalance, isLoading }: CreditBalanceCardProps)
         </CardDescription>
       </CardHeader>
       <CardContent>
-        {isLoading ? (
-          <div className="h-10 w-24 bg-gray-200 animate-pulse rounded"></div>
-        ) : (
+        <div className="flex justify-between items-center">
           <div className="flex items-baseline">
-            <span className="text-3xl font-bold">{creditBalance || 0}</span>
-            <span className="ml-2 text-gray-500">credits</span>
+            {isLoading ? (
+              <div className="h-10 w-24 bg-gray-200 animate-pulse rounded"></div>
+            ) : (
+              <>
+                <span className="text-3xl font-bold">{creditBalance || 0}</span>
+                <span className="ml-2 text-gray-500">credits</span>
+              </>
+            )}
           </div>
-        )}
+          <Button 
+            onClick={() => navigate('/dashboard/freelancer/credits')}
+            size="sm"
+          >
+            Buy More Credits
+          </Button>
+        </div>
       </CardContent>
-      <CardFooter>
-        <Button 
-          onClick={() => navigate('/dashboard/freelancer/credits')}
-          className="w-full"
-        >
-          Buy More Credits
-        </Button>
-      </CardFooter>
     </Card>
   );
 };
