@@ -33,10 +33,12 @@ export const useCreditBalance = () => {
       return data?.credit_balance || 0;
     },
     enabled: !!user,
-    staleTime: 0, // Always consider data stale to force fresh fetch
-    refetchOnWindowFocus: true,
+    staleTime: 0, // Always consider data stale
+    cacheTime: 1000, // Very short cache time
     refetchOnMount: true,
+    refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+    refetchInterval: 5000, // Poll every 5 seconds when active
   });
 
   const refetchCredits = async () => {
@@ -44,15 +46,17 @@ export const useCreditBalance = () => {
     
     console.log('Explicitly refetching credit balance with force refresh');
     try {
-      // Invalidate the query before refetching
-      await refetchCreditBalance({ cancelRefetch: false });
+      // Force invalidate before refetching
+      const result = await refetchCreditBalance({ cancelRefetch: false });
+      console.log('Credit balance refresh result:', result.data);
       
-      // Do a second refetch after a brief delay to ensure we have the latest data
+      // Do a second refetch after a brief delay
       setTimeout(async () => {
-        const result = await refetchCreditBalance({ cancelRefetch: false });
-        console.log('Secondary credit balance refresh result:', result.data);
-        return result;
-      }, 1000);
+        const secondResult = await refetchCreditBalance({ cancelRefetch: false });
+        console.log('Secondary credit balance refresh result:', secondResult.data);
+      }, 2000);
+      
+      return result;
     } catch (error) {
       console.error('Error refetching credit balance:', error);
       throw error;

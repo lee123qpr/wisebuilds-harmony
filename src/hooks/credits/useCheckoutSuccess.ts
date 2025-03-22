@@ -11,27 +11,54 @@ export const useCheckoutSuccess = () => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
 
-  // Function to manually force update a pending transaction
+  // Enhanced function to manually force update a pending transaction
   const forceUpdateTransaction = async (sessionId: string) => {
     try {
       console.log(`Attempting to manually update transaction for session: ${sessionId}`);
       
-      const response = await supabase.functions.invoke('webhook-stripe', {
-        body: {
-          type: 'manual_update',
-          data: {
-            sessionId
-          }
-        }
-      });
+      // First check if the transaction exists and is still pending
+      const { data: existingTx, error: txError } = await supabase
+        .from('credit_transactions')
+        .select('*')
+        .eq('stripe_payment_id', sessionId)
+        .maybeSingle();
       
-      if (response.error) {
-        console.error('Error with manual transaction update:', response.error);
+      if (txError) {
+        console.error('Error checking transaction status:', txError);
         return false;
       }
       
-      console.log('Manual transaction update response:', response.data);
-      return true;
+      if (!existingTx) {
+        console.error('Transaction not found for session ID:', sessionId);
+        return false;
+      }
+      
+      console.log('Current transaction status:', existingTx.status);
+      
+      // Only attempt update if still pending
+      if (existingTx.status === 'pending') {
+        const response = await supabase.functions.invoke('webhook-stripe', {
+          body: {
+            type: 'manual_update',
+            data: {
+              sessionId
+            }
+          }
+        });
+        
+        if (response.error) {
+          console.error('Error with manual transaction update:', response.error);
+          return false;
+        }
+        
+        console.log('Manual transaction update response:', response.data);
+        return true;
+      } else if (existingTx.status === 'completed') {
+        console.log('Transaction already completed, no update needed');
+        return true;
+      }
+      
+      return false;
     } catch (error) {
       console.error('Exception during manual transaction update:', error);
       return false;
@@ -44,26 +71,15 @@ export const useCheckoutSuccess = () => {
     try {
       console.log('Processing checkout success with session ID:', sessionId);
       
-      // Add a short delay to ensure all backend processes complete
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Wait to ensure all backend processes complete
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
-      // Check if the transaction is still pending after a short delay
-      const { data: transaction } = await supabase
-        .from('credit_transactions')
-        .select('status')
-        .eq('stripe_payment_id', sessionId)
-        .maybeSingle();
+      // Manually update the transaction
+      console.log('Attempting manual transaction update...');
+      await forceUpdateTransaction(sessionId);
       
-      console.log('Transaction current status:', transaction?.status);
-      
-      // If transaction is still pending, try to manually update it
-      if (transaction?.status === 'pending') {
-        console.log('Transaction still pending, attempting manual update...');
-        await forceUpdateTransaction(sessionId);
-        
-        // Additional wait after manual update
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
+      // Wait a bit longer after manual update
+      await new Promise(resolve => setTimeout(resolve, 2000));
       
       // Force an immediate invalidation AND refetch of credit-related queries
       if (user?.id) {
@@ -87,43 +103,30 @@ export const useCheckoutSuccess = () => {
           
           console.log('Initial credit data refresh completed');
           
-          // Do a second refresh after a short delay to ensure we have the most up-to-date data
-          setTimeout(async () => {
-            try {
-              await queryClient.refetchQueries({ 
-                queryKey: ['creditBalance', user.id],
-                exact: true 
-              });
-              
-              await queryClient.refetchQueries({ 
-                queryKey: ['creditTransactions', user.id],
-                exact: true 
-              });
-              
-              console.log('Secondary refresh completed');
-            } catch (err) {
-              console.error('Error in secondary refresh:', err);
-            }
-          }, 2000);
+          // Do multiple refresh attempts with delays
+          const refreshIntervals = [3000, 6000, 10000];
           
-          // Do a third refresh after a longer delay as a final attempt
-          setTimeout(async () => {
-            try {
-              await queryClient.refetchQueries({ 
-                queryKey: ['creditBalance', user.id],
-                exact: true 
-              });
-              
-              await queryClient.refetchQueries({ 
-                queryKey: ['creditTransactions', user.id],
-                exact: true 
-              });
-              
-              console.log('Final refresh completed');
-            } catch (err) {
-              console.error('Error in final refresh:', err);
-            }
-          }, 5000);
+          refreshIntervals.forEach((delay, index) => {
+            setTimeout(async () => {
+              try {
+                console.log(`Performing refresh attempt ${index + 1}...`);
+                
+                await queryClient.refetchQueries({ 
+                  queryKey: ['creditBalance', user.id],
+                  exact: true 
+                });
+                
+                await queryClient.refetchQueries({ 
+                  queryKey: ['creditTransactions', user.id],
+                  exact: true 
+                });
+                
+                console.log(`Refresh attempt ${index + 1} completed`);
+              } catch (err) {
+                console.error(`Error in refresh attempt ${index + 1}:`, err);
+              }
+            }, delay);
+          });
         } catch (err) {
           console.error('Error during refetch operations:', err);
         }
@@ -137,7 +140,7 @@ export const useCheckoutSuccess = () => {
         variant: 'default',
       });
       
-      // After a short delay, redirect to the credits page
+      // Navigate to the credits page after a delay
       setTimeout(() => {
         navigate('/dashboard/freelancer/credits');
       }, 2000);
@@ -151,5 +154,5 @@ export const useCheckoutSuccess = () => {
     }
   };
 
-  return { handleCheckoutSuccess };
+  return { handleCheckoutSuccess, forceUpdateTransaction };
 };

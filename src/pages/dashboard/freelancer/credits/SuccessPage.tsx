@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import { useCredits } from '@/hooks/useCredits';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, RefreshCw } from 'lucide-react';
+import { CheckCircle, RefreshCw, ArrowRight } from 'lucide-react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -11,13 +11,46 @@ import { supabase } from '@/integrations/supabase/client';
 const SuccessPage = () => {
   const [searchParams] = useSearchParams();
   const sessionId = searchParams.get('session_id');
-  const { handleCheckoutSuccess, creditBalance, refetchCredits } = useCredits();
+  const { handleCheckoutSuccess, creditBalance, refetchCredits, transactions } = useCredits();
   const navigate = useNavigate();
   const { user, isLoading } = useAuth();
   const [processingComplete, setProcessingComplete] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [retryCount, setRetryCount] = useState(0);
   const [manualUpdateAttempted, setManualUpdateAttempted] = useState(false);
+  const [initialLoad, setInitialLoad] = useState(true);
+  
+  // Effect to handle initial session check and stripe status
+  useEffect(() => {
+    const checkStripeSession = async () => {
+      if (!sessionId) return;
+      
+      try {
+        // Check transaction status directly
+        const { data: transaction } = await supabase
+          .from('credit_transactions')
+          .select('status')
+          .eq('stripe_payment_id', sessionId)
+          .maybeSingle();
+          
+        console.log('Transaction found with status:', transaction?.status);
+        
+        // If completed, set processing complete
+        if (transaction?.status === 'completed') {
+          console.log('Transaction already completed');
+          setProcessingComplete(true);
+          refetchCredits();
+        }
+      } catch (error) {
+        console.error('Error checking transaction status:', error);
+      }
+    };
+    
+    if (sessionId && !isLoading && initialLoad) {
+      checkStripeSession();
+      setInitialLoad(false);
+    }
+  }, [sessionId, isLoading, initialLoad, refetchCredits]);
   
   // Effect to manually force update a pending transaction
   const forceUpdateTransaction = async () => {
@@ -26,6 +59,7 @@ const SuccessPage = () => {
     try {
       console.log(`Attempting to manually update transaction for session: ${sessionId}`);
       setManualUpdateAttempted(true);
+      setIsRefreshing(true);
       
       const response = await supabase.functions.invoke('webhook-stripe', {
         body: {
@@ -38,12 +72,23 @@ const SuccessPage = () => {
       
       console.log('Manual transaction update response:', response);
       
+      if (response.data?.success) {
+        console.log('Manual update successful');
+        toast({
+          title: 'Update Successful',
+          description: 'Your transaction has been processed',
+          variant: 'default',
+        });
+      }
+      
       // Wait a bit then refresh data
       setTimeout(() => {
         refetchCredits();
-      }, 1500);
+        setIsRefreshing(false);
+      }, 2000);
     } catch (error) {
       console.error('Exception during manual transaction update:', error);
+      setIsRefreshing(false);
     }
   };
   
@@ -69,25 +114,9 @@ const SuccessPage = () => {
           }
         }
         
-        // First check if the transaction is still pending
-        const { data: transaction } = await supabase
-          .from('credit_transactions')
-          .select('status')
-          .eq('stripe_payment_id', sessionId)
-          .maybeSingle();
-        
-        console.log('Transaction current status:', transaction?.status);
-        
         // Process the checkout success
         handleCheckoutSuccess(sessionId);
         setProcessingComplete(true);
-        
-        // If transaction is still pending, try to manually update it after processing
-        if (transaction?.status === 'pending') {
-          setTimeout(() => {
-            forceUpdateTransaction();
-          }, 2000);
-        }
         
         // After processing, automatically refresh data
         setTimeout(async () => {
@@ -106,9 +135,22 @@ const SuccessPage = () => {
     processCheckout();
   }, [sessionId, handleCheckoutSuccess, navigate, user, isLoading, processingComplete, refetchCredits]);
   
-  // Effect to automatically try refreshing data if credit balance is 0
+  // Check if the current transaction is pending
+  const isTransactionPending = React.useMemo(() => {
+    if (!transactions || !sessionId) return false;
+    
+    const currentTransaction = transactions.find(tx => 
+      tx.stripe_payment_id === sessionId
+    );
+    
+    return currentTransaction?.status === 'pending';
+  }, [transactions, sessionId]);
+  
+  // Auto-refresh data if transaction is pending or credit balance is 0
   useEffect(() => {
-    if (processingComplete && creditBalance === 0 && retryCount < 5 && !isRefreshing) {
+    const shouldAutoRefresh = isTransactionPending || (processingComplete && creditBalance === 0 && retryCount < 6);
+    
+    if (shouldAutoRefresh && !isRefreshing) {
       const timer = setTimeout(async () => {
         console.log(`Auto-refreshing credit data (attempt ${retryCount + 1})`);
         setIsRefreshing(true);
@@ -116,22 +158,22 @@ const SuccessPage = () => {
         setIsRefreshing(false);
         setRetryCount(prev => prev + 1);
         
-        // If we're on the 3rd retry and balance is still 0, try manual update
-        if (retryCount === 2 && creditBalance === 0 && sessionId) {
+        // Try manual update on the third retry
+        if (retryCount === 2 && (isTransactionPending || creditBalance === 0) && sessionId && !manualUpdateAttempted) {
           forceUpdateTransaction();
         }
-      }, 2000);
+      }, 3000);
       
       return () => clearTimeout(timer);
     }
-  }, [processingComplete, creditBalance, retryCount, isRefreshing, refetchCredits, sessionId]);
+  }, [processingComplete, creditBalance, retryCount, isRefreshing, refetchCredits, sessionId, isTransactionPending, manualUpdateAttempted]);
   
   // Manual refresh function for users to force refresh credit balance
   const handleManualRefresh = async () => {
     setIsRefreshing(true);
     
     // If transaction is still pending and we haven't tried a manual update yet
-    if (sessionId && !manualUpdateAttempted) {
+    if (sessionId && !manualUpdateAttempted && isTransactionPending) {
       await forceUpdateTransaction();
       // Wait a bit longer for the manual update
       setTimeout(async () => {
@@ -143,6 +185,9 @@ const SuccessPage = () => {
       setTimeout(() => setIsRefreshing(false), 1000);
     }
   };
+  
+  // Import toast
+  const { toast } = useToast();
   
   return (
     <MainLayout>
@@ -167,6 +212,11 @@ const SuccessPage = () => {
                 <p className="text-sm text-gray-500 mb-2">
                   If your credits don't appear, please click the refresh button below.
                 </p>
+                {isTransactionPending && (
+                  <p className="text-sm font-medium text-orange-600 mb-2">
+                    Your payment is still processing. This may take a moment.
+                  </p>
+                )}
                 <p className="text-xs text-gray-400">
                   (Transaction ID: {sessionId ? sessionId.slice(0, 12) + '...' : 'Not available'})
                 </p>
@@ -185,10 +235,11 @@ const SuccessPage = () => {
               
               <Button 
                 onClick={() => navigate('/dashboard/freelancer/credits')}
-                className="w-full"
-                variant="secondary"
+                className="w-full flex items-center justify-center"
+                variant="default"
               >
                 View My Credits
+                <ArrowRight className="h-4 w-4 ml-2" />
               </Button>
               
               <Button 

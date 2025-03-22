@@ -31,12 +31,41 @@ export const useTransactions = () => {
       }
       
       console.log(`Found ${data?.length || 0} transactions`);
+      
+      // Check if there are any pending transactions
+      const pendingTransactions = data?.filter(tx => tx.status === 'pending') || [];
+      if (pendingTransactions.length > 0) {
+        console.log(`Found ${pendingTransactions.length} pending transactions. Will attempt to update them.`);
+        
+        // Attempt to manually update each pending transaction
+        for (const tx of pendingTransactions) {
+          try {
+            if (tx.stripe_payment_id) {
+              console.log(`Attempting to update pending transaction: ${tx.stripe_payment_id}`);
+              await supabase.functions.invoke('webhook-stripe', {
+                body: {
+                  type: 'manual_update',
+                  data: {
+                    sessionId: tx.stripe_payment_id
+                  }
+                }
+              });
+              console.log(`Sent update request for transaction: ${tx.stripe_payment_id}`);
+            }
+          } catch (err) {
+            console.error(`Error updating pending transaction ${tx.id}:`, err);
+          }
+        }
+      }
+      
       return data as CreditTransaction[];
     },
     enabled: !!user,
-    staleTime: 0, // Always consider data stale to force fresh fetch
+    staleTime: 0, // Always consider data stale
+    cacheTime: 1000, // Very short cache time
     refetchOnWindowFocus: true,
     refetchOnMount: true,
+    refetchInterval: 5000, // Poll every 5 seconds when active
   });
 
   const refetchTransactionsData = async () => {
@@ -47,12 +76,6 @@ export const useTransactions = () => {
       // Force invalidate the query before refetching
       const result = await refetchTransactions({ cancelRefetch: false });
       console.log('Transaction refresh result:', result.data?.length || 0, 'transactions');
-      
-      // Do a second refetch after a brief delay to ensure we have the latest data
-      setTimeout(async () => {
-        const secondResult = await refetchTransactions({ cancelRefetch: false });
-        console.log('Secondary transaction refresh result:', secondResult.data?.length || 0, 'transactions');
-      }, 1000);
       
       return result;
     } catch (error) {
