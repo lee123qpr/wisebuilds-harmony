@@ -97,9 +97,9 @@ export const getUserVerificationStatus = async (): Promise<VerificationStatus> =
     const verificationData = await fetchVerificationStatus();
     if (!verificationData) return 'not_submitted';
     
-    // Fix the type instantiation issue by explicitly typing the status
-    const status: string = verificationData.status;
-    return mapDatabaseStatusToVerificationStatus(status);
+    // Break the recursion by using a type assertion to string
+    // This prevents TypeScript from trying to infer types recursively
+    return mapDatabaseStatusToVerificationStatus(verificationData.status as string);
   } catch (error) {
     console.error('Error getting user verification status:', error);
     return 'not_submitted';
