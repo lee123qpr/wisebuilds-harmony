@@ -1,3 +1,4 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import type { VerificationData } from './types';
 import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
@@ -69,27 +70,31 @@ export const uploadVerificationDocument = async (
     
     console.log('Generated file path:', filePath);
     
-    // Check possible bucket names (with underscore and with hyphen)
-    console.log('Checking bucket with underscore: verification_documents');
-    const { data: bucketsWithUnderscore, error: bucketErrorWithUnderscore } = await supabase.storage
-      .getBucket('verification_documents');
+    // First check if the verification_documents bucket exists
+    const { data: bucketsData, error: bucketsError } = await supabase.storage
+      .listBuckets();
     
-    console.log('Result for bucket with underscore:', bucketsWithUnderscore ? 'exists' : 'not found', bucketErrorWithUnderscore ? `Error: ${bucketErrorWithUnderscore.message}` : 'no error');
+    console.log('Available buckets:', bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none');
     
-    console.log('Checking bucket with hyphen: verification-documents');
-    const { data: bucketsWithHyphen, error: bucketErrorWithHyphen } = await supabase.storage
-      .getBucket('verification-documents');
+    if (bucketsError) {
+      console.error('Error checking buckets:', bucketsError);
+    }
     
-    console.log('Result for bucket with hyphen:', bucketsWithHyphen ? 'exists' : 'not found', bucketErrorWithHyphen ? `Error: ${bucketErrorWithHyphen.message}` : 'no error');
+    // Check if verification_documents or verification-documents exists in the buckets
+    const bucketWithUnderscore = bucketsData?.find(b => b.name === 'verification_documents');
+    const bucketWithHyphen = bucketsData?.find(b => b.name === 'verification-documents');
     
-    // Determine which bucket name to use based on the check results
-    const bucketName = bucketsWithUnderscore ? 'verification_documents' : 
-                        bucketsWithHyphen ? 'verification-documents' : 'verification_documents';
+    console.log('Bucket with underscore exists:', !!bucketWithUnderscore);
+    console.log('Bucket with hyphen exists:', !!bucketWithHyphen);
+    
+    // Determine which bucket name to use
+    const bucketName = bucketWithUnderscore ? 'verification_documents' : 
+                       bucketWithHyphen ? 'verification-documents' : 'verification_documents';
     
     console.log(`Using bucket name: ${bucketName}`);
     
-    // If neither bucket exists, set up the verification system
-    if (bucketErrorWithUnderscore && bucketErrorWithHyphen) {
+    // If no bucket exists, set up the verification system
+    if (!bucketWithUnderscore && !bucketWithHyphen) {
       console.log('Bucket not found, setting up verification system first');
       // Call the setup function
       const setupResult = await setupVerification();
@@ -205,53 +210,37 @@ export const deleteVerificationDocument = async (userId: string, documentPath: s
   try {
     console.log('Deleting document for user:', userId);
     
-    // Check both possible bucket names
-    const bucketWithUnderscore = 'verification_documents';
-    const bucketWithHyphen = 'verification-documents';
+    // Check available buckets to determine which one to use
+    const { data: bucketsData, error: bucketsError } = await supabase.storage
+      .listBuckets();
     
-    // Try to delete from bucket with underscore first
-    let storageError = null;
-    try {
-      const { error } = await supabase.storage
-        .from(bucketWithUnderscore)
-        .remove([documentPath]);
-      
-      storageError = error;
-      if (!error) {
-        console.log(`Successfully deleted from ${bucketWithUnderscore}`);
-      } else {
-        console.log(`Error deleting from ${bucketWithUnderscore}:`, error.message);
-      }
-    } catch (err) {
-      console.log(`Exception deleting from ${bucketWithUnderscore}:`, err);
-      storageError = err;
+    if (bucketsError) {
+      console.error('Error listing buckets:', bucketsError);
     }
     
-    // If that failed, try bucket with hyphen
-    if (storageError) {
-      try {
-        const { error } = await supabase.storage
-          .from(bucketWithHyphen)
-          .remove([documentPath]);
-        
-        if (!error) {
-          console.log(`Successfully deleted from ${bucketWithHyphen}`);
-          storageError = null;
-        } else {
-          console.log(`Error deleting from ${bucketWithHyphen}:`, error.message);
-        }
-      } catch (err) {
-        console.log(`Exception deleting from ${bucketWithHyphen}:`, err);
-        // Keep original error if both delete attempts fail
-      }
-    }
+    // Determine which bucket exists
+    const bucketWithUnderscore = bucketsData?.find(b => b.name === 'verification_documents');
+    const bucketWithHyphen = bucketsData?.find(b => b.name === 'verification-documents');
+    
+    const bucketName = bucketWithUnderscore ? 'verification_documents' : 
+                      bucketWithHyphen ? 'verification-documents' : 'verification_documents';
+    
+    console.log(`Using bucket name for deletion: ${bucketName}`);
+    
+    // Try to delete the file
+    const { error: storageError } = await supabase.storage
+      .from(bucketName)
+      .remove([documentPath]);
     
     if (storageError) {
       console.error('Error deleting document from storage:', storageError);
-      throw storageError;
+      // We'll continue with deleting the database record even if storage deletion fails
+      console.log('Continuing with database record deletion despite storage error');
+    } else {
+      console.log('Successfully deleted document from storage');
     }
     
-    // Delete or update the verification record
+    // Delete the verification record
     const { error: dbError } = await supabase
       .from('freelancer_verification')
       .delete()
@@ -261,6 +250,8 @@ export const deleteVerificationDocument = async (userId: string, documentPath: s
       console.error('Error deleting verification record:', dbError);
       throw dbError;
     }
+    
+    console.log('Successfully deleted verification record from database');
     
     return { 
       success: true
