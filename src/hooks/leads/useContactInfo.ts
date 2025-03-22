@@ -46,18 +46,14 @@ export const useContactInfo = (projectId: string) => {
         console.error('Error fetching client profile:', clientProfileError);
       }
       
-      // Only fetch auth user data if profile is incomplete or missing
+      // Only fetch auth user data if profile is incomplete or missing contact_name
       let userData = null;
       let userError = null;
       
-      const profileHasData = clientProfile && (
-        clientProfile.contact_name || 
-        clientProfile.email || 
-        clientProfile.phone_number
-      );
+      const profileHasName = clientProfile && clientProfile.contact_name;
       
-      if (!profileHasData) {
-        console.log('Profile data incomplete, fetching auth user data');
+      if (!profileHasName) {
+        console.log('Profile missing contact_name, fetching auth user data');
         const userResponse = await supabase.functions.invoke('get-user-email', {
           body: { userId: project.user_id }
         });
@@ -91,14 +87,14 @@ export const useContactInfo = (projectId: string) => {
         user_metadata: userMetadata,
         // A profile is considered complete if we have at least name, email, and phone
         is_profile_complete: !!(
-          (clientProfile?.contact_name || userMetadata?.full_name) && 
+          (clientProfile?.contact_name) && 
           email && 
-          (clientProfile?.phone_number || userMetadata?.phone_number)
+          (clientProfile?.phone_number)
         )
       });
       
       // If client profile doesn't exist but we have data from auth, let's create/update the profile
-      if ((!clientProfile || !profileHasData) && userMetadata) {
+      if ((!clientProfile || !profileHasName) && userMetadata) {
         try {
           // Create a profile in the database using auth data
           console.log('Creating/updating client profile with auth data');
@@ -108,7 +104,7 @@ export const useContactInfo = (projectId: string) => {
               id: project.user_id,
               contact_name: userMetadata.full_name,
               email: userData?.email,
-              phone_number: userMetadata.phone_number,
+              phone_number: userMetadata.phone_number || userMetadata.phone,
               company_name: userMetadata.company_name,
               company_address: userMetadata.company_address,
               updated_at: new Date().toISOString()

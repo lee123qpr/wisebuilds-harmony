@@ -32,6 +32,11 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
     return digits;
   };
 
+  const formatWebsiteUrl = (website: string) => {
+    if (!website) return '';
+    return website.startsWith('http') ? website : `https://${website}`;
+  };
+
   const hasEssentialContactInfo = !!(clientInfo.contact_name || clientInfo.email || clientInfo.phone_number);
 
   if (!hasEssentialContactInfo) {
@@ -83,7 +88,7 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
           icon={<Globe className="h-4 w-4 text-green-700" />}
           label="Website"
           value={clientInfo.website}
-          link={clientInfo.website.startsWith('http') ? clientInfo.website : `https://${clientInfo.website}`}
+          link={formatWebsiteUrl(clientInfo.website)}
         />
       )}
       
