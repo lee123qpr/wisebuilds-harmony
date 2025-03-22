@@ -1,4 +1,3 @@
-
 import { format, formatDistanceToNow } from 'date-fns';
 
 // Format date string to readable format
@@ -24,8 +23,17 @@ export const formatDateAgo = (dateString: string | null) => {
 
 // Format role string to readable format
 export const formatRole = (role: string) => {
-  if (!role) return 'Not specified';
-  return role
+  if (!role || role === 'any' || role === 'Any') return 'Any';
+  
+  const roleMap: Record<string, string> = {
+    'quantity_surveyor': 'Quantity Surveyor',
+    'estimator': 'Estimator',
+    'planner': 'Planner',
+    'cad_engineer': 'CAD Engineer',
+    'architect': 'Architect'
+  };
+  
+  return roleMap[role] || role
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
