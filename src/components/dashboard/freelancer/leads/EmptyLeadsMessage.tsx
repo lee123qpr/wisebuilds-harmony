@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { Info } from 'lucide-react';
 import { useFreelancerDashboard } from '@/hooks/useFreelancerDashboard';
-import { formatBudget, formatRole } from '@/utils/projectFormatters';
+import { formatBudget, formatRole, formatDuration, formatWorkType } from '@/utils/projectFormatters';
 
 const EmptyLeadsMessage: React.FC = () => {
   const navigate = useNavigate();
@@ -14,23 +14,7 @@ const EmptyLeadsMessage: React.FC = () => {
   // Debug - let's check what lead settings we actually have
   console.log('EmptyLeadsMessage - current lead settings:', leadSettings);
 
-  // Format the duration for display
-  const formatDuration = (duration: string) => {
-    if (!duration) return 'Any';
-    
-    const durationMap: Record<string, string> = {
-      'less_than_1_week': 'Less than 1 week',
-      '1_week': '1 week',
-      '2_weeks': '2 weeks',
-      '3_weeks': '3 weeks',
-      '4_weeks': '4 weeks',
-      '6_weeks_plus': '6+ weeks'
-    };
-    
-    return durationMap[duration] || duration;
-  };
-
-  // Format hiring status for display
+  // Format the hiring status for display
   const formatHiringStatus = (status: string) => {
     if (!status) return 'Any';
     
@@ -67,7 +51,7 @@ const EmptyLeadsMessage: React.FC = () => {
           <ul className="list-disc pl-5 space-y-1">
             <li><span className="font-medium">Role:</span> {formatRole(leadSettings?.role || 'Not set')}</li>
             <li><span className="font-medium">Location:</span> {leadSettings?.location || 'Not set'}</li>
-            <li><span className="font-medium">Work Type:</span> {leadSettings?.work_type || 'Any'}</li>
+            <li><span className="font-medium">Work Type:</span> {formatWorkType(leadSettings?.work_type || 'Any')}</li>
             
             {/* Budget filter */}
             <li><span className="font-medium">Budget:</span> {leadSettings?.budget ? formatBudget(leadSettings.budget) : 'Any'}</li>

@@ -28,30 +28,86 @@ export const useProjectsWithFiltering = (useFiltering = true, customLeadSettings
     console.log('Project leads updated in useProjectsWithFiltering:', projectLeads);
     console.log('Number of leads received:', projectLeads.length);
     
-    if (useFiltering) {
-      // For My Leads tab with filtering enabled, ensure we only show active projects
-      // that are neither hired nor completed
-      const activeLeads = projectLeads.filter(project => {
-        const isActive = project.status === 'active';
-        const isAvailable = project.hiring_status === 'enquiring' || project.hiring_status === 'hiring';
-        const result = isActive && isAvailable;
-        
-        if (!result) {
-          console.log(`Filtering out project ${project.id}: status=${project.status}, hiring_status=${project.hiring_status}`);
-        }
-        
-        return result;
-      });
+    if (useFiltering && settingsToUse) {
+      // Apply additional filtering based on lead settings
+      const filterLeadsBySettings = (leads: ProjectLead[]) => {
+        return leads.filter(project => {
+          // First check if project is active and available for hiring
+          const isActive = project.status === 'active';
+          const isAvailable = project.hiring_status === 'enquiring' || project.hiring_status === 'hiring';
+          
+          if (!isActive || !isAvailable) {
+            console.log(`Filtering out project ${project.id}: status=${project.status}, hiring_status=${project.hiring_status}`);
+            return false;
+          }
+          
+          // Match by role - more flexible matching
+          const roleMatches = 
+            !settingsToUse.role || 
+            settingsToUse.role === 'any' || 
+            settingsToUse.role === 'Any' ||
+            project.role.toLowerCase().includes(settingsToUse.role.toLowerCase()) ||
+            settingsToUse.role.toLowerCase().includes(project.role.toLowerCase());
+          
+          // Match by location - more flexible matching
+          const locationMatches = 
+            !settingsToUse.location || 
+            settingsToUse.location === 'any' || 
+            settingsToUse.location === 'Any' || 
+            (project.location && settingsToUse.location && (
+              project.location.toLowerCase().includes(settingsToUse.location.toLowerCase().split(',')[0].trim()) || 
+              settingsToUse.location.toLowerCase().split(',')[0].trim().includes(project.location.toLowerCase())
+            ));
+          
+          // Match by work type
+          const workTypeMatches = 
+            !settingsToUse.work_type || 
+            settingsToUse.work_type === 'any' ||
+            settingsToUse.work_type === 'Any' ||
+            project.work_type === settingsToUse.work_type;
+          
+          // Match by insurance requirements
+          const insuranceMatches = 
+            !settingsToUse.requires_insurance || 
+            settingsToUse.requires_insurance === project.requires_insurance;
+          
+          // Match by site visit requirements
+          const siteVisitsMatches = 
+            !settingsToUse.requires_site_visits || 
+            settingsToUse.requires_site_visits === project.requires_site_visits;
+          
+          // Log the matching results for debugging
+          const result = roleMatches && locationMatches && workTypeMatches && 
+                         insuranceMatches && siteVisitsMatches;
+          
+          console.log(`Project ${project.id} matching:`, {
+            role: `${project.role} vs ${settingsToUse.role}`,
+            roleMatches,
+            location: `${project.location} vs ${settingsToUse.location}`,
+            locationMatches,
+            workType: `${project.work_type} vs ${settingsToUse.work_type}`,
+            workTypeMatches,
+            insurance: `${project.requires_insurance} vs ${settingsToUse.requires_insurance}`,
+            insuranceMatches,
+            siteVisits: `${project.requires_site_visits} vs ${settingsToUse.requires_site_visits}`,
+            siteVisitsMatches,
+            result
+          });
+          
+          return result;
+        });
+      };
       
-      console.log('Filtered leads for My Leads tab:', activeLeads.length);
-      setFilteredLeads(activeLeads);
+      const filteredResults = filterLeadsBySettings(projectLeads);
+      console.log('Filtered leads for My Leads tab:', filteredResults.length);
+      setFilteredLeads(filteredResults);
     } else {
       // For Available Projects tab, show all active projects regardless of hiring status
       const allActiveLeads = projectLeads.filter(project => project.status === 'active');
       console.log('All active leads for Available Projects tab:', allActiveLeads.length);
       setFilteredLeads(allActiveLeads);
     }
-  }, [projectLeads, useFiltering]);
+  }, [projectLeads, useFiltering, settingsToUse]);
   
   const refreshProjects = async () => {
     console.log('Refreshing projects...');

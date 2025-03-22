@@ -30,19 +30,19 @@ const LeadsTabContent: React.FC<LeadsTabContentProps> = ({
   useEffect(() => {
     console.log('Filtered projects in LeadsTabContent:', filteredProjects.length);
     console.log('Projects data:', filteredProjects);
+    
+    // Reset selected project when projects list changes
+    if (filteredProjects.length > 0) {
+      setSelectedProjectId(filteredProjects[0].id);
+    } else {
+      setSelectedProjectId(null);
+    }
   }, [filteredProjects]);
   
   // Find the selected project
   const selectedProject = selectedProjectId 
     ? filteredProjects.find(project => project.id === selectedProjectId)
     : filteredProjects.length > 0 ? filteredProjects[0] : null;
-  
-  // Set the first project as selected by default when projects load
-  useEffect(() => {
-    if (filteredProjects.length > 0 && !selectedProjectId) {
-      setSelectedProjectId(filteredProjects[0].id);
-    }
-  }, [filteredProjects, selectedProjectId]);
 
   // Handle refresh - improved to use the refreshProjects function
   const handleRefresh = async () => {
