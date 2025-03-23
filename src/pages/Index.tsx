@@ -5,6 +5,7 @@ import HeroSection from '@/components/home/HeroSection';
 import TrustedPartners from '@/components/home/TrustedPartners';
 import HowItWorks from '@/components/home/HowItWorks';
 import UserSegments from '@/components/home/UserSegments';
+import NewsletterSignup from '@/components/home/NewsletterSignup';
 import Testimonials from '@/components/home/Testimonials';
 import CtaSection from '@/components/home/CtaSection';
 
@@ -22,6 +23,9 @@ const Index = () => {
 
       {/* For Businesses & Freelancers */}
       <UserSegments />
+
+      {/* Newsletter Signup */}
+      <NewsletterSignup />
 
       {/* Testimonials */}
       <Testimonials />
