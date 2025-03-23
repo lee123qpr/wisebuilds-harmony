@@ -1,4 +1,14 @@
 
+import { supabase } from '@/integrations/supabase/client';
+import { uploadFile as uploadFileToStorage, removeFile as removeFileFromStorage, checkBucketAccess } from '@/utils/supabaseStorage';
+
+export enum StorageBucket {
+  AVATARS = 'freelancer-avatar',
+  PROJECTS = 'projects',
+  ATTACHMENTS = 'attachments',
+  VERIFICATION = 'verification'
+}
+
 /**
  * Gets the actual bucket name to use for avatars based on available buckets
  */
@@ -45,3 +55,8 @@ export const getActualAvatarBucket = async (): Promise<string> => {
     return StorageBucket.AVATARS; // Return default as fallback
   }
 };
+
+// Export the storage utility functions
+export const uploadFile = uploadFileToStorage;
+export const removeFile = removeFileFromStorage;
+export const checkBucketExists = checkBucketAccess;

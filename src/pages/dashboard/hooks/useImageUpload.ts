@@ -1,4 +1,36 @@
 
+import { useState, useCallback } from 'react';
+import { v4 as uuidv4 } from 'uuid';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
+import { StorageBucket, getActualAvatarBucket } from '@/utils/storage';
+
+interface UseImageUploadProps {
+  userId: string;
+  namePrefix?: string;
+}
+
+export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
+  const [imageUrl, setImageUrl] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [imageKey, setImageKey] = useState(Date.now().toString());
+  const [bucketAvailable, setBucketAvailable] = useState<boolean | null>(null);
+  const [actualBucketName, setActualBucketName] = useState<string | null>(null);
+  const { toast } = useToast();
+
+  // Check bucket on mount
+  useCallback(async () => {
+    try {
+      const bucketName = await getActualAvatarBucket();
+      setActualBucketName(bucketName);
+      setBucketAvailable(true);
+      console.log(`Using avatar bucket: ${bucketName}`);
+    } catch (error) {
+      console.error('Error checking avatar bucket:', error);
+      setBucketAvailable(false);
+    }
+  }, []);
+
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) {
@@ -89,3 +121,15 @@
       setUploadingImage(false);
     }
   }, [userId, namePrefix, toast, actualBucketName]);
+
+  return {
+    imageUrl,
+    uploadingImage,
+    imageKey,
+    handleImageUpload,
+    setImageUrl,
+    setUploadingImage,
+    bucketAvailable,
+    actualBucketName
+  };
+};
