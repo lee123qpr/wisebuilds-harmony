@@ -251,15 +251,24 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="Residential Construction">Residential Construction</SelectItem>
-                      <SelectItem value="Commercial Construction">Commercial Construction</SelectItem>
-                      <SelectItem value="Infrastructure">Infrastructure</SelectItem>
-                      <SelectItem value="Industrial Construction">Industrial Construction</SelectItem>
-                      <SelectItem value="Renovation">Renovation</SelectItem>
-                      <SelectItem value="Interior Design">Interior Design</SelectItem>
-                      <SelectItem value="Landscaping">Landscaping</SelectItem>
+                      <SelectItem value="Bricklaying & Masonry">Bricklaying & Masonry</SelectItem>
+                      <SelectItem value="Carpentry & Joinery">Carpentry & Joinery</SelectItem>
+                      <SelectItem value="Plastering & Drylining">Plastering & Drylining</SelectItem>
+                      <SelectItem value="Flooring">Flooring</SelectItem>
+                      <SelectItem value="Roofing">Roofing</SelectItem>
+                      <SelectItem value="Painting & Decorating">Painting & Decorating</SelectItem>
                       <SelectItem value="Electrical">Electrical</SelectItem>
-                      <SelectItem value="Plumbing">Plumbing</SelectItem>
+                      <SelectItem value="Plumbing & Heating">Plumbing & Heating</SelectItem>
+                      <SelectItem value="Heating, Ventilation & Air Conditioning">Heating, Ventilation & Air Conditioning</SelectItem>
+                      <SelectItem value="Glazing & Joinery">Glazing & Joinery</SelectItem>
+                      <SelectItem value="Concrete & Cement Work">Concrete & Cement Work</SelectItem>
+                      <SelectItem value="Metalwork & Welding">Metalwork & Welding</SelectItem>
+                      <SelectItem value="Groundworks & Civil Engineering">Groundworks & Civil Engineering</SelectItem>
+                      <SelectItem value="Scaffolding & Access Equipment">Scaffolding & Access Equipment</SelectItem>
+                      <SelectItem value="Landscaping & External Works">Landscaping & External Works</SelectItem>
+                      <SelectItem value="Specialist & Ancillary Trades">Specialist & Ancillary Trades</SelectItem>
+                      <SelectItem value="Design consultant">Design consultant</SelectItem>
+                      <SelectItem value="General builder">General builder</SelectItem>
                       <SelectItem value="Other">Other</SelectItem>
                     </SelectContent>
                   </Select>
