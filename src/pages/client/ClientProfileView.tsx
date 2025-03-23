@@ -25,14 +25,7 @@ const ClientProfileView = () => {
   }
 
   if (error || !clientProfile) {
-    return (
-      <MainLayout>
-        <div className="container max-w-4xl py-8">
-          <BackButton />
-          <ClientProfileNotFound />
-        </div>
-      </MainLayout>
-    );
+    return <ClientProfileNotFound />;
   }
 
   return (
