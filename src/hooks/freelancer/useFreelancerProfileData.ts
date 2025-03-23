@@ -51,8 +51,8 @@ export interface ProfileData {
   accreditations?: string[];
 }
 
-// Define response type to break circular reference
-interface FreelancerProfileDataResponse {
+// Define a simple response type without circular references
+interface ProfileResponse {
   data: ProfileData | null;
   error: Error | null;
 }
@@ -80,8 +80,8 @@ export const formatFreelancerProfileData = (data: any): ProfileData | null => {
     })) : []) : 
     [];
   
-  // Cast data to avoid deep type inference
-  const formattedData: ProfileData = {
+  // Return formatted data with explicit type
+  return {
     id: data.id || '',
     user_id: data.user_id || '',
     display_name: data.display_name || '',
@@ -113,43 +113,43 @@ export const formatFreelancerProfileData = (data: any): ProfileData | null => {
     experience: data.experience,
     accreditations: data.accreditations || []
   };
-  
-  return formattedData;
 };
 
 export const useFreelancerProfileData = (userId?: string) => {
   const { user } = useAuth();
   const profileId = userId || user?.id;
 
+  const fetchProfileData = async (): Promise<ProfileResponse> => {
+    try {
+      if (!profileId) {
+        return { data: null, error: new Error('No user ID provided') };
+      }
+
+      // Fetch freelancer profile data
+      const { data, error } = await supabase
+        .from('freelancer_profiles')
+        .select('*')
+        .eq('user_id', profileId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error fetching freelancer profile:', error);
+        throw error;
+      }
+
+      // Format the data
+      const formattedData = formatFreelancerProfileData(data);
+      return { data: formattedData, error: null };
+    } catch (error) {
+      console.error('Error in useFreelancerProfileData:', error);
+      toast.error('Failed to load freelancer profile data');
+      return { data: null, error: error as Error };
+    }
+  };
+
   const query = useQuery({
     queryKey: ['freelancerProfile', profileId],
-    queryFn: async (): Promise<FreelancerProfileDataResponse> => {
-      try {
-        if (!profileId) {
-          return { data: null, error: new Error('No user ID provided') };
-        }
-
-        // Fetch freelancer profile data
-        const { data, error } = await supabase
-          .from('freelancer_profiles')
-          .select('*')
-          .eq('user_id', profileId)
-          .maybeSingle();
-
-        if (error) {
-          console.error('Error fetching freelancer profile:', error);
-          throw error;
-        }
-
-        // Format the data with explicit typing
-        const formattedData = formatFreelancerProfileData(data);
-        return { data: formattedData, error: null };
-      } catch (error) {
-        console.error('Error in useFreelancerProfileData:', error);
-        toast.error('Failed to load freelancer profile data');
-        return { data: null, error: error as Error };
-      }
-    },
+    queryFn: fetchProfileData,
     enabled: !!profileId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
