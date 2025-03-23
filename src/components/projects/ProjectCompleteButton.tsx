@@ -1,13 +1,13 @@
 
-import React, { useState } from 'react';
-import { useProjectCompletion } from '@/hooks/projects/useProjectCompletion';
-import { useAuth } from '@/context/AuthContext';
-import { toast } from '@/hooks/toast';
+import React from 'react';
+import { useCompletionStatus } from './completion/hooks/useCompletionStatus';
+import { useCompletionActions } from './completion/hooks/useCompletionActions';
 import ProjectCompletionDialog from './completion/ProjectCompletionDialog';
 import IncompleteProjectDialog from './completion/IncompleteProjectDialog';
 import CompletionStatusIndicator from './completion/CompletionStatusIndicator';
 import CompleteProjectButton from './completion/CompleteProjectButton';
 import CompletionLoadingIndicator from './completion/CompletionLoadingIndicator';
+import DisputeButton from './completion/DisputeButton';
 
 interface ProjectCompleteButtonProps {
   quoteId: string;
@@ -22,98 +22,26 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   projectTitle = 'this project',
   onStatusUpdate
 }) => {
-  const { user } = useAuth();
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [incompleteDialogOpen, setIncompleteDialogOpen] = useState(false);
-  const [completionStatus, setCompletionStatus] = useState<{
-    freelancer_completed: boolean;
-    client_completed: boolean;
-    completed_at: string | null;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const {
+    isLoading,
+    completionStatus,
+    isFullyCompleted,
+    userCompleted,
+    otherPartyCompleted,
+    otherPartyLabel,
+    loadCompletionStatus
+  } = useCompletionStatus(quoteId, onStatusUpdate);
   
-  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
-  
-  const { 
-    markProjectCompleted, 
-    isMarkingComplete, 
-    markProjectIncomplete,
-    isMarkingIncomplete,
-    checkCompletionStatus 
-  } = useProjectCompletion({ quoteId, projectId });
-  
-  const loadCompletionStatus = async () => {
-    setIsLoading(true);
-    try {
-      console.log("Checking completion status for quoteId:", quoteId);
-      const status = await checkCompletionStatus(quoteId);
-      console.log("Loaded completion status:", status);
-      setCompletionStatus(status);
-    } catch (error) {
-      console.error("Error loading completion status:", error);
-      toast({
-        title: "Error loading status",
-        description: "Could not load project completion status",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-  
-  React.useEffect(() => {
-    if (quoteId) {
-      console.log("Loading completion status for quoteId:", quoteId);
-      loadCompletionStatus();
-    }
-  }, [quoteId]);
-  
-  const handleComplete = async () => {
-    try {
-      console.log("Marking project as complete for quoteId:", quoteId, "projectId:", projectId);
-      await markProjectCompleted();
-      setDialogOpen(false);
-      
-      // Add delay before refreshing status to ensure database has updated
-      // Using a longer delay to ensure data is properly updated
-      setTimeout(() => {
-        console.log("Refreshing status after completion...");
-        loadCompletionStatus();
-        if (onStatusUpdate) {
-          onStatusUpdate();
-        }
-      }, 1500);
-    } catch (error) {
-      console.error('Error completing project:', error);
-      toast({
-        title: 'Failed to complete project',
-        description: error instanceof Error ? error.message : 'Please try again',
-        variant: 'destructive'
-      });
-    }
-  };
-  
-  const handleMarkIncomplete = async (reason: string) => {
-    try {
-      await markProjectIncomplete({ reason });
-      setIncompleteDialogOpen(false);
-      
-      // Refresh after status update
-      setTimeout(() => {
-        loadCompletionStatus();
-        if (onStatusUpdate) {
-          onStatusUpdate();
-        }
-      }, 1500);
-    } catch (error) {
-      console.error('Error marking project as incomplete:', error);
-      toast({
-        title: 'Failed to mark project as incomplete',
-        description: error instanceof Error ? error.message : 'Please try again',
-        variant: 'destructive'
-      });
-    }
-  };
+  const {
+    dialogOpen,
+    setDialogOpen,
+    incompleteDialogOpen,
+    setIncompleteDialogOpen,
+    handleComplete,
+    handleMarkIncomplete,
+    isMarkingComplete,
+    isMarkingIncomplete
+  } = useCompletionActions(quoteId, projectId, loadCompletionStatus, onStatusUpdate);
   
   if (isLoading) {
     return <CompletionLoadingIndicator />;
@@ -122,23 +50,6 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
   if (!completionStatus) {
     return null;
   }
-  
-  // Check if project is fully completed
-  const isFullyCompleted = completionStatus.completed_at && 
-    completionStatus.freelancer_completed && 
-    completionStatus.client_completed;
-  
-  // Check if current user has marked as complete
-  const userCompleted = isFreelancer 
-    ? completionStatus.freelancer_completed 
-    : completionStatus.client_completed;
-  
-  // Check if the other party has marked as complete
-  const otherPartyCompleted = isFreelancer 
-    ? completionStatus.client_completed 
-    : completionStatus.freelancer_completed;
-  
-  const otherPartyLabel = isFreelancer ? 'client' : 'freelancer';
   
   // If project is fully completed, show completion badge
   if (isFullyCompleted) {
@@ -163,13 +74,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
           otherPartyLabel={otherPartyLabel}
         />
         
-        {/* Add option to mark as incomplete if the user wants to revert their completion */}
-        <button
-          onClick={() => setIncompleteDialogOpen(true)}
-          className="text-red-600 text-sm underline hover:text-red-800"
-        >
-          Dispute
-        </button>
+        <DisputeButton onClick={() => setIncompleteDialogOpen(true)} />
         
         <IncompleteProjectDialog
           open={incompleteDialogOpen}
@@ -191,12 +96,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
           otherPartyCompleted={otherPartyCompleted}
         />
         
-        <button
-          onClick={() => setIncompleteDialogOpen(true)}
-          className="text-red-600 text-sm underline hover:text-red-800"
-        >
-          Dispute Completion
-        </button>
+        <DisputeButton onClick={() => setIncompleteDialogOpen(true)} />
         
         <ProjectCompletionDialog
           open={dialogOpen}
