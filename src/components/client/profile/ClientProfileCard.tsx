@@ -2,7 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Building, Check, Mail } from 'lucide-react';
+import { Calendar, MapPin, Building, Check, Mail, Briefcase } from 'lucide-react';
 import { format } from 'date-fns';
 import { ClientProfileData } from '@/pages/client/types';
 import RatingStars from '@/components/common/RatingStars';
@@ -82,7 +82,12 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
                 </div>
               )}
 
-              {/* Removed website link and Globe icon as requested */}
+              {clientProfile.company_specialism && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Briefcase className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                  <span>Specialism: {clientProfile.company_specialism}</span>
+                </div>
+              )}
             </div>
           </div>
           
