@@ -32,8 +32,8 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                         ? quote.project.title 
                         : 'Untitled Project';
   
-  // Get the role from the project data and format it
-  const role = quote.project?.role || 'Not specified';
+  // Get the role from the project data, normalize it, and format it properly
+  const role = quote.project?.role || '';
   const roleFormatted = formatRole(role);
   
   const formattedDate = quote.created_at 

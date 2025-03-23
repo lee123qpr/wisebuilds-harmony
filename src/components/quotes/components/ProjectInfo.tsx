@@ -26,10 +26,10 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
                        ? clientName 
                        : 'Client';
   
-  // Use formatRole from our utility to properly format the role
-  const formattedRole = projectRole 
-    ? formatRole(projectRole) 
-    : 'Not specified';
+  // Enhanced role formatting - explicitly check for falsy values and display clearer message
+  const formattedRole = projectRole && projectRole !== 'undefined' && projectRole !== 'null'
+    ? formatRole(projectRole)
+    : 'Role not specified';
   
   return (
     <div className="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">

@@ -24,17 +24,36 @@ export const formatDateAgo = (dateString: string | null) => {
 
 // Format role string to readable format
 export const formatRole = (role: string) => {
-  if (!role || role === 'any' || role === 'Any') return 'Any';
+  if (!role || role === 'null' || role === 'undefined') return 'Not specified';
+  if (role === 'any' || role === 'Any') return 'Any';
+  
+  // Handle case where role might come in different formats
+  const normalizedRole = role.toLowerCase().trim();
   
   const roleMap: Record<string, string> = {
     'quantity_surveyor': 'Quantity Surveyor',
     'estimator': 'Estimator',
     'planner': 'Planner',
     'cad_engineer': 'CAD Engineer',
-    'architect': 'Architect'
+    'architect': 'Architect',
+    'quantitysurveyor': 'Quantity Surveyor',
+    'cadtechnician': 'CAD Technician',
+    'cadtechnician': 'CAD Technician',
+    'cadengineer': 'CAD Engineer'
   };
   
-  return roleMap[role] || role
+  // First check exact match in the roleMap
+  if (roleMap[normalizedRole]) {
+    return roleMap[normalizedRole];
+  }
+  
+  // Check for simplified versions (without underscores)
+  if (roleMap[normalizedRole.replace(/_/g, '')]) {
+    return roleMap[normalizedRole.replace(/_/g, '')];
+  }
+  
+  // Default formatting for other roles
+  return role
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');

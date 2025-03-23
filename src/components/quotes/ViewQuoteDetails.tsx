@@ -16,11 +16,13 @@ import { useContactInfo } from '@/hooks/leads/useContactInfo';
 interface ViewQuoteDetailsProps {
   projectId: string;
   projectTitle: string;
+  projectRole?: string; // Make sure we accept projectRole as a prop
 }
 
 const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({ 
   projectId, 
-  projectTitle 
+  projectTitle,
+  projectRole // Accept projectRole
 }) => {
   const { 
     data: quote, 
@@ -57,6 +59,9 @@ const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({
 
   const createdDate = quote.created_at ? format(new Date(quote.created_at), 'MMMM d, yyyy h:mm a') : 'Unknown date';
   
+  // Try to get role from quote.project if available and projectRole prop was not provided
+  const roleToUse = projectRole || (quote.project?.role || null);
+  
   return (
     <Card className="border-t-4 border-t-blue-500">
       <CardContent className="p-4">
@@ -66,6 +71,7 @@ const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({
             clientName={clientName}
             quoteSubmitted={true}
             submissionDate={createdDate}
+            projectRole={roleToUse} // Pass the role to ProjectInfo
           />
           
           <div className="flex items-center justify-between">

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card } from '@/components/ui/card';
 import { Project } from './useProjects';
@@ -32,8 +31,8 @@ const ProjectCardHorizontal: React.FC<ProjectCardHorizontalProps> = ({ project }
   // Number of quotes - always use the live data from the quotes hook when available
   const quoteCount = !isLoadingQuotes && quotes ? quotes.length : (project.quote_count || 0);
   
-  // Format the role for display
-  const roleFormatted = formatRole(project.role);
+  // Format the role properly using our utility function
+  const roleFormatted = formatRole(project.role || ''); 
   
   const handleClick = () => {
     navigate(`/project/${project.id}`, { 
