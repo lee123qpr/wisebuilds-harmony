@@ -11,7 +11,7 @@ export const miscRoutes: RouteObject[] = [
     element: <FreelancerProfileView />
   },
   {
-    path: '/client-profile/:clientId',
+    path: '/client/:clientId',
     element: <ClientProfileView />
   },
   {

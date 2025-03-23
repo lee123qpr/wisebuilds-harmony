@@ -22,7 +22,7 @@ const ContactInfoActions: React.FC<ContactInfoActionsProps> = ({
   };
 
   const handleViewProfile = () => {
-    navigate(`/client-profile/${clientId}`);
+    navigate(`/client/${clientId}`);
   };
 
   return (
