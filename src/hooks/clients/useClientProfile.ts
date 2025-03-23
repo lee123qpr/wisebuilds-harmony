@@ -9,16 +9,30 @@ export const useClientProfile = (clientId: string | undefined) => {
     queryFn: async () => {
       if (!clientId) throw new Error('No client ID provided');
       
+      console.log('Fetching client profile with ID:', clientId);
+      
       const { data, error } = await supabase
         .from('client_profiles')
         .select('*')
         .eq('id', clientId)
         .maybeSingle();
         
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching client profile:', error);
+        throw error;
+      }
+      
+      console.log('Client profile data retrieved:', data);
+      
+      if (!data) {
+        console.log('No client profile found with ID:', clientId);
+        throw new Error('Client profile not found');
+      }
+      
       return data as ClientProfileData;
     },
-    enabled: !!clientId
+    enabled: !!clientId,
+    retry: 1
   });
 };
 

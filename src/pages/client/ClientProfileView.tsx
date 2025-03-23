@@ -13,7 +13,9 @@ import { useClientProfile, formatProfileDate } from '@/hooks/clients/useClientPr
 
 const ClientProfileView = () => {
   const { clientId } = useParams<{ clientId: string }>();
-  const { data: clientProfile, isLoading, error } = useClientProfile(clientId);
+  const { data: clientProfile, isLoading, error, isError } = useClientProfile(clientId);
+
+  console.log('ClientProfileView rendering with:', { clientId, isLoading, error, hasData: !!clientProfile });
 
   if (isLoading) {
     return (
@@ -26,7 +28,8 @@ const ClientProfileView = () => {
     );
   }
 
-  if (error || !clientProfile) {
+  if (isError || !clientProfile) {
+    console.error('Error loading client profile:', error);
     return <ClientProfileNotFound />;
   }
 
