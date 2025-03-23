@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FreelancerProfile } from '@/types/applications';
-import { Clock, Calendar, DollarSign, BriefcaseBusiness } from 'lucide-react';
+import { Clock, Calendar, BriefcaseBusiness, PoundSterling } from 'lucide-react';
 
 interface ProfessionalDetailsSectionProps {
   profile: FreelancerProfile;
@@ -25,7 +25,7 @@ const ProfessionalDetailsSection: React.FC<ProfessionalDetailsSectionProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
         {profile.hourly_rate && (
           <div className="bg-muted/50 rounded-md p-3 flex items-start gap-3">
-            <DollarSign className="h-5 w-5 mt-0.5 text-primary/80" />
+            <PoundSterling className="h-5 w-5 mt-0.5 text-primary/80" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">Hourly Rate</p>
               <p className="font-medium text-foreground">£{profile.hourly_rate}</p>
@@ -35,7 +35,7 @@ const ProfessionalDetailsSection: React.FC<ProfessionalDetailsSectionProps> = ({
         
         {profile.day_rate && (
           <div className="bg-muted/50 rounded-md p-3 flex items-start gap-3">
-            <DollarSign className="h-5 w-5 mt-0.5 text-primary/80" />
+            <PoundSterling className="h-5 w-5 mt-0.5 text-primary/80" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">Day Rate</p>
               <p className="font-medium text-foreground">£{profile.day_rate}</p>
