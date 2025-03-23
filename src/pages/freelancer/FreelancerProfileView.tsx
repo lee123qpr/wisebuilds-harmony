@@ -10,9 +10,15 @@ import MainLayout from '@/components/layout/MainLayout';
 import BackButton from '@/components/common/BackButton';
 import { useLocation } from 'react-router-dom';
 
-const FreelancerProfileView: React.FC = () => {
-  const { freelancerId } = useParams<{ freelancerId: string }>();
-  const { profile, isLoading } = useFreelancerProfileData();
+interface FreelancerProfileViewProps {
+  freelancerId?: string;
+}
+
+const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelancerId: propFreelancerId }) => {
+  const { freelancerId: paramFreelancerId } = useParams<{ freelancerId: string }>();
+  const effectiveFreelancerId = propFreelancerId || paramFreelancerId;
+  
+  const { profile, isLoading } = useFreelancerProfileData(effectiveFreelancerId);
   const location = useLocation();
   
   // Check if the user came from a project applications page
@@ -25,6 +31,9 @@ const FreelancerProfileView: React.FC = () => {
     ? `/project/${projectId}/applications`
     : undefined; // Will default to history.back() in the BackButton component
 
+  // Don't show layout elements if being rendered in a test environment
+  const isTestEnvironment = !!propFreelancerId;
+
   if (isLoading) {
     return <FreelancerProfileLoading />;
   }
@@ -33,17 +42,29 @@ const FreelancerProfileView: React.FC = () => {
     return <FreelancerProfileNotFound />;
   }
 
-  return (
-    <MainLayout>
-      <div className="container max-w-5xl px-4 py-8 mx-auto">
+  const content = (
+    <>
+      {!isTestEnvironment && (
         <div className="mb-4">
           <BackButton 
             to={backDestination}
             label="Back to Applications" 
           />
         </div>
-        <FreelancerProfileHeader profile={profile} />
-        <FreelancerProfileTabs profile={profile} />
+      )}
+      <FreelancerProfileHeader profile={profile} />
+      <FreelancerProfileTabs profile={profile} />
+    </>
+  );
+
+  if (isTestEnvironment) {
+    return <div className="max-w-5xl mx-auto">{content}</div>;
+  }
+
+  return (
+    <MainLayout>
+      <div className="container max-w-5xl px-4 py-8 mx-auto">
+        {content}
       </div>
     </MainLayout>
   );

@@ -2,86 +2,73 @@
 import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
+import { FreelancerProfile } from '@/types/applications';
+import { toast } from '@/hooks/toast';
 
-export const useFreelancerProfileData = () => {
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [isVerified, setIsVerified] = useState(false);
-  const { freelancerId } = useParams();
+export const useFreelancerProfileData = (freelancerIdParam?: string) => {
+  const { freelancerId: urlFreelancerId } = useParams<{ freelancerId: string }>();
+  const effectiveFreelancerId = freelancerIdParam || urlFreelancerId;
+  
+  const [profile, setProfile] = useState<FreelancerProfile | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchFreelancerProfile = async () => {
+      if (!effectiveFreelancerId) {
+        setIsLoading(false);
+        return;
+      }
+
       try {
-        setLoading(true);
+        setIsLoading(true);
         
         // Fetch the freelancer profile data
-        const { data: profileData, error: profileError } = await supabase
+        const { data, error } = await supabase
           .from('freelancer_profiles')
           .select('*')
-          .eq('id', freelancerId)
-          .maybeSingle();
-        
-        if (profileError) throw profileError;
-        
-        // Check if the freelancer is verified
-        const { data: isVerifiedData, error: verificationError } = await supabase
-          .rpc('is_user_verified', { check_user_id: freelancerId });
-        
-        if (verificationError) throw verificationError;
-        
-        // Get jobs count directly from the profile data first
-        let jobsCount = profileData?.jobs_completed || 0;
-        
-        // Try to get a more accurate count from completed quotes if available
-        try {
-          // Count completed jobs where the freelancer participated
-          const { count, error: countError } = await supabase
-            .from('quotes')
-            .select('*', { count: 'exact', head: true })
-            .eq('freelancer_id', freelancerId)
-            .eq('freelancer_completed', true)
-            .eq('client_completed', true)
-            .not('completed_at', 'is', null);
-            
-          if (!countError && count !== null) {
-            // If we got a valid count, use it
-            jobsCount = count;
-            
-            // Update the profile data object with this count
-            if (profileData) {
-              profileData.jobs_completed = count;
+          .eq('id', effectiveFreelancerId)
+          .single();
+          
+        if (error) {
+          throw error;
+        }
+
+        // If we have profile data, fetch reviews
+        if (data) {
+          try {
+            const { data: reviewsData, error: reviewsError } = await supabase
+              .from('client_reviews')
+              .select('rating')
+              .eq('freelancer_id', effectiveFreelancerId);
+              
+            if (!reviewsError && reviewsData && reviewsData.length > 0) {
+              // Calculate average rating
+              const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
+              data.rating = parseFloat((totalRating / reviewsData.length).toFixed(1));
+              data.reviews_count = reviewsData.length;
             }
+          } catch (reviewsError) {
+            console.error('Error fetching reviews:', reviewsError);
+            // Continue with profile data even if reviews fetch fails
           }
-        } catch (countErr) {
-          console.error('Error counting completed jobs:', countErr);
         }
         
-        setProfileData(profileData);
-        setIsVerified(isVerifiedData || false);
-        setError(null);
-        
-        console.log('Loaded freelancer profile data:', profileData);
-        console.log('Jobs completed count:', jobsCount);
-      } catch (err) {
-        console.error('Error fetching freelancer data:', err);
-        setError(err);
-        setProfileData(null);
+        setProfile(data);
+      } catch (error) {
+        console.error('Error fetching freelancer profile:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load freelancer profile",
+          variant: "destructive"
+        });
+        setProfile(null);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
-    if (freelancerId) {
-      fetchFreelancerProfile();
-    }
-  }, [freelancerId]);
+    fetchFreelancerProfile();
+  }, [effectiveFreelancerId]);
 
-  // Make the returned object's property names match what's expected
-  return { 
-    profile: profileData,
-    isLoading: loading, 
-    error, 
-    isVerified 
-  };
+  return { profile, isLoading };
 };
