@@ -5,8 +5,10 @@ import CookieConsent from './components/common/CookieConsent';
 
 const App = () => (
   <AppProviders>
-    <AppRouter />
-    <CookieConsent />
+    <div className="min-h-screen flex flex-col">
+      <AppRouter />
+      <CookieConsent />
+    </div>
   </AppProviders>
 );
 
