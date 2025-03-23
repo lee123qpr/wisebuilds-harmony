@@ -2,7 +2,6 @@
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
-import { uploadFile, checkBucketExists, getActualAvatarBucket } from '@/utils/storage';
 import { supabase } from '@/integrations/supabase/client';
 import { getAvatarBucketName } from '@/hooks/verification/services/storage-utils';
 
