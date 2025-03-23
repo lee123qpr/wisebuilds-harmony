@@ -108,7 +108,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
             
             <p className="text-muted-foreground mb-2">{profession}</p>
             
-            {/* Rating stars */}
+            {/* Rating stars - Make sure this is properly displayed */}
             {(rating !== undefined && rating !== null) && (
               <div className="mb-2">
                 <ProfileRatingStars 
@@ -153,6 +153,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
                 <span>{jobsCompleted} {jobsCompleted === 1 ? 'job' : 'jobs'} completed</span>
               </div>
               
+              {/* Make sure location is properly displayed */}
               {location && (
                 <div className="flex items-center text-sm text-muted-foreground">
                   <MapPin className="mr-1.5 h-4 w-4 flex-shrink-0" />
