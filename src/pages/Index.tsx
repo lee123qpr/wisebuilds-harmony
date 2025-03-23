@@ -1,9 +1,34 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import MainLayout from '@/components/layout/MainLayout';
+
+const RoleWordRotator = () => {
+  const roles = [
+    "Architects", 
+    "Engineers", 
+    "Surveyors", 
+    "Project Managers", 
+    "Contractors", 
+    "Specialists"
+  ];
+  
+  const [currentIndex, setCurrentIndex] = useState(0);
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex(prevIndex => (prevIndex + 1) % roles.length);
+    }, 2000);
+    
+    return () => clearInterval(interval);
+  }, []);
+  
+  return (
+    <span className="text-logo-dark-green font-bold">{roles[currentIndex]}</span>
+  );
+};
 
 const Index = () => {
   return (
@@ -13,11 +38,11 @@ const Index = () => {
         <div className="container px-4 mx-auto">
           <div className="flex flex-col md:flex-row items-center">
             <div className="md:w-1/2 mb-8 md:mb-0">
-              <h1 className="font-heading text-4xl md:text-5xl font-bold text-bw-dark mb-4">
-                Connect with Construction Professionals Across the UK
+              <h1 className="font-heading text-4xl md:text-5xl font-bold text-bw-dark mb-4 leading-tight">
+                Connecting Construction Businesses & Freelance <RoleWordRotator />
               </h1>
               <p className="text-lg md:text-xl text-bw-gray-medium mb-8">
-                BuildWise UK helps construction businesses find qualified freelancers and allows professionals to discover new projects.
+                Buildwise UK connects you with verified construction professionals for all your project needs. Unleash the power of outsourcing tasks.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Link to="/auth/signup/business">
