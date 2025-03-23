@@ -3,7 +3,6 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
-import { FreelancerProfile } from '@/types/applications';
 
 // This interface represents the data structure from the database
 export interface ProfileData {
@@ -156,9 +155,9 @@ export const useFreelancerProfileData = (userId?: string) => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Return with explicit type annotations to avoid TypeScript depth issues
+  // Return with explicit type annotations
   return {
-    profile: query.data?.data as FreelancerProfile | null,
+    profile: query.data?.data || null,
     isLoading: query.isLoading,
     error: query.error || query.data?.error,
     ...query

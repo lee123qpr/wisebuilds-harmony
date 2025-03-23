@@ -64,18 +64,6 @@ const EmptyLeadsMessage: React.FC = () => {
             <li><span className="font-medium">Hiring Status:</span> {formatFilterValue(leadSettings?.hiring_status, formatHiringStatus)}</li>
             <li><span className="font-medium">Insurance Required:</span> {leadSettings?.requires_insurance ? 'Yes' : 'Any'}</li>
             <li><span className="font-medium">Site Visits Required:</span> {leadSettings?.requires_site_visits ? 'Yes' : 'Any'}</li>
-            <li>
-              <span className="font-medium">Keywords:</span> {
-                !leadSettings?.keywords || 
-                (typeof leadSettings.keywords === 'string' 
-                  ? leadSettings.keywords.length === 0 
-                  : leadSettings.keywords.length === 0) 
-                  ? 'None' 
-                  : (typeof leadSettings.keywords === 'string' 
-                      ? leadSettings.keywords 
-                      : leadSettings.keywords.join(', '))
-              }
-            </li>
           </ul>
         </div>
         

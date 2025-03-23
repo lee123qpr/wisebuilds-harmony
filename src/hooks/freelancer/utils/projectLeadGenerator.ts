@@ -3,13 +3,6 @@ import { LeadSettings } from '../types';
 import { ProjectLead } from '@/types/projects';
 
 export const generateProjectLeads = (settings: LeadSettings): ProjectLead[] => {
-  // Helper function to handle keywords that can be string or string[]
-  const getKeywordsArray = (keywords?: string[] | string): string[] => {
-    if (!keywords) return ['Professional', 'Experienced'];
-    if (typeof keywords === 'string') return [keywords];
-    return keywords;
-  };
-
   return [
     {
       id: '1',
@@ -20,7 +13,7 @@ export const generateProjectLeads = (settings: LeadSettings): ProjectLead[] => {
       created_at: new Date().toISOString(),
       location: settings.location,
       work_type: settings.work_type || 'on_site',
-      tags: getKeywordsArray(settings.keywords),
+      tags: ['Professional', 'Experienced'],
       duration: '2_weeks',
       hiring_status: 'active',
       requires_equipment: false,
