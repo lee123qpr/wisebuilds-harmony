@@ -17,6 +17,39 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminDisputeDetails from './components/disputes/AdminDisputeDetails';
 
+// Define a type for our dispute data
+interface DisputeData {
+  id: string;
+  created_at: string;
+  project_id: string;
+  quote_id: string;
+  user_id: string;
+  reason: string;
+  at_fault_statement: string;
+  evidence_files?: any[];
+  submission_deadline: string;
+  admin_decision_deadline: string;
+  admin_decision?: string | null;
+  admin_notes?: string | null;
+  admin_decision_date?: string | null;
+  reviewed_by?: string | null;
+  projects?: {
+    title: string;
+    status: string;
+  };
+  quotes?: {
+    status: string;
+  };
+  freelancer?: {
+    first_name: string;
+    last_name: string;
+  };
+  client?: {
+    contact_name: string;
+    company_name: string;
+  };
+}
+
 const DisputesTab: React.FC = () => {
   const [selectedDisputeId, setSelectedDisputeId] = React.useState<string | null>(null);
   const [detailsDialogOpen, setDetailsDialogOpen] = React.useState(false);
@@ -28,10 +61,10 @@ const DisputesTab: React.FC = () => {
         .from('project_disputes')
         .select(`
           *,
-          quotes (*),
+          quotes (status),
           projects (title, status),
-          freelancer:freelancer_id(first_name, last_name),
-          client:client_id(contact_name, company_name)
+          freelancer:quotes(freelancer_id(first_name, last_name)),
+          client:projects(user_id(contact_name, company_name))
         `)
         .order('created_at', { ascending: false });
       
@@ -50,7 +83,7 @@ const DisputesTab: React.FC = () => {
     setDetailsDialogOpen(false);
   };
   
-  const getStatusBadge = (dispute: any) => {
+  const getStatusBadge = (dispute: DisputeData) => {
     const now = new Date();
     const isSubmissionPeriod = new Date(dispute.submission_deadline) > now;
     const isDecisionPeriod = !isSubmissionPeriod && new Date(dispute.admin_decision_deadline) > now;
@@ -91,12 +124,12 @@ const DisputesTab: React.FC = () => {
     );
   };
   
-  const renderTimeRemaining = (dispute: any) => {
+  const renderTimeRemaining = (dispute: DisputeData) => {
     const now = new Date();
     const submissionDeadline = new Date(dispute.submission_deadline);
     const decisionDeadline = new Date(dispute.admin_decision_deadline);
     
-    if (dispute.admin_decision !== null) {
+    if (dispute.admin_decision !== null && dispute.admin_decision_date) {
       return <p className="text-sm text-gray-500">Decision made on {format(new Date(dispute.admin_decision_date), 'MMM d, yyyy')}</p>;
     }
     
@@ -148,7 +181,7 @@ const DisputesTab: React.FC = () => {
             </div>
           ) : (
             <div className="grid gap-4 md:grid-cols-2">
-              {disputes?.map((dispute: any) => (
+              {disputes?.map((dispute: DisputeData) => (
                 <Card key={dispute.id} className="border-l-4 border-l-amber-500">
                   <CardHeader className="pb-2">
                     <div className="flex justify-between">
@@ -202,15 +235,15 @@ const DisputesTab: React.FC = () => {
         </TabsContent>
         
         <TabsContent value="awaiting-evidence" className="space-y-4 mt-4">
-          {/* Similar structure as "all" but filtered */}
+          {/* Filter for evidence collection period disputes here */}
         </TabsContent>
         
         <TabsContent value="awaiting-decision" className="space-y-4 mt-4">
-          {/* Similar structure as "all" but filtered */}
+          {/* Filter for awaiting decision disputes here */}
         </TabsContent>
         
         <TabsContent value="resolved" className="space-y-4 mt-4">
-          {/* Similar structure as "all" but filtered */}
+          {/* Filter for resolved disputes here */}
         </TabsContent>
       </Tabs>
       

@@ -36,6 +36,45 @@ interface AdminDisputeDetailsProps {
   onDisputeResolved: () => void;
 }
 
+// Define the dispute data type
+interface DisputeData {
+  id: string;
+  created_at: string;
+  project_id: string;
+  quote_id: string;
+  user_id: string;
+  reason: string;
+  at_fault_statement: string;
+  evidence_files?: any[];
+  freelancer_evidence?: any[];
+  client_evidence?: any[];
+  submission_deadline: string;
+  admin_decision_deadline: string;
+  admin_decision?: string | null;
+  admin_notes?: string | null;
+  admin_decision_date?: string | null;
+  reviewed_by?: string | null;
+  projects?: {
+    title: string;
+    status: string;
+  };
+  quotes?: {
+    status: string;
+  };
+  freelancer?: {
+    id: string;
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  client?: {
+    id: string;
+    contact_name: string;
+    company_name: string;
+    email: string;
+  };
+}
+
 type Decision = 'client_favor' | 'freelancer_favor' | 'partial' | 'no_fault';
 
 const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
@@ -56,16 +95,20 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
         .from('project_disputes')
         .select(`
           *,
-          quotes (*),
-          projects (title, status),
-          freelancer:freelancer_id(id, first_name, last_name, email),
-          client:client_id(id, contact_name, company_name, email)
+          quotes (id, status),
+          projects (id, title, status),
+          freelancer:quotes!inner(freelancer_id(id, first_name, last_name, email)),
+          client:projects!inner(user_id(id, contact_name, company_name, email))
         `)
         .eq('id', disputeId)
         .single();
       
-      if (error) throw error;
-      return data;
+      if (error) {
+        console.error('Error fetching dispute details:', error);
+        throw error;
+      }
+      
+      return data as DisputeData;
     },
     enabled: !!disputeId && open
   });
@@ -102,13 +145,15 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
         newQuoteStatus = 'no_fault';
       }
       
-      const { error: quoteError } = await supabase
-        .from('quotes')
-        .update({ status: newQuoteStatus })
-        .eq('id', dispute?.quotes?.id);
-      
-      if (quoteError) {
-        console.error('Error updating quote status:', quoteError);
+      if (dispute?.quotes?.id) {
+        const { error: quoteError } = await supabase
+          .from('quotes')
+          .update({ status: newQuoteStatus })
+          .eq('id', dispute.quotes.id);
+        
+        if (quoteError) {
+          console.error('Error updating quote status:', quoteError);
+        }
       }
       
       toast({
@@ -186,8 +231,12 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-medium">{dispute.freelancer?.first_name} {dispute.freelancer?.last_name}</p>
-                <p className="text-sm text-gray-500">{dispute.freelancer?.email}</p>
+                {dispute.freelancer && (
+                  <>
+                    <p className="font-medium">{dispute.freelancer.first_name} {dispute.freelancer.last_name}</p>
+                    <p className="text-sm text-gray-500">{dispute.freelancer.email}</p>
+                  </>
+                )}
               </CardContent>
             </Card>
             
@@ -199,9 +248,13 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="font-medium">{dispute.client?.company_name || 'N/A'}</p>
-                <p className="text-sm">{dispute.client?.contact_name}</p>
-                <p className="text-sm text-gray-500">{dispute.client?.email}</p>
+                {dispute.client && (
+                  <>
+                    <p className="font-medium">{dispute.client.company_name || 'N/A'}</p>
+                    <p className="text-sm">{dispute.client.contact_name}</p>
+                    <p className="text-sm text-gray-500">{dispute.client.email}</p>
+                  </>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -345,10 +398,12 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
                       </Badge>
                     </div>
                     
-                    <div>
-                      <h4 className="text-sm font-medium mb-1">Decision Date</h4>
-                      <p className="text-sm">{format(new Date(dispute.admin_decision_date), 'MMMM d, yyyy')}</p>
-                    </div>
+                    {dispute.admin_decision_date && (
+                      <div>
+                        <h4 className="text-sm font-medium mb-1">Decision Date</h4>
+                        <p className="text-sm">{format(new Date(dispute.admin_decision_date), 'MMMM d, yyyy')}</p>
+                      </div>
+                    )}
                     
                     <div>
                       <h4 className="text-sm font-medium mb-1">Admin Notes</h4>

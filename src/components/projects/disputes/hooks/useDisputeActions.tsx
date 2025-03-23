@@ -36,6 +36,9 @@ export const useDisputeActions = ({ quoteId, projectId }: UseDisputeActionsProps
     setIsSubmitting(true);
     
     try {
+      // Define the admin decision deadline (10 days after submission deadline)
+      const adminDecisionDeadline = addDays(submissionDeadline, 10);
+      
       // Insert dispute record
       const { data: disputeData, error } = await supabase
         .from('project_disputes')
@@ -47,7 +50,7 @@ export const useDisputeActions = ({ quoteId, projectId }: UseDisputeActionsProps
           at_fault_statement: data.atFault,
           evidence_files: data.evidenceFiles,
           submission_deadline: submissionDeadline.toISOString(),
-          admin_decision_deadline: addDays(submissionDeadline, 10).toISOString()
+          admin_decision_deadline: adminDecisionDeadline.toISOString()
         })
         .select('id')
         .single();
