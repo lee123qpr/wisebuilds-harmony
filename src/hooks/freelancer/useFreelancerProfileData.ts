@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
@@ -18,34 +19,6 @@ type IndemnityInsurance =
     };
 
 // Define a type for the freelancer profile data
-// type FreelancerProfileData = {
-//   id: string;
-//   first_name?: string;
-//   last_name?: string;
-//   display_name?: string;
-//   email?: string;
-//   profile_photo?: string;
-//   bio?: string;
-//   location?: string;
-//   phone_number?: string;
-//   website?: string;
-//   job_title?: string;
-//   hourly_rate?: string;
-//   availability?: string;
-//   experience?: string;
-//   skills?: string[];
-//   qualifications?: string[];
-//   accreditations?: string[];
-//   previous_employers?: PreviousEmployer[];
-//   indemnity_insurance?: IndemnityInsurance;
-//   previous_work?: string[];
-//   id_verified?: boolean;
-//   verified?: boolean;
-//   rating?: number;
-//   completed_jobs?: number;
-//   member_since?: string;
-// };
-
 type FreelancerProfileData = {
   id: string;
   first_name?: string;
@@ -64,15 +37,8 @@ type FreelancerProfileData = {
   skills?: string[];
   qualifications?: string[];
   accreditations?: string[];
-  previous_employers?: Array<{
-    company: string;
-    role: string;
-    duration: string;
-  }>;
-  indemnity_insurance?: boolean | {
-    hasInsurance: boolean;
-    coverLevel?: string;
-  };
+  previous_employers?: PreviousEmployer[];
+  indemnity_insurance?: IndemnityInsurance;
   previous_work?: string[];
   id_verified?: boolean;
   verified?: boolean;
@@ -108,8 +74,20 @@ export const useFreelancerProfileData = () => {
         if (fetchError) {
           setError(fetchError);
           console.error('Error fetching freelancer profile:', fetchError);
+        } else if (data) {
+          // Transform the data to ensure array types are properly handled
+          const transformedData: FreelancerProfileData = {
+            ...data,
+            skills: Array.isArray(data.skills) ? data.skills : [],
+            qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
+            accreditations: Array.isArray(data.accreditations) ? data.accreditations : [],
+            previous_employers: Array.isArray(data.previous_employers) ? data.previous_employers : [],
+            previous_work: Array.isArray(data.previous_work) ? data.previous_work : []
+          };
+          
+          setProfileData(transformedData);
         } else {
-          setProfileData(data || null);
+          setProfileData(null);
         }
       } catch (err: any) {
         setError(err);

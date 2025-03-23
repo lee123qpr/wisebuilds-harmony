@@ -1,15 +1,13 @@
 
-import { cn } from '@/lib/utils';
+import { QuoteWithFreelancer } from '@/types/quotes';
 
-export const getQuoteCardStyle = (status?: string) => {
+export const getQuoteCardStyle = (status: QuoteWithFreelancer['status'] | string | undefined) => {
   switch (status) {
     case 'accepted':
-      return "border-2 border-green-500";
-    case 'pending':
-      return "border-2 border-amber-500";
+      return 'border-2 border-green-500 bg-green-50';
     case 'declined':
-      return "border-2 border-red-500";
+      return 'border-2 border-red-500 bg-red-50';
     default:
-      return "border-2 border-gray-300";
+      return 'border-2 border-amber-500 bg-yellow-50'; // Default to pending style
   }
 };

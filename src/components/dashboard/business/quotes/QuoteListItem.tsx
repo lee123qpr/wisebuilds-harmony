@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
@@ -9,6 +10,11 @@ import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerI
 import { FreelancerInfo as FreelancerInfoType } from '@/types/messaging';
 import { AlertCircle } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { getQuoteCardStyle } from './card/QuoteCardStyles';
+import QuoteCardHeader from './card/CardHeader';
+import FreelancerInfo from './card/FreelancerInfo';
+import QuoteMetadata from './card/QuoteMetadata';
+import QuoteActions from './card/QuoteActions';
 
 interface QuoteListItemProps {
   quote: QuoteWithFreelancer;
@@ -26,6 +32,7 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                         ? quote.project.title 
                         : 'Untitled Project';
   
+  // Get the role from the project data and format it
   const role = quote.project?.role || 'Not specified';
   const roleFormatted = formatRole(role);
   
@@ -87,6 +94,12 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                    'Freelancer';
                    
   const isAccepted = quote.status === 'accepted';
+  const isRetracted = quote.retracted_by_freelancer === true;
+
+  // Show retracted alert if the quote was retracted by the freelancer
+  if (isRetracted) {
+    return <QuoteRetractedAlert />;
+  }
 
   return (
     <Card key={quote.id} className={cn("w-full", getQuoteCardStyle(quote.status))}>

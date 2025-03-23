@@ -27,7 +27,6 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
                        : 'Client';
   
   // Use formatRole from our utility to properly format the role
-  // If projectRole exists, use it; otherwise use a fallback message
   const formattedRole = projectRole 
     ? formatRole(projectRole) 
     : 'Not specified';

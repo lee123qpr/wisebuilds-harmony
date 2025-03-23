@@ -1,3 +1,4 @@
+
 export interface Quote {
   id: string;
   project_id: string;
