@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useImageUpload } from './useImageUpload';
@@ -33,7 +32,6 @@ export const useProfileImageHandling = ({
     namePrefix: 'avatar'
   });
 
-  // Get available buckets on mount
   useEffect(() => {
     const getBuckets = async () => {
       try {
@@ -56,7 +54,6 @@ export const useProfileImageHandling = ({
     getBuckets();
   }, []);
 
-  // Sync image URL to parent
   useEffect(() => {
     if (imageUrl) {
       console.log('Syncing image URL to parent:', imageUrl);
@@ -64,12 +61,10 @@ export const useProfileImageHandling = ({
     }
   }, [imageUrl, setParentProfileImage]);
 
-  // Sync uploading state to parent
   useEffect(() => {
     setParentUploadingImage(uploadingImage);
   }, [uploadingImage, setParentUploadingImage]);
 
-  // Initialize local image state with parent value
   useEffect(() => {
     if (initialProfileImage && !imageUrl) {
       console.log('Initializing local image state with:', initialProfileImage);
@@ -77,7 +72,6 @@ export const useProfileImageHandling = ({
     }
   }, [initialProfileImage, imageUrl, setImageUrl]);
 
-  // Get user type
   useEffect(() => {
     const getUserType = async () => {
       const { data } = await supabase.auth.getUser();
@@ -89,15 +83,12 @@ export const useProfileImageHandling = ({
     getUserType();
   }, [userId]);
 
-  // Image upload handler with loading state management
   const handleImageUploadProxy = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log('Image upload triggered with file:', e.target.files?.[0]?.name);
     
     try {
-      // First set local loading state
       setUploadingImage(true);
       
-      // Then call the actual upload handler
       const result = await handleImageUpload(e);
       
       if (result) {

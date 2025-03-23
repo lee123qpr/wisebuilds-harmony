@@ -1,5 +1,5 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -19,16 +19,20 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
   const { toast } = useToast();
 
   // Check bucket on mount
-  useCallback(async () => {
-    try {
-      const bucketName = await getActualAvatarBucket();
-      setActualBucketName(bucketName);
-      setBucketAvailable(true);
-      console.log(`Using avatar bucket: ${bucketName}`);
-    } catch (error) {
-      console.error('Error checking avatar bucket:', error);
-      setBucketAvailable(false);
-    }
+  useEffect(() => {
+    const checkBucket = async () => {
+      try {
+        const bucketName = await getActualAvatarBucket();
+        setActualBucketName(bucketName);
+        setBucketAvailable(true);
+        console.log(`Using avatar bucket: ${bucketName}`);
+      } catch (error) {
+        console.error('Error checking avatar bucket:', error);
+        setBucketAvailable(false);
+      }
+    };
+    
+    checkBucket();
   }, []);
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
