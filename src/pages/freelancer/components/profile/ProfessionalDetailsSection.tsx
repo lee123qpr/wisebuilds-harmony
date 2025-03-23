@@ -16,7 +16,10 @@ const ProfessionalDetailsSection: React.FC<ProfessionalDetailsSectionProps> = ({
 
   return (
     <div>
-      <h3 className="text-md font-medium mb-3 text-primary-foreground/80">Professional Details</h3>
+      <h3 className="text-md font-medium mb-3 flex items-center gap-2 text-foreground">
+        <BriefcaseBusiness className="h-4 w-4 text-primary/70" />
+        Professional Details
+      </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {profile.hourly_rate && (
           <div className="flex items-start gap-2">

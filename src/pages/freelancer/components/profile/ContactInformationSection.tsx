@@ -2,7 +2,6 @@
 import React from 'react';
 import { FreelancerProfile } from '@/types/applications';
 import { LinkIcon, Mail, Phone } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 interface ContactInformationSectionProps {
   profile: FreelancerProfile;
@@ -11,7 +10,10 @@ interface ContactInformationSectionProps {
 const ContactInformationSection: React.FC<ContactInformationSectionProps> = ({ profile }) => {
   return (
     <div>
-      <h3 className="text-md font-medium mb-3 text-primary-foreground/80">Contact Information</h3>
+      <h3 className="text-md font-medium mb-3 flex items-center gap-2 text-foreground">
+        <Mail className="h-4 w-4 text-primary/70" />
+        Contact Information
+      </h3>
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {profile.phone_number && (
           <div className="flex items-start gap-2">

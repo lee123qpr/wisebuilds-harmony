@@ -15,8 +15,8 @@ const PreviousEmployersSection: React.FC<PreviousEmployersSectionProps> = ({ pro
 
   return (
     <div>
-      <h3 className="text-md font-medium mb-3 text-primary-foreground/80 flex items-center gap-2">
-        <Building className="h-4 w-4 text-muted-foreground" />
+      <h3 className="text-md font-medium mb-3 flex items-center gap-2 text-foreground">
+        <Building className="h-4 w-4 text-primary/70" />
         Previous Employers
       </h3>
       <div className="space-y-4">

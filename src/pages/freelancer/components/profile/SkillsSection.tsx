@@ -15,8 +15,8 @@ const SkillsSection: React.FC<SkillsSectionProps> = ({ profile }) => {
 
   return (
     <div>
-      <h3 className="text-md font-medium mb-3 text-primary-foreground/80 flex items-center gap-2">
-        <Wrench className="h-4 w-4 text-muted-foreground" />
+      <h3 className="text-md font-medium mb-3 flex items-center gap-2 text-foreground">
+        <Wrench className="h-4 w-4 text-primary/70" />
         Skills
       </h3>
       <div className="flex flex-wrap gap-2">
