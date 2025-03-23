@@ -3,12 +3,17 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Upload, Check, Loader2 } from 'lucide-react';
+import { Calendar, MapPin, Upload, Check, Loader2, Shield } from 'lucide-react';
 import { format } from 'date-fns';
 import VerificationBadge from '@/components/common/VerificationBadge';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 import { supabase } from '@/integrations/supabase/client';
 import FreelancerMetadata from '@/components/freelancer/FreelancerMetadata';
+
+interface InsuranceStatus {
+  hasInsurance: boolean;
+  coverLevel: string;
+}
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;
@@ -27,6 +32,7 @@ interface FreelancerProfileCardProps {
   location?: string | null;
   allowImageUpload?: boolean;
   compact?: boolean;
+  insuranceStatus?: InsuranceStatus;
 }
 
 const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
@@ -45,7 +51,8 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   reviewsCount,
   location,
   allowImageUpload = false,
-  compact = false
+  compact = false,
+  insuranceStatus
 }) => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!allowImageUpload || !setUploadingImage || !setProfileImage) return;
@@ -185,6 +192,34 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
                 <Check className="h-3 w-3" />
                 {jobsCompleted} {jobsCompleted === 1 ? 'job' : 'jobs'} completed
               </Badge>
+              
+              {/* Insurance Badge */}
+              {insuranceStatus && (
+                <Badge 
+                  variant="outline" 
+                  className={`flex items-center gap-1 ${
+                    insuranceStatus.hasInsurance 
+                      ? 'bg-green-50 text-green-700' 
+                      : 'bg-amber-50 text-amber-700'
+                  }`}
+                >
+                  <Shield className={`h-3 w-3 ${
+                    insuranceStatus.hasInsurance 
+                      ? 'text-green-600' 
+                      : 'text-amber-600'
+                  }`} />
+                  {insuranceStatus.hasInsurance ? (
+                    <>
+                      Insured
+                      {insuranceStatus.coverLevel !== 'Not specified' && 
+                        <span>• {insuranceStatus.coverLevel}</span>
+                      }
+                    </>
+                  ) : (
+                    <span>Not Insured</span>
+                  )}
+                </Badge>
+              )}
             </div>
           )}
         </div>
