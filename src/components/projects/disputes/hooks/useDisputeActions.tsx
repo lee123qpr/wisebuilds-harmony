@@ -1,7 +1,7 @@
 
 import { useState } from 'react';
 import { addDays } from 'date-fns';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, ProjectDispute } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/toast';
 import { DisputeFormData } from '../DisputeForm';
@@ -40,6 +40,7 @@ export const useDisputeActions = ({ quoteId, projectId }: UseDisputeActionsProps
       const adminDecisionDeadline = addDays(submissionDeadline, 10);
       
       // Insert dispute record
+      // @ts-ignore - Temporary workaround until Database types are updated
       const { data: disputeData, error } = await supabase
         .from('project_disputes')
         .insert({

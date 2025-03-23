@@ -15,3 +15,29 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
 export const getStorageUrl = (bucket: string, path: string) => {
   return supabase.storage.from(bucket).getPublicUrl(path).data.publicUrl;
 };
+
+// Custom type for project_disputes table until Database type is regenerated
+export type ProjectDispute = {
+  id: string;
+  project_id: string;
+  quote_id: string;
+  user_id: string;
+  reason: string;
+  at_fault_statement: string;
+  evidence_files?: any;
+  freelancer_evidence?: any[];
+  client_evidence?: any[];
+  submission_deadline: string;
+  admin_decision_deadline: string;
+  admin_decision?: string | null;
+  admin_notes?: string | null;
+  admin_decision_date?: string | null;
+  reviewed_by?: string | null;
+  created_at: string;
+  updated_at: string;
+  // Related tables
+  projects?: any;
+  quotes?: any;
+  freelancer?: any;
+  client?: any;
+}

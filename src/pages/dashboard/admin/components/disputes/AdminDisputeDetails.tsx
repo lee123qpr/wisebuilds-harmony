@@ -25,7 +25,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, ProjectDispute } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/toast';
 import { useAuth } from '@/context/AuthContext';
 
@@ -37,30 +37,7 @@ interface AdminDisputeDetailsProps {
 }
 
 // Define the dispute data type
-interface DisputeData {
-  id: string;
-  created_at: string;
-  project_id: string;
-  quote_id: string;
-  user_id: string;
-  reason: string;
-  at_fault_statement: string;
-  evidence_files?: any[];
-  freelancer_evidence?: any[];
-  client_evidence?: any[];
-  submission_deadline: string;
-  admin_decision_deadline: string;
-  admin_decision?: string | null;
-  admin_notes?: string | null;
-  admin_decision_date?: string | null;
-  reviewed_by?: string | null;
-  projects?: {
-    title: string;
-    status: string;
-  };
-  quotes?: {
-    status: string;
-  };
+interface DisputeData extends ProjectDispute {
   freelancer?: {
     id: string;
     first_name: string;
@@ -91,6 +68,7 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
   const { data: dispute, isLoading } = useQuery({
     queryKey: ['admin-dispute-details', disputeId],
     queryFn: async () => {
+      // @ts-ignore - Temporary workaround until Database types are updated
       const { data, error } = await supabase
         .from('project_disputes')
         .select(`
@@ -120,6 +98,7 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
     
     try {
       // Update dispute record with admin decision
+      // @ts-ignore - Temporary workaround until Database types are updated
       const { error } = await supabase
         .from('project_disputes')
         .update({

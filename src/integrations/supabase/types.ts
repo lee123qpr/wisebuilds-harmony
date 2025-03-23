@@ -536,6 +536,81 @@ export type Database = {
           },
         ]
       }
+      project_disputes: {
+        Row: {
+          admin_decision: string | null
+          admin_decision_date: string | null
+          admin_decision_deadline: string
+          admin_notes: string | null
+          at_fault_statement: string
+          client_evidence: Json[] | null
+          created_at: string
+          evidence_files: Json | null
+          freelancer_evidence: Json[] | null
+          id: string
+          project_id: string
+          quote_id: string
+          reason: string
+          reviewed_by: string | null
+          submission_deadline: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          admin_decision?: string | null
+          admin_decision_date?: string | null
+          admin_decision_deadline: string
+          admin_notes?: string | null
+          at_fault_statement: string
+          client_evidence?: Json[] | null
+          created_at?: string
+          evidence_files?: Json | null
+          freelancer_evidence?: Json[] | null
+          id?: string
+          project_id: string
+          quote_id: string
+          reason: string
+          reviewed_by?: string | null
+          submission_deadline: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          admin_decision?: string | null
+          admin_decision_date?: string | null
+          admin_decision_deadline?: string
+          admin_notes?: string | null
+          at_fault_statement?: string
+          client_evidence?: Json[] | null
+          created_at?: string
+          evidence_files?: Json | null
+          freelancer_evidence?: Json[] | null
+          id?: string
+          project_id?: string
+          quote_id?: string
+          reason?: string
+          reviewed_by?: string | null
+          submission_deadline?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_disputes_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_disputes_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       projects: {
         Row: {
           applications: number
