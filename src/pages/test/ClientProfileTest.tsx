@@ -4,8 +4,12 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import ClientProfile from '@/pages/dashboard/ClientProfile';
+import { useAuth } from '@/context/AuthContext';
+import { Loader2 } from 'lucide-react';
 
 const ClientProfileTest = () => {
+  const { user, isLoading } = useAuth();
+
   return (
     <MainLayout>
       <div className="container py-8">
@@ -17,15 +21,28 @@ const ClientProfileTest = () => {
           <Separator className="my-4" />
         </div>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Client Dashboard Profile</CardTitle>
-            <CardDescription>This is what clients see when editing their profile</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <ClientProfile />
-          </CardContent>
-        </Card>
+        {isLoading ? (
+          <div className="flex justify-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : !user ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Authentication Required</CardTitle>
+              <CardDescription>You need to be logged in to view this test page</CardDescription>
+            </CardHeader>
+          </Card>
+        ) : (
+          <Card>
+            <CardHeader>
+              <CardTitle>Client Dashboard Profile</CardTitle>
+              <CardDescription>This is what clients see when editing their profile</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <ClientProfile />
+            </CardContent>
+          </Card>
+        )}
       </div>
     </MainLayout>
   );

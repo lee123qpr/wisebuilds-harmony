@@ -5,8 +5,13 @@ import FreelancerDetailedProfileTest from '../pages/test/FreelancerDetailedProfi
 import ClientProfileTest from '../pages/test/ClientProfileTest';
 import FreelancerProfileTest from '../pages/test/FreelancerProfileTest';
 import ClientViewFreelancerTest from '../pages/test/ClientViewFreelancerTest';
+import TestDashboard from '../pages/test/TestDashboard';
 
 export const miscRoutes = [
+  {
+    path: '/test',
+    element: <TestDashboard />,
+  },
   {
     path: '/test-skeleton',
     element: <TestSkeleton />,

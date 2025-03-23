@@ -18,6 +18,16 @@ const FreelancerDetailedProfileTest = () => {
     setActiveTab(value);
   };
 
+  if (authLoading) {
+    return (
+      <MainLayout>
+        <div className="container py-8 flex justify-center items-center min-h-[60vh]">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <div className="container py-8">
@@ -29,10 +39,13 @@ const FreelancerDetailedProfileTest = () => {
           <Separator className="my-4" />
         </div>
 
-        {authLoading ? (
-          <div className="flex justify-center py-12">
-            <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          </div>
+        {!user ? (
+          <Card>
+            <CardHeader>
+              <CardTitle>Authentication Required</CardTitle>
+              <CardDescription>You need to be logged in to view this test page</CardDescription>
+            </CardHeader>
+          </Card>
         ) : (
           <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
             <TabsList className="mb-6">
