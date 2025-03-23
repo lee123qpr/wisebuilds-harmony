@@ -51,6 +51,7 @@ export interface ProfileData {
   accreditations?: string[];
 }
 
+// Define response type to break circular reference
 interface FreelancerProfileDataResponse {
   data: ProfileData | null;
   error: Error | null;
@@ -122,10 +123,10 @@ export const useFreelancerProfileData = (userId?: string) => {
 
   const query = useQuery({
     queryKey: ['freelancerProfile', profileId],
-    queryFn: async () => {
+    queryFn: async (): Promise<FreelancerProfileDataResponse> => {
       try {
         if (!profileId) {
-          return { data: null, error: new Error('No user ID provided') } as FreelancerProfileDataResponse;
+          return { data: null, error: new Error('No user ID provided') };
         }
 
         // Fetch freelancer profile data
@@ -142,11 +143,11 @@ export const useFreelancerProfileData = (userId?: string) => {
 
         // Format the data with explicit typing
         const formattedData = formatFreelancerProfileData(data);
-        return { data: formattedData, error: null } as FreelancerProfileDataResponse;
+        return { data: formattedData, error: null };
       } catch (error) {
         console.error('Error in useFreelancerProfileData:', error);
         toast.error('Failed to load freelancer profile data');
-        return { data: null, error: error as Error } as FreelancerProfileDataResponse;
+        return { data: null, error: error as Error };
       }
     },
     enabled: !!profileId,

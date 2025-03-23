@@ -22,7 +22,7 @@ const QuoteCards: React.FC<QuoteCardsProps> = ({
   // Create a mock quote for testing
   const mockQuote = {
     id: 'quote-123',
-    status: 'pending',
+    status: 'pending' as 'pending' | 'accepted' | 'declined',
     created_at: mockQuoteDate,
     updated_at: mockQuoteDate, // Add the missing required property
     project_id: 'project-123',
@@ -33,7 +33,7 @@ const QuoteCards: React.FC<QuoteCardsProps> = ({
     estimated_price: null,
     available_start_date: new Date().toISOString(),
     estimated_duration: '14', // Changed to string to match Quote type expectation
-    duration_unit: 'days',
+    duration_unit: 'days' as 'days' | 'weeks' | 'months',
     payment_terms: 'half upfront, half on completion',
     description: 'This is a detailed quote description outlining the work that will be done for this project.'
   };
