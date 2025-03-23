@@ -4,7 +4,7 @@ import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Coins, Check, Briefcase, ArrowRight, MessageSquare, CheckCircle2, Clock } from 'lucide-react';
+import { Calendar, Coins, Check, Briefcase, ArrowRight, MessageSquare, CheckCircle2, Clock, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import ProjectCompleteButton from '@/components/projects/ProjectCompleteButton';
@@ -16,16 +16,18 @@ import { FreelancerInfo } from '@/types/messaging';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
 import VerificationBadge from '@/components/common/VerificationBadge';
+import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
 
 interface JobCardProps {
   quote: QuoteWithFreelancer;
   clientName: string;
   onStatusUpdate: () => void;
+  user?: any;
 }
 
-const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) => {
+const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate, user }) => {
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user: authUser } = useAuth();
   const [freelancerInfo, setFreelancerInfo] = useState<FreelancerInfo | null>(null);
   const [isLoadingFreelancer, setIsLoadingFreelancer] = useState(false);
   
@@ -50,7 +52,7 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
   // Determine completion status
   const isFullyCompleted = Boolean(quote.completed_at && quote.client_completed && quote.freelancer_completed);
   const isPartiallyCompleted = Boolean(quote.client_completed || quote.freelancer_completed);
-  const userCompleted = user?.user_metadata?.user_type === 'freelancer' 
+  const userCompleted = authUser?.user_metadata?.user_type === 'freelancer' 
     ? quote.freelancer_completed 
     : quote.client_completed;
   
@@ -82,7 +84,7 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
   const freelancerName = quote.freelancer_profile?.display_name || 
     (quote.freelancer_profile?.first_name && quote.freelancer_profile?.last_name 
       ? `${quote.freelancer_profile.first_name} ${quote.freelancer_profile.last_name}`
-      : freelancerInfo?.full_name || freelancerInfo?.name || user?.user_metadata?.display_name || 'Freelancer');
+      : freelancerInfo?.full_name || freelancerInfo?.name || authUser?.user_metadata?.display_name || 'Freelancer');
   
   // Get the profile photo from either source
   const profilePhoto = quote.freelancer_profile?.profile_photo || 
@@ -201,6 +203,17 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
               View Project
               <ArrowRight className="ml-2 h-4 w-4" />
             </Button>
+            
+            <FreelancerProfileLink
+              freelancerId={quote.freelancer_id}
+              projectId={quote.project_id}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <User className="h-4 w-4" />
+              View Profile
+            </FreelancerProfileLink>
             
             <Button 
               variant="outline" 

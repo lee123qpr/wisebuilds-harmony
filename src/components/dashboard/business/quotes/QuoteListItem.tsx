@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Coins, Check, Briefcase, ArrowRight, MessageSquare } from 'lucide-react';
+import { Calendar, Coins, Check, Briefcase, ArrowRight, MessageSquare, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { QuoteWithFreelancer } from '@/types/quotes';
@@ -15,6 +15,7 @@ import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerI
 import { FreelancerInfo } from '@/types/messaging';
 import { Skeleton } from '@/components/ui/skeleton';
 import VerificationBadge from '@/components/common/VerificationBadge';
+import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
 
 interface QuoteListItemProps {
   quote: QuoteWithFreelancer;
@@ -211,6 +212,17 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
             >
               View Quote Details
             </Button>
+            
+            <FreelancerProfileLink
+              freelancerId={quote.freelancer_id}
+              projectId={quote.project_id}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <User className="h-4 w-4" />
+              View Profile
+            </FreelancerProfileLink>
             
             {isAccepted && (
               <Button 

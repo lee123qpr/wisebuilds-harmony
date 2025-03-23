@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -13,6 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { FreelancerInfo } from '@/types/messaging';
 import VerificationBadge from '@/components/common/VerificationBadge';
 import { formatRole } from '@/utils/projectFormatters';
+import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
 
 interface QuoteCardProps {
   quote: QuoteWithFreelancer;
@@ -23,17 +23,14 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
   const [freelancerInfo, setFreelancerInfo] = useState<FreelancerInfo | null>(null);
   const [isLoadingFreelancer, setIsLoadingFreelancer] = useState(false);
   
-  // Format the created date
   const formattedDate = format(new Date(quote.created_at), 'MMM d, yyyy');
   
   console.log('Quote data in QuoteCard:', quote);
   console.log('Project role from quote:', quote.project?.role);
   
-  // Get project role if available - with proper fallback
   const role = quote.project?.role || 'Not specified';
   const roleFormatted = formatRole(role);
   
-  // Fetch freelancer info if profile is empty or incomplete
   useEffect(() => {
     const hasEmptyProfile = !quote.freelancer_profile || 
                             (!quote.freelancer_profile.display_name && 
@@ -57,30 +54,25 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
     }
   }, [quote.freelancer_id, quote.freelancer_profile, freelancerInfo, isLoadingFreelancer]);
   
-  // Create a combined freelancer name from both sources
   const freelancerName = quote.freelancer_profile?.display_name || 
     (quote.freelancer_profile?.first_name && quote.freelancer_profile?.last_name 
       ? `${quote.freelancer_profile.first_name} ${quote.freelancer_profile.last_name}`
       : freelancerInfo?.full_name || freelancerInfo?.name || 'Freelancer');
   
-  // Get the profile photo from either source
   const profilePhoto = quote.freelancer_profile?.profile_photo || 
                      freelancerInfo?.profile_image || 
                      freelancerInfo?.profilePhoto;
   
-  // Check if freelancer is verified from either source
   const isVerified = quote.freelancer_profile?.verified || 
                    freelancerInfo?.verified || 
                    freelancerInfo?.isVerified || 
                    false;
   
-  // Get the job title with fallbacks
   const jobTitle = quote.freelancer_profile?.job_title || 
                  freelancerInfo?.job_title || 
                  freelancerInfo?.jobTitle || 
                  'Freelancer';
   
-  // Get quote price info
   const priceType = quote.fixed_price 
     ? 'Fixed Price' 
     : quote.estimated_price 
@@ -147,7 +139,6 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
           </div>
           
           <div className="grid grid-cols-3 gap-4 mt-2">
-            {/* Price info */}
             <div className="border rounded-md p-3 flex flex-col">
               <span className="text-sm text-muted-foreground mb-1 flex items-center">
                 <DollarSign className="h-3.5 w-3.5 mr-1" />
@@ -156,7 +147,6 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
               <span className="font-medium">{priceValue}</span>
             </div>
             
-            {/* Start date */}
             <div className="border rounded-md p-3 flex flex-col">
               <span className="text-sm text-muted-foreground mb-1 flex items-center">
                 <Calendar className="h-3.5 w-3.5 mr-1" />
@@ -169,7 +159,6 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
               </span>
             </div>
             
-            {/* Duration */}
             <div className="border rounded-md p-3 flex flex-col">
               <span className="text-sm text-muted-foreground mb-1 flex items-center">
                 <Clock className="h-3.5 w-3.5 mr-1" />
@@ -183,7 +172,7 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
             </div>
           </div>
           
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
             <Button 
               variant="outline" 
               size="sm" 
@@ -193,6 +182,17 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
               <Eye className="h-4 w-4" />
               View Details
             </Button>
+            
+            <FreelancerProfileLink
+              freelancerId={quote.freelancer_id}
+              projectId={quote.project_id}
+              variant="outline"
+              size="sm"
+              className="gap-2"
+            >
+              <User className="h-4 w-4" />
+              View Profile
+            </FreelancerProfileLink>
           </div>
         </div>
       </CardContent>
