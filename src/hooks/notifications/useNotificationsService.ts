@@ -65,3 +65,4 @@ export const useNotificationsService = () => {
     addNotification: addNotificationToState
   };
 };
+

@@ -78,3 +78,4 @@ export function useNotificationListeners() {
     };
   }, [user, addNotificationToState, initializeNotifications]);
 }
+

@@ -12,3 +12,4 @@ export interface ListenersOptions {
   onCreditBalanceUpdate: (update: any) => void;
   onCreditTransaction: (transaction: any) => void;
 }
+

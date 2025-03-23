@@ -84,3 +84,4 @@ export const getActiveChannels = (userId: string): string[] => {
   const channels = activeChannels.get(userId) || [];
   return channels.map(channel => channel.topic || 'unknown');
 };
+

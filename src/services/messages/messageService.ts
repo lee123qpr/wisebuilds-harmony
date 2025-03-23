@@ -93,14 +93,14 @@ export const sendMessage = async ({ conversationId, message, attachments = [] }:
       }
     }
     
-    // Create the message
+    // Create the message with proper JSON handling for attachments
     const { data: messageData, error: messageError } = await supabase
       .from('messages')
       .insert({
         conversation_id: conversationId,
         sender_id: userId,
         message: messageText,
-        attachments: attachments.length > 0 ? attachments : null
+        attachments: attachments.length > 0 ? JSON.stringify(attachments) : null
       })
       .select()
       .single();
@@ -163,3 +163,4 @@ export const uploadMessageAttachments = async (
     return [];
   }
 };
+

@@ -56,3 +56,4 @@ export const setupNotificationChannel = (
     } as unknown as RealtimeChannel;
   }
 };
+
