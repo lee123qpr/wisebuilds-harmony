@@ -6,8 +6,8 @@ const RoleWordRotator = () => {
     "Architects", 
     "Engineers", 
     "Surveyors", 
-    "Project Managers", 
-    "Contractors", 
+    "Estimators",
+    "Planners",
     "Specialists"
   ];
   
