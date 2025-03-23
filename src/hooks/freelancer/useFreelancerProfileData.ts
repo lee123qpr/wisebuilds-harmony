@@ -5,6 +5,40 @@ import { supabase } from '@/integrations/supabase/client';
 import { FreelancerProfile } from '@/types/applications';
 import { toast } from '@/hooks/toast';
 
+// Helper functions for safely formatting data
+function formatPreviousEmployers(data: any) {
+  if (!data || !Array.isArray(data)) return [];
+  
+  return data.map(emp => ({
+    employerName: emp?.employerName || '',
+    position: emp?.position || '',
+    startDate: emp?.startDate || '',
+    endDate: emp?.endDate,
+    current: !!emp?.current
+  }));
+}
+
+function formatPreviousWork(data: any) {
+  if (!data || !Array.isArray(data)) return [];
+  
+  return data.map(work => ({
+    name: work?.name || '',
+    url: work?.url || '',
+    type: work?.type || '',
+    size: work?.size || 0,
+    path: work?.path || ''
+  }));
+}
+
+function formatIndemnityInsurance(data: any) {
+  if (!data) return { hasInsurance: false };
+  
+  return {
+    hasInsurance: !!data?.hasInsurance,
+    coverLevel: data?.coverLevel
+  };
+}
+
 export const useFreelancerProfileData = (freelancerIdParam?: string) => {
   const { freelancerId: urlFreelancerId } = useParams<{ freelancerId: string }>();
   const effectiveFreelancerId = freelancerIdParam || urlFreelancerId;
@@ -81,10 +115,8 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             availability: data.availability || undefined,
             qualifications: Array.isArray(data.qualifications) ? data.qualifications.map(String) : [],
             accreditations: Array.isArray(data.accreditations) ? data.accreditations.map(String) : [],
-            previous_employers: data.previous_employers ? 
-              formatPreviousEmployers(data.previous_employers) : [],
-            previousWork: data.previous_work ? 
-              formatPreviousWork(data.previous_work) : [],
+            previous_employers: formatPreviousEmployers(data.previous_employers),
+            previousWork: formatPreviousWork(data.previous_work),
             indemnity_insurance: formatIndemnityInsurance(data.indemnity_insurance)
           };
           
@@ -108,37 +140,3 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
 
   return { profile, isLoading };
 };
-
-// Helper functions to safely format complex objects
-function formatPreviousEmployers(data: any) {
-  if (!data || !Array.isArray(data)) return [];
-  
-  return data.map(emp => ({
-    employerName: emp?.employerName || '',
-    position: emp?.position || '',
-    startDate: emp?.startDate || '',
-    endDate: emp?.endDate,
-    current: !!emp?.current
-  }));
-}
-
-function formatPreviousWork(data: any) {
-  if (!data || !Array.isArray(data)) return [];
-  
-  return data.map(work => ({
-    name: work?.name || '',
-    url: work?.url || '',
-    type: work?.type || '',
-    size: work?.size || 0,
-    path: work?.path || ''
-  }));
-}
-
-function formatIndemnityInsurance(data: any) {
-  if (!data) return { hasInsurance: false };
-  
-  return {
-    hasInsurance: !!data?.hasInsurance,
-    coverLevel: data?.coverLevel
-  };
-}
