@@ -93,14 +93,13 @@ export const useProfileImageHandling = ({
   }, [userType]);
 
   // Memoize upload handler to prevent recreating on each render
-  const handleImageUploadProxy = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Updated to return void instead of string
+  const handleImageUploadProxy = useCallback(async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
     try {
       setUploadingImage(true);
-      const result = await handleImageUpload(e);
-      return result;
+      await handleImageUpload(e); // Just await, don't return the string value
     } catch (error) {
       console.error('Error in upload proxy:', error);
-      return null;
     }
   }, [handleImageUpload, setUploadingImage]);
 
