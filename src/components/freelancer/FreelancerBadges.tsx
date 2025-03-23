@@ -26,7 +26,7 @@ const FreelancerBadges: React.FC<FreelancerBadgesProps> = ({
   insuranceStatus
 }) => {
   return (
-    <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
+    <div className="flex flex-wrap gap-2 justify-center md:justify-start">
       {memberSince && (
         <Badge variant="outline" className="flex items-center gap-1">
           <Calendar className="h-3 w-3" />

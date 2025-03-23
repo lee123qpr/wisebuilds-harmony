@@ -66,8 +66,8 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
 }) => {
   return (
     <div className="bg-card rounded-lg shadow-sm overflow-hidden border border-border/40">
-      <div className="md:flex">
-        <div className="md:w-1/3 p-6">
+      <div className="flex flex-col md:flex-row">
+        <div className="p-6 md:w-1/3 flex items-center justify-center">
           <FreelancerAvatar
             profileImage={profileImage}
             fullName={fullName}
@@ -79,7 +79,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
           />
         </div>
         
-        <div className="md:w-2/3 p-6 border-t md:border-t-0 md:border-l border-border">
+        <div className="p-6 border-t md:border-t-0 md:border-l md:w-2/3 border-border">
           <FreelancerInfo
             freelancerId={userId}
             freelancerName={fullName}
