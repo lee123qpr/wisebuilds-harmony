@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
 interface FreelancerProfileDataResponse {
-  data: any | null;
+  data: ProfileData | null;
   error: Error | null;
 }
 
@@ -14,8 +14,8 @@ interface ProfileData {
   id: string;
   user_id: string;
   display_name: string;
-  first_name: string;
-  last_name: string;
+  first_name: string | null;
+  last_name: string | null;
   profile_photo: string | null;
   job_title: string | null;
   bio: string | null;
@@ -25,14 +25,20 @@ interface ProfileData {
   skills: string[] | null;
   previous_employers: any[] | null;
   previous_work: any[] | null;
-  qualifications: any[] | null;
+  qualifications: string[] | null;
   indemnity_insurance: any | null;
   created_at: string;
   updated_at: string;
+  member_since?: string;
+  email_verified?: boolean;
+  verified?: boolean;
+  jobs_completed?: number;
+  rating?: number;
+  reviews_count?: number;
 }
 
 // Format freelancer profile data safely
-export const formatFreelancerProfileData = (data: any) => {
+export const formatFreelancerProfileData = (data: any): ProfileData | null => {
   if (!data) return null;
   
   // Handle previous_employers safely
@@ -46,23 +52,41 @@ export const formatFreelancerProfileData = (data: any) => {
     [];
   
   // Cast data to avoid deep type inference
-  const formattedData = {
-    ...data,
+  const formattedData: ProfileData = {
+    id: data.id || '',
+    user_id: data.user_id || '',
+    display_name: data.display_name || '',
+    first_name: data.first_name,
+    last_name: data.last_name,
+    profile_photo: data.profile_photo,
+    job_title: data.job_title,
+    bio: data.bio,
+    email: data.email,
+    phone_number: data.phone_number,
+    location: data.location,
     skills: data.skills || [],
     previous_employers: previousEmployers,
     previous_work: previousWork,
     qualifications: data.qualifications || [],
-    indemnity_insurance: data.indemnity_insurance || null
+    indemnity_insurance: data.indemnity_insurance || null,
+    created_at: data.created_at || '',
+    updated_at: data.updated_at || '',
+    member_since: data.member_since,
+    email_verified: data.email_verified,
+    verified: data.verified,
+    jobs_completed: data.jobs_completed,
+    rating: data.rating,
+    reviews_count: data.reviews_count
   };
   
-  return formattedData as ProfileData;
+  return formattedData;
 };
 
 export const useFreelancerProfileData = (userId?: string) => {
   const { user } = useAuth();
   const profileId = userId || user?.id;
 
-  return useQuery({
+  const query = useQuery({
     queryKey: ['freelancerProfile', profileId],
     queryFn: async (): Promise<FreelancerProfileDataResponse> => {
       try {
@@ -94,4 +118,12 @@ export const useFreelancerProfileData = (userId?: string) => {
     enabled: !!profileId,
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
+
+  // Return the profile directly from query.data.data to simplify usage
+  return {
+    profile: query.data?.data,
+    isLoading: query.isLoading,
+    error: query.error || query.data?.error,
+    ...query
+  };
 };
