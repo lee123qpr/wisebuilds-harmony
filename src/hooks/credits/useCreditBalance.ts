@@ -7,7 +7,15 @@ import { useNotifications } from '@/context/NotificationsContext';
 
 export const useCreditBalance = () => {
   const { user } = useAuth();
-  const { addNotification } = useNotifications();
+  
+  // Try to use notifications but don't fail if it's not available
+  let addNotification: ((notification: any) => void) | undefined;
+  try {
+    const notifications = useNotifications();
+    addNotification = notifications.addNotification;
+  } catch (error) {
+    console.warn('Notifications context not available, credit balance notifications will be disabled');
+  }
 
   const {
     data: creditBalance,
@@ -42,7 +50,7 @@ export const useCreditBalance = () => {
 
   // Set up real-time updates for credit balance
   useEffect(() => {
-    if (!user) return;
+    if (!user || !addNotification) return;
 
     let previousBalance = creditBalance;
 
@@ -61,19 +69,21 @@ export const useCreditBalance = () => {
           // Refetch the balance
           refetchCreditBalance();
           
-          // Only show notification if balance has increased
-          const newBalance = payload.new?.credit_balance || 0;
-          if (previousBalance !== null && newBalance > previousBalance) {
-            const difference = newBalance - previousBalance;
-            addNotification({
-              type: 'credit_update',
-              title: 'Credits Added',
-              description: `${difference} credits have been added to your account.`
-            });
+          // Only show notification if balance has increased and notifications are available
+          if (addNotification) {
+            const newBalance = payload.new?.credit_balance || 0;
+            if (previousBalance !== null && newBalance > previousBalance) {
+              const difference = newBalance - previousBalance;
+              addNotification({
+                type: 'credit_update',
+                title: 'Credits Added',
+                description: `${difference} credits have been added to your account.`
+              });
+            }
+            
+            // Update previous balance
+            previousBalance = newBalance;
           }
-          
-          // Update previous balance
-          previousBalance = newBalance;
         }
       )
       .subscribe();

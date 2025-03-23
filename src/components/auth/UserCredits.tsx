@@ -12,7 +12,19 @@ import {
 
 const UserCredits: React.FC = () => {
   const navigate = useNavigate();
-  const { creditBalance, isLoadingBalance } = useCredits();
+  
+  // Try to use credits hook, but handle the case when notifications context is not available
+  let creditBalance = 0;
+  let isLoadingBalance = false;
+  
+  try {
+    const credits = useCredits();
+    creditBalance = credits.creditBalance;
+    isLoadingBalance = credits.isLoadingBalance;
+  } catch (error) {
+    console.warn('Credits functionality unavailable - NotificationsProvider missing');
+    // Fallback to default values (already set above)
+  }
 
   return (
     <Popover>
