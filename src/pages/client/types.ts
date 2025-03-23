@@ -15,4 +15,5 @@ export interface ClientProfileData {
   employee_size: string | null;
   company_specialism: string | null;
   company_turnover: string | null;
+  is_individual: boolean | null;
 }
