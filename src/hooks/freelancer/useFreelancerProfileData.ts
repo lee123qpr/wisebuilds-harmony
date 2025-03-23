@@ -36,6 +36,9 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
 
         // If we have profile data, fetch reviews
         if (data) {
+          let averageRating = data.rating;
+          let reviewsCount = data.reviews_count;
+          
           try {
             const { data: reviewsData, error: reviewsError } = await supabase
               .from('client_reviews')
@@ -45,8 +48,8 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             if (!reviewsError && reviewsData && reviewsData.length > 0) {
               // Calculate average rating
               const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
-              data.rating = parseFloat((totalRating / reviewsData.length).toFixed(1));
-              data.reviews_count = reviewsData.length;
+              averageRating = parseFloat((totalRating / reviewsData.length).toFixed(1));
+              reviewsCount = reviewsData.length;
             }
           } catch (reviewsError) {
             console.error('Error fetching reviews:', reviewsError);
@@ -62,54 +65,53 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             return [String(value)];
           };
           
-          // Create a new object with explicit types instead of using data directly
-          // This avoids the deep type instantiation error
+          // Create profile object with explicit typing
           const profileData: FreelancerProfile = {
             id: data.id,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            display_name: data.display_name,
-            profile_photo: data.profile_photo,
-            job_title: data.job_title,
-            location: data.location,
-            bio: data.bio,
+            first_name: data.first_name || undefined,
+            last_name: data.last_name || undefined,
+            display_name: data.display_name || undefined,
+            profile_photo: data.profile_photo || undefined,
+            job_title: data.job_title || undefined,
+            location: data.location || undefined,
+            bio: data.bio || undefined,
             skills: safeStringArray(data.skills),
-            rating: data.rating,
-            reviews_count: data.reviews_count,
-            verified: data.id_verified,
-            email_verified: data.id_verified ?? false,
-            hourly_rate: data.hourly_rate,
-            day_rate: data.hourly_rate, // Use hourly_rate as fallback
-            email: data.email,
-            phone_number: data.phone_number,
-            website: data.website,
-            member_since: data.member_since,
-            jobs_completed: data.jobs_completed,
-            experience: data.experience,
-            availability: data.availability,
+            rating: averageRating || undefined,
+            reviews_count: reviewsCount || undefined,
+            verified: data.id_verified || false,
+            email_verified: data.id_verified || false, // Using id_verified as fallback
+            hourly_rate: data.hourly_rate || undefined,
+            day_rate: data.hourly_rate || undefined, // Use hourly_rate as fallback
+            email: data.email || undefined,
+            phone_number: data.phone_number || undefined,
+            website: data.website || undefined,
+            member_since: data.member_since || undefined,
+            jobs_completed: data.jobs_completed || 0,
+            experience: data.experience || undefined,
+            availability: data.availability || undefined,
             qualifications: safeStringArray(data.qualifications),
             accreditations: safeStringArray(data.accreditations),
-            previous_employers: Array.isArray(data.previous_employers) 
-              ? data.previous_employers as { 
-                  employerName: string; 
-                  position: string; 
-                  startDate: string; 
-                  endDate?: string; 
-                  current: boolean; 
-                }[] 
-              : [],
-            previousWork: Array.isArray(data.previous_work) 
-              ? data.previous_work as {
-                  name: string;
-                  url: string;
-                  type: string;
-                  size: number;
-                  path: string;
-                }[]
-              : [],
-            indemnity_insurance: typeof data.indemnity_insurance === 'object' && data.indemnity_insurance !== null
-              ? data.indemnity_insurance as { hasInsurance: boolean; coverLevel?: string }
-              : { hasInsurance: false },
+            previous_employers: data.previous_employers ? 
+              (data.previous_employers as any[] || []).map(emp => ({
+                employerName: emp.employerName || '',
+                position: emp.position || '',
+                startDate: emp.startDate || '',
+                endDate: emp.endDate,
+                current: emp.current || false
+              })) : [],
+            previousWork: data.previous_work ? 
+              (data.previous_work as any[] || []).map(work => ({
+                name: work.name || '',
+                url: work.url || '',
+                type: work.type || '',
+                size: work.size || 0,
+                path: work.path || ''
+              })) : [],
+            indemnity_insurance: data.indemnity_insurance ? 
+              {
+                hasInsurance: ((data.indemnity_insurance as any)?.hasInsurance || false),
+                coverLevel: ((data.indemnity_insurance as any)?.coverLevel)
+              } : { hasInsurance: false }
           };
           
           setProfile(profileData);
