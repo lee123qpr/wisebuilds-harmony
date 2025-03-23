@@ -21,7 +21,9 @@ const BackButton: React.FC<BackButtonProps> = ({
 }) => {
   const navigate = useNavigate();
   
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
+    e.preventDefault();
+    
     if (onClick) {
       onClick();
     } else if (to) {
