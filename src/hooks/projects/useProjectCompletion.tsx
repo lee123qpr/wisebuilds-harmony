@@ -91,12 +91,26 @@ const updateQuoteCompletionStatus = async (
       // If both parties have completed, increment the jobs_completed counter for the freelancer
       const freelancerId = quoteData.freelancer_id;
       
+      // First, get the current jobs_completed count
+      const { data: profileData, error: fetchError } = await supabase
+        .from('freelancer_profiles')
+        .select('jobs_completed')
+        .eq('id', freelancerId)
+        .single();
+        
+      if (fetchError) {
+        console.error('Error fetching jobs_completed count:', fetchError);
+        // Continue despite error in fetching
+      }
+      
+      // Calculate the new count (default to 1 if we couldn't fetch the current value)
+      const currentCount = profileData?.jobs_completed || 0;
+      const newCount = currentCount + 1;
+      
       // Update the freelancer's completed jobs count
       const { error: updateError } = await supabase
         .from('freelancer_profiles')
-        .update({ 
-          jobs_completed: supabase.rpc('increment', { row_id: freelancerId, amount: 1 })
-        })
+        .update({ jobs_completed: newCount })
         .eq('id', freelancerId);
       
       if (updateError) {
