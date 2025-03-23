@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { AlertTriangle, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import DisputeButton from './DisputeButton';
 import IncompleteProjectDialog from './IncompleteProjectDialog';
 
 interface PartialCompletionCardProps {
@@ -57,7 +58,10 @@ const PartialCompletionCard: React.FC<PartialCompletionCardProps> = ({
             </AlertDescription>
           </Alert>
           
-          {/* Note: Dispute button removed from here */}
+          {/* Show dispute button for both client and freelancer */}
+          <div className="flex justify-end">
+            <DisputeButton onClick={() => setIncompleteDialogOpen(true)} />
+          </div>
         </div>
         
         {/* Incomplete dialog for providing a reason */}
