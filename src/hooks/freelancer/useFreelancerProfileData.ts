@@ -4,6 +4,7 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { FreelancerProfile } from '@/types/applications';
 import { toast } from '@/hooks/toast';
+import { Json } from '@/integrations/supabase/types';
 
 export const useFreelancerProfileData = (freelancerIdParam?: string) => {
   const { freelancerId: urlFreelancerId } = useParams<{ freelancerId: string }>();
@@ -51,9 +52,20 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             console.error('Error fetching reviews:', reviewsError);
             // Continue with profile data even if reviews fetch fails
           }
+          
+          // Transform the data to match FreelancerProfile type
+          const transformedProfile: FreelancerProfile = {
+            ...data,
+            skills: Array.isArray(data.skills) ? data.skills : data.skills ? [data.skills as string] : [],
+            qualifications: Array.isArray(data.qualifications) ? data.qualifications : data.qualifications ? [data.qualifications as string] : [],
+            accreditations: Array.isArray(data.accreditations) ? data.accreditations : data.accreditations ? [data.accreditations as string] : [],
+            previous_employers: data.previous_employers as any || [],
+            previous_work: data.previous_work as any || [],
+            indemnity_insurance: data.indemnity_insurance as any || { hasInsurance: false },
+          };
+          
+          setProfile(transformedProfile);
         }
-        
-        setProfile(data);
       } catch (error) {
         console.error('Error fetching freelancer profile:', error);
         toast({
