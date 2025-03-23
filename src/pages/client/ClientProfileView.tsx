@@ -3,40 +3,15 @@ import React from 'react';
 import { useParams } from 'react-router-dom';
 import MainLayout from '@/components/layout/MainLayout';
 import BackButton from '@/components/common/BackButton';
-import { supabase } from '@/integrations/supabase/client';
-import { useQuery } from '@tanstack/react-query';
 import ClientProfileSkeleton from '@/components/client/profile/ClientProfileSkeleton';
 import ClientProfileNotFound from '@/components/client/profile/ClientProfileNotFound';
 import ClientInformationCard from '@/components/client/profile/ClientInformationCard';
 import CompanyDescriptionCard from '@/components/client/profile/CompanyDescriptionCard';
-import { ClientProfileData } from './types';
+import { useClientProfile, formatProfileDate } from '@/hooks/clients/useClientProfile';
 
 const ClientProfileView = () => {
   const { clientId } = useParams<{ clientId: string }>();
-
-  const { data: clientProfile, isLoading, error } = useQuery({
-    queryKey: ['clientProfile', clientId],
-    queryFn: async () => {
-      if (!clientId) throw new Error('No client ID provided');
-      
-      const { data, error } = await supabase
-        .from('client_profiles')
-        .select('*')
-        .eq('id', clientId)
-        .single();
-        
-      if (error) throw error;
-      return data as ClientProfileData;
-    }
-  });
-
-  const formatDate = (dateString: string | null) => {
-    if (!dateString) return 'Unknown';
-    return new Date(dateString).toLocaleDateString('en-GB', {
-      month: 'long',
-      year: 'numeric'
-    });
-  };
+  const { data: clientProfile, isLoading, error } = useClientProfile(clientId);
 
   if (isLoading) {
     return (
@@ -72,7 +47,7 @@ const ClientProfileView = () => {
           <div className="grid gap-6">
             <ClientInformationCard 
               clientProfile={clientProfile}
-              formatDate={formatDate}
+              formatDate={formatProfileDate}
             />
             
             {clientProfile.company_description && (
