@@ -53,6 +53,23 @@ const ClientInformationCard: React.FC<ClientInformationCardProps> = ({ clientPro
           </div>
         )}
         
+        {clientProfile.website && (
+          <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
+            <Globe className="h-5 w-5 text-blue-600 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-slate-500">Website</p>
+              <a 
+                href={clientProfile.website.startsWith('http') ? clientProfile.website : `https://${clientProfile.website}`} 
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-medium text-blue-600 hover:underline truncate max-w-[200px] inline-block"
+              >
+                {clientProfile.website}
+              </a>
+            </div>
+          </div>
+        )}
+        
         {clientProfile.member_since && (
           <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
             <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -63,12 +80,12 @@ const ClientInformationCard: React.FC<ClientInformationCardProps> = ({ clientPro
           </div>
         )}
         
-        {clientProfile.jobs_completed && clientProfile.jobs_completed > 0 && (
+        {clientProfile.jobs_completed !== null && (
           <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
             <div className="h-5 w-5 flex items-center justify-center bg-green-100 rounded-full text-green-600 mt-0.5">✓</div>
             <div>
               <p className="text-sm font-medium text-slate-500">Completed Jobs</p>
-              <p className="font-medium text-slate-800">{clientProfile.jobs_completed}</p>
+              <p className="font-medium text-slate-800">{clientProfile.jobs_completed || 0}</p>
             </div>
           </div>
         )}

@@ -2,7 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Building, Check, Globe } from 'lucide-react';
+import { Calendar, MapPin, Building, Check, Globe, Mail } from 'lucide-react';
 import { format } from 'date-fns';
 import { ClientProfileData } from '@/pages/client/types';
 import RatingStars from '@/components/common/RatingStars';
@@ -69,10 +69,19 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
                 </div>
               )}
               
-              {clientProfile.jobs_completed && clientProfile.jobs_completed > 0 && (
+              {clientProfile.jobs_completed !== null && (
                 <div className="flex items-center text-sm text-muted-foreground">
                   <Check className="mr-1.5 h-4 w-4 flex-shrink-0" />
-                  <span>{clientProfile.jobs_completed} {clientProfile.jobs_completed === 1 ? 'job' : 'jobs'} completed</span>
+                  <span>{clientProfile.jobs_completed || 0} {clientProfile.jobs_completed === 1 ? 'job' : 'jobs'} completed</span>
+                </div>
+              )}
+              
+              {clientProfile.email && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Mail className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                  <a href={`mailto:${clientProfile.email}`} className="text-blue-600 hover:underline">
+                    {clientProfile.email}
+                  </a>
                 </div>
               )}
               
@@ -105,10 +114,10 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
               </Badge>
             )}
             
-            {clientProfile.jobs_completed && clientProfile.jobs_completed > 0 && (
+            {clientProfile.jobs_completed !== null && (
               <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
                 <Check className="h-3 w-3" />
-                {clientProfile.jobs_completed} {clientProfile.jobs_completed === 1 ? 'job' : 'jobs'} completed
+                {clientProfile.jobs_completed || 0} {clientProfile.jobs_completed === 1 ? 'job' : 'jobs'} completed
               </Badge>
             )}
           </div>
