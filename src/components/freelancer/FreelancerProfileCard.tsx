@@ -6,6 +6,11 @@ import FreelancerBadges from './FreelancerBadges';
 import FreelancerMetadata from './FreelancerMetadata';
 import FreelancerRateDisplay from './FreelancerRateDisplay';
 
+interface InsuranceStatus {
+  hasInsurance: boolean;
+  coverLevel: string | undefined;
+}
+
 interface FreelancerProfileCardProps {
   profileImage: string | null;
   fullName: string;
@@ -34,6 +39,7 @@ interface FreelancerProfileCardProps {
     size: number;
     path: string;
   }[];
+  compact?: boolean;
 }
 
 const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
@@ -54,7 +60,8 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   setUploadingImage,
   setProfileImage,
   insuranceStatus,
-  previousWork
+  previousWork,
+  compact = false
 }) => {
   return (
     <div className="bg-card rounded-lg shadow-sm overflow-hidden border border-border/40">
@@ -73,9 +80,14 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
         
         <div className="md:w-2/3 p-6 border-t md:border-t-0 md:border-l border-border">
           <FreelancerInfo
-            fullName={fullName}
-            profession={profession}
-            location={location}
+            freelancerId={userId}
+            freelancerName={fullName}
+            profilePhoto={profileImage}
+            jobTitle={profession}
+            isVerified={idVerified}
+            rating={rating}
+            reviewsCount={reviewsCount}
+            compact={compact}
           />
           
           <div className="mt-4">
@@ -89,9 +101,14 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
           
           <div className="mt-6 space-y-4">
             <FreelancerMetadata
-              memberSince={memberSince}
-              rating={rating}
-              reviewsCount={reviewsCount}
+              profile={{
+                member_since: memberSince,
+                jobs_completed: jobsCompleted,
+                location: location,
+                rating: rating,
+                reviews_count: reviewsCount
+              }}
+              compact={compact}
             />
             
             {hourlyRate && (

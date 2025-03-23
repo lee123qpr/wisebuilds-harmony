@@ -80,11 +80,15 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
             fullName={minimalFreelancer.display_name}
             profession={minimalFreelancer.job_title}
             userId={minimalFreelancer.id}
-            compact={true}
+            memberSince={null}
+            emailVerified={false}
+            jobsCompleted={0}
+            idVerified={false}
             rating={minimalFreelancer.rating}
             reviewsCount={minimalFreelancer.reviews_count}
             hourlyRate={minimalFreelancer.hourly_rate}
             allowImageUpload={false}
+            compact={true}
           />
         </CardContent>
       </Card>
