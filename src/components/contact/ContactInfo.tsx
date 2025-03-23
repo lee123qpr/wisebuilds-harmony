@@ -56,24 +56,6 @@ const ContactInfo = () => {
             </div>
           </div>
         </div>
-        
-        <div className="mt-8">
-          <h3 className="font-bold text-lg mb-3">Office Hours</h3>
-          <ul className="space-y-1 text-bw-gray-medium">
-            <li className="flex justify-between">
-              <span>Monday - Friday</span>
-              <span>9:00 AM - 5:00 PM</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Saturday</span>
-              <span>Closed</span>
-            </li>
-            <li className="flex justify-between">
-              <span>Sunday</span>
-              <span>Closed</span>
-            </li>
-          </ul>
-        </div>
       </CardContent>
     </Card>
   );
