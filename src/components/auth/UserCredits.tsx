@@ -9,7 +9,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { NotificationsProvider } from '@/context/NotificationsContext';
 
 const UserCredits: React.FC = () => {
   const navigate = useNavigate();
@@ -56,12 +55,8 @@ const UserCredits: React.FC = () => {
     </Popover>
   );
 
-  // Wrap in NotificationsProvider to ensure it works in any context
-  return (
-    <NotificationsProvider>
-      {creditDisplay}
-    </NotificationsProvider>
-  );
+  // Return directly without double-wrapping with NotificationsProvider
+  return creditDisplay;
 };
 
 export default UserCredits;

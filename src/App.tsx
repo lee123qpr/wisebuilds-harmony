@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from '@/context/AuthContext';
 import { Toaster } from '@/components/ui/toaster';
-import AppRouter from '@/routes/AppRouter';
+import { AppRouter } from '@/routes/AppRouter';
 import './App.css';
 import { NotificationsProvider } from '@/context/NotificationsContext';
 

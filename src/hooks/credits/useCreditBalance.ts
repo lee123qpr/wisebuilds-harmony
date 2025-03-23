@@ -3,13 +3,13 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useContext } from 'react';
-import { NotificationsContext } from '@/context/NotificationsContext';
+import { useNotifications } from '@/context/NotificationsContext';
 
 export const useCreditBalance = () => {
   const { user } = useAuth();
   
-  // Safely check for NotificationsContext to avoid errors when not available
-  const notificationsContext = useContext(NotificationsContext);
+  // Use the hook that properly handles missing context
+  const notificationsContext = useNotifications();
   const addNotification = notificationsContext?.addNotification;
 
   const {
