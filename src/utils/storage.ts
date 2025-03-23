@@ -1,62 +1,151 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { uploadFile as uploadFileToStorage, removeFile as removeFileFromStorage, checkBucketAccess } from '@/utils/supabaseStorage';
 
+/**
+ * Enum of available storage buckets
+ */
 export enum StorageBucket {
-  AVATARS = 'freelancer-avatar',
-  PROJECTS = 'projects',
+  PROJECTS = 'project-documents',
   ATTACHMENTS = 'attachments',
-  VERIFICATION = 'verification'
+  AVATARS = 'avatars',
+  VERIFICATION = 'verification_documents'
 }
 
 /**
- * Gets the actual bucket name to use for avatars based on available buckets
+ * Checks if a bucket exists and is accessible
  */
-export const getActualAvatarBucket = async (): Promise<string> => {
+export const checkBucketExists = async (bucketName: string): Promise<boolean> => {
   try {
-    // Check available buckets
-    const { data: bucketsData, error } = await supabase.storage.listBuckets();
+    const { data, error } = await supabase.storage.listBuckets();
     
     if (error) {
-      console.error('Error listing buckets:', error);
-      return StorageBucket.AVATARS; // Return default as fallback
+      console.error('Error checking buckets:', error);
+      return false;
     }
     
-    console.log('Available buckets:', bucketsData?.map(b => b.name).join(', '));
-    
-    // Check possible avatar bucket names in order of preference
-    const possibleBucketNames = [
-      'freelancer-avatar',  // First choice - updated to match existing bucket
-      'avatar',             // Second choice
-      'avatars',            // Third choice
-      'profile-images',     // Fourth choice
-      'user-avatars'        // Fifth choice
-    ];
-    
-    // Return the first bucket that exists
-    for (const bucketName of possibleBucketNames) {
-      if (bucketsData?.some(b => b.name === bucketName)) {
-        console.log(`Found avatar bucket: ${bucketName}`);
-        return bucketName;
-      }
-    }
-    
-    // If no avatar bucket found, log and return the first one as an attempt
-    console.warn('No avatar bucket found, defaulting to first bucket in list');
-    if (bucketsData && bucketsData.length > 0) {
-      return bucketsData[0].name;
-    }
-    
-    // Last resort, return the default value
-    return StorageBucket.AVATARS;
-    
+    return data.some(bucket => bucket.name === bucketName);
   } catch (error) {
-    console.error('Error getting avatar bucket:', error);
-    return StorageBucket.AVATARS; // Return default as fallback
+    console.error(`Error checking if bucket ${bucketName} exists:`, error);
+    return false;
   }
 };
 
-// Export the storage utility functions
-export const uploadFile = uploadFileToStorage;
-export const removeFile = removeFileFromStorage;
-export const checkBucketExists = checkBucketAccess;
+/**
+ * Ensures a bucket exists by checking and creating if needed
+ * Note: This requires service_role access and should only be used in edge functions
+ */
+export const ensureBucketExists = async (bucketName: string, isPublic: boolean = false): Promise<boolean> => {
+  try {
+    // First check if bucket already exists
+    const exists = await checkBucketExists(bucketName);
+    if (exists) {
+      return true;
+    }
+    
+    // In client-side code, we can't create buckets directly
+    console.error(`Bucket ${bucketName} doesn't exist. Please create it via Supabase SQL editor.`);
+    return false;
+  } catch (error) {
+    console.error(`Error ensuring bucket ${bucketName} exists:`, error);
+    return false;
+  }
+};
+
+/**
+ * Generates a unique file path for uploads
+ */
+export const generateFilePath = (
+  file: File,
+  userId: string,
+  bucket: StorageBucket,
+  folder?: string
+): string => {
+  const fileExt = file.name.split('.').pop() || '';
+  const uniquePart = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}`;
+  
+  // Create organized folder structure
+  // Always start with userId for RLS policies to work correctly
+  let basePath = `${userId}`;
+  
+  // Add optional folder if provided
+  if (folder) {
+    basePath += `/${folder}`;
+  }
+  
+  return `${basePath}/${uniquePart}.${fileExt}`;
+};
+
+/**
+ * Uploads a file to specified bucket
+ */
+export const uploadFile = async (
+  file: File,
+  userId: string,
+  bucket: StorageBucket = StorageBucket.PROJECTS,
+  folder?: string
+): Promise<{ url: string; path: string } | null> => {
+  try {
+    // Verify the user is authenticated
+    const { data: session } = await supabase.auth.getSession();
+    if (!session.session) {
+      throw new Error('Authentication required for file uploads');
+    }
+    
+    // Generate file path
+    const filePath = generateFilePath(file, userId, bucket, folder);
+    
+    console.log(`Uploading file: ${file.name} to ${bucket}/${filePath}`);
+    
+    // Upload file
+    const { data, error } = await supabase.storage
+      .from(bucket)
+      .upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+      });
+    
+    if (error) {
+      console.error('Error uploading file:', error);
+      return null;
+    }
+    
+    // Get public URL
+    const { data: { publicUrl } } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(data.path);
+    
+    console.log('File uploaded successfully, URL:', publicUrl);
+    
+    return {
+      url: publicUrl,
+      path: data.path
+    };
+  } catch (error) {
+    console.error('Error in uploadFile:', error);
+    return null;
+  }
+};
+
+/**
+ * Removes a file from storage
+ */
+export const removeFile = async (
+  path: string,
+  bucket: StorageBucket
+): Promise<boolean> => {
+  try {
+    const { error } = await supabase.storage
+      .from(bucket)
+      .remove([path]);
+    
+    if (error) {
+      console.error('Error removing file:', error);
+      return false;
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Error in removeFile:', error);
+    return false;
+  }
+};

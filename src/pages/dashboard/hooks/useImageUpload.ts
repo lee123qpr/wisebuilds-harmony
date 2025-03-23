@@ -1,49 +1,26 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
-import { StorageBucket, getActualAvatarBucket } from '@/utils/storage';
+import { StorageBucket, uploadFile } from '@/utils/storage';
 
 interface UseImageUploadProps {
   userId: string;
-  namePrefix?: string;
+  folder?: string; // Optional subfolder
+  namePrefix?: string; // Optional name prefix for the file
 }
 
-export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
+export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadProps) => {
+  const { toast } = useToast();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [imageKey, setImageKey] = useState(Date.now().toString());
-  const [bucketAvailable, setBucketAvailable] = useState<boolean | null>(null);
-  const [actualBucketName, setActualBucketName] = useState<string | null>(null);
-  const { toast } = useToast();
-
-  // Check bucket on mount
-  useEffect(() => {
-    const checkBucket = async () => {
-      try {
-        const bucketName = await getActualAvatarBucket();
-        setActualBucketName(bucketName);
-        setBucketAvailable(true);
-        console.log(`Using avatar bucket: ${bucketName}`);
-      } catch (error) {
-        console.error('Error checking avatar bucket:', error);
-        setBucketAvailable(false);
-      }
-    };
-    
-    checkBucket();
-  }, []);
+  // Used to force re-render of Avatar when image is updated
+  const [imageKey, setImageKey] = useState(() => uuidv4());
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) {
       console.log('No file selected or missing userId');
-      toast({
-        variant: 'destructive',
-        title: 'Upload Failed',
-        description: 'No file selected or user ID is missing'
-      });
       return null;
     }
 
@@ -58,45 +35,21 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
         throw new Error('Authentication required: Please log in before uploading');
       }
       
-      // Check file type
-      if (!file.type.startsWith('image/')) {
-        throw new Error('Only image files are allowed (jpg, png, etc)');
+      // Use the centralized upload utility
+      const result = await uploadFile(
+        file, 
+        userId, 
+        StorageBucket.AVATARS, 
+        folder || (namePrefix ? namePrefix.toLowerCase() : 'avatar')
+      );
+      
+      if (!result) {
+        throw new Error('Upload failed. Please try again.');
       }
       
-      // Check file size (max 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        throw new Error('File size exceeds 5MB limit');
-      }
+      console.log('Image uploaded successfully, publicUrl:', result.url);
       
-      // Default to the freelancer-avatar bucket if available
-      const bucketToUse = actualBucketName || 'freelancer-avatar';
-      console.log(`Attempting upload to ${bucketToUse}/${userId}`);
-      
-      // Prepare the file path - important for RLS policies
-      // The path MUST start with userId for RLS to work properly
-      const fileExt = file.name.split('.').pop();
-      const fileName = `${namePrefix || 'avatar'}-${Date.now()}.${fileExt}`;
-      const filePath = `${userId}/${fileName}`;
-      
-      // Upload directly using Supabase client
-      const { data, error } = await supabase.storage
-        .from(bucketToUse)
-        .upload(filePath, file, { upsert: true });
-      
-      if (error) {
-        console.error('Upload error:', error);
-        throw error;
-      }
-      
-      // Get the public URL for the uploaded file
-      const { data: publicUrlData } = supabase.storage
-        .from(bucketToUse)
-        .getPublicUrl(filePath);
-      
-      const url = publicUrlData.publicUrl;
-      console.log('Image uploaded successfully, publicUrl:', url);
-      
-      setImageUrl(url);
+      setImageUrl(result.url);
       setImageKey(uuidv4()); // Force re-render of Avatar
       
       toast({
@@ -104,7 +57,9 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
         description: 'Your profile image has been updated.',
       });
       
-      return url;
+      // Return the URL for use in updating profile if needed
+      return result.url;
+      
     } catch (error) {
       console.error('Error in image upload process:', error);
       
@@ -124,16 +79,14 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, namePrefix, toast, actualBucketName]);
+  }, [userId, folder, namePrefix, toast]);
 
   return {
     imageUrl,
-    uploadingImage,
-    imageKey,
-    handleImageUpload,
     setImageUrl,
+    uploadingImage,
     setUploadingImage,
-    bucketAvailable,
-    actualBucketName
+    imageKey,
+    handleImageUpload
   };
 };

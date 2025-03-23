@@ -14,7 +14,7 @@ const UserCredits: React.FC = () => {
   const navigate = useNavigate();
   const { creditBalance, isLoadingBalance } = useCredits();
 
-  const creditDisplay = (
+  return (
     <Popover>
       <PopoverTrigger asChild>
         <Button 
@@ -54,9 +54,6 @@ const UserCredits: React.FC = () => {
       </PopoverContent>
     </Popover>
   );
-
-  // Return directly without double-wrapping with NotificationsProvider
-  return creditDisplay;
 };
 
 export default UserCredits;

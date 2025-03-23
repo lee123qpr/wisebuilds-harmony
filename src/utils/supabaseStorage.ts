@@ -80,8 +80,8 @@ export const uploadFile = async (
  * Remove a file from a Supabase bucket
  */
 export const removeFile = async (
-  filePath: string,
-  bucketName: string
+  bucketName: string,
+  filePath: string
 ): Promise<boolean> => {
   try {
     // Validate path

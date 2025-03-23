@@ -1,9 +1,8 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Loader2, Upload } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { useToast } from '@/hooks/use-toast';
 
 interface FreelancerAvatarProps {
   profileImageUrl: string | null;
@@ -24,9 +23,6 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   className,
   size = 'default'
 }) => {
-  const { toast } = useToast();
-  const [imageError, setImageError] = React.useState(false);
-  
   // Determine size classes
   const sizeClasses = {
     default: 'h-16 w-16',
@@ -47,53 +43,8 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
     }
   };
 
-  // Reset image error state when profileImageUrl changes
-  React.useEffect(() => {
-    setImageError(false);
-  }, [profileImageUrl]);
-
-  // Handle image load error
-  const handleImageError = () => {
-    console.error('Failed to load avatar image:', profileImageUrl);
-    setImageError(true);
-  };
-
-  // Handle file selection from input
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    
-    // Validate file type
-    if (file && !file.type.startsWith('image/')) {
-      toast({
-        variant: 'destructive',
-        title: 'Invalid file type',
-        description: 'Please select an image file (JPG, PNG, etc.)'
-      });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
-    }
-    
-    // Validate file size (5MB max)
-    if (file && file.size > 5 * 1024 * 1024) {
-      toast({
-        variant: 'destructive',
-        title: 'File too large',
-        description: 'Image must be less than 5MB'
-      });
-      if (fileInputRef.current) {
-        fileInputRef.current.value = '';
-      }
-      return;
-    }
-    
-    // If validations pass, call the upload handler
-    handleImageUpload(e);
-  };
-
   return (
-    <div className="relative group">
+    <div className="relative">
       <Avatar 
         className={cn(
           avatarSizeClass,
@@ -102,19 +53,15 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
         )}
         onClick={handleAvatarClick}
       >
-        {profileImageUrl && !imageError ? (
+        {profileImageUrl ? (
           <AvatarImage 
-            src={profileImageUrl + `?key=${imageKey}`}
+            src={profileImageUrl + `?key=${imageKey}`} 
             alt="Profile" 
             className="object-cover"
-            onError={handleImageError}
           />
         ) : null}
-        <AvatarFallback className="text-lg relative">
+        <AvatarFallback className="text-lg">
           {initials}
-          <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-            <Upload className="h-6 w-6 text-white" />
-          </div>
         </AvatarFallback>
       </Avatar>
       
@@ -130,16 +77,10 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
       <input
         type="file"
         ref={fileInputRef}
-        onChange={handleFileChange}
+        onChange={handleImageUpload}
         accept="image/*"
         className="hidden"
       />
-      
-      {!uploadingImage && (
-        <div className="absolute bottom-0 right-0 bg-primary rounded-full p-1 shadow-md opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" onClick={handleAvatarClick}>
-          <Upload className="h-4 w-4 text-white" />
-        </div>
-      )}
     </div>
   );
 };

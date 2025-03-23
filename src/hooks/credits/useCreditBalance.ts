@@ -2,15 +2,12 @@
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
-import { useContext } from 'react';
+import { useEffect } from 'react';
 import { useNotifications } from '@/context/NotificationsContext';
 
 export const useCreditBalance = () => {
   const { user } = useAuth();
-  
-  // Use the hook that properly handles missing context
-  const notificationsContext = useNotifications();
-  const addNotification = notificationsContext?.addNotification;
+  const { addNotification } = useNotifications();
 
   const {
     data: creditBalance,
@@ -43,7 +40,49 @@ export const useCreditBalance = () => {
     refetchOnReconnect: true,
   });
 
-  // No longer creating a channel here - this is now handled by the centralized setup
+  // Set up real-time updates for credit balance
+  useEffect(() => {
+    if (!user) return;
+
+    let previousBalance = creditBalance;
+
+    // Subscribe to changes in the freelancer_credits table
+    const channel = supabase
+      .channel('credit_balance_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'freelancer_credits',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          // Refetch the balance
+          refetchCreditBalance();
+          
+          // Only show notification if balance has increased
+          const newBalance = payload.new?.credit_balance || 0;
+          if (previousBalance !== null && newBalance > previousBalance) {
+            const difference = newBalance - previousBalance;
+            addNotification({
+              type: 'credit_update',
+              title: 'Credits Added',
+              description: `${difference} credits have been added to your account.`
+            });
+          }
+          
+          // Update previous balance
+          previousBalance = newBalance;
+        }
+      )
+      .subscribe();
+
+    // Cleanup subscription on unmount
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user, creditBalance, refetchCreditBalance, addNotification]);
 
   const refetchCredits = async () => {
     if (!user) return null;

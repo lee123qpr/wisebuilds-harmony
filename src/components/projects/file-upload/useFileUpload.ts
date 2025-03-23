@@ -5,7 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { UploadedFile } from './types';
 import { allowedFileTypes, isValidFile } from './utils';
 import { useFileUploader } from './uploadUtils';
-import { StorageBucket, removeFile as storageRemoveFile } from '@/utils/storage';
+import { StorageBucket, removeFile } from '@/utils/storage';
 
 export const useFileUpload = (
   initialFiles: UploadedFile[] = [],
@@ -50,15 +50,17 @@ export const useFileUpload = (
     onFilesUploaded(updatedFiles);
     
     if (fileToRemove.path) {
-      const success = storageRemoveFile(fileToRemove.path, StorageBucket.PROJECTS);
-      if (!success) {
-        console.error('Error removing file from storage:', fileToRemove.path);
-        toast({
-          title: "Error",
-          description: `Failed to delete ${fileToRemove.name} from storage`,
-          variant: "destructive"
+      removeFile(fileToRemove.path, StorageBucket.PROJECTS)
+        .then(success => {
+          if (!success) {
+            console.error('Error removing file from storage:', fileToRemove.path);
+            toast({
+              title: "Error",
+              description: `Failed to delete ${fileToRemove.name} from storage`,
+              variant: "destructive"
+            });
+          }
         });
-      }
     }
   };
 
