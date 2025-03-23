@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
@@ -50,24 +51,30 @@ export const useLoadFreelancerProfile = ({
         
         console.log('Loaded profile data from database:', profileData);
         
-        // Fetch completed jobs count from a separate query for more reliability
-        const { data: jobsData, error: jobsError } = await supabase
-          .rpc('get_freelancer_completed_jobs_count', { freelancer_id: user.id });
-          
-        if (jobsError) {
-          console.error('Error fetching jobs count:', jobsError);
-        } else {
-          console.log('Jobs completed count from database function:', jobsData);
+        // Get jobs count directly from the profile data first
+        let jobsCount = profileData?.jobs_completed || 0;
+        
+        // Try to get a more accurate count from completed quotes
+        try {
+          // Count completed jobs where the freelancer participated
+          const { count, error: countError } = await supabase
+            .from('quotes')
+            .select('*', { count: 'exact', head: true })
+            .eq('freelancer_id', user.id)
+            .eq('freelancer_completed', true)
+            .eq('client_completed', true)
+            .not('completed_at', 'is', null);
+            
+          if (!countError && count !== null) {
+            // If we got a valid count, use it
+            jobsCount = count;
+          }
+        } catch (countErr) {
+          console.error('Error counting completed jobs:', countErr);
         }
         
-        // Get jobs completed count, prioritizing the direct query if available
-        const completedJobsCount = jobsData || 
-                                profileData?.jobs_completed || 
-                                user.user_metadata?.jobs_completed || 
-                                0;
-        
-        console.log('Setting jobs completed count to:', completedJobsCount);
-        setJobsCompleted(completedJobsCount);
+        console.log('Setting jobs completed count to:', jobsCount);
+        setJobsCompleted(jobsCount);
         
         if (profileData) {
           // ... keep existing code for processing profile data

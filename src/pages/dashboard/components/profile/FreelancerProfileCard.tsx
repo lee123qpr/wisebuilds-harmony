@@ -10,6 +10,7 @@ import { Calendar, MapPin, Upload, Check, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;
@@ -110,7 +111,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
         <div className="flex-1 text-center md:text-left">
           <div className="flex flex-col md:flex-row md:items-center md:gap-2">
             <h2 className="text-xl font-bold">{fullName}</h2>
-            {idVerified && <VerificationBadge />}
+            {idVerified && <VerificationBadge status="verified" />}
           </div>
           <p className="text-muted-foreground">{profession}</p>
           

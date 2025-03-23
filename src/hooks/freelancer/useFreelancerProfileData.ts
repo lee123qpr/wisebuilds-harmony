@@ -30,15 +30,31 @@ export const useFreelancerProfileData = () => {
         
         if (verificationError) throw verificationError;
         
-        // Fetch completed jobs count for more reliability
-        const { data: jobsData, error: jobsError } = await supabase
-          .rpc('get_freelancer_completed_jobs_count', { freelancer_id: freelancerId });
-          
-        if (jobsError) {
-          console.error('Error fetching jobs count:', jobsError);
-        } else if (profileData && jobsData !== null && jobsData !== undefined) {
-          // If we got a valid count from the database function, update the profile data
-          profileData.jobs_completed = jobsData;
+        // Get jobs count directly from the profile data first
+        let jobsCount = profileData?.jobs_completed || 0;
+        
+        // Try to get a more accurate count from completed quotes if available
+        try {
+          // Count completed jobs where the freelancer participated
+          const { count, error: countError } = await supabase
+            .from('quotes')
+            .select('*', { count: 'exact', head: true })
+            .eq('freelancer_id', freelancerId)
+            .eq('freelancer_completed', true)
+            .eq('client_completed', true)
+            .not('completed_at', 'is', null);
+            
+          if (!countError && count !== null) {
+            // If we got a valid count, use it
+            jobsCount = count;
+            
+            // Update the profile data object with this count
+            if (profileData) {
+              profileData.jobs_completed = count;
+            }
+          }
+        } catch (countErr) {
+          console.error('Error counting completed jobs:', countErr);
         }
         
         setProfileData(profileData);
@@ -46,7 +62,7 @@ export const useFreelancerProfileData = () => {
         setError(null);
         
         console.log('Loaded freelancer profile data:', profileData);
-        console.log('Jobs completed count:', profileData?.jobs_completed);
+        console.log('Jobs completed count:', jobsCount);
       } catch (err) {
         console.error('Error fetching freelancer data:', err);
         setError(err);
