@@ -31,6 +31,9 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
       .substring(0, 2);
   };
 
+  // Ensure jobs_completed is a number for comparison
+  const jobsCount = typeof clientProfile.jobs_completed === 'number' ? clientProfile.jobs_completed : 0;
+
   return (
     <div className="border shadow-md rounded-lg p-6">
       <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
@@ -98,7 +101,7 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
             {clientProfile.jobs_completed !== null && (
               <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
                 <Check className="h-3 w-3" />
-                {clientProfile.jobs_completed} {clientProfile.jobs_completed === 1 ? 'job' : 'jobs'} completed
+                {jobsCount} {jobsCount === 1 ? 'job' : 'jobs'} completed
               </Badge>
             )}
           </div>
