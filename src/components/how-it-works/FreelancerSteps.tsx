@@ -1,12 +1,12 @@
 
 import React from 'react';
-import { UserHardHat, ClipboardList, Search, BriefcaseBusiness, MessageSquare, Star } from 'lucide-react';
+import { HardHat, ClipboardList, Search, BriefcaseBusiness, MessageSquare, Star } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 
 const FreelancerSteps = () => {
   const steps = [
     {
-      icon: <UserHardHat className="h-10 w-10 text-logo-dark-blue" />,
+      icon: <HardHat className="h-10 w-10 text-logo-dark-blue" />,
       title: 'Create Your Profile',
       description: 'Sign up and build a detailed profile showcasing your skills, experience, qualifications, and portfolio. A complete profile increases your chances of attracting quality projects.'
     },
@@ -41,7 +41,7 @@ const FreelancerSteps = () => {
     <div className="py-16 px-4 bg-white">
       <div className="container mx-auto max-w-6xl">
         <div className="flex items-center mb-10">
-          <UserHardHat className="h-8 w-8 mr-3 text-logo-dark-blue" />
+          <HardHat className="h-8 w-8 mr-3 text-logo-dark-blue" />
           <h2 className="text-3xl font-heading font-bold">For Construction Professionals</h2>
         </div>
         

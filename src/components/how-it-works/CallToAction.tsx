@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, UserHardHat, Building2 } from 'lucide-react';
+import { ArrowRight, HardHat, Building2 } from 'lucide-react';
 
 const CallToAction = () => {
   return (
@@ -18,7 +18,7 @@ const CallToAction = () => {
         
         <div className="grid md:grid-cols-2 gap-8 max-w-3xl mx-auto">
           <div className="bg-white/10 backdrop-blur-sm p-8 rounded-lg shadow-lg text-center hover:bg-white/15 transition-colors">
-            <UserHardHat className="h-16 w-16 mx-auto mb-4 text-logo-light-blue" />
+            <HardHat className="h-16 w-16 mx-auto mb-4 text-logo-light-blue" />
             <h3 className="text-2xl font-bold mb-4">Construction Professionals</h3>
             <p className="mb-6">
               Create your professional profile and start discovering quality projects matched to your skills and preferences.

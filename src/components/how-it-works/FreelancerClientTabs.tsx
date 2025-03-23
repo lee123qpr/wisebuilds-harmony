@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { UserHardHat, Building2 } from 'lucide-react';
+import { HardHat, Building2 } from 'lucide-react';
 
 const FreelancerClientTabs = () => {
   const [activeTab, setActiveTab] = useState('freelancer');
@@ -19,7 +19,7 @@ const FreelancerClientTabs = () => {
         <Tabs defaultValue="freelancer" onValueChange={setActiveTab} className="w-full">
           <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
             <TabsTrigger value="freelancer" className="flex items-center gap-2 py-3">
-              <UserHardHat className={activeTab === 'freelancer' ? 'text-primary' : ''} size={20} />
+              <HardHat className={activeTab === 'freelancer' ? 'text-primary' : ''} size={20} />
               <span>Construction Professional</span>
             </TabsTrigger>
             <TabsTrigger value="client" className="flex items-center gap-2 py-3">
