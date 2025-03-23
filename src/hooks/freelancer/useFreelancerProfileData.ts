@@ -99,13 +99,23 @@ function transformProfileData(
   userId: string, 
   email: string
 ): FreelancerProfile {
-  // Handle Json arrays by converting to string arrays
+  // Helper function to handle Json arrays
   const transformJsonToStringArray = (jsonArray: Json | undefined): string[] => {
     if (!jsonArray) return [];
     if (Array.isArray(jsonArray)) {
       return jsonArray.map(item => String(item));
     }
     return [];
+  };
+
+  // Helper function to handle indemnity insurance
+  const transformIndemnityInsurance = (insurance: Json | undefined): boolean | { hasInsurance: boolean; coverLevel?: string } => {
+    if (!insurance) return false;
+    if (typeof insurance === 'boolean') return insurance;
+    if (typeof insurance === 'object') {
+      return insurance as { hasInsurance: boolean; coverLevel?: string };
+    }
+    return Boolean(insurance);
   };
 
   // Create the profile with consistent types
@@ -140,9 +150,7 @@ function transformProfileData(
     website: profileData.website,
     created_at: profileData.created_at,
     // Convert Json to appropriate types for complex fields
-    indemnity_insurance: typeof profileData.indemnity_insurance === 'object' 
-      ? profileData.indemnity_insurance as { hasInsurance: boolean; coverLevel?: string }
-      : !!profileData.indemnity_insurance,
+    indemnity_insurance: transformIndemnityInsurance(profileData.indemnity_insurance),
     skills: transformJsonToStringArray(profileData.skills),
     qualifications: transformJsonToStringArray(profileData.qualifications),
     accreditations: transformJsonToStringArray(profileData.accreditations),

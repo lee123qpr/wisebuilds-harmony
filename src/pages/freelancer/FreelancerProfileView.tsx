@@ -8,7 +8,6 @@ import FreelancerProfileLoading from './components/FreelancerProfileLoading';
 import FreelancerProfileNotFound from './components/FreelancerProfileNotFound';
 import MainLayout from '@/components/layout/MainLayout';
 import BackButton from '@/components/common/BackButton';
-import { FreelancerProfile } from '@/types/applications';
 
 interface FreelancerProfileViewProps {
   freelancerId?: string;
