@@ -10,9 +10,10 @@ import { supabase } from '@/integrations/supabase/client';
 
 interface ChatAreaProps {
   selectedConversation: Conversation | null;
+  onBackClick?: () => void;
 }
 
-const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
+const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation, onBackClick }) => {
   const [currentUserId, setCurrentUserId] = useState<string>('');
   const { 
     messages, 
@@ -54,7 +55,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation }) => {
 
   return (
     <div className="flex flex-col h-full">
-      <ChatHeader conversation={selectedConversation} />
+      <ChatHeader conversation={selectedConversation} onBackClick={onBackClick} />
       
       <div className="flex-grow overflow-y-auto p-4 pb-1">
         <MessagesList messages={messages} currentUserId={currentUserId} />

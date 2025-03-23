@@ -7,9 +7,10 @@ import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
 interface ChatHeaderProps {
   conversation: Conversation;
+  onBackClick?: () => void;
 }
 
-const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation }) => {
+const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation, onBackClick }) => {
   const clientName = conversation.client_info?.contact_name || 'Unknown Client';
   const companyName = conversation.client_info?.company_name;
   const projectTitle = conversation.project_title;
@@ -35,11 +36,13 @@ const ChatHeader: React.FC<ChatHeaderProps> = ({ conversation }) => {
 
   return (
     <div className="p-3 border-b flex items-center gap-3 bg-white">
-      <div className="md:hidden">
-        <Button variant="ghost" size="icon" className="mr-2">
-          <ArrowLeft className="h-4 w-4" />
-        </Button>
-      </div>
+      {onBackClick && (
+        <div className="md:hidden">
+          <Button variant="ghost" size="icon" className="mr-2" onClick={onBackClick}>
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
       
       <Avatar className="h-9 w-9">
         {logoUrl ? (
