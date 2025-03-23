@@ -29,9 +29,10 @@ const ViewProject = () => {
   const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
   const isBusiness = user?.user_metadata?.user_type === 'business';
   
-  // Check if we came from the business dashboard
+  // Check if we came from various dashboard locations
   const fromBusinessDashboard = location.state?.from === 'businessDashboard';
-
+  const fromActiveJobs = location.state?.from === 'activeJobs';
+  
   const handlePurchaseSuccess = () => {
     setRefreshContactInfo(prev => !prev);
   };
@@ -42,7 +43,10 @@ const ViewProject = () => {
   };
 
   const handleGoBack = () => {
-    if (fromBusinessDashboard) {
+    if (fromActiveJobs) {
+      // Go directly to active jobs tab when coming from active jobs
+      navigate('/dashboard/freelancer?tab=active');
+    } else if (fromBusinessDashboard) {
       // Go directly to business dashboard if we came from there
       navigate('/dashboard/business');
     } else if (isFreelancer) {

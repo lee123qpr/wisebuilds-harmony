@@ -22,12 +22,19 @@ const JobActions: React.FC<JobActionsProps> = ({
 }) => {
   const navigate = useNavigate();
   
+  // Handle navigate to project view with state indicating we're coming from active jobs
+  const handleViewProject = () => {
+    navigate(`/project/${quote.project_id}`, {
+      state: { from: 'activeJobs' }
+    });
+  };
+  
   return (
     <div className="flex flex-wrap gap-2 mt-4">
       <Button 
         variant="outline" 
         size="sm" 
-        onClick={() => navigate(`/project/${quote.project_id}`)}
+        onClick={handleViewProject}
       >
         View Project
         <ArrowRight className="ml-2 h-4 w-4" />
