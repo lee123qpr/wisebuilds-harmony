@@ -17,7 +17,13 @@ const ClientProfileView = () => {
   const { data: clientProfile, isLoading, error, isError } = useClientProfile(clientId);
   const { toast } = useToast();
 
-  console.log('ClientProfileView rendering with:', { clientId, isLoading, error, hasData: !!clientProfile });
+  console.log('ClientProfileView rendering with:', { 
+    clientId, 
+    isLoading, 
+    isError, 
+    error: error?.message, 
+    hasData: !!clientProfile 
+  });
 
   React.useEffect(() => {
     if (isError && error) {
