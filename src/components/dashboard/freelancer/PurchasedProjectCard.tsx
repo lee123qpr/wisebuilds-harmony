@@ -52,12 +52,7 @@ const PurchasedProjectCard: React.FC<PurchasedProjectProps> = ({ project }) => {
       <CardContent>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-4">
           <div className="space-y-4">
-            <ProjectMetadata 
-              project={project}
-              formattedDate={formattedDate}
-              clientName={clientName}
-              isLoadingClientInfo={isLoadingClientInfo}
-            />
+            {/* Remove the metadata display since it's now in the parent component */}
             
             <QuoteDetailsView 
               showQuoteDetails={showQuoteDetails}
