@@ -53,12 +53,21 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             // Continue with profile data even if reviews fetch fails
           }
           
+          // Safe conversion of JSON arrays to string arrays
+          const safeStringArray = (value: Json | null): string[] => {
+            if (!value) return [];
+            if (Array.isArray(value)) {
+              return value.map(item => String(item));
+            }
+            return [String(value)];
+          };
+          
           // Transform the data to match FreelancerProfile type
           const transformedProfile: FreelancerProfile = {
             ...data,
-            skills: Array.isArray(data.skills) ? data.skills : data.skills ? [data.skills as string] : [],
-            qualifications: Array.isArray(data.qualifications) ? data.qualifications : data.qualifications ? [data.qualifications as string] : [],
-            accreditations: Array.isArray(data.accreditations) ? data.accreditations : data.accreditations ? [data.accreditations as string] : [],
+            skills: safeStringArray(data.skills),
+            qualifications: safeStringArray(data.qualifications),
+            accreditations: safeStringArray(data.accreditations),
             previous_employers: data.previous_employers as any || [],
             previous_work: data.previous_work as any || [],
             indemnity_insurance: data.indemnity_insurance as any || { hasInsurance: false },
