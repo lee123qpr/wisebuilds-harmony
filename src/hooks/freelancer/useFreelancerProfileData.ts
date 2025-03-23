@@ -99,6 +99,15 @@ export const useFreelancerProfileData = (freelancerId?: string) => {
               : []
           };
           
+          // Handle indemnity_insurance specifically
+          if (data.indemnity_insurance !== null && data.indemnity_insurance !== undefined) {
+            if (typeof data.indemnity_insurance === 'boolean') {
+              transformedData.indemnity_insurance = data.indemnity_insurance;
+            } else {
+              transformedData.indemnity_insurance = data.indemnity_insurance as unknown as IndemnityInsurance;
+            }
+          }
+          
           setProfileData(transformedData);
         } else {
           setProfileData(null);
