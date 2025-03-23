@@ -1,21 +1,23 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Skeleton } from '@/components/ui/skeleton';
 import VerificationBadge from '@/components/common/VerificationBadge';
+import { Skeleton } from '@/components/ui/skeleton';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
+import { Link } from 'react-router-dom';
 
 interface FreelancerInfoProps {
   freelancerId: string;
   freelancerName: string;
-  profilePhoto?: string;
-  jobTitle?: string;
+  profilePhoto?: string | null;
+  jobTitle?: string | null;
   isVerified?: boolean;
   isLoading?: boolean;
-  rating?: number;
+  rating?: number | null;
   reviewsCount?: number;
   showRating?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  compact?: boolean;
+  linkToProfile?: boolean;
 }
 
 const FreelancerInfo: React.FC<FreelancerInfoProps> = ({
@@ -28,60 +30,76 @@ const FreelancerInfo: React.FC<FreelancerInfoProps> = ({
   rating,
   reviewsCount,
   showRating = true,
-  size = 'md'
+  compact = false,
+  linkToProfile = true
 }) => {
-  // Size mappings for consistent avatar sizing
-  const avatarSizes = {
-    sm: 'h-8 w-8',
-    md: 'h-10 w-10',
-    lg: 'h-12 w-12'
-  };
-
-  // Size mappings for skeleton
-  const skeletonSizes = {
-    sm: { avatar: 'h-8 w-8', title: 'h-3 w-24', subtitle: 'h-2 w-20' },
-    md: { avatar: 'h-10 w-10', title: 'h-4 w-32', subtitle: 'h-3 w-24' },
-    lg: { avatar: 'h-12 w-12', title: 'h-5 w-40', subtitle: 'h-3 w-28' }
+  const getInitials = (name: string) => {
+    return name
+      .split(' ')
+      .map(part => part[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
   };
 
   if (isLoading) {
     return (
       <div className="flex items-center gap-3">
-        <Skeleton className={`${skeletonSizes[size].avatar} rounded-full`} />
-        <div>
-          <Skeleton className={`${skeletonSizes[size].title} mb-1`} />
-          <Skeleton className={skeletonSizes[size].subtitle} />
+        <Skeleton className="h-10 w-10 rounded-full" />
+        <div className="space-y-2">
+          <Skeleton className="h-4 w-24" />
+          <Skeleton className="h-3 w-16" />
         </div>
       </div>
     );
   }
 
+  const nameElement = linkToProfile ? (
+    <Link 
+      to={`/freelancer/${freelancerId}`} 
+      className="font-medium hover:underline"
+    >
+      {freelancerName}
+    </Link>
+  ) : (
+    <span className="font-medium">{freelancerName}</span>
+  );
+
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-3">
-        <Avatar className={avatarSizes[size]}>
-          <AvatarImage src={profilePhoto} alt={freelancerName} />
-          <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div>
-          <div className="font-medium flex items-center gap-1">
-            {freelancerName}
-            {isVerified && <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />}
-          </div>
-          <p className="text-sm text-muted-foreground">{jobTitle}</p>
+    <div className="flex items-center gap-3">
+      <Avatar className={compact ? "h-8 w-8" : "h-10 w-10"}>
+        <AvatarImage src={profilePhoto || undefined} alt={freelancerName} />
+        <AvatarFallback>{getInitials(freelancerName)}</AvatarFallback>
+      </Avatar>
+      
+      <div className="flex flex-col">
+        <div className="flex items-center gap-1">
+          {nameElement}
+          {isVerified && (
+            <VerificationBadge
+              type="none"
+              status="verified"
+              showTooltip={false}
+              className="h-3.5 w-3.5 ml-1"
+            />
+          )}
+        </div>
+        
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-muted-foreground">
+            {jobTitle}
+          </span>
+          
+          {showRating && (
+            <ProfileRatingStars
+              userId={freelancerId}
+              rating={rating}
+              reviewsCount={reviewsCount}
+              showEmpty={false}
+            />
+          )}
         </div>
       </div>
-      
-      {showRating && (
-        <div className="mt-1">
-          <ProfileRatingStars 
-            userId={freelancerId}
-            rating={rating}
-            reviewsCount={reviewsCount}
-            showEmpty={true}
-          />
-        </div>
-      )}
     </div>
   );
 };

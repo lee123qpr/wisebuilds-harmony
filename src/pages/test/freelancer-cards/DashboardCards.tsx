@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle, CardDescription } from '@/components/ui/card';
 import DashboardFreelancerProfileCard from '@/pages/dashboard/components/profile/FreelancerProfileCard';
+import FreelancerProfileCard from '@/components/freelancer/FreelancerProfileCard';
 
 interface DashboardCardsProps {
   completeFreelancer: any;
@@ -22,8 +23,8 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
     <div className="grid gap-6">
       <Card>
         <CardHeader>
-          <CardTitle>Dashboard Freelancer Profile Card - Complete Profile</CardTitle>
-          <CardDescription>Experienced freelancer with full profile details</CardDescription>
+          <CardTitle>Dashboard Freelancer Profile Card (Original)</CardTitle>
+          <CardDescription>Using wrapper component</CardDescription>
         </CardHeader>
         <CardContent>
           <DashboardFreelancerProfileCard
@@ -38,50 +39,49 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
             emailVerified={completeFreelancer.email_verified}
             jobsCompleted={completeFreelancer.jobs_completed}
             idVerified={completeFreelancer.verified}
+            rating={completeFreelancer.rating}
+            reviewsCount={completeFreelancer.reviews_count}
           />
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader>
-          <CardTitle>Dashboard Freelancer Profile Card - New User</CardTitle>
-          <CardDescription>New freelancer with minimal profile details</CardDescription>
+          <CardTitle>Standardized Freelancer Profile Card - Regular</CardTitle>
+          <CardDescription>Using the base component directly</CardDescription>
         </CardHeader>
         <CardContent>
-          <DashboardFreelancerProfileCard
+          <FreelancerProfileCard
+            profileImage={completeFreelancer.profile_photo}
+            fullName={completeFreelancer.display_name}
+            profession={completeFreelancer.job_title}
+            userId={completeFreelancer.id}
+            memberSince={completeFreelancer.member_since}
+            emailVerified={completeFreelancer.email_verified}
+            jobsCompleted={completeFreelancer.jobs_completed}
+            idVerified={completeFreelancer.verified}
+            rating={completeFreelancer.rating}
+            reviewsCount={completeFreelancer.reviews_count}
+            allowImageUpload={false}
+          />
+        </CardContent>
+      </Card>
+      
+      <Card>
+        <CardHeader>
+          <CardTitle>Standardized Freelancer Profile Card - Compact</CardTitle>
+          <CardDescription>Compact version with minimal info</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FreelancerProfileCard
             profileImage={minimalFreelancer.profile_photo}
-            uploadingImage={false}
-            setUploadingImage={setUploadingImage}
-            setProfileImage={() => {}}
             fullName={minimalFreelancer.display_name}
-            profession={minimalFreelancer.job_title || 'Freelancer'}
+            profession={minimalFreelancer.job_title}
             userId={minimalFreelancer.id}
-            memberSince={minimalFreelancer.member_since}
-            emailVerified={minimalFreelancer.email_verified}
-            jobsCompleted={minimalFreelancer.jobs_completed}
-            idVerified={minimalFreelancer.verified}
-          />
-        </CardContent>
-      </Card>
-      
-      <Card>
-        <CardHeader>
-          <CardTitle>Dashboard Freelancer Profile Card - Uploading State</CardTitle>
-          <CardDescription>Shows how the card looks when an image is being uploaded</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <DashboardFreelancerProfileCard
-            profileImage={expertFreelancer.profile_photo}
-            uploadingImage={true}
-            setUploadingImage={setUploadingImage}
-            setProfileImage={() => {}}
-            fullName={expertFreelancer.display_name}
-            profession={expertFreelancer.job_title}
-            userId={expertFreelancer.id}
-            memberSince={expertFreelancer.member_since}
-            emailVerified={expertFreelancer.email_verified}
-            jobsCompleted={expertFreelancer.jobs_completed}
-            idVerified={expertFreelancer.verified}
+            compact={true}
+            rating={minimalFreelancer.rating}
+            reviewsCount={minimalFreelancer.reviews_count}
+            allowImageUpload={false}
           />
         </CardContent>
       </Card>

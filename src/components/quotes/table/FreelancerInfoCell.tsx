@@ -43,6 +43,7 @@ const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({
         isLoading={isLoading}
         rating={freelancer.rating}
         reviewsCount={freelancer.reviews_count}
+        linkToProfile={false}
       />
       
       {/* Show location separately if provided */}

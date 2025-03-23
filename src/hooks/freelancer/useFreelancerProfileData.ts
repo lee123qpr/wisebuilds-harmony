@@ -51,11 +51,11 @@ export interface ProfileData {
   accreditations?: string[];
 }
 
-// Define a simple response type to break the circular reference
-interface ProfileResponse {
+// Define a standalone response type to break circular references
+type ProfileResponse = {
   data: ProfileData | null;
   error: Error | null;
-}
+};
 
 // Format freelancer profile data safely
 export const formatFreelancerProfileData = (data: any): ProfileData | null => {
@@ -140,11 +140,18 @@ export const useFreelancerProfileData = (userId?: string) => {
 
       // Format the data
       const formattedData = formatFreelancerProfileData(data);
-      return { data: formattedData, error: null };
+      // Return with explicit type to avoid TypeScript depth issue
+      return { 
+        data: formattedData, 
+        error: null 
+      };
     } catch (error) {
       console.error('Error in useFreelancerProfileData:', error);
       toast.error('Failed to load freelancer profile data');
-      return { data: null, error: error as Error };
+      return { 
+        data: null, 
+        error: error as Error 
+      };
     }
   };
 
@@ -156,6 +163,7 @@ export const useFreelancerProfileData = (userId?: string) => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Return explicit types to avoid TypeScript depth issues
   return {
     profile: query.data?.data as FreelancerProfile | null,
     isLoading: query.isLoading,
