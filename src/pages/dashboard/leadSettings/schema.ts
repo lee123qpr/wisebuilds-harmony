@@ -8,7 +8,6 @@ export const leadSettingsSchema = z.object({
   duration: z.string().optional(),
   work_type: z.string().optional(),
   project_type: z.array(z.string()).optional(),
-  keywords: z.array(z.string()).optional(),
   hiring_status: z.string().optional(),
   requires_insurance: z.boolean().default(false),
   requires_site_visits: z.boolean().default(false),

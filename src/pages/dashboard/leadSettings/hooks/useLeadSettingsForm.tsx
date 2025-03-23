@@ -52,7 +52,6 @@ export const useLeadSettingsForm = () => {
       duration: '',
       work_type: '',
       project_type: [],
-      keywords: [],
       hiring_status: '',
       requires_insurance: false,
       requires_site_visits: false,
@@ -73,10 +72,6 @@ export const useLeadSettingsForm = () => {
       ? leadSettings.project_type 
       : (leadSettings.project_type ? [leadSettings.project_type] : []);
     
-    const keywords = Array.isArray(leadSettings.keywords) 
-      ? leadSettings.keywords 
-      : (leadSettings.keywords ? [leadSettings.keywords] : []);
-    
     // Create values object with correct types
     const values: LeadSettingsFormValues = {
       role: leadSettings.role || '',
@@ -85,7 +80,6 @@ export const useLeadSettingsForm = () => {
       duration: leadSettings.duration || '',
       work_type: leadSettings.work_type || '',
       project_type,
-      keywords,
       hiring_status: leadSettings.hiring_status || '',
       requires_insurance: !!leadSettings.requires_insurance,
       requires_site_visits: !!leadSettings.requires_site_visits,

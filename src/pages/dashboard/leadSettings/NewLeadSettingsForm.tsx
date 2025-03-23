@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Form } from '@/components/ui/form';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -38,7 +37,6 @@ const NewLeadSettingsForm = () => {
         duration: values.duration || '',
         work_type: values.work_type || '',
         project_type: Array.isArray(values.project_type) ? values.project_type : [],
-        keywords: Array.isArray(values.keywords) ? values.keywords : [],
         hiring_status: values.hiring_status || '',
         requires_insurance: !!values.requires_insurance,
         requires_site_visits: !!values.requires_site_visits,

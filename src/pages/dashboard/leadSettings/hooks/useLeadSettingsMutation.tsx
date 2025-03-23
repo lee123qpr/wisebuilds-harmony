@@ -20,7 +20,6 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
       
       // Ensure arrays are properly handled
       const project_type = Array.isArray(values.project_type) ? values.project_type : [];
-      const keywords = Array.isArray(values.keywords) ? values.keywords : [];
       
       // Ensure booleans are proper boolean values
       const requires_insurance = !!values.requires_insurance;
@@ -37,7 +36,6 @@ export const useLeadSettingsMutation = (existingSettings: any) => {
         duration: values.duration || '',
         work_type: values.work_type || '',
         project_type,
-        keywords,
         hiring_status: values.hiring_status || '',
         requires_insurance,
         requires_site_visits,

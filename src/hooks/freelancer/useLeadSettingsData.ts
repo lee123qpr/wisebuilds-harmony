@@ -4,12 +4,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { LeadSettings } from './types';
 
+type LeadSettingsResponse = LeadSettings | null;
+
 export const useLeadSettingsData = () => {
   const { user } = useAuth();
   
-  const { data: leadSettings, isLoading, error } = useQuery({
+  const { data: leadSettings, isLoading, error } = useQuery<LeadSettingsResponse, Error>({
     queryKey: ['leadSettings', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<LeadSettingsResponse> => {
       if (!user) return null;
       
       const { data, error } = await supabase

@@ -10,7 +10,6 @@ export interface LeadSettings {
   budget?: string;
   duration?: string;
   project_type?: string[] | string;
-  keywords?: string[] | string;
   hiring_status?: string;
   requires_insurance?: boolean;
   requires_site_visits?: boolean;
