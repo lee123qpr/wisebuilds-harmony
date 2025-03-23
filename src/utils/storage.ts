@@ -101,12 +101,12 @@ export const uploadFile = async (
       .from(bucket)
       .upload(filePath, file, {
         cacheControl: '3600',
-        upsert: false
+        upsert: true
       });
     
     if (error) {
       console.error('Error uploading file:', error);
-      return null;
+      throw error;
     }
     
     // Get public URL

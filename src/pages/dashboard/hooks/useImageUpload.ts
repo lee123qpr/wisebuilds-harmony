@@ -40,8 +40,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       const result = await uploadFile(
         file, 
         userId, 
-        StorageBucket.AVATARS, 
-        folder || (namePrefix ? namePrefix.toLowerCase() : 'avatar')
+        StorageBucket.AVATARS
       );
       
       if (!result) {
@@ -80,7 +79,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, folder, namePrefix, toast]);
+  }, [userId, toast]);
 
   return {
     imageUrl,

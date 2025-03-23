@@ -46,10 +46,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
     setUploadingImage
   } = useImageUpload({
     userId,
-    folder: '', // This parameter is no longer used but kept for backward compatibility
-    namePrefix: fullName && fullName.trim() 
-      ? fullName.replace(/\s+/g, '-').toLowerCase() 
-      : 'freelancer'
+    namePrefix: 'avatar'
   });
 
   React.useEffect(() => {
