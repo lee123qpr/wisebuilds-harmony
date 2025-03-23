@@ -2,9 +2,9 @@
 import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { AlertTriangle, Clock, X } from 'lucide-react';
+import { AlertTriangle, Clock } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import DisputeButton from './DisputeButton';
 import IncompleteProjectDialog from './IncompleteProjectDialog';
 
 interface PartialCompletionCardProps {
@@ -58,18 +58,10 @@ const PartialCompletionCard: React.FC<PartialCompletionCardProps> = ({
             </AlertDescription>
           </Alert>
           
-          {/* Show an option to mark as incomplete if the user wants to dispute */}
+          {/* Show dispute button */}
           {(userCompleted || otherPartyCompleted) && (
             <div className="flex justify-end">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="text-red-600 border-red-200 hover:bg-red-50 flex items-center gap-1"
-                onClick={() => setIncompleteDialogOpen(true)}
-              >
-                <X className="h-4 w-4" />
-                Dispute Completion
-              </Button>
+              <DisputeButton onClick={() => setIncompleteDialogOpen(true)} />
             </div>
           )}
         </div>
