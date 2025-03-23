@@ -15,12 +15,15 @@ export const useFreelancerProfileData = () => {
       try {
         setLoading(true);
         
-        // Fetch the freelancer profile data
+        // Fetch the freelancer profile data with cacheControl: 'no-cache' to ensure fresh data
         const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
           .select('*')
           .eq('id', freelancerId)
-          .maybeSingle();
+          .maybeSingle()
+          .options({ 
+            cache: 'no-store' // This ensures we don't get cached data
+          });
         
         if (profileError) throw profileError;
         
@@ -33,6 +36,9 @@ export const useFreelancerProfileData = () => {
         setProfileData(profileData);
         setIsVerified(isVerifiedData || false);
         setError(null);
+        
+        console.log('Loaded freelancer profile data:', profileData);
+        console.log('Jobs completed count:', profileData?.jobs_completed);
       } catch (err) {
         console.error('Error fetching freelancer data:', err);
         setError(err);

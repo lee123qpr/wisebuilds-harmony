@@ -41,13 +41,17 @@ export const useLoadFreelancerProfile = ({
           .from('freelancer_profiles')
           .select('*')
           .eq('id', user.id)
-          .maybeSingle();
+          .maybeSingle()
+          .options({
+            cache: 'no-store'
+          });
           
         if (profileError) {
           throw profileError;
         }
         
         console.log('Loaded profile data from database:', profileData);
+        console.log('Jobs completed count:', profileData?.jobs_completed);
         
         if (profileData) {
           const previousEmployers = Array.isArray(profileData.previous_employers) 
@@ -111,7 +115,10 @@ export const useLoadFreelancerProfile = ({
           setProfileImage(profileData.profile_photo || null);
           setMemberSince(profileData.member_since || user.created_at);
           setEmailVerified(user.email_confirmed_at !== null);
-          setJobsCompleted(profileData.jobs_completed || 0);
+          
+          const completedJobs = profileData.jobs_completed || 0;
+          console.log('Setting jobs completed count to:', completedJobs);
+          setJobsCompleted(completedJobs);
         } else {
           const userMetadata = user.user_metadata || {};
           
