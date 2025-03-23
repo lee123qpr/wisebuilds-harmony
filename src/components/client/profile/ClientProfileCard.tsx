@@ -87,12 +87,7 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
               </Badge>
             )}
             
-            {clientProfile.email_verified && (
-              <Badge variant="outline" className="bg-green-50 text-green-700 flex items-center gap-1">
-                <Check className="h-3 w-3" />
-                Email verified
-              </Badge>
-            )}
+            {/* Removed the email_verified check that was causing the error */}
             
             {clientProfile.jobs_completed && clientProfile.jobs_completed > 0 && (
               <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
