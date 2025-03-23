@@ -1,11 +1,10 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { UploadedFile } from './types';
 import { allowedFileTypes, isValidFile } from './utils';
 import { useFileUploader } from './uploadUtils';
-import { StorageBucket, removeFile as storageRemoveFile } from '@/utils/storage';
+import { StorageBucket, removeFile as storageRemoveFile } from '@/utils/storage/index';
 
 export const useFileUpload = (
   initialFiles: UploadedFile[] = [],
@@ -23,7 +22,6 @@ export const useFileUpload = (
 
   const handleFileSelection = (newFiles: File[]) => {
     const validFiles = newFiles.filter(file => {
-      // Use the isValidFile function for more robust validation
       const isValid = isValidFile(file);
       if (!isValid) {
         toast({
