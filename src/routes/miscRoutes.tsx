@@ -1,20 +1,14 @@
 
-import { Navigate } from "react-router-dom";
-import NotFound from "../pages/NotFound";
-import ProtectedRoute from "../components/auth/ProtectedRoute";
-import Index from "../pages/Index";
+import TestSkeleton from '../components/test/TestSkeleton';
+import FreelancerProfileCardsTest from '../pages/test/FreelancerProfileCardsTest';
 
 export const miscRoutes = [
   {
-    path: "/",
-    element: <Index />
+    path: '/test-skeleton',
+    element: <TestSkeleton />,
   },
   {
-    path: "/messages/:partnerId",
-    element: <ProtectedRoute><Navigate to="/dashboard/business?tab=messages" replace /></ProtectedRoute>
+    path: '/test/profile-cards',
+    element: <FreelancerProfileCardsTest />,
   },
-  {
-    path: "*",
-    element: <NotFound />
-  }
 ];
