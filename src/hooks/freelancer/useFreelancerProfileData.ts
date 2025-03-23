@@ -17,10 +17,22 @@ export interface ProfileData {
   phone_number: string | null;
   location: string | null;
   skills: string[] | null;
-  previous_employers: any[] | null;
-  previous_work: any[] | null;
+  previous_employers: Array<{
+    employerName?: string;
+    position?: string;
+    startDate?: string;
+    endDate?: string | null;
+    current?: boolean;
+  }> | null;
+  previous_work: Array<{
+    title?: string;
+    description?: string;
+  }> | null;
   qualifications: string[] | null;
-  indemnity_insurance: any | null;
+  indemnity_insurance: {
+    hasInsurance?: boolean;
+    coverLevel?: string;
+  } | null;
   created_at: string;
   updated_at: string;
   member_since?: string;

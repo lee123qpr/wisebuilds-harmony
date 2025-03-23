@@ -1,8 +1,7 @@
 
 import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
-import QuoteFreelancerProfileCard from '@/pages/project/components/quotes/FreelancerProfileCard';
-import MessagesFreelancerProfile from '@/components/quotes/components/FreelancerProfile';
+import QuoteDetailsCard from '@/pages/project/components/quotes/QuoteDetailsCard';
 import FreelancerInfoCell from '@/components/quotes/table/FreelancerInfoCell';
 
 interface QuoteCardsProps {
@@ -20,137 +19,93 @@ const QuoteCards: React.FC<QuoteCardsProps> = ({
   expertFreelancer,
   mockQuoteDate
 }) => {
+  // Create a mock quote for testing
+  const mockQuote = {
+    id: 'quote-123',
+    status: 'pending',
+    created_at: mockQuoteDate,
+    project_id: 'project-123',
+    freelancer_id: completeFreelancer.id,
+    client_id: 'client-123',
+    fixed_price: 1000,
+    day_rate: null,
+    estimated_price: null,
+    available_start_date: new Date().toISOString(),
+    estimated_duration: 14,
+    duration_unit: 'days',
+    payment_terms: 'half upfront, half on completion',
+    description: 'This is a detailed quote description outlining the work that will be done for this project.'
+  };
+
   return (
     <div className="grid gap-8">
       <Card>
         <CardHeader>
-          <CardTitle>Quote Freelancer Profile Card - Various Users</CardTitle>
+          <CardTitle>Quote Details Card - Complete Profile</CardTitle>
         </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-6">
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Experienced Freelancer</h3>
-            <QuoteFreelancerProfileCard
-              freelancer={completeFreelancer}
-              quoteDate={mockQuoteDate}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">New Freelancer</h3>
-            <QuoteFreelancerProfileCard
-              freelancer={newFreelancer}
-              quoteDate={mockQuoteDate}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Minimal Profile</h3>
-            <QuoteFreelancerProfileCard
-              freelancer={minimalFreelancer}
-              quoteDate={mockQuoteDate}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Expert Freelancer</h3>
-            <QuoteFreelancerProfileCard
-              freelancer={expertFreelancer}
-              quoteDate={mockQuoteDate}
-            />
-          </div>
+        <CardContent>
+          <QuoteDetailsCard
+            quote={mockQuote}
+            freelancer={completeFreelancer}
+            onAcceptQuote={async () => console.log('Accept quote')}
+            onRejectQuote={async () => console.log('Reject quote')}
+            isAccepting={false}
+            isRejecting={false}
+          />
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader>
-          <CardTitle>Messages Freelancer Profile - Various States</CardTitle>
+          <CardTitle>Quote Details Card - Minimal Profile</CardTitle>
         </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-6">
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Complete Profile</h3>
-            <MessagesFreelancerProfile
-              freelancerName={completeFreelancer.display_name}
-              profilePhoto={completeFreelancer.profile_photo}
-              jobTitle={completeFreelancer.job_title}
-              isVerified={completeFreelancer.verified}
-              isLoadingFreelancer={false}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">No Profile Photo</h3>
-            <MessagesFreelancerProfile
-              freelancerName={minimalFreelancer.display_name}
-              profilePhoto={minimalFreelancer.profile_photo}
-              jobTitle={minimalFreelancer.job_title || 'Freelancer'}
-              isVerified={minimalFreelancer.verified}
-              isLoadingFreelancer={false}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Not Verified</h3>
-            <MessagesFreelancerProfile
-              freelancerName={newFreelancer.display_name}
-              profilePhoto={newFreelancer.profile_photo}
-              jobTitle={newFreelancer.job_title}
-              isVerified={newFreelancer.verified}
-              isLoadingFreelancer={false}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Loading State</h3>
-            <MessagesFreelancerProfile
-              freelancerName="Loading..."
-              profilePhoto={undefined}
-              jobTitle="Loading..."
-              isVerified={false}
-              isLoadingFreelancer={true}
-            />
-          </div>
+        <CardContent>
+          <QuoteDetailsCard
+            quote={mockQuote}
+            freelancer={minimalFreelancer}
+            onAcceptQuote={async () => console.log('Accept quote')}
+            onRejectQuote={async () => console.log('Reject quote')}
+            isAccepting={false}
+            isRejecting={false}
+          />
         </CardContent>
       </Card>
       
       <Card>
         <CardHeader>
-          <CardTitle>Quotes Table Freelancer Info Cell</CardTitle>
+          <CardTitle>Freelancer Info Cell - Various States</CardTitle>
         </CardHeader>
-        <CardContent className="grid md:grid-cols-2 gap-6">
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Complete Profile</h3>
-            <FreelancerInfoCell
-              freelancer={completeFreelancer}
-              freelancerId={completeFreelancer.id}
-              isLoading={false}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">New User</h3>
-            <FreelancerInfoCell
-              freelancer={newFreelancer}
-              freelancerId={newFreelancer.id}
-              isLoading={false}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Minimal Information</h3>
-            <FreelancerInfoCell
-              freelancer={minimalFreelancer}
-              freelancerId={minimalFreelancer.id}
-              isLoading={false}
-            />
-          </div>
-          
-          <div className="border p-4 rounded-lg">
-            <h3 className="text-sm font-medium mb-2">Loading State</h3>
-            <FreelancerInfoCell
-              freelancer={{}}
-              freelancerId="loading"
-              isLoading={true}
-            />
+        <CardContent>
+          <div className="grid grid-cols-2 gap-4">
+            <div className="p-4 border rounded">
+              <h3 className="mb-2 font-medium">Complete Profile</h3>
+              <FreelancerInfoCell
+                freelancer={completeFreelancer}
+                freelancerId={completeFreelancer.id}
+              />
+            </div>
+            <div className="p-4 border rounded">
+              <h3 className="mb-2 font-medium">Minimal Profile</h3>
+              <FreelancerInfoCell
+                freelancer={minimalFreelancer}
+                freelancerId={minimalFreelancer.id}
+              />
+            </div>
+            <div className="p-4 border rounded">
+              <h3 className="mb-2 font-medium">Expert Profile</h3>
+              <FreelancerInfoCell
+                freelancer={expertFreelancer}
+                freelancerId={expertFreelancer.id}
+              />
+            </div>
+            <div className="p-4 border rounded">
+              <h3 className="mb-2 font-medium">Loading State</h3>
+              <FreelancerInfoCell
+                freelancer={{}}
+                freelancerId="loading-id"
+                isLoading={true}
+              />
+            </div>
           </div>
         </CardContent>
       </Card>
