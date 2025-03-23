@@ -53,12 +53,12 @@ const ClientProfileView = () => {
 
   return (
     <MainLayout>
-      <div className="container max-w-4xl py-8">
+      <div className="container max-w-4xl py-8 px-4 sm:px-6 animate-fade-in">
         <BackButton />
         
         <ClientHeaderSection clientProfile={clientProfile} />
         
-        <div className="mt-6 grid gap-6">
+        <div className="mt-8 grid gap-8">
           <ClientInformationCard 
             clientProfile={clientProfile}
             formatDate={formatProfileDate}
