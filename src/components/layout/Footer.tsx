@@ -1,6 +1,7 @@
 
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { Facebook, Twitter, Linkedin } from 'lucide-react';
 
 const Footer: React.FC = () => {
   return (
@@ -40,7 +41,7 @@ const Footer: React.FC = () => {
             <ul className="space-y-2">
               <li><Link to="/legal/terms" className="text-gray-300 hover:text-white">Terms of Service</Link></li>
               <li><Link to="/legal/privacy" className="text-gray-300 hover:text-white">Privacy Policy</Link></li>
-              <li><Link to="/legal/cookies" className="text-gray-300 hover:text-white">Cookie Policy</Link></li>
+              <li><Link to="/cookie-policy" className="text-gray-300 hover:text-white">Cookie Policy</Link></li>
             </ul>
           </div>
           
@@ -52,10 +53,18 @@ const Footer: React.FC = () => {
               <p>71-75 Shelton Street, London WC2H 9JQ</p>
             </address>
             <div className="flex space-x-4 mt-4">
-              {/* Social media icons would go here */}
-              <span className="text-gray-300 hover:text-white">FB</span>
-              <span className="text-gray-300 hover:text-white">TW</span>
-              <span className="text-gray-300 hover:text-white">LI</span>
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
+                <Facebook size={20} />
+                <span className="sr-only">Facebook</span>
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
+                <Twitter size={20} />
+                <span className="sr-only">Twitter</span>
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="text-gray-300 hover:text-white">
+                <Linkedin size={20} />
+                <span className="sr-only">LinkedIn</span>
+              </a>
             </div>
           </div>
         </div>

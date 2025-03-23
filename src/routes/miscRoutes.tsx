@@ -1,36 +1,27 @@
 
-import React from 'react';
+import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
-import NotFound from '@/pages/NotFound';
-import FreelancerProfileView from '@/pages/freelancer/FreelancerProfileView';
-import ClientProfileView from '@/pages/client/ClientProfileView';
-import About from '@/pages/About';
-import HowItWorks from '@/pages/HowItWorks';
-import Contact from '@/pages/Contact';
+
+const About = lazy(() => import('../pages/About'));
+const Contact = lazy(() => import('../pages/Contact'));
+const HowItWorks = lazy(() => import('../pages/HowItWorks'));
+const CookiePolicy = lazy(() => import('../pages/CookiePolicy'));
 
 export const miscRoutes: RouteObject[] = [
   {
     path: '/about',
-    element: <About />
-  },
-  {
-    path: '/how-it-works',
-    element: <HowItWorks />
+    element: <About />,
   },
   {
     path: '/contact',
-    element: <Contact />
+    element: <Contact />,
   },
   {
-    path: '/freelancer/:freelancerId',
-    element: <FreelancerProfileView />
+    path: '/how-it-works',
+    element: <HowItWorks />,
   },
   {
-    path: '/client/:clientId',
-    element: <ClientProfileView />
+    path: '/cookie-policy',
+    element: <CookiePolicy />,
   },
-  {
-    path: '*',
-    element: <NotFound />
-  }
 ];
