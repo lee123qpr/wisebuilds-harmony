@@ -1,4 +1,3 @@
-
 import { format, formatDistanceToNow } from 'date-fns';
 
 // Format date string to readable format
@@ -37,7 +36,6 @@ export const formatRole = (role: string) => {
     'cad_engineer': 'CAD Engineer',
     'architect': 'Architect',
     'quantitysurveyor': 'Quantity Surveyor',
-    'cadtechnician': 'CAD Technician',
     'cadtechnician': 'CAD Technician',
     'cadengineer': 'CAD Engineer'
   };

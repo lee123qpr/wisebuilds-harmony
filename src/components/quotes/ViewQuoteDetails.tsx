@@ -12,6 +12,7 @@ import DescriptionSection from '@/components/quotes/details/DescriptionSection';
 import QuoteDetailsSkeleton from '@/components/quotes/details/QuoteDetailsSkeleton';
 import ProjectInfo from './components/ProjectInfo';
 import { useContactInfo } from '@/hooks/leads/useContactInfo';
+import { QuoteWithProject } from '@/types/quotes';
 
 interface ViewQuoteDetailsProps {
   projectId: string;
@@ -59,8 +60,8 @@ const ViewQuoteDetails: React.FC<ViewQuoteDetailsProps> = ({
 
   const createdDate = quote.created_at ? format(new Date(quote.created_at), 'MMMM d, yyyy h:mm a') : 'Unknown date';
   
-  // Try to get role from quote.project if available and projectRole prop was not provided
-  const roleToUse = projectRole || (quote.project?.role || null);
+  // For quotes without project info, just use the projectRole prop
+  const roleToUse = projectRole || null;
   
   return (
     <Card className="border-t-4 border-t-blue-500">
