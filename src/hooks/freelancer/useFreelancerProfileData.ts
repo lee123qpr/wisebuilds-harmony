@@ -15,13 +15,10 @@ export const useFreelancerProfileData = () => {
       try {
         setLoading(true);
         
-        // Add a timestamp to force fresh data
-        const timestamp = new Date().getTime();
-        
         // Fetch the freelancer profile data
         const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
-          .select(`*, created_at_${timestamp}:created_at`)
+          .select('*')
           .eq('id', freelancerId)
           .maybeSingle();
         

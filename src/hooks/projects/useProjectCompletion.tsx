@@ -67,16 +67,20 @@ const updateQuoteCompletionStatus = async (
       throw quoteError;
     }
     
-    // Update the completion status
-    const { data, error } = await supabase.rpc(
-      'update_project_completion_status' as any, 
-      {
-        p_quote_id: quoteId,
-        p_project_id: projectId,
-        p_user_id: userId,
-        p_is_freelancer: isFreelancer
-      }
-    );
+    // Update the quote's completion status
+    const { data, error } = await supabase
+      .from('quotes')
+      .update({ 
+        [updateField]: true,
+        // If both parties are marking complete, set the completed_at timestamp
+        ...((!isFreelancer && quoteData.freelancer_completed) || 
+           (isFreelancer && quoteData.client_completed) 
+            ? { completed_at: new Date().toISOString() } 
+            : {})
+      })
+      .eq('id', quoteId)
+      .select('freelancer_completed, client_completed')
+      .single();
       
     if (error) {
       console.error('Error updating completion status:', error);
@@ -84,12 +88,13 @@ const updateQuoteCompletionStatus = async (
     }
     
     // Check if both parties have now marked it as complete
-    const otherPartyCompleted = isFreelancer ? quoteData.client_completed : quoteData.freelancer_completed;
-    const userCompleted = isFreelancer ? true : true; // We're setting this to true now
+    const bothCompleted = data.freelancer_completed && data.client_completed;
     
-    if (userCompleted && otherPartyCompleted) {
+    if (bothCompleted) {
       // If both parties have completed, increment the jobs_completed counter for the freelancer
       const freelancerId = quoteData.freelancer_id;
+      
+      console.log('Both parties marked complete, incrementing jobs_completed for freelancer:', freelancerId);
       
       // First, get the current jobs_completed count
       const { data: profileData, error: fetchError } = await supabase
@@ -107,6 +112,8 @@ const updateQuoteCompletionStatus = async (
       const currentCount = profileData?.jobs_completed || 0;
       const newCount = currentCount + 1;
       
+      console.log(`Updating jobs_completed from ${currentCount} to ${newCount}`);
+      
       // Update the freelancer's completed jobs count
       const { error: updateError } = await supabase
         .from('freelancer_profiles')
@@ -116,10 +123,11 @@ const updateQuoteCompletionStatus = async (
       if (updateError) {
         console.error('Error incrementing jobs_completed:', updateError);
         // Don't throw here, just log the error since the primary operation succeeded
+      } else {
+        console.log('Successfully updated jobs_completed to', newCount);
       }
     }
     
-    console.log('Quote update response:', data);
     return data;
   } catch (error) {
     console.error('Exception in project completion:', error);
@@ -254,6 +262,9 @@ export const useProjectCompletion = ({ quoteId, projectId }: UseProjectCompletio
       // Invalidate relevant queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
+      
+      // Also invalidate freelancer profile data to ensure the updated jobs_completed count is shown
+      queryClient.invalidateQueries({ queryKey: ['freelancerProfile'] });
       
       const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
       handleCompletionSuccess(data, isFreelancer, user);

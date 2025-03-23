@@ -1,3 +1,4 @@
+
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
@@ -37,11 +38,10 @@ export const useLoadFreelancerProfile = ({
       try {
         setIsLoading(true);
         
-        const timestamp = new Date().getTime();
-        
+        // Fetch the freelancer profile data
         const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
-          .select(`*, timestamp_${timestamp}:created_at`)
+          .select('*')
           .eq('id', user.id)
           .maybeSingle();
           
