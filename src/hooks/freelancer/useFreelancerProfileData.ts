@@ -62,7 +62,8 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             return [String(value)];
           };
           
-          // Transform the data to match FreelancerProfile type
+          // Create a new object with explicit types instead of using data directly
+          // This avoids the deep type instantiation error
           const transformedProfile: FreelancerProfile = {
             id: data.id,
             first_name: data.first_name,
@@ -75,12 +76,9 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             skills: safeStringArray(data.skills),
             rating: data.rating,
             reviews_count: data.reviews_count,
-            // Map id_verified to verified since that's what the FreelancerProfile interface expects
             verified: data.id_verified,
-            // Map id_verified to email_verified as well (or set to false if not available)
             email_verified: data.id_verified ?? false,
             hourly_rate: data.hourly_rate,
-            // day_rate field might not exist in database but is in the interface
             day_rate: data.hourly_rate, // Use hourly_rate as fallback
             email: data.email,
             phone_number: data.phone_number,
@@ -91,10 +89,9 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             availability: data.availability,
             qualifications: safeStringArray(data.qualifications),
             accreditations: safeStringArray(data.accreditations),
-            previous_employers: data.previous_employers as any || [],
-            // Use the correct property name that matches the FreelancerProfile interface
-            previousWork: data.previous_work as any || [],
-            indemnity_insurance: data.indemnity_insurance as any || { hasInsurance: false },
+            previous_employers: Array.isArray(data.previous_employers) ? data.previous_employers : [],
+            previousWork: Array.isArray(data.previous_work) ? data.previous_work : [],
+            indemnity_insurance: data.indemnity_insurance || { hasInsurance: false },
           };
           
           setProfile(transformedProfile);
