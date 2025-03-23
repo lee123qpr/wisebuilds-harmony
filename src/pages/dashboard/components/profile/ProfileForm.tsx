@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
@@ -15,7 +14,6 @@ type ProfileFormProps = {
 };
 
 const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => {
-  // Add custom CSS class for disabled fields
   const getDisabledClass = () => {
     return disabled ? "cursor-default opacity-80 bg-muted" : "";
   };
@@ -128,12 +126,14 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="Limited Company">Limited Company</SelectItem>
-                  <SelectItem value="Sole Trader">Sole Trader</SelectItem>
-                  <SelectItem value="Partnership">Partnership</SelectItem>
-                  <SelectItem value="Public Limited Company">Public Limited Company</SelectItem>
-                  <SelectItem value="Non-Profit">Non-Profit</SelectItem>
-                  <SelectItem value="Other">Other</SelectItem>
+                  <SelectItem value="Main Contractor">Main Contractor</SelectItem>
+                  <SelectItem value="Subcontractor">Subcontractor</SelectItem>
+                  <SelectItem value="Consultant">Consultant</SelectItem>
+                  <SelectItem value="SME">SME</SelectItem>
+                  <SelectItem value="Council">Council</SelectItem>
+                  <SelectItem value="Developer">Developer</SelectItem>
+                  <SelectItem value="Non-Construction Business">Non-Construction Business</SelectItem>
+                  <SelectItem value="Domestic User">Domestic User</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
