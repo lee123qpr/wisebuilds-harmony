@@ -91,7 +91,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
       <LocationField
         form={form}
         name="companyLocation"
-        label={isIndividual ? "Location" : "Company Location"}
+        label={isIndividual ? "Primary Location" : "Company Location"}
         description={isIndividual ? "Your primary location" : "Company's primary location or headquarters address"}
       />
       
