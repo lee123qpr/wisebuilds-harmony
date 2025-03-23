@@ -9,7 +9,7 @@ import { FreelancerProfile } from '@/types/applications';
 
 interface InsuranceStatus {
   hasInsurance: boolean;
-  coverLevel?: string | undefined;
+  coverLevel?: string;
 }
 
 interface FreelancerProfileCardProps {
@@ -79,7 +79,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
           />
         </div>
         
-        <div className="p-6 border-t md:border-t-0 md:border-l md:w-2/3 border-border">
+        <div className="p-6 md:w-2/3">
           <FreelancerInfo
             freelancerId={userId}
             freelancerName={fullName}
