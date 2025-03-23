@@ -42,6 +42,7 @@ export const setupListeners = (userId: string, onNotification: (payload: any) =>
         console.warn('Error removing channel:', error);
       }
     });
+    activeChannels.delete(userId);
   }
   
   // Set up new channels with error handling
