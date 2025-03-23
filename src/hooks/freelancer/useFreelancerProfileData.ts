@@ -4,7 +4,6 @@ import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { FreelancerProfile } from '@/types/applications';
 import { toast } from '@/hooks/toast';
-import { Json } from '@/integrations/supabase/types';
 
 export const useFreelancerProfileData = (freelancerIdParam?: string) => {
   const { freelancerId: urlFreelancerId } = useParams<{ freelancerId: string }>();
@@ -56,16 +55,7 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             // Continue with profile data even if reviews fetch fails
           }
           
-          // Safe conversion of JSON arrays to string arrays
-          const safeStringArray = (value: Json | null): string[] => {
-            if (!value) return [];
-            if (Array.isArray(value)) {
-              return value.map(item => String(item));
-            }
-            return [String(value)];
-          };
-          
-          // Create profile object with explicit typing
+          // Convert database data to FreelancerProfile type safely
           const profileData: FreelancerProfile = {
             id: data.id,
             first_name: data.first_name || undefined,
@@ -75,11 +65,11 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             job_title: data.job_title || undefined,
             location: data.location || undefined,
             bio: data.bio || undefined,
-            skills: safeStringArray(data.skills),
+            skills: Array.isArray(data.skills) ? data.skills.map(String) : [],
             rating: averageRating || undefined,
             reviews_count: reviewsCount || undefined,
-            verified: data.id_verified || false,
-            email_verified: data.id_verified || false, // Using id_verified as fallback
+            verified: !!data.id_verified,
+            email_verified: !!data.id_verified, // Using id_verified as fallback
             hourly_rate: data.hourly_rate || undefined,
             day_rate: data.hourly_rate || undefined, // Use hourly_rate as fallback
             email: data.email || undefined,
@@ -89,29 +79,13 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             jobs_completed: data.jobs_completed || 0,
             experience: data.experience || undefined,
             availability: data.availability || undefined,
-            qualifications: safeStringArray(data.qualifications),
-            accreditations: safeStringArray(data.accreditations),
+            qualifications: Array.isArray(data.qualifications) ? data.qualifications.map(String) : [],
+            accreditations: Array.isArray(data.accreditations) ? data.accreditations.map(String) : [],
             previous_employers: data.previous_employers ? 
-              (data.previous_employers as any[] || []).map(emp => ({
-                employerName: emp.employerName || '',
-                position: emp.position || '',
-                startDate: emp.startDate || '',
-                endDate: emp.endDate,
-                current: emp.current || false
-              })) : [],
+              formatPreviousEmployers(data.previous_employers) : [],
             previousWork: data.previous_work ? 
-              (data.previous_work as any[] || []).map(work => ({
-                name: work.name || '',
-                url: work.url || '',
-                type: work.type || '',
-                size: work.size || 0,
-                path: work.path || ''
-              })) : [],
-            indemnity_insurance: data.indemnity_insurance ? 
-              {
-                hasInsurance: ((data.indemnity_insurance as any)?.hasInsurance || false),
-                coverLevel: ((data.indemnity_insurance as any)?.coverLevel)
-              } : { hasInsurance: false }
+              formatPreviousWork(data.previous_work) : [],
+            indemnity_insurance: formatIndemnityInsurance(data.indemnity_insurance)
           };
           
           setProfile(profileData);
@@ -134,3 +108,37 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
 
   return { profile, isLoading };
 };
+
+// Helper functions to safely format complex objects
+function formatPreviousEmployers(data: any) {
+  if (!data || !Array.isArray(data)) return [];
+  
+  return data.map(emp => ({
+    employerName: emp?.employerName || '',
+    position: emp?.position || '',
+    startDate: emp?.startDate || '',
+    endDate: emp?.endDate,
+    current: !!emp?.current
+  }));
+}
+
+function formatPreviousWork(data: any) {
+  if (!data || !Array.isArray(data)) return [];
+  
+  return data.map(work => ({
+    name: work?.name || '',
+    url: work?.url || '',
+    type: work?.type || '',
+    size: work?.size || 0,
+    path: work?.path || ''
+  }));
+}
+
+function formatIndemnityInsurance(data: any) {
+  if (!data) return { hasInsurance: false };
+  
+  return {
+    hasInsurance: !!data?.hasInsurance,
+    coverLevel: data?.coverLevel
+  };
+}
