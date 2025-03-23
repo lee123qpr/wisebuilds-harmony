@@ -12,7 +12,7 @@ interface PreferencesGroupProps {
 export const PreferencesGroup: React.FC<PreferencesGroupProps> = ({ form }) => {
   return (
     <div className="space-y-6">
-      <div className="mb-6">
+      <div className="mb-6 flex justify-start">
         <BackButton 
           to="/dashboard/freelancer"
           variant="outline"

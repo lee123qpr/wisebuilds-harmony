@@ -114,7 +114,17 @@ export const formatFreelancerProfileData = (data: any): ProfileData | null => {
   };
 };
 
-export const useFreelancerProfileData = (userId?: string) => {
+// Define explicit return type to prevent excessive type instantiation
+interface FreelancerProfileQueryResult {
+  profile: ProfileData | null;
+  isLoading: boolean;
+  error: Error | null;
+  refetch: () => void;
+  isRefetching: boolean;
+  status: string;
+}
+
+export const useFreelancerProfileData = (userId?: string): FreelancerProfileQueryResult => {
   const { user } = useAuth();
   const profileId = userId || user?.id;
 
