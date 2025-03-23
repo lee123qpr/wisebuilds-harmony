@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { UploadedFile } from './types';
 import { allowedFileTypes, isValidFile } from './utils';
 import { useFileUploader } from './uploadUtils';
-import { StorageBucket, removeFile } from '@/utils/storage';
+import { StorageBucket, removeFile as removeStorageFile } from '@/utils/storage';
 
 export const useFileUpload = (
   initialFiles: UploadedFile[] = [],
@@ -48,14 +49,16 @@ export const useFileUpload = (
     onFilesUploaded(updatedFiles);
     
     if (fileToRemove.path) {
-      removeFile(fileToRemove.path).catch(error => {
-        console.error('Error removing file from storage:', fileToRemove.path, error);
-        toast({
-          title: "Error",
-          description: `Failed to delete ${fileToRemove.name} from storage`,
-          variant: "destructive"
+      // Fix: Pass the bucket as the second parameter to removeStorageFile
+      removeStorageFile(fileToRemove.path, StorageBucket.PROJECTS)
+        .catch(error => {
+          console.error('Error removing file from storage:', fileToRemove.path, error);
+          toast({
+            title: "Error",
+            description: `Failed to delete ${fileToRemove.name} from storage`,
+            variant: "destructive"
+          });
         });
-      });
     }
   };
 
