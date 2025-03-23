@@ -1,12 +1,12 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
-import { UseToast } from '@/hooks/use-toast';
+import { toast as toastFunction } from '@/hooks/use-toast';
 
 export async function fetchFreelancerProfileData(
   user: User | null, 
   setIsLoading: (loading: boolean) => void,
-  toast: UseToast['toast']
+  toast: typeof toastFunction
 ) {
   if (!user) return null;
   

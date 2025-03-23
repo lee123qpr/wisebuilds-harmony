@@ -107,7 +107,7 @@ const FreelancerProfileCardsTest = () => {
                     user_id: mockFreelancer.id,
                     project_id: mockProjectId,
                     message: 'I am interested in this project and would love to discuss further.',
-                    status: 'pending',
+                    // status is not in the FreelancerApplication type, so we're removing it
                     freelancer_profile: mockFreelancer
                   }}
                   projectId={mockProjectId}
