@@ -3,7 +3,7 @@ import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
-import { BuildingX } from 'lucide-react';
+import { Building } from 'lucide-react';
 import MainLayout from '@/components/layout/MainLayout';
 
 const ClientProfileNotFound: React.FC = () => {
@@ -14,7 +14,7 @@ const ClientProfileNotFound: React.FC = () => {
       <div className="container max-w-5xl px-4 py-12 mx-auto">
         <Card className="border-none shadow-md">
           <CardContent className="flex flex-col items-center justify-center p-12 text-center">
-            <BuildingX className="h-20 w-20 text-slate-300 mb-6" />
+            <Building className="h-20 w-20 text-slate-300 mb-6" />
             <h1 className="text-2xl font-bold mb-2">Client Profile Not Found</h1>
             <p className="text-slate-500 mb-8 max-w-md">
               The client profile you're looking for doesn't exist or may have been removed.
