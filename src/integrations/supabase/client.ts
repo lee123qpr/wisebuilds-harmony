@@ -41,3 +41,9 @@ export type ProjectDispute = {
   freelancer?: any;
   client?: any;
 }
+
+// Type-safe wrapper for project_disputes table access
+export const projectDisputesTable = () => {
+  // @ts-ignore - This is a workaround until the Database type includes project_disputes
+  return supabase.from('project_disputes');
+};

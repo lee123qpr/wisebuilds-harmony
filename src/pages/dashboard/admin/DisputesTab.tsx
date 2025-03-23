@@ -2,7 +2,7 @@
 import React from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { format, differenceInDays } from 'date-fns';
-import { supabase, ProjectDispute } from '@/integrations/supabase/client';
+import { ProjectDispute, projectDisputesTable } from '@/integrations/supabase/client';
 import { AlertTriangle, Shield, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { 
   Card, 
@@ -17,7 +17,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminDisputeDetails from './components/disputes/AdminDisputeDetails';
 
-// Define a type for our dispute data
+// Define a more specific type for our dispute data
 interface DisputeData extends ProjectDispute {
   projects?: {
     title: string;
@@ -43,9 +43,7 @@ const DisputesTab: React.FC = () => {
   const { data: disputes, isLoading, refetch } = useQuery({
     queryKey: ['admin-disputes'],
     queryFn: async () => {
-      // @ts-ignore - Temporary workaround until Database types are updated
-      const { data, error } = await supabase
-        .from('project_disputes')
+      const { data, error } = await projectDisputesTable()
         .select(`
           *,
           quotes (status),

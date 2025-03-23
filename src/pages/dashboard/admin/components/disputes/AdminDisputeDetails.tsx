@@ -25,7 +25,7 @@ import {
   XCircle
 } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
-import { supabase, ProjectDispute } from '@/integrations/supabase/client';
+import { supabase, ProjectDispute, projectDisputesTable } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/toast';
 import { useAuth } from '@/context/AuthContext';
 
@@ -36,8 +36,8 @@ interface AdminDisputeDetailsProps {
   onDisputeResolved: () => void;
 }
 
-// Define the dispute data type
-interface DisputeData extends ProjectDispute {
+// Define the dispute data type with better typing for related tables
+interface DetailedDisputeData extends ProjectDispute {
   freelancer?: {
     id: string;
     first_name: string;
@@ -49,6 +49,15 @@ interface DisputeData extends ProjectDispute {
     contact_name: string;
     company_name: string;
     email: string;
+  };
+  projects?: {
+    id: string;
+    title: string;
+    status: string;
+  };
+  quotes?: {
+    id: string;
+    status: string;
   };
 }
 
@@ -68,15 +77,13 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
   const { data: dispute, isLoading } = useQuery({
     queryKey: ['admin-dispute-details', disputeId],
     queryFn: async () => {
-      // @ts-ignore - Temporary workaround until Database types are updated
-      const { data, error } = await supabase
-        .from('project_disputes')
+      const { data, error } = await projectDisputesTable()
         .select(`
           *,
-          quotes (id, status),
-          projects (id, title, status),
-          freelancer:quotes!inner(freelancer_id(id, first_name, last_name, email)),
-          client:projects!inner(user_id(id, contact_name, company_name, email))
+          quotes:quote_id (id, status),
+          projects:project_id (id, title, status),
+          freelancer:quotes!inner (freelancer_id (id, first_name, last_name, email)),
+          client:projects!inner (user_id (id, contact_name, company_name, email))
         `)
         .eq('id', disputeId)
         .single();
@@ -86,7 +93,7 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
         throw error;
       }
       
-      return data as DisputeData;
+      return data as unknown as DetailedDisputeData;
     },
     enabled: !!disputeId && open
   });
@@ -98,9 +105,7 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
     
     try {
       // Update dispute record with admin decision
-      // @ts-ignore - Temporary workaround until Database types are updated
-      const { error } = await supabase
-        .from('project_disputes')
+      const { error } = await projectDisputesTable()
         .update({
           admin_decision: decision,
           admin_notes: adminNotes,
