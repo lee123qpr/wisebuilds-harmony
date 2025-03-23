@@ -62,12 +62,7 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
           
           <div className="mt-4">
             <div className="space-y-1.5">
-              {clientProfile.member_since && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Calendar className="mr-1.5 h-4 w-4 flex-shrink-0" />
-                  <span>Member since {formatDate(clientProfile.member_since)}</span>
-                </div>
-              )}
+              {/* Removed the member_since text section as requested, since it's already displayed as a badge below */}
               
               {/* Removed the jobs_completed text section as requested, since it's already displayed as a badge below */}
               
