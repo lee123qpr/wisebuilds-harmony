@@ -26,7 +26,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
           <CardTitle>Dashboard Freelancer Profile Card (Original)</CardTitle>
           <CardDescription>Using wrapper component</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0"> {/* Remove padding to avoid double padding */}
           <DashboardFreelancerProfileCard
             profileImage={completeFreelancer.profile_photo}
             uploadingImage={uploadingImage}
@@ -51,7 +51,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
           <CardTitle>Standardized Freelancer Profile Card - Regular</CardTitle>
           <CardDescription>Using the base component directly</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0"> {/* Remove padding to avoid double padding */}
           <FreelancerProfileCard
             profileImage={completeFreelancer.profile_photo}
             fullName={completeFreelancer.display_name}
@@ -74,7 +74,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
           <CardTitle>Standardized Freelancer Profile Card - Compact</CardTitle>
           <CardDescription>Compact version with minimal info</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0"> {/* Remove padding to avoid double padding */}
           <FreelancerProfileCard
             profileImage={minimalFreelancer.profile_photo}
             fullName={minimalFreelancer.display_name}

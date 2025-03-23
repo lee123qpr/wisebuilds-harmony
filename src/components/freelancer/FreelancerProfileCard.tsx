@@ -54,7 +54,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   hourlyRate
 }) => {
   return (
-    <div className={`border shadow-md rounded-lg p-6 ${compact ? 'p-4' : 'p-6'}`}>
+    <div className="border shadow-md rounded-lg p-6">
       <div className={`flex ${compact ? 'flex-row gap-3' : 'flex-col md:flex-row gap-6'} items-center md:items-start`}>
         <FreelancerAvatar
           profileImage={profileImage}

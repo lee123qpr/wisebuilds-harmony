@@ -5,7 +5,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Loader2 } from 'lucide-react';
 import { useFreelancerProfile } from './hooks/useFreelancerProfile';
-import FreelancerProfileCard from './components/profile/FreelancerProfileCard';
+import FreelancerProfileCard from '@/components/freelancer/FreelancerProfileCard';
 import FreelancerProfileInfoTab from './components/profile/FreelancerProfileInfoTab';
 import ReviewsTab from './components/profile/ReviewsTab';
 import AccountSettingsTab from './components/account/AccountSettingsTab';
@@ -51,7 +51,7 @@ const FreelancerProfile = () => {
           </div>
         </div>
 
-        {/* Profile Card moved to top */}
+        {/* Profile Card moved to top - direct render without extra wrapper */}
         <div className="w-full mb-8">
           <FreelancerProfileCard
             profileImage={profileImage}
@@ -66,6 +66,7 @@ const FreelancerProfile = () => {
             jobsCompleted={jobsCompleted}
             idVerified={idVerified}
             hourlyRate={form.watch('hourlyRate')}
+            allowImageUpload={true}
           />
         </div>
 

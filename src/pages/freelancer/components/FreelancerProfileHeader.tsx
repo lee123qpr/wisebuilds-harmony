@@ -2,7 +2,6 @@
 import React from 'react';
 import { FreelancerProfile } from '@/types/applications';
 import FreelancerProfileCard from '@/components/freelancer/FreelancerProfileCard';
-import { Card } from '@/components/ui/card';
 
 interface FreelancerProfileHeaderProps {
   profile: FreelancerProfile;
@@ -24,27 +23,25 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
     : profile.indemnity_insurance?.coverLevel || 'Not specified';
 
   return (
-    <Card className="shadow-md border border-border/60 overflow-hidden">
-      <FreelancerProfileCard
-        profileImage={profile.profile_photo}
-        fullName={fullName}
-        profession={profile.job_title}
-        userId={profile.id}
-        memberSince={profile.member_since}
-        emailVerified={profile.email_verified}
-        jobsCompleted={profile.jobs_completed}
-        idVerified={profile.verified}
-        rating={profile.rating}
-        reviewsCount={profile.reviews_count}
-        location={profile.location}
-        allowImageUpload={false}
-        hourlyRate={profile.hourly_rate}
-        insuranceStatus={profile.indemnity_insurance ? {
-          hasInsurance: hasInsurance,
-          coverLevel: coverLevel
-        } : undefined}
-      />
-    </Card>
+    <FreelancerProfileCard
+      profileImage={profile.profile_photo}
+      fullName={fullName}
+      profession={profile.job_title}
+      userId={profile.id}
+      memberSince={profile.member_since}
+      emailVerified={profile.email_verified}
+      jobsCompleted={profile.jobs_completed}
+      idVerified={profile.verified}
+      rating={profile.rating}
+      reviewsCount={profile.reviews_count}
+      location={profile.location}
+      allowImageUpload={false}
+      hourlyRate={profile.hourly_rate}
+      insuranceStatus={profile.indemnity_insurance ? {
+        hasInsurance: hasInsurance,
+        coverLevel: coverLevel
+      } : undefined}
+    />
   );
 };
 
