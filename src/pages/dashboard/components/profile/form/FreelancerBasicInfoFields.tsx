@@ -27,86 +27,70 @@ const professions = [
 
 const FreelancerBasicInfoFields: React.FC<FreelancerBasicInfoFieldsProps> = ({ form, disabled = false }) => {
   return (
-    <div className="space-y-6">
-      <div className="bg-white p-5 rounded-md border shadow-sm">
+    <div className="space-y-4">
+      <FormField
+        control={form.control}
+        name="fullName"
+        render={({ field }) => (
+          <FormItem>
+            <FormLabel>Full Name</FormLabel>
+            <FormControl>
+              <Input placeholder="Enter your full name" {...field} disabled={disabled} />
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <FormField
           control={form.control}
-          name="fullName"
+          name="profession"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold">Full Name</FormLabel>
-              <FormControl>
-                <Input 
-                  placeholder="Enter your full name" 
-                  {...field} 
-                  disabled={disabled} 
-                  className="border-gray-300 focus:border-primary focus:ring-primary"
-                />
-              </FormControl>
+              <FormLabel>Profession</FormLabel>
+              <Select 
+                onValueChange={field.onChange} 
+                value={field.value || ""} 
+                disabled={disabled}
+              >
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select your profession" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {professions.map((profession) => (
+                    <SelectItem key={profession} value={profession}>
+                      {profession}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormDescription>
+                Your primary professional role
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div className="bg-white p-5 rounded-md border shadow-sm">
-          <FormField
-            control={form.control}
-            name="profession"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-semibold">Profession</FormLabel>
-                <Select 
-                  onValueChange={field.onChange} 
-                  value={field.value || ""} 
-                  disabled={disabled}
-                >
-                  <FormControl>
-                    <SelectTrigger className="border-gray-300 focus:ring-primary">
-                      <SelectValue placeholder="Select your profession" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent className="max-h-80">
-                    {professions.map((profession) => (
-                      <SelectItem key={profession} value={profession}>
-                        {profession}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormDescription className="mt-2">
-                  Your primary professional role
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
-
-        <div className="bg-white p-5 rounded-md border shadow-sm">
-          <FormField
-            control={form.control}
-            name="location"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-semibold">Location</FormLabel>
-                <FormControl>
-                  <Input 
-                    placeholder="City, Country" 
-                    {...field} 
-                    disabled={disabled} 
-                    className="border-gray-300 focus:border-primary focus:ring-primary"
-                  />
-                </FormControl>
-                <FormDescription className="mt-2">
-                  Your primary work location
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        </div>
+        <FormField
+          control={form.control}
+          name="location"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Location</FormLabel>
+              <FormControl>
+                <Input placeholder="City, Country" {...field} disabled={disabled} />
+              </FormControl>
+              <FormDescription>
+                Your primary work location
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );

@@ -18,47 +18,28 @@ const FreelancerProfileForm: React.FC<FreelancerProfileFormProps> = ({ form, dis
   return (
     <div className="space-y-8">
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 pb-2 border-b">
-          <div className="h-5 w-1 bg-primary rounded-full"></div>
-          Basic Information
-        </h3>
+        <h3 className="text-lg font-semibold">Basic Information</h3>
         <FreelancerBasicInfoFields form={form} disabled={disabled} />
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 pb-2 border-b">
-          <div className="h-5 w-1 bg-primary rounded-full"></div>
-          Contact Information
-        </h3>
+        <h3 className="text-lg font-semibold">Contact Information</h3>
         <FreelancerContactFields form={form} disabled={disabled} />
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 pb-2 border-b">
-          <div className="h-5 w-1 bg-primary rounded-full"></div>
-          Professional Details
-        </h3>
+        <h3 className="text-lg font-semibold">Professional Details</h3>
         <FreelancerWorkDetailsFields form={form} disabled={disabled} />
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 pb-2 border-b">
-          <div className="h-5 w-1 bg-primary rounded-full"></div>
-          Professional Bio
-        </h3>
-        <div className="bg-gray-50 p-4 rounded-md">
-          <FreelancerBioField form={form} disabled={disabled} />
-        </div>
+        <h3 className="text-lg font-semibold">Professional Bio</h3>
+        <FreelancerBioField form={form} disabled={disabled} />
       </div>
 
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold text-gray-800 flex items-center gap-2 pb-2 border-b">
-          <div className="h-5 w-1 bg-primary rounded-full"></div>
-          Previous Work Examples
-        </h3>
-        <div className="bg-gray-50 p-4 rounded-md">
-          <FreelancerPreviousWorkField form={form} disabled={disabled} />
-        </div>
+        <h3 className="text-lg font-semibold">Previous Work Examples</h3>
+        <FreelancerPreviousWorkField form={form} disabled={disabled} />
       </div>
     </div>
   );
