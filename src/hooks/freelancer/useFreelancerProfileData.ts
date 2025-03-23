@@ -15,15 +15,15 @@ export const useFreelancerProfileData = () => {
       try {
         setLoading(true);
         
-        // Fetch the freelancer profile data with cacheControl: 'no-cache' to ensure fresh data
+        // Add a timestamp to force fresh data
+        const timestamp = new Date().getTime();
+        
+        // Fetch the freelancer profile data
         const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
-          .select('*')
+          .select(`*, created_at_${timestamp}:created_at`)
           .eq('id', freelancerId)
-          .maybeSingle()
-          .options({ 
-            cache: 'no-store' // This ensures we don't get cached data
-          });
+          .maybeSingle();
         
         if (profileError) throw profileError;
         

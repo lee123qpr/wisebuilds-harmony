@@ -37,14 +37,13 @@ export const useLoadFreelancerProfile = ({
       try {
         setIsLoading(true);
         
+        const timestamp = new Date().getTime();
+        
         const { data: profileData, error: profileError } = await supabase
           .from('freelancer_profiles')
-          .select('*')
+          .select(`*, timestamp_${timestamp}:created_at`)
           .eq('id', user.id)
-          .maybeSingle()
-          .options({
-            cache: 'no-store'
-          });
+          .maybeSingle();
           
         if (profileError) {
           throw profileError;
