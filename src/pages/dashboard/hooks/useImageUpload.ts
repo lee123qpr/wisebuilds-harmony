@@ -1,8 +1,8 @@
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
-import { StorageBucket, uploadFile } from '@/utils/storage';
+import { StorageBucket, uploadFile, checkBucketExists } from '@/utils/storage';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UseImageUploadProps {
@@ -15,8 +15,33 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
   const { toast } = useToast();
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [bucketAvailable, setBucketAvailable] = useState<boolean | null>(null);
   // Used to force re-render of Avatar when image is updated
   const [imageKey, setImageKey] = useState(() => uuidv4());
+  
+  // Check if avatar bucket exists on component mount
+  useEffect(() => {
+    async function checkBucket() {
+      try {
+        const exists = await checkBucketExists(StorageBucket.AVATARS);
+        console.log(`Avatar bucket ${StorageBucket.AVATARS} exists:`, exists);
+        setBucketAvailable(exists);
+        
+        if (!exists) {
+          // List available buckets for debugging
+          const { data } = await supabase.storage.listBuckets();
+          console.log('Available buckets:', data?.map(b => b.name).join(', ') || 'none');
+        }
+      } catch (error) {
+        console.error('Error checking avatar bucket:', error);
+        setBucketAvailable(false);
+      }
+    }
+    
+    if (userId) {
+      checkBucket();
+    }
+  }, [userId]);
 
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -49,6 +74,16 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       // Check file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         throw new Error('File size exceeds 5MB limit');
+      }
+      
+      // Check if bucket is available
+      if (bucketAvailable === false) {
+        // Attempt to get a list of available buckets
+        const { data: bucketsData } = await supabase.storage.listBuckets();
+        const availableBuckets = bucketsData?.map(b => b.name).join(', ') || 'none';
+        
+        throw new Error(`The avatar storage bucket '${StorageBucket.AVATARS}' is not available. 
+          Available buckets: ${availableBuckets}. Please contact support.`);
       }
       
       // Use the correct bucket for avatar uploads
@@ -97,7 +132,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, folder, namePrefix, toast]);
+  }, [userId, folder, namePrefix, toast, bucketAvailable]);
 
   return {
     imageUrl,
@@ -105,6 +140,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     uploadingImage,
     setUploadingImage,
     imageKey,
+    bucketAvailable,
     handleImageUpload
   };
 };

@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 export enum StorageBucket {
   PROJECTS = 'project-documents',
   ATTACHMENTS = 'attachments',
-  AVATARS = 'freelancer-avatar',  // Updated to use existing bucket
+  AVATARS = 'freelancer-avatar',  // Make sure this matches an existing bucket in Supabase
   VERIFICATION = 'verification_documents'
 }
 
@@ -23,6 +23,7 @@ export const checkBucketExists = async (bucketName: string): Promise<boolean> =>
       return false;
     }
     
+    console.log('Available buckets:', data.map(bucket => bucket.name).join(', '));
     return data.some(bucket => bucket.name === bucketName);
   } catch (error) {
     console.error(`Error checking if bucket ${bucketName} exists:`, error);
@@ -100,7 +101,9 @@ export const uploadFile = async (
     const bucketExists = await checkBucketExists(bucket);
     if (!bucketExists) {
       console.error(`Bucket ${bucket} does not exist or is not accessible`);
-      throw new Error(`Upload failed: Storage bucket '${bucket}' is not available`);
+      const { data: bucketsData } = await supabase.storage.listBuckets();
+      console.log('Available buckets:', bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none');
+      throw new Error(`Upload failed: Storage bucket '${bucket}' is not available. Available buckets: ${bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none'}`);
     }
     
     // Upload file

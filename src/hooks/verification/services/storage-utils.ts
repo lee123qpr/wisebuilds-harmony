@@ -26,3 +26,39 @@ export const getVerificationBucketName = async (): Promise<string> => {
   return bucketWithUnderscore ? 'verification_documents' : 
          bucketWithHyphen ? 'verification-documents' : 'verification_documents';
 };
+
+/**
+ * Determines which avatar bucket to use
+ */
+export const getAvatarBucketName = async (): Promise<string | null> => {
+  // Check available buckets
+  const { data: bucketsData, error: bucketsError } = await supabase.storage
+    .listBuckets();
+  
+  if (bucketsError) {
+    console.error('Error checking buckets:', bucketsError);
+    return null;
+  }
+  
+  console.log('Available buckets:', bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none');
+  
+  // Check for various possible avatar bucket names
+  const possibleBucketNames = [
+    'freelancer-avatar',
+    'avatars',
+    'avatar',
+    'profile-images',
+    'profile-photos',
+    'user-avatars'
+  ];
+  
+  for (const bucketName of possibleBucketNames) {
+    if (bucketsData?.find(b => b.name === bucketName)) {
+      console.log(`Found avatar bucket: ${bucketName}`);
+      return bucketName;
+    }
+  }
+  
+  console.error('No avatar bucket found among available buckets');
+  return null;
+};

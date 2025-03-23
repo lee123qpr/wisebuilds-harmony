@@ -6,6 +6,8 @@ import { useImageUpload } from '../../hooks/useImageUpload';
 import FreelancerAvatar from './FreelancerAvatar';
 import ProfileInfoBadges from './ProfileInfoBadges';
 import { supabase } from '@/integrations/supabase/client';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;
@@ -43,7 +45,8 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
     imageKey,
     handleImageUpload,
     setImageUrl,
-    setUploadingImage
+    setUploadingImage,
+    bucketAvailable
   } = useImageUpload({
     userId,
     namePrefix: 'avatar'
@@ -118,6 +121,16 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   return (
     <Card className="w-full">
       <CardContent className="p-6">
+        {bucketAvailable === false && (
+          <Alert variant="destructive" className="mb-4">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Avatar Upload Unavailable</AlertTitle>
+            <AlertDescription>
+              The avatar storage service is currently unavailable. Please try again later or contact support.
+            </AlertDescription>
+          </Alert>
+        )}
+        
         <div className="flex flex-col sm:flex-row items-center gap-6">
           <div className="flex-shrink-0">
             <FreelancerAvatar
