@@ -2,7 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Building, Check, Mail, Briefcase } from 'lucide-react';
+import { Calendar, MapPin, Building, Check, Mail, Briefcase, User } from 'lucide-react';
 import { format } from 'date-fns';
 import { ClientProfileData } from '@/pages/client/types';
 import RatingStars from '@/components/common/RatingStars';
@@ -51,13 +51,21 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
     setJobsCount(count);
   }, [clientProfile.jobs_completed]);
 
+  // Determine if this is an individual client
+  const isIndividual = clientProfile.is_individual;
+  
+  // Display name will depend on whether this is an individual or company
+  const displayName = isIndividual 
+    ? clientProfile.contact_name || 'Individual Client'
+    : clientProfile.company_name || 'Company';
+
   return (
     <div className="border shadow-md rounded-lg p-6">
       <div className="flex flex-col md:flex-row gap-6 items-center md:items-start">
         <div className="relative">
           <Avatar className="h-24 w-24 border-2 border-primary/10">
             {clientProfile.logo_url ? (
-              <AvatarImage src={clientProfile.logo_url} alt={clientProfile.company_name || 'Company'} className="object-cover" />
+              <AvatarImage src={clientProfile.logo_url} alt={displayName} className="object-cover" />
             ) : (
               <AvatarFallback className="bg-blue-50 text-blue-600">
                 {getInitials()}
@@ -69,12 +77,28 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
         <div className="flex-1 text-center md:text-left">
           <div className="flex flex-col md:flex-row md:items-center md:gap-2">
             <h2 className="text-xl font-bold">
-              {clientProfile.company_name || clientProfile.contact_name || 'Client'}
+              {displayName}
             </h2>
             {averageRating !== null && averageRating > 0 && <RatingStars rating={averageRating} reviewCount={reviewCount} className="mt-1 md:mt-0" />}
           </div>
           
-          {clientProfile.contact_name && clientProfile.company_name && (
+          {/* Client type badge - prominently displayed near the top */}
+          <div className="mt-1 mb-2">
+            {isIndividual ? (
+              <Badge className="bg-purple-100 text-purple-800 hover:bg-purple-200 border-purple-200 flex items-center gap-1 w-fit">
+                <User className="h-3 w-3" />
+                Individual Client
+              </Badge>
+            ) : (
+              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-200 border-blue-200 flex items-center gap-1 w-fit">
+                <Building className="h-3 w-3" />
+                Company Client
+              </Badge>
+            )}
+          </div>
+          
+          {/* Show contact name for companies (for individuals, it's already the display name) */}
+          {!isIndividual && clientProfile.contact_name && (
             <p className="text-muted-foreground">
               Contact: {clientProfile.contact_name}
             </p>
