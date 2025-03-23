@@ -64,6 +64,27 @@ export type FreelancerProfileData = {
   email_verified?: boolean;
 };
 
+// Helper function to safely convert JSON to IndemnityInsurance type
+const parseIndemnityInsurance = (data: Json): IndemnityInsurance => {
+  if (data === null || data === undefined) {
+    return false;
+  }
+  
+  if (typeof data === 'boolean') {
+    return data;
+  }
+  
+  if (typeof data === 'object') {
+    return {
+      hasInsurance: 'hasInsurance' in data ? Boolean(data.hasInsurance) : false,
+      coverLevel: 'coverLevel' in data ? String(data.coverLevel) : undefined
+    };
+  }
+  
+  // Default fallback
+  return false;
+};
+
 // Define a custom hook to fetch freelancer profile data
 export const useFreelancerProfileData = (freelancerId?: string) => {
   const { user } = useAuth();
@@ -118,31 +139,10 @@ export const useFreelancerProfileData = (freelancerId?: string) => {
                 size: number;
                 path: string;
               }[]
-              : []
+              : [],
+            // Safely parse the indemnity_insurance value
+            indemnity_insurance: parseIndemnityInsurance(data.indemnity_insurance)
           };
-          
-          // Handle indemnity_insurance specifically
-          if (data.indemnity_insurance !== null && data.indemnity_insurance !== undefined) {
-            if (typeof data.indemnity_insurance === 'boolean') {
-              transformedData.indemnity_insurance = data.indemnity_insurance;
-            } else if (typeof data.indemnity_insurance === 'object') {
-              // Explicitly cast the JSON value to our type
-              const insuranceData = data.indemnity_insurance as Json;
-              if (insuranceData && typeof insuranceData === 'object') {
-                transformedData.indemnity_insurance = {
-                  hasInsurance: 'hasInsurance' in insuranceData 
-                    ? Boolean(insuranceData.hasInsurance) 
-                    : false,
-                  coverLevel: 'coverLevel' in insuranceData 
-                    ? String(insuranceData.coverLevel) 
-                    : undefined
-                };
-              } else {
-                // Fallback for any other cases
-                transformedData.indemnity_insurance = { hasInsurance: false };
-              }
-            }
-          }
           
           setProfileData(transformedData);
         } else {
