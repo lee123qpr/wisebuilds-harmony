@@ -2,7 +2,44 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
+import { Json } from "@/integrations/supabase/types";
 
+// Define a comprehensive interface for the database profile data
+interface ProfileDBData {
+  id: string;
+  user_id?: string;
+  first_name: string;
+  last_name: string;
+  display_name?: string;
+  phone_number?: string;
+  bio?: string;
+  job_title?: string;
+  profile_photo?: string;
+  hourly_rate?: string;
+  location?: string;
+  indemnity_insurance?: Json;
+  previous_employers?: Json;
+  skills?: Json;
+  qualifications?: Json;
+  previous_work?: Json;
+  created_at: string;
+  work_type?: string;
+  availability?: string;
+  travel_distance?: string;
+  id_verified?: boolean;
+  website?: string;
+  day_rate?: string;
+  experience?: string;
+  accreditations?: Json;
+  email?: string;
+  member_since?: string;
+  email_verified?: boolean;
+  jobs_completed?: number;
+  rating?: number;
+  reviews_count?: number;
+}
+
+// Export the FreelancerProfile interface for use throughout the app
 export type FreelancerProfile = {
   id: string;
   user_id: string;
@@ -25,7 +62,22 @@ export type FreelancerProfile = {
   availability: string;
   travel_distance: string;
   verified: boolean;
+  display_name?: string;
+  job_title?: string;
+  profile_photo?: string;
+  website?: string;
+  day_rate?: string;
+  experience?: string;
+  accreditations?: string[];
+  member_since?: string;
+  email_verified?: boolean;
+  jobs_completed?: number;
+  rating?: number;
+  reviews_count?: number;
 };
+
+// Export ProfileData for test cases
+export type ProfileData = FreelancerProfile;
 
 export const useFreelancerProfileData = (userId?: string) => {
   const { user } = useAuth();
