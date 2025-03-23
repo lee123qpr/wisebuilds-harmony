@@ -39,12 +39,14 @@ const QuotesListItem: React.FC<QuotesListItemProps> = ({ project }) => {
       return;
     }
     
-    if (project.quote_id) {
-      await deleteQuote(project.quote_id);
-      setShowDeleteDialog(false);
-    } else {
+    // Check if we have a quote ID to delete
+    if (!project.quote_id) {
       toast.error("No quote ID found");
+      return;
     }
+
+    await deleteQuote(project.quote_id, !!project.client_email);
+    setShowDeleteDialog(false);
   };
 
   const canDelete = project.quote_status === 'declined' || !project.quote_status;

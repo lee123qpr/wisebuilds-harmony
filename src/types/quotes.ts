@@ -1,4 +1,3 @@
-
 export interface Quote {
   id: string;
   project_id: string;
@@ -20,6 +19,7 @@ export interface Quote {
   freelancer_completed?: boolean;
   client_completed?: boolean;
   completed_at?: string | null;
+  retracted_by_freelancer?: boolean;
 }
 
 export interface QuoteWithProject extends Quote {

@@ -1,4 +1,3 @@
-
 import { useAuth } from '@/context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,6 +15,9 @@ export interface ApplicationWithProject extends Project {
   application_created_at: string;
   quote_status?: 'pending' | 'accepted' | 'declined';
   completed_at?: string | null;
+  quote_id?: string;
+  client_id?: string;
+  client_email?: string;
 }
 
 export const useApplicationsWithQuotes = () => {

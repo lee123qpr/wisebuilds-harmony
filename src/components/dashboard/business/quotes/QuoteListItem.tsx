@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { Card, CardContent } from '@/components/ui/card';
@@ -8,13 +7,8 @@ import { cn } from '@/lib/utils';
 import { formatRole } from '@/utils/projectFormatters';
 import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
 import { FreelancerInfo as FreelancerInfoType } from '@/types/messaging';
-
-// Import our refactored components
-import { getQuoteCardStyle } from './card/QuoteCardStyles';
-import QuoteCardHeader from './card/CardHeader';
-import FreelancerInfo from './card/FreelancerInfo';
-import QuoteMetadata from './card/QuoteMetadata';
-import QuoteActions from './card/QuoteActions';
+import { AlertCircle } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 interface QuoteListItemProps {
   quote: QuoteWithFreelancer;
@@ -25,7 +19,6 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
   const [freelancerInfo, setFreelancerInfo] = useState<FreelancerInfoType | null>(null);
   const [isLoadingFreelancer, setIsLoadingFreelancer] = useState(false);
   
-  // More robust project title handling
   const projectTitle = quote.project?.title && 
                       quote.project.title !== 'null' && 
                       quote.project.title !== 'undefined' && 
@@ -33,7 +26,6 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                         ? quote.project.title 
                         : 'Untitled Project';
   
-  // Safely access role with proper fallback and format it
   const role = quote.project?.role || 'Not specified';
   const roleFormatted = formatRole(role);
   
@@ -41,7 +33,6 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
     ? format(new Date(quote.created_at), 'MMM d, yyyy')
     : 'Unknown date';
   
-  // Format price
   const priceType = quote.fixed_price 
     ? 'Fixed Price' 
     : quote.estimated_price 
@@ -53,7 +44,6 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
   const priceValue = quote.fixed_price || quote.estimated_price || quote.day_rate || 'Not specified';
   const formattedPrice = priceValue === 'Not specified' ? priceValue : `£${priceValue}`;
   
-  // Fetch freelancer info if profile is empty or incomplete
   useEffect(() => {
     const hasEmptyProfile = !quote.freelancer_profile || 
                             (!quote.freelancer_profile.display_name && 
@@ -77,24 +67,20 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
     }
   }, [quote.freelancer_id, quote.freelancer_profile, freelancerInfo, isLoadingFreelancer]);
   
-  // Create a combined freelancer name from both sources
   const freelancerName = quote.freelancer_profile?.display_name || 
     (quote.freelancer_profile?.first_name && quote.freelancer_profile?.last_name 
       ? `${quote.freelancer_profile.first_name} ${quote.freelancer_profile.last_name}`
       : freelancerInfo?.full_name || freelancerInfo?.name || 'Freelancer');
   
-  // Get the profile photo from either source
   const profilePhoto = quote.freelancer_profile?.profile_photo || 
                        freelancerInfo?.profile_image || 
                        freelancerInfo?.profilePhoto;
   
-  // Check if freelancer is verified from either source
   const isVerified = quote.freelancer_profile?.verified || 
                      freelancerInfo?.verified || 
                      freelancerInfo?.isVerified || 
                      false;
   
-  // Get the job title with fallbacks
   const jobTitle = quote.freelancer_profile?.job_title || 
                    freelancerInfo?.job_title || 
                    freelancerInfo?.jobTitle || 
@@ -147,6 +133,17 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
         </div>
       </CardContent>
     </Card>
+  );
+};
+
+export const QuoteRetractedAlert = () => {
+  return (
+    <Alert variant="destructive" className="mb-4">
+      <AlertCircle className="h-4 w-4" />
+      <AlertDescription>
+        This quote has been retracted by the freelancer and is no longer available for acceptance.
+      </AlertDescription>
+    </Alert>
   );
 };
 

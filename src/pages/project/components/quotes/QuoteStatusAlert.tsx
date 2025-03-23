@@ -7,11 +7,23 @@ import { useAuth } from '@/context/AuthContext';
 interface QuoteStatusAlertProps {
   status: Quote['status'];
   isFreelancer?: boolean;
+  isRetracted?: boolean;
 }
 
-const QuoteStatusAlert: React.FC<QuoteStatusAlertProps> = ({ status, isFreelancer = false }) => {
+const QuoteStatusAlert: React.FC<QuoteStatusAlertProps> = ({ status, isFreelancer = false, isRetracted = false }) => {
   const { user } = useAuth();
   const userType = user?.user_metadata?.user_type;
+  
+  // Handle retracted quotes
+  if (!isFreelancer && isRetracted) {
+    return (
+      <Alert className="bg-red-50 border-red-200">
+        <AlertDescription className="text-red-700">
+          This quote has been retracted by the freelancer and is no longer available for acceptance.
+        </AlertDescription>
+      </Alert>
+    );
+  }
   
   // Handle freelancer view
   if (isFreelancer || userType === 'freelancer') {
