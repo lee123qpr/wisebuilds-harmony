@@ -1,16 +1,20 @@
 
-import React, { useState, useEffect } from 'react';
-import { useAuth } from '@/context/AuthContext';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { CheckCircle2, AlertTriangle, Clock, X } from 'lucide-react';
+import { CheckCircle2, AlertTriangle, X } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import ReviewForm from '@/components/reviews/ReviewForm';
 import { useReviewSubmission } from '@/hooks/projects/useReviewSubmission';
+import { useCompletionStatus } from './completion/hooks/useCompletionStatus';
+import { useCompletionActions } from './completion/hooks/useCompletionActions';
+import CompletionStatusIndicator from './completion/CompletionStatusIndicator';
+import CompleteProjectButton from './completion/CompleteProjectButton';
+import CompletionLoadingIndicator from './completion/CompletionLoadingIndicator';
+import ProjectCompletionDialog from './completion/ProjectCompletionDialog';
 import IncompleteProjectDialog from './completion/IncompleteProjectDialog';
-import { useProjectCompletion } from '@/hooks/projects/useProjectCompletion';
+import DisputeButton from './completion/DisputeButton';
 
 interface ProjectCompletionStatusProps {
   quoteId: string;
@@ -29,66 +33,48 @@ const ProjectCompletionStatus: React.FC<ProjectCompletionStatusProps> = ({
   freelancerName = 'the freelancer',
   clientName = 'the client'
 }) => {
-  const { user } = useAuth();
-  const [completionStatus, setCompletionStatus] = useState<{
-    freelancer_completed: boolean;
-    client_completed: boolean;
-    completed_at: string | null;
-  } | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [hasReviewed, setHasReviewed] = useState(false);
-  const [incompleteDialogOpen, setIncompleteDialogOpen] = useState(false);
+  const {
+    completionStatus,
+    isLoading,
+    isFullyCompleted,
+    userCompleted,
+    otherPartyCompleted,
+    otherPartyLabel,
+    isFreelancer,
+    loadCompletionStatus
+  } = useCompletionStatus(quoteId);
   
-  const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
+  const {
+    dialogOpen,
+    setDialogOpen,
+    incompleteDialogOpen,
+    setIncompleteDialogOpen,
+    handleComplete,
+    handleMarkIncomplete,
+    isMarkingComplete,
+    isMarkingIncomplete
+  } = useCompletionActions(quoteId, projectId, loadCompletionStatus);
+  
+  const { checkReviewExists } = useReviewSubmission();
+  const [hasReviewed, setHasReviewed] = React.useState(false);
+  
   const revieweeId = isFreelancer ? clientId : freelancerId;
   const revieweeName = isFreelancer ? clientName : freelancerName;
   
-  const { checkReviewExists } = useReviewSubmission();
-  const { markProjectIncomplete, isMarkingIncomplete } = useProjectCompletion({ 
-    quoteId, 
-    projectId 
-  });
-  
-  const loadCompletionStatus = async () => {
-    setIsLoading(true);
+  // Check if user has already left a review
+  React.useEffect(() => {
+    const checkReview = async () => {
+      if (completionStatus?.completed_at) {
+        const hasLeftReview = await checkReviewExists(quoteId);
+        setHasReviewed(hasLeftReview);
+      }
+    };
     
-    // Check quote completion status
-    const { data, error } = await supabase
-      .from('quotes')
-      .select('freelancer_completed, client_completed, completed_at')
-      .eq('id', quoteId)
-      .single();
-      
-    if (error) {
-      console.error('Error checking completion status:', error);
-      setIsLoading(false);
-      return;
-    }
-    
-    setCompletionStatus(data);
-    
-    // Check if user has already left a review
-    if (data.completed_at && user?.id) {
-      const hasLeftReview = await checkReviewExists(quoteId);
-      setHasReviewed(hasLeftReview);
-    }
-    
-    setIsLoading(false);
-  };
-  
-  useEffect(() => {
-    if (quoteId) {
-      loadCompletionStatus();
-    }
-  }, [quoteId, user?.id]);
+    checkReview();
+  }, [completionStatus, quoteId, checkReviewExists]);
   
   const handleReviewSubmitted = () => {
     setHasReviewed(true);
-  };
-  
-  const handleIncomplete = (reason: string) => {
-    markProjectIncomplete({ reason });
-    setIncompleteDialogOpen(false);
   };
   
   if (isLoading) {
@@ -105,12 +91,6 @@ const ProjectCompletionStatus: React.FC<ProjectCompletionStatusProps> = ({
   if (!completionStatus) {
     return null;
   }
-  
-  // Get completion details
-  const isFullyCompleted = completionStatus.completed_at && completionStatus.client_completed && completionStatus.freelancer_completed;
-  const userCompleted = isFreelancer ? completionStatus.freelancer_completed : completionStatus.client_completed;
-  const otherPartyCompleted = isFreelancer ? completionStatus.client_completed : completionStatus.freelancer_completed;
-  const otherPartyLabel = isFreelancer ? 'Client' : 'Freelancer';
   
   // If neither party has marked complete, don't show anything
   if (!userCompleted && !otherPartyCompleted) {
@@ -220,7 +200,7 @@ const ProjectCompletionStatus: React.FC<ProjectCompletionStatusProps> = ({
         <IncompleteProjectDialog
           open={incompleteDialogOpen}
           onOpenChange={setIncompleteDialogOpen}
-          onConfirm={handleIncomplete}
+          onConfirm={handleMarkIncomplete}
           isProcessing={isMarkingIncomplete}
           otherPartyLabel={otherPartyLabel}
         />

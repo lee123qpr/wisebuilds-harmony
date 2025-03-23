@@ -19,7 +19,7 @@ const CompletionStatusIndicator: React.FC<CompletionStatusIndicatorProps> = ({
 }) => {
   if (isCompleted) {
     return (
-      <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1 px-3 py-1">
+      <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
         <CheckCircle2 className="h-4 w-4" />
         Project Completed
       </Badge>
