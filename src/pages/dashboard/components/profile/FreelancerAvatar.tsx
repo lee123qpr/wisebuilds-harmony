@@ -10,7 +10,7 @@ interface FreelancerAvatarProps {
   uploadingImage: boolean;
   imageKey?: string;
   initials: string;
-  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => Promise<void>;
+  handleImageUpload: (e: React.ChangeEvent<HTMLInputElement>) => void;
   className?: string;
   size?: 'default' | 'lg' | 'xl';
 }

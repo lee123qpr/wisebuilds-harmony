@@ -9,23 +9,10 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { NotificationsProvider } from '@/context/NotificationsContext';
 
-const UserCreditsInner: React.FC = () => {
+const UserCredits: React.FC = () => {
   const navigate = useNavigate();
-  
-  // Try to use credits hook, but handle the case when notifications context is not available
-  let creditBalance = 0;
-  let isLoadingBalance = false;
-  
-  try {
-    const credits = useCredits();
-    creditBalance = credits.creditBalance;
-    isLoadingBalance = credits.isLoadingBalance;
-  } catch (error) {
-    console.warn('Credits functionality unavailable - NotificationsProvider missing');
-    // Fallback to default values (already set above)
-  }
+  const { creditBalance, isLoadingBalance } = useCredits();
 
   return (
     <Popover>
@@ -66,15 +53,6 @@ const UserCreditsInner: React.FC = () => {
         </div>
       </PopoverContent>
     </Popover>
-  );
-};
-
-// Wrapper component that ensures NotificationsProvider is available
-const UserCredits: React.FC = () => {
-  return (
-    <NotificationsProvider>
-      <UserCreditsInner />
-    </NotificationsProvider>
   );
 };
 

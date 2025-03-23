@@ -1,5 +1,4 @@
-
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useImageUpload } from './useImageUpload';
 
@@ -18,7 +17,6 @@ export const useProfileImageHandling = ({
 }: UseProfileImageHandlingProps) => {
   const [availableBuckets, setAvailableBuckets] = useState<string[]>([]);
   const [userType, setUserType] = useState<string | null>(null);
-  const [bucketsLoaded, setBucketsLoaded] = useState(false);
 
   const {
     imageUrl,
@@ -34,10 +32,7 @@ export const useProfileImageHandling = ({
     namePrefix: 'avatar'
   });
 
-  // Load available buckets only once
   useEffect(() => {
-    if (bucketsLoaded) return;
-    
     const getBuckets = async () => {
       try {
         const { data, error } = await supabase.storage.listBuckets();
@@ -50,7 +45,6 @@ export const useProfileImageHandling = ({
           const bucketNames = data.map(b => b.name);
           console.log('Available buckets:', bucketNames.join(', '));
           setAvailableBuckets(bucketNames);
-          setBucketsLoaded(true);
         }
       } catch (err) {
         console.error('Error in getBuckets:', err);
@@ -58,50 +52,54 @@ export const useProfileImageHandling = ({
     };
     
     getBuckets();
-  }, [bucketsLoaded]);
+  }, []);
 
-  // Sync image URL to parent only when it changes
   useEffect(() => {
     if (imageUrl) {
+      console.log('Syncing image URL to parent:', imageUrl);
       setParentProfileImage(imageUrl);
     }
   }, [imageUrl, setParentProfileImage]);
 
-  // Sync uploading state to parent
   useEffect(() => {
     setParentUploadingImage(uploadingImage);
   }, [uploadingImage, setParentUploadingImage]);
 
-  // Initialize local image state with profile image
   useEffect(() => {
     if (initialProfileImage && !imageUrl) {
+      console.log('Initializing local image state with:', initialProfileImage);
       setImageUrl(initialProfileImage);
     }
   }, [initialProfileImage, imageUrl, setImageUrl]);
 
-  // Get user type only once
   useEffect(() => {
-    if (userType !== null) return;
-    
     const getUserType = async () => {
       const { data } = await supabase.auth.getUser();
       const type = data.user?.user_metadata?.user_type as string || null;
       setUserType(type);
+      console.log('Current user type:', type);
     };
     
     getUserType();
-  }, [userType]);
+  }, [userId]);
 
-  // Memoize upload handler to prevent recreating on each render
-  // Updated to return void instead of string
-  const handleImageUploadProxy = useCallback(async (e: React.ChangeEvent<HTMLInputElement>): Promise<void> => {
+  const handleImageUploadProxy = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('Image upload triggered with file:', e.target.files?.[0]?.name);
+    
     try {
       setUploadingImage(true);
-      await handleImageUpload(e); // Just await, don't return the string value
+      
+      const result = await handleImageUpload(e);
+      
+      if (result) {
+        console.log('Upload successful, URL:', result);
+      } else {
+        console.log('Upload did not return a URL');
+      }
     } catch (error) {
       console.error('Error in upload proxy:', error);
     }
-  }, [handleImageUpload, setUploadingImage]);
+  };
 
   return {
     imageUrl,

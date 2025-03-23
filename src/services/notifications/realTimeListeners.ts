@@ -15,23 +15,6 @@ export const setupListeners = (userId: string, onNotification: (payload: any) =>
     return () => {};
   }
   
-  // Check if we already have active channels for this user
-  if (activeChannels.has(userId) && activeChannels.get(userId)?.length > 0) {
-    console.log('Listeners already set up for user', userId);
-    return () => {
-      // Return existing cleanup function
-      const channels = activeChannels.get(userId) || [];
-      channels.forEach(channel => {
-        try {
-          supabase.removeChannel(channel);
-        } catch (error) {
-          console.warn('Error removing channel:', error);
-        }
-      });
-      activeChannels.delete(userId);
-    };
-  }
-  
   // Clean up any existing channels for this user to prevent duplicates
   if (activeChannels.has(userId)) {
     const channels = activeChannels.get(userId) || [];
@@ -42,7 +25,6 @@ export const setupListeners = (userId: string, onNotification: (payload: any) =>
         console.warn('Error removing channel:', error);
       }
     });
-    activeChannels.delete(userId);
   }
   
   // Set up new channels with error handling

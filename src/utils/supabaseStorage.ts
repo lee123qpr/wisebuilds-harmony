@@ -13,6 +13,7 @@ export const uploadFile = async (
 ): Promise<{ url: string; path: string } | null> => {
   try {
     if (!userId) {
+      console.error('Error: userId is required for storage RLS policies');
       throw new Error('User ID is required for uploading files');
     }
 
@@ -33,6 +34,8 @@ export const uploadFile = async (
     // Important: The path MUST start with the userId for RLS policies to work
     const filePath = `${userId}/${fileName}`;
     
+    console.log(`Uploading to ${bucketName}, path: ${filePath}`);
+    
     // Check if bucket exists before attempting upload
     const bucketExists = await checkBucketAccess(bucketName);
     if (!bucketExists) {
@@ -48,10 +51,12 @@ export const uploadFile = async (
       });
 
     if (uploadError) {
+      console.error('Error during upload:', uploadError);
       throw new Error(`Upload failed: ${uploadError.message}`);
     }
 
     if (!uploadData) {
+      console.error('Upload completed but no data returned');
       throw new Error('Upload completed but no file data was returned');
     }
     
@@ -60,6 +65,7 @@ export const uploadFile = async (
       .from(bucketName)
       .getPublicUrl(filePath);
       
+    console.log('File uploaded successfully to path:', filePath);
     return {
       url: publicUrl,
       path: filePath
@@ -80,6 +86,7 @@ export const removeFile = async (
   try {
     // Validate path
     if (!filePath.includes('/')) {
+      console.error('Invalid file path:', filePath);
       throw new Error('Invalid file path format - must include user ID as first segment');
     }
 
@@ -124,6 +131,7 @@ export const checkBucketAccess = async (bucketName: string): Promise<boolean> =>
     // First check if user is authenticated
     const { data: session } = await supabase.auth.getSession();
     if (!session.session) {
+      console.warn('User not authenticated, cannot check bucket access');
       return false;
     }
     
@@ -131,6 +139,7 @@ export const checkBucketAccess = async (bucketName: string): Promise<boolean> =>
     const { data: buckets, error: bucketsError } = await supabase.storage.listBuckets();
     
     if (bucketsError) {
+      console.error('Error listing buckets:', bucketsError);
       return false;
     }
     
@@ -138,21 +147,25 @@ export const checkBucketAccess = async (bucketName: string): Promise<boolean> =>
     const bucketExists = buckets.some(bucket => bucket.name === bucketName);
     
     if (!bucketExists) {
+      console.error(`Bucket ${bucketName} does not exist`);
       return false;
     }
     
     // A simple way to check bucket access is to list files (with a limit of 0)
     // This will tell us if we have at least READ access
-    const { error } = await supabase.storage
+    const { data, error } = await supabase.storage
       .from(bucketName)
       .list('', { limit: 1 });
     
     if (error) {
+      console.error(`Error accessing bucket ${bucketName}:`, error);
       return false;
     }
     
+    console.log(`Successfully verified access to bucket: ${bucketName}`);
     return true;
   } catch (error) {
+    console.error(`Error checking bucket ${bucketName}:`, error);
     return false;
   }
 };
