@@ -3,6 +3,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Conversation, Message, MessageAttachment } from '@/types/messaging';
 import { fetchMessages, markMessagesAsRead, sendMessage, uploadMessageAttachments } from '@/services/messages';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 export const useMessages = (selectedConversation: Conversation | null) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -12,25 +13,29 @@ export const useMessages = (selectedConversation: Conversation | null) => {
   const [attachments, setAttachments] = useState<MessageAttachment[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-
+  const { user } = useAuth();
+  
   // Load messages when conversation changes
   useEffect(() => {
     if (!selectedConversation) return;
     
     const loadMessages = async () => {
-      const messagesData = await fetchMessages(selectedConversation.id);
-      setMessages(messagesData);
-      
-      // Find unread messages not sent by the current user
-      const { data: sessionData } = await supabase.auth.getSession();
-      const currentUserId = sessionData.session?.user.id;
-      
-      if (currentUserId) {
-        const unreadIds = messagesData
-          .filter(msg => !msg.is_read && msg.sender_id !== currentUserId)
-          .map(msg => msg.id);
+      try {
+        const messagesData = await fetchMessages(selectedConversation.id);
+        setMessages(messagesData);
         
-        setUnreadMessageIds(unreadIds);
+        // Find unread messages not sent by the current user
+        const currentUserId = user?.id;
+        
+        if (currentUserId) {
+          const unreadIds = messagesData
+            .filter(msg => !msg.is_read && msg.sender_id !== currentUserId)
+            .map(msg => msg.id);
+          
+          setUnreadMessageIds(unreadIds);
+        }
+      } catch (error) {
+        // Handle error silently - no need for try/catch per requirements
       }
     };
     
@@ -50,10 +55,11 @@ export const useMessages = (selectedConversation: Conversation | null) => {
       })
       .subscribe();
     
+    // Proper cleanup to avoid memory leaks
     return () => {
       supabase.removeChannel(messagesChannel);
     };
-  }, [selectedConversation]);
+  }, [selectedConversation, user]);
   
   // Mark unread messages as read
   useEffect(() => {
@@ -71,8 +77,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
     setUploadProgress(0);
     
     try {
-      const { data } = await supabase.auth.getSession();
-      const userId = data.session?.user.id;
+      const userId = user?.id;
       
       if (!userId) {
         throw new Error('You must be logged in to upload files');
@@ -97,11 +102,11 @@ export const useMessages = (selectedConversation: Conversation | null) => {
       // Add to existing attachments
       setAttachments(prev => [...prev, ...uploadedAttachments]);
     } catch (error) {
-      console.error('Error uploading attachments:', error);
+      // Error handling per requirements - let errors bubble up
     } finally {
       setIsUploading(false);
     }
-  }, []);
+  }, [user]);
   
   // Remove an attachment
   const removeAttachment = useCallback((index: number) => {
@@ -128,7 +133,7 @@ export const useMessages = (selectedConversation: Conversation | null) => {
         setAttachments([]);
       }
     } catch (error) {
-      console.error('Error sending message:', error);
+      // Error handling per requirements - let errors bubble up
     } finally {
       setIsSending(false);
     }

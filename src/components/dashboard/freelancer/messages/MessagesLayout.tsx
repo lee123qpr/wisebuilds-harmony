@@ -22,15 +22,14 @@ const MessagesLayout: React.FC<MessagesLayoutProps> = ({
 }) => {
   const isMobile = useIsMobile();
   
-  // On mobile, hide conversations list when a conversation is selected
-  const showConversationsList = !isMobile || (isMobile && !selectedConversation);
-  const showChatArea = !isMobile || (isMobile && selectedConversation);
+  // Simplified rendering logic for mobile
+  const showConversationsList = !isMobile || !selectedConversation;
+  const showChatArea = !isMobile || selectedConversation;
   
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 h-[calc(100vh-180px)] max-h-[800px]">
-      {/* Conversations list */}
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4 h-[calc(100vh-180px)] max-h-[800px]">
       {showConversationsList && (
-        <div className={`${isMobile ? 'col-span-1' : 'md:col-span-1'} h-full overflow-hidden border rounded-md`}>
+        <div className="col-span-1 h-full overflow-hidden border rounded-md">
           <ConversationsList
             conversations={conversations}
             selectedConversation={selectedConversation}
@@ -41,9 +40,8 @@ const MessagesLayout: React.FC<MessagesLayoutProps> = ({
         </div>
       )}
       
-      {/* Chat area */}
       {showChatArea && (
-        <div className={`${isMobile ? 'col-span-1' : 'md:col-span-2'} border rounded-md flex flex-col overflow-hidden`}>
+        <div className="col-span-1 md:col-span-2 border rounded-md flex flex-col overflow-hidden">
           <ChatArea 
             selectedConversation={selectedConversation} 
             onBackClick={isMobile ? () => setSelectedConversation(null) : undefined}

@@ -6,7 +6,7 @@ import { useMessages } from '@/hooks/messages/useMessages';
 import ChatHeader from './ChatHeader';
 import MessagesList from './MessagesList';
 import MessageInput from './MessageInput';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 interface ChatAreaProps {
   selectedConversation: Conversation | null;
@@ -14,7 +14,9 @@ interface ChatAreaProps {
 }
 
 const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation, onBackClick }) => {
-  const [currentUserId, setCurrentUserId] = useState<string>('');
+  const { user } = useAuth();
+  const currentUserId = user?.id || '';
+  
   const { 
     messages, 
     newMessage, 
@@ -29,21 +31,10 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation, onBackClick }
     uploadProgress
   } = useMessages(selectedConversation);
 
-  // Get current user ID
-  useEffect(() => {
-    const getUserId = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data.session?.user.id) {
-        setCurrentUserId(data.session.user.id);
-      }
-    };
-    getUserId();
-  }, []);
-
   if (!selectedConversation) {
     return (
       <div className="flex items-center justify-center h-full">
-        <Card className="w-3/4 p-6 text-center">
+        <Card className="w-full md:w-3/4 p-4 md:p-6 text-center">
           <h3 className="text-lg font-medium mb-2">Select a conversation</h3>
           <p className="text-muted-foreground">
             Choose a conversation from the list to view messages
@@ -57,7 +48,7 @@ const ChatArea: React.FC<ChatAreaProps> = ({ selectedConversation, onBackClick }
     <div className="flex flex-col h-full">
       <ChatHeader conversation={selectedConversation} onBackClick={onBackClick} />
       
-      <div className="flex-grow overflow-y-auto p-4 pb-1">
+      <div className="flex-grow overflow-y-auto p-2 md:p-4 pb-1">
         <MessagesList messages={messages} currentUserId={currentUserId} />
       </div>
       

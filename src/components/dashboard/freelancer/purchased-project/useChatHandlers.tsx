@@ -11,24 +11,26 @@ export const useChatHandlers = (project: any) => {
   const { user } = useAuth();
   
   const handleStartChat = async () => {
+    if (!user) {
+      toast({
+        title: 'Authentication required',
+        description: 'You must be logged in to start a conversation',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    // Validate project data
+    if (!project?.id || !project?.user_id) {
+      toast({
+        title: 'Invalid project data',
+        description: 'Could not start conversation due to missing project information',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
     try {
-      if (!user) {
-        throw new Error('Not authenticated');
-      }
-      
-      // Validate project data
-      if (!project?.id) {
-        console.error('Missing project ID', project);
-        throw new Error('Missing project ID');
-      }
-      
-      if (!project?.user_id) {
-        console.error('Missing client ID', project);
-        throw new Error('Missing client ID');
-      }
-      
-      console.log('Starting chat between freelancer', user.id, 'and client', project.user_id, 'for project', project.id);
-      
       // Check if conversation already exists
       const { data: existingConversations, error: checkError } = await supabase
         .from('conversations')
@@ -40,7 +42,6 @@ export const useChatHandlers = (project: any) => {
       if (checkError) throw checkError;
       
       if (existingConversations && existingConversations.length > 0) {
-        console.log('Using existing conversation:', existingConversations[0].id);
         navigate(`/dashboard/freelancer?tab=messages&conversation=${existingConversations[0].id}`);
       } else {
         // Create a new conversation
@@ -50,11 +51,9 @@ export const useChatHandlers = (project: any) => {
           throw new Error('Failed to create conversation');
         }
         
-        console.log('Created new conversation:', newConversation.id);
         navigate(`/dashboard/freelancer?tab=messages&conversation=${newConversation.id}`);
       }
     } catch (error: any) {
-      console.error('Error starting chat:', error);
       toast({
         title: 'Error starting chat',
         description: error.message || 'Failed to start conversation',
