@@ -9,12 +9,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { NotificationsProvider } from '@/context/NotificationsContext';
 
 const UserCredits: React.FC = () => {
   const navigate = useNavigate();
   const { creditBalance, isLoadingBalance } = useCredits();
 
-  return (
+  const creditDisplay = (
     <Popover>
       <PopoverTrigger asChild>
         <Button 
@@ -53,6 +54,13 @@ const UserCredits: React.FC = () => {
         </div>
       </PopoverContent>
     </Popover>
+  );
+
+  // Wrap in NotificationsProvider to ensure it works in any context
+  return (
+    <NotificationsProvider>
+      {creditDisplay}
+    </NotificationsProvider>
   );
 };
 
