@@ -57,8 +57,8 @@ const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelance
           />
         </div>
       )}
-      <FreelancerProfileHeader profile={adaptedProfileData as any} />
-      <FreelancerProfileTabs profile={adaptedProfileData as any} />
+      <FreelancerProfileHeader profile={adaptedProfileData} />
+      <FreelancerProfileTabs profile={adaptedProfileData} />
     </>
   );
 

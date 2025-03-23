@@ -126,7 +126,21 @@ export const useFreelancerProfileData = (freelancerId?: string) => {
             if (typeof data.indemnity_insurance === 'boolean') {
               transformedData.indemnity_insurance = data.indemnity_insurance;
             } else if (typeof data.indemnity_insurance === 'object') {
-              transformedData.indemnity_insurance = data.indemnity_insurance as IndemnityInsurance;
+              // Explicitly cast the JSON value to our type
+              const insuranceData = data.indemnity_insurance as Json;
+              if (insuranceData && typeof insuranceData === 'object') {
+                transformedData.indemnity_insurance = {
+                  hasInsurance: 'hasInsurance' in insuranceData 
+                    ? Boolean(insuranceData.hasInsurance) 
+                    : false,
+                  coverLevel: 'coverLevel' in insuranceData 
+                    ? String(insuranceData.coverLevel) 
+                    : undefined
+                };
+              } else {
+                // Fallback for any other cases
+                transformedData.indemnity_insurance = { hasInsurance: false };
+              }
             }
           }
           
