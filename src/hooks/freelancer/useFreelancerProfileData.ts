@@ -40,9 +40,6 @@ interface ProfileDBData {
   reviews_count?: number;
 }
 
-// This alias is used for test cases
-export type ProfileData = FreelancerProfile;
-
 export const useFreelancerProfileData = (userId?: string) => {
   const { user } = useAuth();
   const targetUserId = userId || user?.id;

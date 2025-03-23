@@ -101,7 +101,7 @@ export const useProjectApplications = (projectId: string | undefined) => {
                   hasInsurance: boolean;
                   coverLevel?: string;
                 } | undefined,
-                previousWork: profileData.previous_work as {
+                previous_work: profileData.previous_work as {
                   name: string;
                   url: string;
                   type: string;

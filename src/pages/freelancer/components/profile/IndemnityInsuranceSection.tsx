@@ -12,6 +12,15 @@ const IndemnityInsuranceSection: React.FC<IndemnityInsuranceSectionProps> = ({ p
     return null;
   }
 
+  // Determine if insurance exists and get coverage level
+  const hasInsurance = typeof profile.indemnity_insurance === 'boolean' 
+    ? profile.indemnity_insurance 
+    : profile.indemnity_insurance.hasInsurance;
+    
+  const coverLevel = typeof profile.indemnity_insurance === 'boolean' 
+    ? 'Not specified' 
+    : profile.indemnity_insurance.coverLevel || 'Not specified';
+
   return (
     <div className="border p-4 rounded-md bg-gray-50">
       <div className="flex items-start gap-2 mb-3">
@@ -19,9 +28,9 @@ const IndemnityInsuranceSection: React.FC<IndemnityInsuranceSectionProps> = ({ p
         <div className="space-y-2 w-full">
           <h3 className="text-md font-medium">Professional Indemnity Insurance</h3>
           <div className="text-sm break-words overflow-hidden">
-            {profile.indemnity_insurance.hasInsurance ? (
+            {hasInsurance ? (
               <span className="text-green-700">
-                Insured - Coverage: <span className="font-medium">{profile.indemnity_insurance.coverLevel || 'Not specified'}</span>
+                Insured - Coverage: <span className="font-medium">{coverLevel}</span>
               </span>
             ) : (
               <span className="text-amber-700">Not insured</span>
