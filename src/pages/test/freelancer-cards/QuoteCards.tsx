@@ -28,11 +28,11 @@ const QuoteCards: React.FC<QuoteCardsProps> = ({
     project_id: 'project-123',
     freelancer_id: completeFreelancer.id,
     client_id: 'client-123',
-    fixed_price: 1000,
+    fixed_price: '1000', // Changed from number to string to match Quote type
     day_rate: null,
     estimated_price: null,
     available_start_date: new Date().toISOString(),
-    estimated_duration: 14,
+    estimated_duration: '14', // Changed to string to match Quote type expectation
     duration_unit: 'days',
     payment_terms: 'half upfront, half on completion',
     description: 'This is a detailed quote description outlining the work that will be done for this project.'
