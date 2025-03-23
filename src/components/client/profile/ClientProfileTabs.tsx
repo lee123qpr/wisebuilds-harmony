@@ -5,6 +5,7 @@ import { Building, Star } from 'lucide-react';
 import { ClientProfileData } from '@/pages/client/types';
 import CompanyDescriptionCard from './CompanyDescriptionCard';
 import ClientInformationCard from './ClientInformationCard';
+import ClientDetailsSection from './ClientDetailsSection';
 import { useClientReviews } from '@/pages/dashboard/hooks/useClientReviews';
 import ReviewsList from '@/pages/dashboard/components/profile/ReviewsList';
 
@@ -46,6 +47,9 @@ const ClientProfileTabs: React.FC<ClientProfileTabsProps> = ({
               <CompanyDescriptionCard description={clientProfile.company_description} />
             )}
           </div>
+          
+          {/* Add the missing company details section */}
+          <ClientDetailsSection clientProfile={clientProfile} />
         </div>
       </TabsContent>
 

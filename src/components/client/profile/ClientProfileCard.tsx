@@ -51,7 +51,7 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
             <h2 className="text-xl font-bold">
               {clientProfile.company_name || clientProfile.contact_name || 'Client'}
             </h2>
-            {averageRating !== null && <RatingStars rating={averageRating} reviewCount={reviewCount} className="mt-1 md:mt-0" />}
+            {averageRating !== null && averageRating > 0 && <RatingStars rating={averageRating} reviewCount={reviewCount} className="mt-1 md:mt-0" />}
           </div>
           
           {clientProfile.contact_name && clientProfile.company_name && (
@@ -104,8 +104,6 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
                 Member since {format(new Date(clientProfile.member_since), 'MMM yyyy')}
               </Badge>
             )}
-            
-            {/* Removed the email_verified check that was causing the error */}
             
             {clientProfile.jobs_completed && clientProfile.jobs_completed > 0 && (
               <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">

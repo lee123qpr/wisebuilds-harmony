@@ -53,13 +53,15 @@ const ClientInformationCard: React.FC<ClientInformationCardProps> = ({ clientPro
           </div>
         )}
         
-        <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
-          <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-slate-500">Member Since</p>
-            <p className="font-medium text-slate-800">{formatDate(clientProfile.member_since)}</p>
+        {clientProfile.member_since && (
+          <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
+            <Clock className="h-5 w-5 text-blue-600 mt-0.5" />
+            <div>
+              <p className="text-sm font-medium text-slate-500">Member Since</p>
+              <p className="font-medium text-slate-800">{formatDate(clientProfile.member_since)}</p>
+            </div>
           </div>
-        </div>
+        )}
         
         {clientProfile.jobs_completed && clientProfile.jobs_completed > 0 && (
           <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
