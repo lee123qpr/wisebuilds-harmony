@@ -10,12 +10,24 @@ import CompanyDescriptionCard from '@/components/client/profile/CompanyDescripti
 import ClientDetailsSection from '@/components/client/profile/ClientDetailsSection';
 import ClientHeaderSection from '@/components/client/profile/ClientHeaderSection';
 import { useClientProfile, formatProfileDate } from '@/hooks/clients/useClientProfile';
+import { useToast } from '@/hooks/use-toast';
 
 const ClientProfileView = () => {
   const { clientId } = useParams<{ clientId: string }>();
   const { data: clientProfile, isLoading, error, isError } = useClientProfile(clientId);
+  const { toast } = useToast();
 
   console.log('ClientProfileView rendering with:', { clientId, isLoading, error, hasData: !!clientProfile });
+
+  React.useEffect(() => {
+    if (isError && error) {
+      toast({
+        title: "Error loading profile",
+        description: error.message || "Could not load client profile",
+        variant: "destructive"
+      });
+    }
+  }, [isError, error, toast]);
 
   if (isLoading) {
     return (
