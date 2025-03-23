@@ -10,7 +10,7 @@ interface ClientDetailsSectionProps {
 
 const ClientDetailsSection: React.FC<ClientDetailsSectionProps> = ({ clientProfile }) => {
   // Don't show the section if none of these fields are present
-  if (!clientProfile.company_type && !clientProfile.employee_size && !clientProfile.company_specialism) {
+  if (!clientProfile.company_type && !clientProfile.employee_size && !clientProfile.company_specialism && !clientProfile.company_turnover) {
     return null;
   }
 

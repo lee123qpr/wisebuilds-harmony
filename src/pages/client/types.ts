@@ -11,4 +11,8 @@ export interface ClientProfileData {
   member_since: string | null;
   jobs_completed: number | null;
   logo_url: string | null;
+  company_type: string | null;
+  employee_size: string | null;
+  company_specialism: string | null;
+  company_turnover: string | null;
 }
