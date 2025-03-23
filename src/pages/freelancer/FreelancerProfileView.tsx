@@ -41,6 +41,12 @@ const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelance
     return <FreelancerProfileNotFound />;
   }
 
+  // Convert profile data to the format expected by components
+  const adaptedProfileData = {
+    ...profileData,
+    // Ensure any specific properties are correctly converted if needed
+  };
+
   const content = (
     <>
       {!isTestEnvironment && (
@@ -51,8 +57,8 @@ const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelance
           />
         </div>
       )}
-      <FreelancerProfileHeader profile={profileData} />
-      <FreelancerProfileTabs profile={profileData} />
+      <FreelancerProfileHeader profile={adaptedProfileData as any} />
+      <FreelancerProfileTabs profile={adaptedProfileData as any} />
     </>
   );
 

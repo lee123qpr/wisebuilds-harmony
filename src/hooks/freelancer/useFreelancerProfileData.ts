@@ -3,16 +3,23 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { Json } from '@/integrations/supabase/types';
+import { FreelancerProfile } from '@/types/applications';
 
 // Define a type for previous employers
-type PreviousEmployer = {
+export type PreviousEmployer = {
   company: string;
   role: string;
   duration: string;
+} | {
+  employerName: string;
+  position: string;
+  startDate: string;
+  endDate?: string;
+  current: boolean;
 };
 
 // Define a type for indemnity insurance
-type IndemnityInsurance =
+export type IndemnityInsurance =
   | boolean
   | {
       hasInsurance: boolean;
@@ -20,7 +27,7 @@ type IndemnityInsurance =
     };
 
 // Define a type for the freelancer profile data
-type FreelancerProfileData = {
+export type FreelancerProfileData = {
   id: string;
   first_name?: string;
   last_name?: string;
@@ -40,12 +47,21 @@ type FreelancerProfileData = {
   accreditations?: string[];
   previous_employers?: PreviousEmployer[];
   indemnity_insurance?: IndemnityInsurance;
-  previous_work?: string[];
+  previous_work?: string[] | {
+    name: string;
+    url: string;
+    type: string;
+    size: number;
+    path: string;
+  }[];
   id_verified?: boolean;
   verified?: boolean;
   rating?: number;
   completed_jobs?: number;
+  jobs_completed?: number;
   member_since?: string;
+  reviews_count?: number;
+  email_verified?: boolean;
 };
 
 // Define a custom hook to fetch freelancer profile data
@@ -92,10 +108,16 @@ export const useFreelancerProfileData = (freelancerId?: string) => {
               ? data.accreditations.map(item => String(item))
               : [],
             previous_employers: Array.isArray(data.previous_employers) 
-              ? data.previous_employers.map(item => item as unknown as PreviousEmployer)
+              ? data.previous_employers as PreviousEmployer[]
               : [],
             previous_work: Array.isArray(data.previous_work) 
-              ? data.previous_work.map(item => String(item))
+              ? data.previous_work as string[] | {
+                name: string;
+                url: string;
+                type: string;
+                size: number;
+                path: string;
+              }[]
               : []
           };
           
@@ -103,8 +125,8 @@ export const useFreelancerProfileData = (freelancerId?: string) => {
           if (data.indemnity_insurance !== null && data.indemnity_insurance !== undefined) {
             if (typeof data.indemnity_insurance === 'boolean') {
               transformedData.indemnity_insurance = data.indemnity_insurance;
-            } else {
-              transformedData.indemnity_insurance = data.indemnity_insurance as unknown as IndemnityInsurance;
+            } else if (typeof data.indemnity_insurance === 'object') {
+              transformedData.indemnity_insurance = data.indemnity_insurance as IndemnityInsurance;
             }
           }
           
