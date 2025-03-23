@@ -28,7 +28,7 @@ const ProfessionalDetailsSection: React.FC<ProfessionalDetailsSectionProps> = ({
             <DollarSign className="h-5 w-5 mt-0.5 text-primary/80" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">Hourly Rate</p>
-              <p className="font-medium text-foreground">{profile.hourly_rate}</p>
+              <p className="font-medium text-foreground">£{profile.hourly_rate}</p>
             </div>
           </div>
         )}
@@ -38,7 +38,7 @@ const ProfessionalDetailsSection: React.FC<ProfessionalDetailsSectionProps> = ({
             <DollarSign className="h-5 w-5 mt-0.5 text-primary/80" />
             <div>
               <p className="text-sm font-medium text-muted-foreground">Day Rate</p>
-              <p className="font-medium text-foreground">{profile.day_rate}</p>
+              <p className="font-medium text-foreground">£{profile.day_rate}</p>
             </div>
           </div>
         )}
