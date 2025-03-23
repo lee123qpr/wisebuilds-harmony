@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Calendar, MapPin, Building, Check, Mail, Briefcase } from 'lucide-react';
@@ -19,6 +19,7 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
 }) => {
   // Get reviews and ratings
   const { averageRating, reviewCount } = useClientReviews(clientProfile.id);
+  const [jobsCount, setJobsCount] = useState<number>(0);
 
   // Get initials for avatar fallback
   const getInitials = () => {
@@ -31,8 +32,24 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
       .substring(0, 2);
   };
 
-  // Ensure jobs_completed is a number for comparison
-  const jobsCount = typeof clientProfile.jobs_completed === 'number' ? clientProfile.jobs_completed : 0;
+  // Use useEffect to log and set the jobs completed count
+  useEffect(() => {
+    console.log('Raw jobs_completed value:', clientProfile.jobs_completed);
+    let count = 0;
+    
+    if (clientProfile.jobs_completed !== null && clientProfile.jobs_completed !== undefined) {
+      // Convert to number if it's a string
+      count = typeof clientProfile.jobs_completed === 'string' 
+        ? parseInt(clientProfile.jobs_completed, 10) 
+        : clientProfile.jobs_completed;
+        
+      // Ensure it's a valid number
+      count = isNaN(count) ? 0 : count;
+    }
+    
+    console.log('Processed jobs count:', count);
+    setJobsCount(count);
+  }, [clientProfile.jobs_completed]);
 
   return (
     <div className="border shadow-md rounded-lg p-6">
@@ -98,12 +115,10 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
               </Badge>
             )}
             
-            {clientProfile.jobs_completed !== null && (
-              <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
-                <Check className="h-3 w-3" />
-                {jobsCount} {jobsCount === 1 ? 'job' : 'jobs'} completed
-              </Badge>
-            )}
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
+              <Check className="h-3 w-3" />
+              {jobsCount} {jobsCount === 1 ? 'job' : 'jobs'} completed
+            </Badge>
           </div>
         </div>
       </div>
