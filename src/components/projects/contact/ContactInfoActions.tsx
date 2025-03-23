@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { ExternalLink, MessageCircle } from 'lucide-react';
+import { ExternalLink, MessageCircle, User } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 interface ContactInfoActionsProps {
@@ -21,8 +21,12 @@ const ContactInfoActions: React.FC<ContactInfoActionsProps> = ({
     navigate(`/dashboard/freelancer?tab=messages&projectId=${projectId}&clientId=${clientId}`);
   };
 
+  const handleViewProfile = () => {
+    navigate(`/client-profile/${clientId}`);
+  };
+
   return (
-    <div className="flex items-center pt-2 gap-2">
+    <div className="flex items-center pt-2 gap-2 flex-wrap">
       {website && (
         <Button
           variant="outline"
@@ -34,6 +38,16 @@ const ContactInfoActions: React.FC<ContactInfoActionsProps> = ({
           Visit Website
         </Button>
       )}
+      
+      <Button
+        variant="outline"
+        size="sm"
+        className="border-blue-200 hover:bg-blue-100 text-blue-700"
+        onClick={handleViewProfile}
+      >
+        <User className="h-4 w-4 mr-2" />
+        View Client Profile
+      </Button>
       
       <Button
         variant="default"

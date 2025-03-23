@@ -83,19 +83,19 @@ export const useFreelancerProfileData = (freelancerId?: string) => {
           const transformedData: FreelancerProfileData = {
             ...data,
             skills: Array.isArray(data.skills) 
-              ? (data.skills as Json[]).map(item => String(item))
+              ? data.skills.map(item => String(item))
               : [],
             qualifications: Array.isArray(data.qualifications) 
-              ? (data.qualifications as Json[]).map(item => String(item))
+              ? data.qualifications.map(item => String(item))
               : [],
             accreditations: Array.isArray(data.accreditations) 
-              ? (data.accreditations as Json[]).map(item => String(item))
+              ? data.accreditations.map(item => String(item))
               : [],
             previous_employers: Array.isArray(data.previous_employers) 
-              ? (data.previous_employers as Json[]).map(item => item as unknown as PreviousEmployer)
+              ? data.previous_employers.map(item => item as unknown as PreviousEmployer)
               : [],
             previous_work: Array.isArray(data.previous_work) 
-              ? (data.previous_work as Json[]).map(item => String(item))
+              ? data.previous_work.map(item => String(item))
               : []
           };
           
