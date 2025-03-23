@@ -21,6 +21,39 @@ export const useVerification = (): UseVerificationResult => {
   const [isSetupComplete, setIsSetupComplete] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // State setter function to be exposed for external components
+  const setVerificationState = (setter: (prev: {
+    verificationData: VerificationData | null;
+    isLoading: boolean;
+    isUploading: boolean;
+    isDeleting: boolean;
+    isSetupComplete: boolean;
+    error: Error | null;
+  }) => {
+    verificationData: VerificationData | null;
+    isLoading: boolean;
+    isUploading: boolean;
+    isDeleting: boolean;
+    isSetupComplete: boolean;
+    error: Error | null;
+  }) => {
+    const newState = setter({
+      verificationData,
+      isLoading,
+      isUploading,
+      isDeleting,
+      isSetupComplete,
+      error
+    });
+    
+    setVerificationData(newState.verificationData);
+    setIsLoading(newState.isLoading);
+    setIsUploading(newState.isUploading);
+    setIsDeleting(newState.isDeleting);
+    setIsSetupComplete(newState.isSetupComplete);
+    setError(newState.error);
+  };
+
   // Initialize verification system
   const setupVerificationSystem = async () => {
     try {
@@ -140,6 +173,7 @@ export const useVerification = (): UseVerificationResult => {
     error,
     uploadVerificationDocument: handleUploadVerificationDocument,
     deleteVerificationDocument: handleDeleteVerificationDocument,
-    refreshVerificationStatus
+    refreshVerificationStatus,
+    setVerificationState
   };
 };

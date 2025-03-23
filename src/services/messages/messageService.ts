@@ -1,4 +1,3 @@
-
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { Message, MessageAttachment } from '@/types/messaging';
@@ -28,12 +27,38 @@ export const fetchMessages = async (conversationId: string): Promise<Message[]> 
     }
     
     // Convert JSON attachments to proper MessageAttachment arrays
-    const messages = data?.map(msg => ({
-      ...msg,
-      attachments: msg.attachments ? (Array.isArray(msg.attachments) ? msg.attachments : [msg.attachments]) : undefined
-    })) || [];
+    const messages: Message[] = data?.map(msg => {
+      let parsedAttachments: MessageAttachment[] | undefined = undefined;
+      
+      if (msg.attachments) {
+        try {
+          // Handle both string JSON and already parsed JSON objects
+          const attachmentsData = typeof msg.attachments === 'string' 
+            ? JSON.parse(msg.attachments) 
+            : msg.attachments;
+            
+          // Ensure it's an array
+          parsedAttachments = Array.isArray(attachmentsData) 
+            ? attachmentsData 
+            : [attachmentsData];
+            
+          // Validate that each attachment has the required properties
+          parsedAttachments = parsedAttachments.filter(att => 
+            att && att.id && att.name && att.size !== undefined && 
+            att.type && att.url && att.path
+          );
+        } catch (e) {
+          console.error('Error parsing attachments:', e);
+        }
+      }
+      
+      return {
+        ...msg,
+        attachments: parsedAttachments
+      } as Message;
+    }) || [];
     
-    return messages as Message[];
+    return messages;
   } catch (e) {
     console.error('Error in fetchMessages:', e);
     toast({
@@ -163,4 +188,3 @@ export const uploadMessageAttachments = async (
     return [];
   }
 };
-

@@ -48,23 +48,14 @@ export const useFileUpload = (
     onFilesUploaded(updatedFiles);
     
     if (fileToRemove.path) {
-      const removePromise = removeFile(fileToRemove.path);
-      
-      (async () => {
-        try {
-          const success = await removePromise;
-          if (!success) {
-            console.error('Error removing file from storage:', fileToRemove.path);
-            toast({
-              title: "Error",
-              description: `Failed to delete ${fileToRemove.name} from storage`,
-              variant: "destructive"
-            });
-          }
-        } catch (error) {
-          console.error('Error in file removal:', error);
-        }
-      })();
+      removeFile(fileToRemove.path).catch(error => {
+        console.error('Error removing file from storage:', fileToRemove.path, error);
+        toast({
+          title: "Error",
+          description: `Failed to delete ${fileToRemove.name} from storage`,
+          variant: "destructive"
+        });
+      });
     }
   };
 
