@@ -2,7 +2,7 @@
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
-import { StorageBucket, uploadFile, checkBucketExists } from '@/utils/storage';
+import { StorageBucket, uploadFile, checkBucketExists, getActualAvatarBucket } from '@/utils/storage';
 import { supabase } from '@/integrations/supabase/client';
 
 interface UseImageUploadProps {
@@ -16,6 +16,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const [uploadingImage, setUploadingImage] = useState(false);
   const [bucketAvailable, setBucketAvailable] = useState<boolean | null>(null);
+  const [actualBucketName, setActualBucketName] = useState<string | null>(null);
   // Used to force re-render of Avatar when image is updated
   const [imageKey, setImageKey] = useState(() => uuidv4());
   
@@ -23,8 +24,14 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
   useEffect(() => {
     async function checkBucket() {
       try {
-        const exists = await checkBucketExists(StorageBucket.AVATARS);
-        console.log(`Avatar bucket ${StorageBucket.AVATARS} exists:`, exists);
+        // First try to get the actual bucket name that exists
+        const bucketName = await getActualAvatarBucket();
+        setActualBucketName(bucketName);
+        console.log(`Using avatar bucket: ${bucketName}`);
+        
+        // Then check if that bucket exists
+        const exists = await checkBucketExists(bucketName);
+        console.log(`Avatar bucket ${bucketName} exists:`, exists);
         setBucketAvailable(exists);
         
         if (!exists) {
@@ -82,18 +89,19 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         const { data: bucketsData } = await supabase.storage.listBuckets();
         const availableBuckets = bucketsData?.map(b => b.name).join(', ') || 'none';
         
-        throw new Error(`The avatar storage bucket '${StorageBucket.AVATARS}' is not available. 
+        throw new Error(`The avatar storage bucket is not available. 
           Available buckets: ${availableBuckets}. Please contact support.`);
       }
       
-      // Use the correct bucket for avatar uploads
-      console.log(`Attempting upload to ${StorageBucket.AVATARS}/${userId}`);
+      // Get the actual bucket name to use
+      const bucketToUse = actualBucketName || await getActualAvatarBucket();
+      console.log(`Attempting upload to ${bucketToUse}/${userId}`);
       
-      // Use the centralized upload utility
+      // Use the centralized upload utility with the actual bucket name
       const result = await uploadFile(
         file, 
         userId, 
-        StorageBucket.AVATARS
+        bucketToUse
       );
       
       if (!result) {
@@ -132,7 +140,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, folder, namePrefix, toast, bucketAvailable]);
+  }, [userId, folder, namePrefix, toast, bucketAvailable, actualBucketName]);
 
   return {
     imageUrl,
@@ -141,6 +149,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     setUploadingImage,
     imageKey,
     bucketAvailable,
+    actualBucketName,
     handleImageUpload
   };
 };

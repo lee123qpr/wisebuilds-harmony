@@ -7,9 +7,56 @@ import { supabase } from '@/integrations/supabase/client';
 export enum StorageBucket {
   PROJECTS = 'project-documents',
   ATTACHMENTS = 'attachments',
-  AVATARS = 'freelancer-avatar',  // Make sure this matches an existing bucket in Supabase
+  AVATARS = 'avatar', // Changed to be more generic, will be resolved during runtime
   VERIFICATION = 'verification_documents'
 }
+
+/**
+ * Gets the actual bucket name to use for avatars based on available buckets
+ */
+export const getActualAvatarBucket = async (): Promise<string> => {
+  try {
+    // Check available buckets
+    const { data: bucketsData, error } = await supabase.storage.listBuckets();
+    
+    if (error) {
+      console.error('Error listing buckets:', error);
+      return StorageBucket.AVATARS; // Return default as fallback
+    }
+    
+    console.log('Available buckets:', bucketsData?.map(b => b.name).join(', '));
+    
+    // Check possible avatar bucket names in order of preference
+    const possibleBucketNames = [
+      'freelancer-avatar',  // First choice
+      'avatar',             // Second choice
+      'avatars',            // Third choice
+      'profile-images',     // Fourth choice
+      'user-avatars'        // Fifth choice
+    ];
+    
+    // Return the first bucket that exists
+    for (const bucketName of possibleBucketNames) {
+      if (bucketsData?.some(b => b.name === bucketName)) {
+        console.log(`Found avatar bucket: ${bucketName}`);
+        return bucketName;
+      }
+    }
+    
+    // If no avatar bucket found, log and return the first one as an attempt
+    console.warn('No avatar bucket found, defaulting to first bucket in list');
+    if (bucketsData && bucketsData.length > 0) {
+      return bucketsData[0].name;
+    }
+    
+    // Last resort, return the default value
+    return StorageBucket.AVATARS;
+    
+  } catch (error) {
+    console.error('Error getting avatar bucket:', error);
+    return StorageBucket.AVATARS; // Return default as fallback
+  }
+};
 
 /**
  * Checks if a bucket exists and is accessible
@@ -23,8 +70,11 @@ export const checkBucketExists = async (bucketName: string): Promise<boolean> =>
       return false;
     }
     
+    const bucketExists = data.some(bucket => bucket.name === bucketName);
+    console.log(`Bucket ${bucketName} exists: ${bucketExists}`);
     console.log('Available buckets:', data.map(bucket => bucket.name).join(', '));
-    return data.some(bucket => bucket.name === bucketName);
+    
+    return bucketExists;
   } catch (error) {
     console.error(`Error checking if bucket ${bucketName} exists:`, error);
     return false;
@@ -58,7 +108,7 @@ export const ensureBucketExists = async (bucketName: string, isPublic: boolean =
 export const generateFilePath = (
   file: File,
   userId: string,
-  bucket: StorageBucket,
+  bucket: string,
   folder?: string
 ): string => {
   const fileExt = file.name.split('.').pop() || '';
@@ -82,7 +132,7 @@ export const generateFilePath = (
 export const uploadFile = async (
   file: File,
   userId: string,
-  bucket: StorageBucket = StorageBucket.PROJECTS,
+  bucketName: string = StorageBucket.PROJECTS,
   folder?: string
 ): Promise<{ url: string; path: string } | null> => {
   try {
@@ -92,23 +142,30 @@ export const uploadFile = async (
       throw new Error('Authentication required for file uploads');
     }
     
-    // Generate file path
-    const filePath = generateFilePath(file, userId, bucket, folder);
+    // If using the AVATARS bucket, try to get the actual bucket name
+    let actualBucketName = bucketName;
+    if (bucketName === StorageBucket.AVATARS) {
+      actualBucketName = await getActualAvatarBucket();
+      console.log(`Using avatar bucket: ${actualBucketName}`);
+    }
     
-    console.log(`Uploading file: ${file.name} to ${bucket}/${filePath}`);
+    // Generate file path
+    const filePath = generateFilePath(file, userId, actualBucketName, folder);
+    
+    console.log(`Uploading file: ${file.name} to ${actualBucketName}/${filePath}`);
     
     // Check if bucket exists before attempting upload
-    const bucketExists = await checkBucketExists(bucket);
+    const bucketExists = await checkBucketExists(actualBucketName);
     if (!bucketExists) {
-      console.error(`Bucket ${bucket} does not exist or is not accessible`);
+      console.error(`Bucket ${actualBucketName} does not exist or is not accessible`);
       const { data: bucketsData } = await supabase.storage.listBuckets();
       console.log('Available buckets:', bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none');
-      throw new Error(`Upload failed: Storage bucket '${bucket}' is not available. Available buckets: ${bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none'}`);
+      throw new Error(`Upload failed: Storage bucket '${actualBucketName}' is not available. Available buckets: ${bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none'}`);
     }
     
     // Upload file
     const { data, error } = await supabase.storage
-      .from(bucket)
+      .from(actualBucketName)
       .upload(filePath, file, {
         cacheControl: '3600',
         upsert: true
@@ -128,7 +185,7 @@ export const uploadFile = async (
     
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
-      .from(bucket)
+      .from(actualBucketName)
       .getPublicUrl(data.path);
     
     console.log('Public URL generated:', publicUrl);
@@ -148,7 +205,7 @@ export const uploadFile = async (
  */
 export const removeFile = async (
   path: string,
-  bucket: StorageBucket
+  bucket: string
 ): Promise<boolean> => {
   try {
     const { error } = await supabase.storage

@@ -25,6 +25,8 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   size = 'default'
 }) => {
   const { toast } = useToast();
+  const [imageError, setImageError] = React.useState(false);
+  
   // Determine size classes
   const sizeClasses = {
     default: 'h-16 w-16',
@@ -45,6 +47,17 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
     }
   };
 
+  // Reset image error state when profileImageUrl changes
+  React.useEffect(() => {
+    setImageError(false);
+  }, [profileImageUrl]);
+
+  // Handle image load error
+  const handleImageError = () => {
+    console.error('Failed to load avatar image:', profileImageUrl);
+    setImageError(true);
+  };
+
   // Handle file selection from input
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -56,6 +69,9 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
         title: 'Invalid file type',
         description: 'Please select an image file (JPG, PNG, etc.)'
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
     
@@ -66,6 +82,9 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
         title: 'File too large',
         description: 'Image must be less than 5MB'
       });
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
       return;
     }
     
@@ -83,11 +102,12 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
         )}
         onClick={handleAvatarClick}
       >
-        {profileImageUrl ? (
+        {profileImageUrl && !imageError ? (
           <AvatarImage 
-            src={profileImageUrl + `?key=${imageKey}`} 
+            src={profileImageUrl + `?key=${imageKey}`}
             alt="Profile" 
             className="object-cover"
+            onError={handleImageError}
           />
         ) : null}
         <AvatarFallback className="text-lg relative">

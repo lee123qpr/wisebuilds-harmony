@@ -6,7 +6,7 @@ import { useImageUpload } from '../../hooks/useImageUpload';
 import FreelancerAvatar from './FreelancerAvatar';
 import ProfileInfoBadges from './ProfileInfoBadges';
 import { supabase } from '@/integrations/supabase/client';
-import { AlertCircle } from 'lucide-react';
+import { AlertCircle, Info } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface FreelancerProfileCardProps {
@@ -46,11 +46,38 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
     handleImageUpload,
     setImageUrl,
     setUploadingImage,
-    bucketAvailable
+    bucketAvailable,
+    actualBucketName
   } = useImageUpload({
     userId,
     namePrefix: 'avatar'
   });
+
+  // State to hold available buckets for debugging
+  const [availableBuckets, setAvailableBuckets] = React.useState<string[]>([]);
+
+  // Get available buckets on mount
+  React.useEffect(() => {
+    const getBuckets = async () => {
+      try {
+        const { data, error } = await supabase.storage.listBuckets();
+        if (error) {
+          console.error('Error listing buckets:', error);
+          return;
+        }
+        
+        if (data) {
+          const bucketNames = data.map(b => b.name);
+          console.log('Available buckets:', bucketNames.join(', '));
+          setAvailableBuckets(bucketNames);
+        }
+      } catch (err) {
+        console.error('Error in getBuckets:', err);
+      }
+    };
+    
+    getBuckets();
+  }, []);
 
   React.useEffect(() => {
     if (imageUrl) {
@@ -126,7 +153,19 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
             <AlertCircle className="h-4 w-4" />
             <AlertTitle>Avatar Upload Unavailable</AlertTitle>
             <AlertDescription>
-              The avatar storage service is currently unavailable. Please try again later or contact support.
+              The avatar storage service is currently unavailable. Available buckets: {availableBuckets.join(', ')}.
+              {actualBucketName && <div>Tried to use bucket: {actualBucketName}</div>}
+              Please try again later or contact support.
+            </AlertDescription>
+          </Alert>
+        )}
+        
+        {bucketAvailable === true && actualBucketName && (
+          <Alert className="mb-4">
+            <Info className="h-4 w-4" />
+            <AlertTitle>Storage Bucket Info</AlertTitle>
+            <AlertDescription>
+              Using storage bucket: {actualBucketName}
             </AlertDescription>
           </Alert>
         )}
