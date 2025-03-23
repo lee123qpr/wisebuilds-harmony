@@ -58,8 +58,8 @@ describe('File Operations', () => {
       expect(result?.url).toBe('https://example.com/file.jpg');
       expect(result?.path).toBe('user123/file.jpg');
       expect(supabase.storage.from).toHaveBeenCalledWith(StorageBucket.PROJECTS);
-      expect(supabase.storage.from().upload).toHaveBeenCalledTimes(1);
-      expect(supabase.storage.from().getPublicUrl).toHaveBeenCalledWith('user123/file.jpg');
+      expect(supabase.storage.from(StorageBucket.PROJECTS).upload).toHaveBeenCalledTimes(1);
+      expect(supabase.storage.from(StorageBucket.PROJECTS).getPublicUrl).toHaveBeenCalledWith('user123/file.jpg');
     });
 
     it('should use the actual avatar bucket when AVATARS bucket is specified', async () => {
@@ -121,7 +121,7 @@ describe('File Operations', () => {
       
       expect(result).toBe(true);
       expect(supabase.storage.from).toHaveBeenCalledWith(StorageBucket.PROJECTS);
-      expect(supabase.storage.from().remove).toHaveBeenCalledWith(['user123/file.jpg']);
+      expect(supabase.storage.from(StorageBucket.PROJECTS).remove).toHaveBeenCalledWith(['user123/file.jpg']);
     });
 
     it('should return false when there is an error', async () => {
