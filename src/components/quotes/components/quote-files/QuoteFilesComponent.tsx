@@ -54,7 +54,7 @@ const QuoteFilesComponent: React.FC<QuoteFilesProps> = ({
       />
 
       {isUploading && (
-        <UploadProgressBar progress={uploadProgress} />
+        <UploadProgress progress={uploadProgress} />
       )}
 
       <UploadedFilesList 
@@ -71,5 +71,5 @@ const QuoteFilesComponent: React.FC<QuoteFilesProps> = ({
 
 export default QuoteFilesComponent;
 
-// Import the UploadProgressBar component
-import UploadProgressBar from '../file-upload/UploadProgressBar';
+// Import the UploadProgress component from the correct location
+import UploadProgress from '@/components/projects/file-upload/UploadProgress';
