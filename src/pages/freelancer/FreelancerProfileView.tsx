@@ -17,7 +17,7 @@ const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelance
   const { freelancerId: paramFreelancerId } = useParams<{ freelancerId: string }>();
   const effectiveFreelancerId = propFreelancerId || paramFreelancerId;
   
-  const { data: profile, isLoading } = useFreelancerProfileData(effectiveFreelancerId);
+  const { profileData, isLoading } = useFreelancerProfileData(effectiveFreelancerId);
   const location = useLocation();
   
   // Check if the user came from a project applications page
@@ -37,7 +37,7 @@ const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelance
     return <FreelancerProfileLoading />;
   }
 
-  if (!profile) {
+  if (!profileData) {
     return <FreelancerProfileNotFound />;
   }
 
@@ -51,8 +51,8 @@ const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelance
           />
         </div>
       )}
-      <FreelancerProfileHeader profile={profile} />
-      <FreelancerProfileTabs profile={profile} />
+      <FreelancerProfileHeader profile={profileData} />
+      <FreelancerProfileTabs profile={profileData} />
     </>
   );
 

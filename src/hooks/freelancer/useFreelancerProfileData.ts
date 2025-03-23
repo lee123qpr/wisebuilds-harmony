@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { Json } from '@/integrations/supabase/types';
 
 // Define a type for previous employers
 type PreviousEmployer = {
@@ -48,7 +49,7 @@ type FreelancerProfileData = {
 };
 
 // Define a custom hook to fetch freelancer profile data
-export const useFreelancerProfileData = () => {
+export const useFreelancerProfileData = (freelancerId?: string) => {
   const { user } = useAuth();
   const [profileData, setProfileData] = useState<FreelancerProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -56,8 +57,11 @@ export const useFreelancerProfileData = () => {
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (!user) {
-        console.log('No user found, cannot fetch profile data.');
+      // Use provided freelancerId or fall back to current user
+      const targetUserId = freelancerId || (user ? user.id : null);
+      
+      if (!targetUserId) {
+        console.log('No user ID found, cannot fetch profile data.');
         return;
       }
 
@@ -68,8 +72,8 @@ export const useFreelancerProfileData = () => {
         const { data, error: fetchError } = await supabase
           .from('freelancer_profiles')
           .select('*')
-          .eq('id', user.id)
-          .single();
+          .eq('id', targetUserId)
+          .maybeSingle();
 
         if (fetchError) {
           setError(fetchError);
@@ -78,11 +82,21 @@ export const useFreelancerProfileData = () => {
           // Transform the data to ensure array types are properly handled
           const transformedData: FreelancerProfileData = {
             ...data,
-            skills: Array.isArray(data.skills) ? data.skills : [],
-            qualifications: Array.isArray(data.qualifications) ? data.qualifications : [],
-            accreditations: Array.isArray(data.accreditations) ? data.accreditations : [],
-            previous_employers: Array.isArray(data.previous_employers) ? data.previous_employers : [],
-            previous_work: Array.isArray(data.previous_work) ? data.previous_work : []
+            skills: Array.isArray(data.skills) 
+              ? (data.skills as Json[]).map(item => String(item))
+              : [],
+            qualifications: Array.isArray(data.qualifications) 
+              ? (data.qualifications as Json[]).map(item => String(item))
+              : [],
+            accreditations: Array.isArray(data.accreditations) 
+              ? (data.accreditations as Json[]).map(item => String(item))
+              : [],
+            previous_employers: Array.isArray(data.previous_employers) 
+              ? (data.previous_employers as Json[]).map(item => item as unknown as PreviousEmployer)
+              : [],
+            previous_work: Array.isArray(data.previous_work) 
+              ? (data.previous_work as Json[]).map(item => String(item))
+              : []
           };
           
           setProfileData(transformedData);
@@ -98,7 +112,7 @@ export const useFreelancerProfileData = () => {
     };
 
     fetchProfileData();
-  }, [user]);
+  }, [user, freelancerId]);
 
   return { profileData, isLoading, error };
 };
