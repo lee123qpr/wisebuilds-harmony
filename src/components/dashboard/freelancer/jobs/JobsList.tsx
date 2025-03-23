@@ -10,7 +10,6 @@ interface JobsListProps {
   onStatusUpdate: () => void;
   emptyTitle: string;
   emptyDescription: string;
-  user?: any; // Add the user prop to the interface
 }
 
 const JobsList: React.FC<JobsListProps> = ({ 
@@ -18,8 +17,7 @@ const JobsList: React.FC<JobsListProps> = ({
   clientNames, 
   onStatusUpdate, 
   emptyTitle, 
-  emptyDescription,
-  user // Add the user prop parameter
+  emptyDescription 
 }) => {
   if (jobs.length === 0) {
     return (
@@ -38,7 +36,6 @@ const JobsList: React.FC<JobsListProps> = ({
           quote={quote}
           clientName={clientNames[quote.client_id] || 'Client'}
           onStatusUpdate={onStatusUpdate}
-          user={user} // Pass the user prop to JobCard
         />
       ))}
     </div>
