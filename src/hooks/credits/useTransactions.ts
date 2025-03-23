@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { CreditTransaction } from './types';
 import { useEffect } from 'react';
+import { createCreditTransactionListener } from '@/services/notifications/listeners/creditListeners';
 
 export const useTransactions = () => {
   const { user } = useAuth();
@@ -45,8 +46,8 @@ export const useTransactions = () => {
       if (pendingTransactions.length > 0) {
         console.log(`Found ${pendingTransactions.length} pending transactions. Will attempt to update them.`);
         
-        // Update at most 3 pending transactions per load to avoid excessive API calls
-        const transactionsToUpdate = pendingTransactions.slice(0, 3);
+        // Update at most 2 pending transactions per load to avoid excessive API calls
+        const transactionsToUpdate = pendingTransactions.slice(0, 2);
         
         for (const tx of transactionsToUpdate) {
           try {
@@ -69,38 +70,23 @@ export const useTransactions = () => {
       return data as CreditTransaction[];
     },
     enabled: !!user,
-    staleTime: 60000, // Consider data stale after 1 minute
-    gcTime: 1000, // Very short cache time
+    staleTime: 120000, // Increased stale time to 2 minutes
+    gcTime: 60000, // Increased cache time to 1 minute
     refetchOnWindowFocus: true,
     refetchOnMount: true,
   });
 
-  // Set up real-time subscription for transactions
+  // Set up single real-time subscription for transactions
   useEffect(() => {
     if (!user) return;
 
-    // Subscribe to changes in the credit_transactions table
-    const channel = supabase
-      .channel('credit_transactions_channel')
-      .on(
-        'postgres_changes',
-        {
-          event: '*', // Listen for all events (INSERT, UPDATE, DELETE)
-          schema: 'public',
-          table: 'credit_transactions',
-          filter: `user_id=eq.${user.id}`
-        },
-        () => {
-          // Refetch transactions when any change occurs
-          refetchTransactions();
-        }
-      )
-      .subscribe();
+    // Create a single transaction listener
+    createCreditTransactionListener(user.id, () => {
+      // Simply refetch transactions when a change occurs
+      refetchTransactions();
+    });
 
-    // Cleanup subscription on unmount
-    return () => {
-      supabase.removeChannel(channel);
-    };
+    // Cleanup happens centrally in the creditListeners.ts
   }, [user, refetchTransactions]);
 
   const refetchTransactionsData = async () => {

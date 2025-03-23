@@ -108,13 +108,14 @@ export const usePaymentProcessing = (sessionId: string | null) => {
     processCheckout();
   }, [sessionId, handleCheckoutSuccess, navigate, user, isLoading, processingComplete, refetchCredits]);
   
-  // Auto-refresh data but with exponential backoff
+  // Auto-refresh data but with exponential backoff and limited retries
   useEffect(() => {
-    if (isTransactionPending || (processingComplete && creditBalance === 0 && retryCount < 6)) {
+    // Only run polling if we have a pending transaction or incomplete processing
+    if (isTransactionPending || (processingComplete && creditBalance === 0 && retryCount < 4)) {
       if (isRefreshing) return;
       
-      // Use exponential backoff: 2^retryCount * 1000ms
-      const backoffTime = Math.min(Math.pow(2, retryCount) * 1000, 10000);
+      // Use exponential backoff: 2^retryCount * 1000ms, but cap at 15 seconds
+      const backoffTime = Math.min(Math.pow(2, retryCount) * 1000, 15000);
       
       const timer = setTimeout(async () => {
         setIsRefreshing(true);
@@ -122,6 +123,7 @@ export const usePaymentProcessing = (sessionId: string | null) => {
         setIsRefreshing(false);
         setRetryCount(prev => prev + 1);
         
+        // Try a manual update after the second retry
         if (retryCount === 2 && (isTransactionPending || creditBalance === 0) && sessionId && !manualUpdateAttempted) {
           forceUpdateTransaction();
         }

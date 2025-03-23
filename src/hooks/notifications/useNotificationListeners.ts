@@ -7,7 +7,7 @@ import { setupListeners } from '@/services/notifications/realTimeListeners';
 import { Notification } from '@/services/notifications/types';
 
 // Maximum number of retries for network operations
-const MAX_RETRIES = 3;
+const MAX_RETRIES = 2;
 // Delay between retries in milliseconds (exponential backoff)
 const RETRY_DELAY_BASE = 2000;
 
@@ -15,8 +15,7 @@ export function useNotificationListeners() {
   const { user } = useAuth();
   const { 
     setNotifications, 
-    addNotificationToState, 
-    updateNotificationInState
+    addNotificationToState
   } = useNotificationsState();
 
   // Fetch notifications with retry mechanism
@@ -44,7 +43,7 @@ export function useNotificationListeners() {
           console.log(`Retrying in ${delay}ms (attempt ${retries} of ${MAX_RETRIES})`);
           await new Promise(resolve => setTimeout(resolve, delay));
         } else {
-          // If all retries fail, we still initialize with empty notifications to prevent UI issues
+          // If all retries fail, initialize with empty notifications
           console.log('All retries failed, initializing with empty notifications');
           setNotifications([]);
         }
@@ -56,7 +55,7 @@ export function useNotificationListeners() {
   useEffect(() => {
     if (!user) return;
     
-    console.log('Setting up all real-time listeners for user:', user.id);
+    console.log('Setting up notification listeners for user:', user.id);
     
     // Initialize notifications (with retry mechanism)
     initializeNotifications();

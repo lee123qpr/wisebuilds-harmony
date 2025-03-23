@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useEffect } from 'react';
 import { useNotifications } from '@/context/NotificationsContext';
+import { createCreditBalanceListener, cleanupCreditListeners } from '@/services/notifications/listeners/creditListeners';
 
 export const useCreditBalance = () => {
   const { user } = useAuth();
@@ -34,53 +35,41 @@ export const useCreditBalance = () => {
     },
     enabled: !!user,
     staleTime: 60000, // Consider data stale after 1 minute, reducing polling frequency
-    gcTime: 1000, // Very short cache time
+    gcTime: 30000, // Cache time increased to 30 seconds
     refetchOnMount: true,
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
   });
 
-  // Set up real-time updates for credit balance
+  // Set up single real-time listener for credit balance updates
   useEffect(() => {
     if (!user) return;
 
     let previousBalance = creditBalance;
-
-    // Subscribe to changes in the freelancer_credits table
-    const channel = supabase
-      .channel('credit_balance_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'freelancer_credits',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          // Refetch the balance
-          refetchCreditBalance();
-          
-          // Only show notification if balance has increased
-          const newBalance = payload.new?.credit_balance || 0;
-          if (previousBalance !== null && newBalance > previousBalance) {
-            const difference = newBalance - previousBalance;
-            addNotification({
-              type: 'credit_update',
-              title: 'Credits Added',
-              description: `${difference} credits have been added to your account.`
-            });
-          }
-          
-          // Update previous balance
-          previousBalance = newBalance;
-        }
-      )
-      .subscribe();
+    
+    // Set up listener for credit balance updates
+    const channel = createCreditBalanceListener(user.id, (payload) => {
+      // Refetch the balance
+      refetchCreditBalance();
+      
+      // Only show notification if balance has increased
+      const newBalance = payload.new?.credit_balance || 0;
+      if (previousBalance !== null && newBalance > previousBalance) {
+        const difference = newBalance - previousBalance;
+        addNotification({
+          type: 'credit_update',
+          title: 'Credits Added',
+          description: `${difference} credits have been added to your account.`
+        });
+      }
+      
+      // Update previous balance
+      previousBalance = newBalance;
+    });
 
     // Cleanup subscription on unmount
     return () => {
-      supabase.removeChannel(channel);
+      cleanupCreditListeners(user.id);
     };
   }, [user, creditBalance, refetchCreditBalance, addNotification]);
 
