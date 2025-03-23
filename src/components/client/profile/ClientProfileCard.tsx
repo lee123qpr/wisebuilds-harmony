@@ -2,9 +2,11 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, MapPin, Building, Check } from 'lucide-react';
+import { Calendar, MapPin, Building, Check, Globe } from 'lucide-react';
 import { format } from 'date-fns';
 import { ClientProfileData } from '@/pages/client/types';
+import RatingStars from '@/components/common/RatingStars';
+import { useClientReviews } from '@/pages/dashboard/hooks/useClientReviews';
 
 interface ClientProfileCardProps {
   clientProfile: ClientProfileData;
@@ -15,6 +17,9 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
   clientProfile,
   formatDate
 }) => {
+  // Get reviews and ratings
+  const { averageRating, reviewCount } = useClientReviews(clientProfile.id);
+
   // Get initials for avatar fallback
   const getInitials = () => {
     const name = clientProfile.company_name || clientProfile.contact_name || 'Client';
@@ -46,6 +51,7 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
             <h2 className="text-xl font-bold">
               {clientProfile.company_name || clientProfile.contact_name || 'Client'}
             </h2>
+            {averageRating !== null && <RatingStars rating={averageRating} reviewCount={reviewCount} className="mt-1 md:mt-0" />}
           </div>
           
           {clientProfile.contact_name && clientProfile.company_name && (
@@ -74,6 +80,18 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
                 <div className="flex items-center text-sm text-muted-foreground">
                   <MapPin className="mr-1.5 h-4 w-4 flex-shrink-0" />
                   <span>{clientProfile.company_address}</span>
+                </div>
+              )}
+
+              {clientProfile.website && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Globe className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                  <a href={clientProfile.website.startsWith('http') ? clientProfile.website : `https://${clientProfile.website}`} 
+                     target="_blank" 
+                     rel="noopener noreferrer"
+                     className="text-blue-600 hover:underline">
+                    {clientProfile.website}
+                  </a>
                 </div>
               )}
             </div>
