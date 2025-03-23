@@ -22,6 +22,11 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     const file = e.target.files?.[0];
     if (!file || !userId) {
       console.log('No file selected or missing userId');
+      toast({
+        variant: 'destructive',
+        title: 'Upload Failed',
+        description: 'No file selected or user ID is missing'
+      });
       return null;
     }
 
@@ -35,6 +40,12 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       if (!session.session) {
         throw new Error('Authentication required: Please log in before uploading');
       }
+      
+      // Use the centralized upload utility with proper path
+      const filePath = folder ? `${userId}/${folder}` : userId;
+      const fileName = namePrefix ? `${namePrefix.toLowerCase()}-${Date.now()}` : `avatar-${Date.now()}`;
+      
+      console.log(`Attempting upload to ${StorageBucket.AVATARS}/${filePath}/${fileName}`);
       
       // Use the centralized upload utility
       const result = await uploadFile(
@@ -79,7 +90,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, toast]);
+  }, [userId, folder, namePrefix, toast]);
 
   return {
     imageUrl,

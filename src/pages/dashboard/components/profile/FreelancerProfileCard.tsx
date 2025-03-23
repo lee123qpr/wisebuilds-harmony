@@ -95,9 +95,24 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
     ? format(new Date(memberSince), 'MMMM yyyy')
     : 'Recently joined';
 
-  const handleImageUploadProxy = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUploadProxy = async (e: React.ChangeEvent<HTMLInputElement>) => {
     console.log('Image upload triggered with file:', e.target.files?.[0]?.name);
-    handleImageUpload(e);
+    
+    try {
+      // First set local loading state
+      setUploadingImage(true);
+      
+      // Then call the actual upload handler
+      const result = await handleImageUpload(e);
+      
+      if (result) {
+        console.log('Upload successful, URL:', result);
+      } else {
+        console.log('Upload did not return a URL');
+      }
+    } catch (error) {
+      console.error('Error in upload proxy:', error);
+    }
   };
 
   return (

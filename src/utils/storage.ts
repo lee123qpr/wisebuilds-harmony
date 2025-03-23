@@ -96,6 +96,13 @@ export const uploadFile = async (
     
     console.log(`Uploading file: ${file.name} to ${bucket}/${filePath}`);
     
+    // Check if bucket exists before attempting upload
+    const bucketExists = await checkBucketExists(bucket);
+    if (!bucketExists) {
+      console.error(`Bucket ${bucket} does not exist or is not accessible`);
+      throw new Error(`Upload failed: Storage bucket '${bucket}' is not available`);
+    }
+    
     // Upload file
     const { data, error } = await supabase.storage
       .from(bucket)
@@ -109,12 +116,19 @@ export const uploadFile = async (
       throw error;
     }
     
+    if (!data || !data.path) {
+      console.error('Upload successful but no data or path returned');
+      throw new Error('Upload failed: No file path returned');
+    }
+    
+    console.log('File uploaded successfully to path:', data.path);
+    
     // Get public URL
     const { data: { publicUrl } } = supabase.storage
       .from(bucket)
       .getPublicUrl(data.path);
     
-    console.log('File uploaded successfully, URL:', publicUrl);
+    console.log('Public URL generated:', publicUrl);
     
     return {
       url: publicUrl,
@@ -122,7 +136,7 @@ export const uploadFile = async (
     };
   } catch (error) {
     console.error('Error in uploadFile:', error);
-    return null;
+    throw error; // Re-throw to handle in the component
   }
 };
 
