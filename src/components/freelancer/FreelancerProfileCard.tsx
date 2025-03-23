@@ -132,7 +132,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
         <div className={`flex-1 ${compact ? '' : 'text-center md:text-left'}`}>
           <div className="flex flex-col md:flex-row md:items-center md:gap-2">
             <h2 className={`${compact ? 'text-lg' : 'text-xl'} font-bold`}>{fullName}</h2>
-            {idVerified && <VerificationBadge status="verified" />}
+            {idVerified && <VerificationBadge type="id" status="verified" />}
           </div>
           
           {profession && (
