@@ -12,9 +12,10 @@ export const useCreditBalance = () => {
   let addNotification: ((notification: any) => void) | undefined;
   try {
     const notifications = useNotifications();
-    addNotification = notifications.addNotification;
+    addNotification = notifications?.addNotification;
   } catch (error) {
-    console.warn('Notifications context not available, credit balance notifications will be disabled');
+    console.warn('Notifications context not available in useCreditBalance, notifications disabled');
+    // Leave addNotification as undefined
   }
 
   const {
@@ -48,7 +49,7 @@ export const useCreditBalance = () => {
     refetchOnReconnect: true,
   });
 
-  // Set up real-time updates for credit balance
+  // Set up real-time updates for credit balance - only if notifications is available
   useEffect(() => {
     if (!user || !addNotification) return;
 

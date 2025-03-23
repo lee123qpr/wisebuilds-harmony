@@ -9,8 +9,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import { NotificationsProvider } from '@/context/NotificationsContext';
 
-const UserCredits: React.FC = () => {
+const UserCreditsInner: React.FC = () => {
   const navigate = useNavigate();
   
   // Try to use credits hook, but handle the case when notifications context is not available
@@ -65,6 +66,15 @@ const UserCredits: React.FC = () => {
         </div>
       </PopoverContent>
     </Popover>
+  );
+};
+
+// Wrapper component that ensures NotificationsProvider is available
+const UserCredits: React.FC = () => {
+  return (
+    <NotificationsProvider>
+      <UserCreditsInner />
+    </NotificationsProvider>
   );
 };
 
