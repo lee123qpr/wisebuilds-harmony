@@ -33,12 +33,12 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
   const role = quote.project?.role || 'Not specified';
   const roleFormatted = formatRole(role);
   
-  // Get freelancer info
-  const freelancer = quote.freelancer_profile || {};
-  
-  // Fetch freelancer info if profile is empty
+  // Fetch freelancer info if profile is empty or incomplete
   useEffect(() => {
-    const hasEmptyProfile = !freelancer.display_name && !freelancer.first_name && !freelancer.last_name;
+    const hasEmptyProfile = !quote.freelancer_profile || 
+                            (!quote.freelancer_profile.display_name && 
+                             !quote.freelancer_profile.first_name && 
+                             !quote.freelancer_profile.last_name);
     
     if (hasEmptyProfile && !freelancerInfo && !isLoadingFreelancer) {
       const fetchFreelancerInfo = async () => {
@@ -55,13 +55,30 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
       
       fetchFreelancerInfo();
     }
-  }, [quote.freelancer_id, freelancer, freelancerInfo, isLoadingFreelancer]);
+  }, [quote.freelancer_id, quote.freelancer_profile, freelancerInfo, isLoadingFreelancer]);
   
   // Create a combined freelancer name from both sources
-  const freelancerName = freelancer.display_name || 
-    (freelancer.first_name && freelancer.last_name 
-      ? `${freelancer.first_name} ${freelancer.last_name}`
-      : freelancerInfo?.full_name || 'Freelancer');
+  const freelancerName = quote.freelancer_profile?.display_name || 
+    (quote.freelancer_profile?.first_name && quote.freelancer_profile?.last_name 
+      ? `${quote.freelancer_profile.first_name} ${quote.freelancer_profile.last_name}`
+      : freelancerInfo?.full_name || freelancerInfo?.name || 'Freelancer');
+  
+  // Get the profile photo from either source
+  const profilePhoto = quote.freelancer_profile?.profile_photo || 
+                     freelancerInfo?.profile_image || 
+                     freelancerInfo?.profilePhoto;
+  
+  // Check if freelancer is verified from either source
+  const isVerified = quote.freelancer_profile?.verified || 
+                   freelancerInfo?.verified || 
+                   freelancerInfo?.isVerified || 
+                   false;
+  
+  // Get the job title with fallbacks
+  const jobTitle = quote.freelancer_profile?.job_title || 
+                 freelancerInfo?.job_title || 
+                 freelancerInfo?.jobTitle || 
+                 'Freelancer';
   
   // Get quote price info
   const priceType = quote.fixed_price 
@@ -91,18 +108,18 @@ const QuoteCard: React.FC<QuoteCardProps> = ({ quote }) => {
           ) : (
             <>
               <Avatar className="h-10 w-10">
-                <AvatarImage src={freelancer.profile_photo || freelancerInfo?.profile_image} alt={freelancerName} />
+                <AvatarImage src={profilePhoto} alt={freelancerName} />
                 <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div>
                 <h3 className="font-medium flex items-center gap-1">
                   {freelancerName}
-                  {(freelancer.verified || freelancerInfo?.verified) && 
+                  {isVerified && 
                     <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
                   }
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {freelancer.job_title || freelancerInfo?.jobTitle || freelancerInfo?.job_title || 'Freelancer'}
+                  {jobTitle}
                 </p>
               </div>
             </>
