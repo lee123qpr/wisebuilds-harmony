@@ -7,6 +7,8 @@ import ClientProfileSkeleton from '@/components/client/profile/ClientProfileSkel
 import ClientProfileNotFound from '@/components/client/profile/ClientProfileNotFound';
 import ClientInformationCard from '@/components/client/profile/ClientInformationCard';
 import CompanyDescriptionCard from '@/components/client/profile/CompanyDescriptionCard';
+import ClientDetailsSection from '@/components/client/profile/ClientDetailsSection';
+import ClientHeaderSection from '@/components/client/profile/ClientHeaderSection';
 import { useClientProfile, formatProfileDate } from '@/hooks/clients/useClientProfile';
 
 const ClientProfileView = () => {
@@ -32,21 +34,20 @@ const ClientProfileView = () => {
     <MainLayout>
       <div className="container max-w-4xl py-8">
         <BackButton />
-        <div className="mt-6">
-          <h1 className="text-3xl font-bold mb-6">
-            {clientProfile.company_name || clientProfile.contact_name || 'Client Profile'}
-          </h1>
+        
+        <ClientHeaderSection clientProfile={clientProfile} />
+        
+        <div className="mt-6 grid gap-6">
+          <ClientInformationCard 
+            clientProfile={clientProfile}
+            formatDate={formatProfileDate}
+          />
           
-          <div className="grid gap-6">
-            <ClientInformationCard 
-              clientProfile={clientProfile}
-              formatDate={formatProfileDate}
-            />
-            
-            {clientProfile.company_description && (
-              <CompanyDescriptionCard description={clientProfile.company_description} />
-            )}
-          </div>
+          {clientProfile.company_description && (
+            <CompanyDescriptionCard description={clientProfile.company_description} />
+          )}
+          
+          <ClientDetailsSection clientProfile={clientProfile} />
         </div>
       </div>
     </MainLayout>
