@@ -1,10 +1,11 @@
 
 import React from 'react';
-import { Calendar, Briefcase, MapPin, PoundSterling, Star } from 'lucide-react';
+import { Calendar, Briefcase, MapPin, PoundSterling, Star, Upload, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 import VerificationBadge from '@/components/common/VerificationBadge';
+import FreelancerAvatar from './FreelancerAvatar';
 
 interface InsuranceStatus {
   hasInsurance: boolean;
@@ -80,40 +81,21 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
       year: 'numeric' 
     }) : null;
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!allowImageUpload || !setUploadingImage || !setProfileImage) return;
-    
-    const file = e.target.files?.[0];
-    if (file) {
-      // Image upload logic would go here
-      // This is just a placeholder for the actual implementation
-      console.log("Upload file:", file);
-    }
-  };
-
   return (
     <div className="bg-card rounded-lg shadow-sm overflow-hidden border border-border/40">
       <div className="p-6">
         <div className="flex items-start gap-4">
-          {/* Avatar */}
-          <div className="relative">
-            <Avatar className="h-16 w-16 border-2 border-primary/10">
-              <AvatarImage src={profileImage || undefined} alt={fullName} />
-              <AvatarFallback className="text-lg">{getInitials()}</AvatarFallback>
-            </Avatar>
-            
-            {allowImageUpload && (
-              <>
-                <input
-                  type="file"
-                  id="profile-picture"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={handleImageUpload}
-                />
-              </>
-            )}
-          </div>
+          {/* Avatar with upload functionality */}
+          <FreelancerAvatar
+            profileImage={profileImage}
+            fullName={fullName}
+            userId={userId}
+            size="md"
+            uploadingImage={uploadingImage}
+            setUploadingImage={setUploadingImage}
+            setProfileImage={setProfileImage}
+            allowImageUpload={allowImageUpload}
+          />
           
           {/* Profile Info */}
           <div className="flex-1">
