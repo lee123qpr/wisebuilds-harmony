@@ -7,7 +7,7 @@ import IncompleteProjectDialog from './completion/IncompleteProjectDialog';
 import CompletionStatusIndicator from './completion/CompletionStatusIndicator';
 import CompleteProjectButton from './completion/CompleteProjectButton';
 import CompletionLoadingIndicator from './completion/CompletionLoadingIndicator';
-import DisputeButton from './completion/DisputeButton';
+import DisputeButton from './disputes/DisputeButton';
 
 interface ProjectCompleteButtonProps {
   quoteId: string;
@@ -74,7 +74,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
           otherPartyLabel={otherPartyLabel}
         />
         
-        <DisputeButton onClick={() => setIncompleteDialogOpen(true)} />
+        <DisputeButton quoteId={quoteId} projectId={projectId} />
         
         <IncompleteProjectDialog
           open={incompleteDialogOpen}
@@ -97,7 +97,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
           disabled={isMarkingComplete}
         />
         
-        <DisputeButton onClick={() => setIncompleteDialogOpen(true)} />
+        <DisputeButton quoteId={quoteId} projectId={projectId} />
         
         <ProjectCompletionDialog
           open={dialogOpen}

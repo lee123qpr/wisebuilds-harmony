@@ -105,6 +105,8 @@ const ProjectCompletionStatus: React.FC<ProjectCompletionStatusProps> = ({
       setIncompleteDialogOpen={setIncompleteDialogOpen}
       handleMarkIncomplete={handleMarkIncomplete}
       isMarkingIncomplete={isMarkingIncomplete}
+      quoteId={quoteId}
+      projectId={projectId}
     />
   );
 };
