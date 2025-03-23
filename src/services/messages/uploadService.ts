@@ -1,8 +1,9 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
 import { MessageAttachment } from '@/types/messaging';
 import { FileUploadParams } from './types';
-import { StorageBucket, uploadFile, checkBucketExists } from '@/utils/storage/index';
+import { StorageBucket, uploadFile, checkBucketExists } from '@/utils/storage';
 
 /**
  * Upload a file for a message

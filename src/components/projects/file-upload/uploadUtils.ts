@@ -1,8 +1,9 @@
+
 import { supabase } from '@/integrations/supabase/client';
 import { UploadedFile } from './types';
 import { generateFilePath } from './utils';
 import { useToast } from '@/hooks/use-toast';
-import { StorageBucket, uploadFile as storageUploadFile } from '@/utils/storage/index';
+import { StorageBucket, uploadFile as storageUploadFile } from '@/utils/storage';
 
 export const useFileUploader = () => {
   const { toast } = useToast();

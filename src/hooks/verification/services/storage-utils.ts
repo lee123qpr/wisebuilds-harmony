@@ -40,18 +40,13 @@ export const getAvatarBucketName = async (): Promise<string | null> => {
     return null;
   }
   
-  // Always check for the new 'avatar' bucket first (created by our migration)
-  if (bucketsData?.find(b => b.name === 'avatar')) {
-    console.log('Found primary avatar bucket: avatar');
-    return 'avatar';
-  }
-  
   // Log available buckets for debugging
   const availableBuckets = bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none';
   console.log('Available buckets for avatar:', availableBuckets);
   
-  // Check for various possible avatar bucket names as fallbacks
+  // Check for various possible avatar bucket names
   const possibleBucketNames = [
+    'avatar',
     'avatars',
     'freelancer-avatar',
     'profile-images',
@@ -60,7 +55,7 @@ export const getAvatarBucketName = async (): Promise<string | null> => {
     'project-documents'  // Fallback to any available bucket
   ];
   
-  // Try to find a dedicated avatar bucket
+  // First try to find a dedicated avatar bucket
   for (const bucketName of possibleBucketNames) {
     if (bucketsData?.find(b => b.name === bucketName)) {
       console.log(`Found avatar bucket: ${bucketName}`);
