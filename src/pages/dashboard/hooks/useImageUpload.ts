@@ -25,23 +25,34 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
   useEffect(() => {
     async function checkBucket() {
       try {
-        // First try to get the actual bucket name that exists
+        // Get available buckets
+        const { data: bucketsData } = await supabase.storage.listBuckets();
+        const availableBucketsStr = bucketsData?.map(b => b.name).join(', ') || 'none';
+        console.log(`Available buckets: ${availableBucketsStr}`);
+        
+        if (!bucketsData || bucketsData.length === 0) {
+          console.error('No buckets found in storage');
+          setBucketAvailable(false);
+          return;
+        }
+        
+        // Try to get the avatar bucket name
         const bucketName = await getAvatarBucketName();
-        setActualBucketName(bucketName);
-        console.log(`Using avatar bucket: ${bucketName}`);
         
         if (bucketName) {
-          // Then check if that bucket exists
-          const exists = await checkBucketExists(bucketName);
-          console.log(`Avatar bucket ${bucketName} exists:`, exists);
-          setBucketAvailable(exists);
+          setActualBucketName(bucketName);
+          console.log(`Using avatar bucket: ${bucketName}`);
+          setBucketAvailable(true);
         } else {
-          setBucketAvailable(false);
-          console.log('No avatar bucket found');
-          
-          // List available buckets for debugging
-          const { data } = await supabase.storage.listBuckets();
-          console.log('Available buckets:', data?.map(b => b.name).join(', ') || 'none');
+          // Use the first available bucket as fallback
+          if (bucketsData.length > 0) {
+            const fallbackBucket = bucketsData[0].name;
+            setActualBucketName(fallbackBucket);
+            console.log(`Falling back to first available bucket: ${fallbackBucket}`);
+            setBucketAvailable(true);
+          } else {
+            setBucketAvailable(false);
+          }
         }
       } catch (error) {
         console.error('Error checking avatar bucket:', error);
@@ -87,23 +98,23 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         throw new Error('File size exceeds 5MB limit');
       }
       
-      // Check if bucket is available
-      if (bucketAvailable === false) {
-        // Attempt to get a list of available buckets
-        const { data: bucketsData } = await supabase.storage.listBuckets();
-        const availableBuckets = bucketsData?.map(b => b.name).join(', ') || 'none';
+      // Check if we have a bucket to use
+      if (!actualBucketName) {
+        // Try to get an available bucket again (just in case)
+        const bucketName = await getAvatarBucketName();
         
-        throw new Error(`The avatar storage bucket is not available. 
-          Available buckets: ${availableBuckets}. Please contact support.`);
+        if (!bucketName) {
+          const { data: buckets } = await supabase.storage.listBuckets();
+          const availableBuckets = buckets?.map(b => b.name).join(', ') || 'none';
+          
+          throw new Error(`No available storage bucket found for avatar uploads. 
+            Available buckets: ${availableBuckets}. Please contact support.`);
+        }
+        
+        setActualBucketName(bucketName);
       }
       
-      // Get the actual bucket name to use
-      const bucketToUse = actualBucketName || await getAvatarBucketName();
-      
-      if (!bucketToUse) {
-        throw new Error('No storage bucket is available for avatar uploads. Please contact support.');
-      }
-      
+      const bucketToUse = actualBucketName!;
       console.log(`Attempting upload to ${bucketToUse}/${userId}`);
       
       // Prepare the file path - important for RLS policies
@@ -138,9 +149,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         description: 'Your profile image has been updated.',
       });
       
-      // Return the URL for use in updating profile if needed
       return url;
-      
     } catch (error) {
       console.error('Error in image upload process:', error);
       
@@ -160,7 +169,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, folder, namePrefix, toast, bucketAvailable, actualBucketName]);
+  }, [userId, folder, namePrefix, toast, actualBucketName]);
 
   return {
     imageUrl,

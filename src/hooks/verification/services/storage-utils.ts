@@ -40,18 +40,22 @@ export const getAvatarBucketName = async (): Promise<string | null> => {
     return null;
   }
   
-  console.log('Available buckets for avatar:', bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none');
+  // Log available buckets for debugging
+  const availableBuckets = bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none';
+  console.log('Available buckets for avatar:', availableBuckets);
   
   // Check for various possible avatar bucket names
   const possibleBucketNames = [
-    'freelancer-avatar',  // Primary choice
     'avatar',
     'avatars',
+    'freelancer-avatar',
     'profile-images',
     'profile-photos',
-    'user-avatars'
+    'user-avatars',
+    'project-documents'  // Fallback to any available bucket
   ];
   
+  // First try to find a dedicated avatar bucket
   for (const bucketName of possibleBucketNames) {
     if (bucketsData?.find(b => b.name === bucketName)) {
       console.log(`Found avatar bucket: ${bucketName}`);
@@ -59,7 +63,7 @@ export const getAvatarBucketName = async (): Promise<string | null> => {
     }
   }
   
-  // If no specific avatar bucket found but we have buckets, return the first one as a fallback
+  // If no specific avatar bucket found but we have buckets, use the first one
   if (bucketsData && bucketsData.length > 0) {
     console.log(`No dedicated avatar bucket found, using first available bucket: ${bucketsData[0].name}`);
     return bucketsData[0].name;

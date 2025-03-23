@@ -14,28 +14,19 @@ const BucketStatusAlerts: React.FC<BucketStatusAlertsProps> = ({
   actualBucketName,
   availableBuckets
 }) => {
-  if (bucketAvailable === null) return null;
+  // Don't show anything if we're still checking bucket status or if bucket is available
+  if (bucketAvailable === null || bucketAvailable === true) return null;
 
   return (
     <>
       {bucketAvailable === false && (
         <Alert variant="destructive" className="mb-4">
           <AlertCircle className="h-4 w-4" />
-          <AlertTitle>Avatar Upload Unavailable</AlertTitle>
+          <AlertTitle>Storage Service Status</AlertTitle>
           <AlertDescription>
-            The avatar storage service is currently unavailable. Available buckets: {availableBuckets.join(', ')}.
-            {actualBucketName && <div>Tried to use bucket: {actualBucketName}</div>}
-            Please try again later or contact support.
-          </AlertDescription>
-        </Alert>
-      )}
-      
-      {bucketAvailable === true && actualBucketName && (
-        <Alert className="mb-4">
-          <Info className="h-4 w-4" />
-          <AlertTitle>Storage Bucket Info</AlertTitle>
-          <AlertDescription>
-            Using storage bucket: {actualBucketName}
+            {availableBuckets.length > 0 
+              ? `Using fallback storage bucket: ${availableBuckets[0]}. Please contact support if you encounter upload issues.`
+              : 'No storage buckets available. Profile image uploads are currently unavailable. Please try again later or contact support.'}
           </AlertDescription>
         </Alert>
       )}
