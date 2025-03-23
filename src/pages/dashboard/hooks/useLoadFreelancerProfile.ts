@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
@@ -51,7 +50,6 @@ export const useLoadFreelancerProfile = ({
         console.log('Loaded profile data from database:', profileData);
         
         if (profileData) {
-          // Convert JSON types to the expected format with proper type assertion
           const previousEmployers = Array.isArray(profileData.previous_employers) 
             ? (profileData.previous_employers as any[]).map(emp => ({
                 employerName: emp.employerName || '',
@@ -78,16 +76,13 @@ export const useLoadFreelancerProfile = ({
             ? profileData.previous_work as any[] 
             : [];
 
-          // Ensure indemnity_insurance is properly typed
           const indemnity_insurance = typeof profileData.indemnity_insurance === 'object' 
             ? profileData.indemnity_insurance as { hasInsurance: boolean; coverLevel?: string }
             : { hasInsurance: false };
           
-          // Combine first name and last name for full name
           const fullName = profileData.display_name || 
                           `${profileData.first_name || ''} ${profileData.last_name || ''}`.trim();
           
-          // Convert ISO date strings to Date objects for the form
           const formattedEmployers = previousEmployers.map(employer => ({
             ...employer,
             startDate: employer.startDate ? new Date(employer.startDate) : new Date(),
@@ -118,10 +113,8 @@ export const useLoadFreelancerProfile = ({
           setEmailVerified(user.email_confirmed_at !== null);
           setJobsCompleted(profileData.jobs_completed || 0);
         } else {
-          // Fallback to user metadata if no profile data found
           const userMetadata = user.user_metadata || {};
           
-          // Similar conversion for metadata with proper type handling
           const previousEmployers = Array.isArray(userMetadata.previous_employers) 
             ? (userMetadata.previous_employers as any[]).map(emp => ({
                 employerName: emp.employerName || '',

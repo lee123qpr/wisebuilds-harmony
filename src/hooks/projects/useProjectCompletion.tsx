@@ -38,7 +38,7 @@ export const checkCompletionStatus = async (quoteId: string) => {
 };
 
 /**
- * Updates the quote with the user's completion status
+ * Updates the quote with the user's completion status and increments jobs_completed count if both parties have completed
  */
 const updateQuoteCompletionStatus = async (
   quoteId: string, 
@@ -55,9 +55,19 @@ const updateQuoteCompletionStatus = async (
   console.log(`Setting ${updateField} to true for quote ${quoteId}`);
   
   try {
-    // Call the stored procedure using `.rpc()` method
-    // Use type assertion to avoid TypeScript error since the function exists in the database
-    // but might not be in the TypeScript definitions
+    // Get the quote to check current status and get freelancer ID
+    const { data: quoteData, error: quoteError } = await supabase
+      .from('quotes')
+      .select('freelancer_id, client_id, freelancer_completed, client_completed')
+      .eq('id', quoteId)
+      .single();
+      
+    if (quoteError) {
+      console.error('Error getting quote data:', quoteError);
+      throw quoteError;
+    }
+    
+    // Update the completion status
     const { data, error } = await supabase.rpc(
       'update_project_completion_status' as any, 
       {
@@ -71,6 +81,28 @@ const updateQuoteCompletionStatus = async (
     if (error) {
       console.error('Error updating completion status:', error);
       throw error;
+    }
+    
+    // Check if both parties have now marked it as complete
+    const otherPartyCompleted = isFreelancer ? quoteData.client_completed : quoteData.freelancer_completed;
+    const userCompleted = isFreelancer ? true : true; // We're setting this to true now
+    
+    if (userCompleted && otherPartyCompleted) {
+      // If both parties have completed, increment the jobs_completed counter for the freelancer
+      const freelancerId = quoteData.freelancer_id;
+      
+      // Update the freelancer's completed jobs count
+      const { error: updateError } = await supabase
+        .from('freelancer_profiles')
+        .update({ 
+          jobs_completed: supabase.rpc('increment', { row_id: freelancerId, amount: 1 })
+        })
+        .eq('id', freelancerId);
+      
+      if (updateError) {
+        console.error('Error incrementing jobs_completed:', updateError);
+        // Don't throw here, just log the error since the primary operation succeeded
+      }
     }
     
     console.log('Quote update response:', data);
