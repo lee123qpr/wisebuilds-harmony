@@ -1,21 +1,53 @@
+
 import { useState } from 'react';
 import { useVerification } from './useVerification';
-import { validateFile } from '@/components/quotes/components/file-upload/utils/validation';
 import { useToast } from '@/hooks/use-toast';
+import { StorageBucket, uploadFile } from '@/utils/storage';
+import { supabase } from '@/integrations/supabase/client';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const VALID_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
 export const useDocumentUpload = (onClose: () => void) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const { 
-    uploadVerificationDocument, 
     refreshVerificationStatus, 
     isUploading,
-    setupComplete
+    setupComplete,
+    setIsUploading
   } = useVerification();
   const { toast } = useToast();
 
+  const validateFile = (file: File): boolean => {
+    // Check file size
+    if (file.size > MAX_FILE_SIZE) {
+      toast({
+        title: "File too large",
+        description: "Maximum file size is 5MB",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    // Check file type
+    if (!VALID_TYPES.includes(file.type)) {
+      toast({
+        title: "Invalid file type",
+        description: "Please upload a JPEG, PNG or PDF file",
+        variant: "destructive",
+      });
+      return false;
+    }
+    
+    return true;
+  };
+
   const handleFileSelection = (file: File) => {
     console.log('File selected:', file.name);
-    setSelectedFile(file);
+    
+    if (validateFile(file)) {
+      setSelectedFile(file);
+    }
   };
 
   const handleRemoveSelectedFile = () => {
@@ -36,8 +68,44 @@ export const useDocumentUpload = (onClose: () => void) => {
 
     try {
       console.log('Submitting document for verification:', selectedFile.name);
+      setIsUploading(true);
       
-      await uploadVerificationDocument(selectedFile);
+      // Get user ID
+      const { data: session } = await supabase.auth.getSession();
+      if (!session?.session?.user?.id) {
+        throw new Error('Authentication required: Please log in to upload verification documents');
+      }
+      
+      const userId = session.session.user.id;
+      
+      // Upload the file
+      const result = await uploadFile(
+        selectedFile, 
+        userId, 
+        StorageBucket.VERIFICATION,
+        'id-documents'
+      );
+      
+      if (!result) {
+        throw new Error('Failed to upload document. Please try again.');
+      }
+      
+      // Update the verification record in the database
+      const { error } = await supabase
+        .from('freelancer_verification')
+        .upsert({
+          user_id: userId,
+          document_path: result.path,
+          document_name: selectedFile.name,
+          document_size: selectedFile.size,
+          document_type: selectedFile.type,
+          status: 'pending',
+          submitted_at: new Date().toISOString()
+        });
+      
+      if (error) {
+        throw new Error(`Database error: ${error.message}`);
+      }
       
       toast({
         title: "Document submitted",
@@ -55,6 +123,8 @@ export const useDocumentUpload = (onClose: () => void) => {
         description: error.message || "There was an error uploading your document. Please try again.",
         variant: "destructive",
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 

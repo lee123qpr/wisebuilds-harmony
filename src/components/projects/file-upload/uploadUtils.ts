@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { UploadedFile } from './types';
 import { generateFilePath } from './utils';
 import { useToast } from '@/hooks/use-toast';
+import { StorageBucket, uploadFile as storageUploadFile } from '@/utils/storage';
 
 export const useFileUploader = () => {
   const { toast } = useToast();
@@ -19,44 +20,44 @@ export const useFileUploader = () => {
     if (!files.length) return [];
     
     const uploadedItems: UploadedFile[] = [];
+    const bucket = StorageBucket.PROJECTS;
     
     for (const file of files) {
       try {
-        // Generate organized file path based on context
-        const filePath = generateFilePath(file, context);
+        // Determine appropriate folder based on context
+        let folder = '';
+        if (context.quoteId) {
+          folder = `quotes/${context.quoteId}`;
+        } else if (context.projectId) {
+          folder = `projects/${context.projectId}`;
+        }
         
-        console.log(`Uploading file to path: ${filePath}`);
+        // Use central upload utility
+        const result = await storageUploadFile(file, context.userId, bucket, folder);
         
-        const { data, error } = await supabase.storage
-          .from('project-documents')
-          .upload(filePath, file, {
-            cacheControl: '3600',
-            upsert: false
-          });
-        
-        if (error) {
-          console.error('Error uploading file:', error);
+        if (!result) {
           toast({
             title: "Upload failed",
-            description: `Failed to upload ${file.name}: ${error.message}`,
+            description: `Failed to upload ${file.name}`,
             variant: "destructive"
           });
-        } else {
-          // Get the public URL for the file
-          const { data: { publicUrl } } = supabase.storage
-            .from('project-documents')
-            .getPublicUrl(data.path);
-          
-          uploadedItems.push({
-            name: file.name,
-            size: file.size,
-            type: file.type,
-            url: publicUrl,
-            path: data.path
-          });
+          continue;
         }
+        
+        uploadedItems.push({
+          name: file.name,
+          size: file.size,
+          type: file.type,
+          url: result.url,
+          path: result.path
+        });
       } catch (error) {
         console.error(`Error uploading file ${file.name}:`, error);
+        toast({
+          title: "Upload error",
+          description: error instanceof Error ? error.message : "Unknown error occurred",
+          variant: "destructive"
+        });
       }
     }
     

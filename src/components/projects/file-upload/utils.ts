@@ -21,6 +21,9 @@ export const allowedFileTypes = [
   'application/x-dwg'         // Another DWG MIME type
 ];
 
+// Maximum file size (10MB)
+export const MAX_FILE_SIZE = 10 * 1024 * 1024;
+
 // Return a React element for the file icon
 export const getFileIcon = (file: File | { type: string, name: string }): React.ReactNode => {
   const fileType = file.type;
@@ -50,6 +53,11 @@ export const formatFileSize = (bytes: number): string => {
 
 // Helper function to check if a file is valid
 export const isValidFile = (file: File): boolean => {
+  // Check file size
+  if (file.size > MAX_FILE_SIZE) {
+    return false;
+  }
+  
   // Check known MIME types
   if (allowedFileTypes.includes(file.type)) {
     return true;
@@ -75,20 +83,17 @@ export const generateFilePath = (file: File, context: {
   const fileExt = file.name.split('.').pop() || '';
   const uniquePart = `${Math.random().toString(36).substring(2, 15)}_${Date.now()}`;
   
-  // Create organized folder structure
-  let basePath = '';
+  // Create organized folder structure - always start with userId for RLS policies
+  let basePath = `${userId}`;
   
   if (userType === 'admin') {
-    basePath = 'admin';
+    basePath += '/admin';
   } else if (quoteId) {
     // For quote-related files
-    basePath = `quotes/${quoteId}`;
+    basePath += `/quotes/${quoteId}`;
   } else if (projectId) {
     // For project-related files
-    basePath = `projects/${projectId}`;
-  } else {
-    // General user uploads
-    basePath = `users/${userId}`;
+    basePath += `/projects/${projectId}`;
   }
   
   return `${basePath}/${uniquePart}.${fileExt}`;

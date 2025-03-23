@@ -1,18 +1,18 @@
 
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/components/ui/use-toast';
-import { Message } from '@/types/messaging';
+import { Message, MessageAttachment } from '@/types/messaging';
 import { getCurrentUserId } from '@/services/conversations';
 import { SendMessageParams, MessageReadParams } from './types';
+import { uploadMessageAttachment } from './uploadService';
 
 /**
  * Fetch messages for a conversation
  */
 export const fetchMessages = async (conversationId: string): Promise<Message[]> => {
   try {
-    // We need to use type assertion because messages table isn't in the Supabase type definition
-    const { data, error } = await (supabase
-      .from('messages') as any)
+    const { data, error } = await supabase
+      .from('messages')
       .select('*')
       .eq('conversation_id', conversationId)
       .order('created_at', { ascending: true });
@@ -46,8 +46,8 @@ export const markMessagesAsRead = async ({ messageIds }: MessageReadParams): Pro
   if (messageIds.length === 0) return;
   
   try {
-    const { error } = await (supabase
-      .from('messages') as any)
+    const { error } = await supabase
+      .from('messages')
       .update({ is_read: true })
       .in('id', messageIds);
     
@@ -87,25 +87,39 @@ export const sendMessage = async ({ conversationId, message, attachments = [] }:
       }
     }
     
-    // Send the message
-    const { error } = await (supabase
-      .from('messages') as any)
+    // Create the message
+    const { data: messageData, error: messageError } = await supabase
+      .from('messages')
       .insert({
         conversation_id: conversationId,
         sender_id: userId,
         message: messageText,
-        is_read: false,
         attachments: attachments.length > 0 ? attachments : null
-      });
+      })
+      .select()
+      .single();
     
-    if (error) {
-      console.error('Error sending message:', error);
+    if (messageError) {
+      console.error('Error sending message:', messageError);
       toast({
         title: "Failed to send message",
-        description: error.message,
+        description: messageError.message,
         variant: "destructive"
       });
       return false;
+    }
+    
+    // Update conversation last_message_at
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ 
+        last_message_at: new Date().toISOString(),
+        last_message: messageText
+      })
+      .eq('id', conversationId);
+    
+    if (updateError) {
+      console.error('Error updating conversation:', updateError);
     }
     
     return true;
@@ -117,5 +131,29 @@ export const sendMessage = async ({ conversationId, message, attachments = [] }:
       variant: "destructive"
     });
     return false;
+  }
+};
+
+/**
+ * Upload attachments for a message
+ */
+export const uploadMessageAttachments = async (
+  files: File[],
+  userId: string
+): Promise<MessageAttachment[]> => {
+  try {
+    const attachments: MessageAttachment[] = [];
+    
+    for (const file of files) {
+      const attachment = await uploadMessageAttachment({ file, userId });
+      if (attachment) {
+        attachments.push(attachment);
+      }
+    }
+    
+    return attachments;
+  } catch (error) {
+    console.error('Error uploading message attachments:', error);
+    return [];
   }
 };

@@ -1,10 +1,11 @@
+
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
 import { UploadedFile } from './types';
-import { allowedFileTypes } from './utils';
+import { allowedFileTypes, isValidFile } from './utils';
 import { useFileUploader } from './uploadUtils';
-import { supabase } from '@/integrations/supabase/client';
+import { StorageBucket, removeFile } from '@/utils/storage';
 
 export const useFileUpload = (
   initialFiles: UploadedFile[] = [],
@@ -22,7 +23,8 @@ export const useFileUpload = (
 
   const handleFileSelection = (newFiles: File[]) => {
     const validFiles = newFiles.filter(file => {
-      const isValid = allowedFileTypes.includes(file.type) || file.name.endsWith('.dwg');
+      // Use the isValidFile function for more robust validation
+      const isValid = isValidFile(file);
       if (!isValid) {
         toast({
           title: "Invalid file type",
@@ -48,15 +50,13 @@ export const useFileUpload = (
     onFilesUploaded(updatedFiles);
     
     if (fileToRemove.path) {
-      supabase.storage
-        .from('project-documents')
-        .remove([fileToRemove.path])
-        .then(({ error }) => {
-          if (error) {
-            console.error('Error removing file:', error);
+      removeFile(fileToRemove.path, StorageBucket.PROJECTS)
+        .then(success => {
+          if (!success) {
+            console.error('Error removing file from storage:', fileToRemove.path);
             toast({
               title: "Error",
-              description: `Failed to delete ${fileToRemove.name}`,
+              description: `Failed to delete ${fileToRemove.name} from storage`,
               variant: "destructive"
             });
           }

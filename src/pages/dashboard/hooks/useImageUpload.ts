@@ -2,13 +2,12 @@
 import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
-import { uploadFile } from '@/utils/supabaseStorage';
+import { StorageBucket, uploadFile } from '@/utils/storage';
 
 interface UseImageUploadProps {
   userId: string;
-  folder: string; // Kept for backward compatibility
-  namePrefix: string;
+  folder?: string; // Optional subfolder
+  namePrefix?: string; // Optional name prefix for the file
 }
 
 export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadProps) => {
@@ -22,7 +21,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     const file = e.target.files?.[0];
     if (!file || !userId) {
       console.log('No file selected or missing userId');
-      return;
+      return null;
     }
 
     try {
@@ -37,7 +36,12 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       }
       
       // Use the centralized upload utility
-      const result = await uploadFile(file, userId, 'freelancer-avatar', namePrefix || 'profile');
+      const result = await uploadFile(
+        file, 
+        userId, 
+        StorageBucket.AVATARS, 
+        folder || (namePrefix ? namePrefix.toLowerCase() : 'avatar')
+      );
       
       if (!result) {
         throw new Error('Upload failed. Please try again.');
@@ -75,7 +79,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, namePrefix, toast]);
+  }, [userId, folder, namePrefix, toast]);
 
   return {
     imageUrl,
