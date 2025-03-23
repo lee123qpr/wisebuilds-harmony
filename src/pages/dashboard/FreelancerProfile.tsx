@@ -29,6 +29,8 @@ const FreelancerProfile = () => {
     idVerified
   } = useFreelancerProfile(user);
 
+  console.log('FreelancerProfile - Jobs completed:', jobsCompleted);
+
   if (isLoading) {
     return (
       <MainLayout>
