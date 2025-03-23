@@ -28,7 +28,7 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
           .from('freelancer_profiles')
           .select('*')
           .eq('id', effectiveFreelancerId)
-          .single();
+          .maybeSingle();
           
         if (error) {
           throw error;
@@ -64,12 +64,32 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
           
           // Transform the data to match FreelancerProfile type
           const transformedProfile: FreelancerProfile = {
-            ...data,
+            id: data.id,
+            first_name: data.first_name,
+            last_name: data.last_name,
+            display_name: data.display_name,
+            profile_photo: data.profile_photo,
+            job_title: data.job_title,
+            location: data.location,
+            bio: data.bio,
             skills: safeStringArray(data.skills),
+            rating: data.rating,
+            reviews_count: data.reviews_count,
+            verified: data.verified,
+            email_verified: data.email_verified,
+            hourly_rate: data.hourly_rate,
+            day_rate: data.day_rate,
+            email: data.email,
+            phone_number: data.phone_number,
+            website: data.website,
+            member_since: data.member_since,
+            jobs_completed: data.jobs_completed,
+            experience: data.experience,
+            availability: data.availability,
             qualifications: safeStringArray(data.qualifications),
             accreditations: safeStringArray(data.accreditations),
             previous_employers: data.previous_employers as any || [],
-            // Fixed: changed previous_work to previousWork to match the FreelancerProfile type
+            // Changed previous_work to previousWork to match the FreelancerProfile type
             previousWork: data.previous_work as any || [],
             indemnity_insurance: data.indemnity_insurance as any || { hasInsurance: false },
           };
