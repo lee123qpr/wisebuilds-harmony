@@ -14,7 +14,7 @@ interface Application {
 export interface ApplicationWithProject extends Project {
   application_id: string;
   application_created_at: string;
-  quote_status?: Quote['status'];
+  quote_status?: 'pending' | 'accepted' | 'declined';
   completed_at?: string | null;
 }
 
@@ -102,7 +102,7 @@ export const useApplicationsWithQuotes = () => {
         // Merge quote status and completed_at into the application data
         const projectsWithQuoteData = applicationProjects.map(project => ({
           ...project,
-          quote_status: quoteDataMap[project.id]?.status,
+          quote_status: quoteDataMap[project.id]?.status as 'pending' | 'accepted' | 'declined' | undefined,
           completed_at: quoteDataMap[project.id]?.completed_at
         }));
         

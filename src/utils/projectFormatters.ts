@@ -1,10 +1,11 @@
+
 import { format, formatDistanceToNow } from 'date-fns';
 
 // Format date string to readable format
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Not specified';
   try {
-    return format(new Date(dateString), 'dd MMM yyyy');
+    return format(new Date(dateString), 'MMM d, yyyy');
   } catch (error) {
     return dateString;
   }
@@ -114,7 +115,14 @@ export const formatLocation = (location: string) => {
 // Format work type string to readable format
 export const formatWorkType = (workType: string) => {
   if (!workType) return 'Not specified';
-  return workType
+  
+  const workTypeMap: Record<string, string> = {
+    'on_site': 'On-Site',
+    'remote': 'Remote',
+    'hybrid': 'Hybrid'
+  };
+  
+  return workTypeMap[workType] || workType
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
