@@ -18,17 +18,17 @@ const FreelancerBioField: React.FC<FreelancerBioFieldProps> = ({ form, disabled 
       name="bio"
       render={({ field }) => (
         <FormItem>
-          <FormLabel>Professional Bio</FormLabel>
+          <FormLabel className="text-base font-semibold">Professional Bio</FormLabel>
           <FormControl>
             <Textarea 
               placeholder="Tell clients about yourself and your experience..."
-              className="min-h-[120px]"
+              className="min-h-[160px] resize-y border-gray-300 focus:border-primary focus:ring-primary text-base"
               {...field}
               disabled={disabled}
             />
           </FormControl>
-          <FormDescription>
-            Provide a short professional bio to showcase your expertise
+          <FormDescription className="mt-2 text-sm text-muted-foreground">
+            Provide a professional bio highlighting your expertise, experience, and what makes you stand out (max 500 characters)
           </FormDescription>
           <FormMessage />
         </FormItem>

@@ -24,7 +24,7 @@ interface DashboardFreelancerProfileCardProps {
 
 const DashboardFreelancerProfileCard: React.FC<DashboardFreelancerProfileCardProps> = (props) => {
   return (
-    <Card className="border shadow-md">
+    <Card className="border shadow-md overflow-hidden bg-gradient-to-br from-white to-slate-50">
       <CardContent className="pt-6">
         <FreelancerProfileCard
           profileImage={props.profileImage}
