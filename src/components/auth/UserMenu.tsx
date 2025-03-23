@@ -34,7 +34,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user, onSignOut, isLoading }) => {
           {!isLoadingProfile && (
             <div className="hidden md:flex flex-col items-end">
               <p className="text-sm font-medium">{displayName || user?.user_metadata?.full_name || 'User'}</p>
-              <p className="text-xs text-muted-foreground capitalize">{userType}</p>
+              <p className="text-xs text-muted-foreground capitalize">{userType === 'business' ? 'Client' : userType}</p>
             </div>
           )}
           
