@@ -1,21 +1,20 @@
 
 import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Coins, Check, Briefcase, ArrowRight, MessageSquare, User } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { useNavigate } from 'react-router-dom';
+import { Card, CardContent } from '@/components/ui/card';
 import { QuoteWithFreelancer } from '@/types/quotes';
 import ProjectCompletionStatus from '@/components/projects/ProjectCompletionStatus';
 import { cn } from '@/lib/utils';
 import { formatRole } from '@/utils/projectFormatters';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
-import { FreelancerInfo } from '@/types/messaging';
-import { Skeleton } from '@/components/ui/skeleton';
-import VerificationBadge from '@/components/common/VerificationBadge';
-import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
+import { FreelancerInfo as FreelancerInfoType } from '@/types/messaging';
+
+// Import our refactored components
+import { getQuoteCardStyle } from './card/QuoteCardStyles';
+import QuoteCardHeader from './card/CardHeader';
+import FreelancerInfo from './card/FreelancerInfo';
+import QuoteMetadata from './card/QuoteMetadata';
+import QuoteActions from './card/QuoteActions';
 
 interface QuoteListItemProps {
   quote: QuoteWithFreelancer;
@@ -23,8 +22,7 @@ interface QuoteListItemProps {
 }
 
 const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
-  const navigate = useNavigate();
-  const [freelancerInfo, setFreelancerInfo] = useState<FreelancerInfo | null>(null);
+  const [freelancerInfo, setFreelancerInfo] = useState<FreelancerInfoType | null>(null);
   const [isLoadingFreelancer, setIsLoadingFreelancer] = useState(false);
   
   // More robust project title handling
@@ -103,86 +101,31 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                    'Freelancer';
                    
   const isAccepted = quote.status === 'accepted';
-  
-  // Get card style based on quote status
-  const getCardStyle = () => {
-    switch (quote.status) {
-      case 'accepted':
-        return "border-2 border-green-500";
-      case 'pending':
-        return "border-2 border-amber-500";
-      case 'declined':
-        return "border-2 border-red-500";
-      default:
-        return "border-2 border-gray-300";
-    }
-  };
 
   return (
-    <Card key={quote.id} className={cn("w-full", getCardStyle())}>
-      <CardHeader className="pb-2">
-        <div className="flex flex-wrap justify-between items-start gap-2">
-          <div>
-            <CardTitle className="text-xl">{projectTitle}</CardTitle>
-            <p className="text-sm text-muted-foreground mt-1">
-              Looking for: <span className="font-medium text-primary">{roleFormatted}</span>
-            </p>
-          </div>
-          {isAccepted && (
-            <Badge variant="outline" className="bg-green-100 text-green-800 border-green-200 flex items-center gap-1">
-              <Check className="h-3 w-3" />
-              Quote Accepted
-            </Badge>
-          )}
-        </div>
-      </CardHeader>
+    <Card key={quote.id} className={cn("w-full", getQuoteCardStyle(quote.status))}>
+      <QuoteCardHeader 
+        projectTitle={projectTitle}
+        isAccepted={isAccepted}
+        roleFormatted={roleFormatted}
+      />
       
       <CardContent>
         <div className="space-y-4">
-          <div className="flex items-center gap-3 mb-4">
-            {isLoadingFreelancer ? (
-              <>
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div>
-                  <Skeleton className="h-4 w-32 mb-1" />
-                  <Skeleton className="h-3 w-24" />
-                </div>
-              </>
-            ) : (
-              <>
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={profilePhoto} alt={freelancerName} />
-                  <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium flex items-center gap-1">
-                    {freelancerName}
-                    {isVerified && <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />}
-                  </p>
-                  <p className="text-sm text-muted-foreground">{jobTitle}</p>
-                </div>
-              </>
-            )}
-          </div>
+          <FreelancerInfo
+            freelancerName={freelancerName}
+            profilePhoto={profilePhoto}
+            jobTitle={jobTitle}
+            isVerified={isVerified}
+            isLoadingFreelancer={isLoadingFreelancer}
+          />
           
-          <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <Calendar className="h-4 w-4" />
-              <span>{isAccepted ? 'Accepted' : 'Received'} on: {formattedDate}</span>
-            </div>
-            
-            <div className="flex items-center gap-1">
-              <Coins className="h-4 w-4" />
-              <span>{priceType}: {formattedPrice}</span>
-            </div>
-            
-            {quote.available_start_date && (
-              <div className="flex items-center gap-1">
-                <Briefcase className="h-4 w-4" />
-                <span>Start date: {format(new Date(quote.available_start_date), 'MMM d, yyyy')}</span>
-              </div>
-            )}
-          </div>
+          <QuoteMetadata
+            formattedDate={formattedDate}
+            priceType={priceType}
+            formattedPrice={formattedPrice}
+            availableStartDate={quote.available_start_date}
+          />
           
           {isAccepted && (
             <ProjectCompletionStatus
@@ -195,47 +138,12 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
             />
           )}
           
-          <div className="flex flex-wrap gap-2 mt-4">
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={() => navigate(`/project/${quote.project_id}`)}
-            >
-              View Project
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Button>
-            
-            <Button 
-              variant="outline" 
-              size="sm"
-              onClick={() => navigate(`/project/${quote.project_id}/quotes/${quote.id}`)}
-            >
-              View Quote Details
-            </Button>
-            
-            <FreelancerProfileLink
-              freelancerId={quote.freelancer_id}
-              projectId={quote.project_id}
-              variant="outline"
-              size="sm"
-              className="gap-2"
-            >
-              <User className="h-4 w-4" />
-              View Profile
-            </FreelancerProfileLink>
-            
-            {isAccepted && (
-              <Button 
-                variant="outline" 
-                size="sm" 
-                className="gap-2"
-                onClick={() => navigate(`/dashboard/business?tab=messages&freelancerId=${quote.freelancer_id}`)}
-              >
-                <MessageSquare className="h-4 w-4" />
-                Message Freelancer
-              </Button>
-            )}
-          </div>
+          <QuoteActions
+            projectId={quote.project_id}
+            quoteId={quote.id}
+            freelancerId={quote.freelancer_id}
+            isAccepted={isAccepted}
+          />
         </div>
       </CardContent>
     </Card>
