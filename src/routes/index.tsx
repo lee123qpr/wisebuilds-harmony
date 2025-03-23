@@ -1,3 +1,4 @@
+
 import { createBrowserRouter } from 'react-router-dom';
 import { authRoutes } from './authRoutes';
 import { dashboardRoutes } from './dashboardRoutes';
@@ -6,11 +7,17 @@ import { miscRoutes } from './miscRoutes';
 import Index from '../pages/Index';
 import NotFound from '../pages/NotFound';
 import FreelancerProfileView from '../pages/freelancer/FreelancerProfileView';
+import ClientProfileView from '../pages/client/ClientProfileView';
 
 const router = createBrowserRouter([
   {
     path: '/',
     element: <Index />,
+  },
+  // Client profile view route
+  {
+    path: '/client/:clientId',
+    element: <ClientProfileView />,
   },
   // Freelancer profile view route
   {
