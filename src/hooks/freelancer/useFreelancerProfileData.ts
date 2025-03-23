@@ -54,18 +54,25 @@ export const useFreelancerProfileData = (userId?: string) => {
           return null;
         }
 
-        // If we have profile data, let's also get the user's email from the auth users table
+        // If we have profile data, let's also get the user's email
         const { data: userData, error: userError } = await supabase
-          .from("users")
-          .select("email")
-          .eq("id", targetUserId)
-          .single();
+          .functions.invoke('get-user-email', {
+            body: { userId: targetUserId }
+          });
 
         if (userError) {
           console.error("Error fetching user email:", userError);
           // We can still return the profile data without the email
           return {
             ...profileData,
+            user_id: targetUserId,
+            contact_phone: profileData.phone_number || "",
+            role: profileData.job_title || "",
+            avatar_url: profileData.profile_photo || "",
+            rate: profileData.hourly_rate || "",
+            verified: profileData.id_verified || false,
+            work_type: "",
+            travel_distance: "",
             email: "",
           };
         }
@@ -73,6 +80,14 @@ export const useFreelancerProfileData = (userId?: string) => {
         // Return combined data
         return {
           ...profileData,
+          user_id: targetUserId,
+          contact_phone: profileData.phone_number || "",
+          role: profileData.job_title || "",
+          avatar_url: profileData.profile_photo || "",
+          rate: profileData.hourly_rate || "",
+          verified: profileData.id_verified || false,
+          work_type: "",
+          travel_distance: "",
           email: userData?.email || "",
         };
       } catch (error) {
