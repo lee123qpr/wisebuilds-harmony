@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Calendar, Briefcase, MapPin, PoundSterling } from 'lucide-react';
+import { Calendar, Briefcase, MapPin, PoundSterling, Star } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
@@ -127,13 +127,13 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
             <p className="text-muted-foreground mb-2">{profession}</p>
             
             {/* Rating stars */}
-            {rating && rating > 0 && (
+            {(rating !== undefined && rating !== null) && (
               <div className="mb-2">
                 <ProfileRatingStars 
                   userId={userId}
                   rating={rating}
                   reviewsCount={reviewsCount}
-                  showEmpty={false}
+                  showEmpty={true}
                 />
               </div>
             )}
