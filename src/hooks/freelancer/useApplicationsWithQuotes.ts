@@ -34,7 +34,7 @@ export const useApplicationsWithQuotes = () => {
       try {
         console.log('Fetching user applications...');
         
-        // Directly fetch applications and join with projects
+        // Directly fetch applications and join with projects, ensuring we get all needed fields
         const { data: applicationData, error: appError } = await supabase
           .from('project_applications')
           .select(`
@@ -51,6 +51,7 @@ export const useApplicationsWithQuotes = () => {
               duration,
               role,
               created_at,
+              start_date,
               status,
               hiring_status,
               requires_insurance,
@@ -106,6 +107,7 @@ export const useApplicationsWithQuotes = () => {
           completed_at: quoteDataMap[project.id]?.completed_at
         }));
         
+        console.log('Fetched application projects with data:', projectsWithQuoteData);
         return projectsWithQuoteData as ApplicationWithProject[];
       } catch (error) {
         console.error('Error fetching applications:', error);
