@@ -69,7 +69,8 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             qualifications: safeStringArray(data.qualifications),
             accreditations: safeStringArray(data.accreditations),
             previous_employers: data.previous_employers as any || [],
-            previous_work: data.previous_work as any || [],
+            // Fixed: changed previous_work to previousWork to match the FreelancerProfile type
+            previousWork: data.previous_work as any || [],
             indemnity_insurance: data.indemnity_insurance as any || { hasInsurance: false },
           };
           
