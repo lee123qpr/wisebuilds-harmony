@@ -1,142 +1,97 @@
 
-import { useState, useEffect } from 'react';
-import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
-import { FreelancerProfile } from '@/types/applications';
-import { toast } from '@/hooks/toast';
+import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 
-// Helper functions for safely formatting data
-function formatPreviousEmployers(data: any) {
-  if (!data || !Array.isArray(data)) return [];
-  
-  return data.map(emp => ({
-    employerName: emp?.employerName || '',
-    position: emp?.position || '',
-    startDate: emp?.startDate || '',
-    endDate: emp?.endDate,
-    current: !!emp?.current
-  }));
+interface FreelancerProfileDataResponse {
+  data: any | null;
+  error: Error | null;
 }
 
-function formatPreviousWork(data: any) {
-  if (!data || !Array.isArray(data)) return [];
-  
-  return data.map(work => ({
-    name: work?.name || '',
-    url: work?.url || '',
-    type: work?.type || '',
-    size: work?.size || 0,
-    path: work?.path || ''
-  }));
+// Explicitly define the return type structure to avoid deep type instantiation
+interface ProfileData {
+  id: string;
+  user_id: string;
+  display_name: string;
+  first_name: string;
+  last_name: string;
+  profile_photo: string | null;
+  job_title: string | null;
+  bio: string | null;
+  email: string | null;
+  phone_number: string | null;
+  location: string | null;
+  skills: string[] | null;
+  previous_employers: any[] | null;
+  previous_work: any[] | null;
+  qualifications: any[] | null;
+  indemnity_insurance: any | null;
+  created_at: string;
+  updated_at: string;
 }
 
-function formatIndemnityInsurance(data: any) {
-  if (!data) return { hasInsurance: false };
+// Format freelancer profile data safely
+export const formatFreelancerProfileData = (data: any) => {
+  if (!data) return null;
   
-  return {
-    hasInsurance: !!data?.hasInsurance,
-    coverLevel: data?.coverLevel
+  // Handle previous_employers safely
+  const previousEmployers = data.previous_employers ? 
+    (Array.isArray(data.previous_employers) ? data.previous_employers : []) : 
+    [];
+    
+  // Handle previous_work safely
+  const previousWork = data.previous_work ? 
+    (Array.isArray(data.previous_work) ? data.previous_work : []) : 
+    [];
+  
+  // Cast data to avoid deep type inference
+  const formattedData = {
+    ...data,
+    skills: data.skills || [],
+    previous_employers: previousEmployers,
+    previous_work: previousWork,
+    qualifications: data.qualifications || [],
+    indemnity_insurance: data.indemnity_insurance || null
   };
-}
-
-export const useFreelancerProfileData = (freelancerIdParam?: string) => {
-  const { freelancerId: urlFreelancerId } = useParams<{ freelancerId: string }>();
-  const effectiveFreelancerId = freelancerIdParam || urlFreelancerId;
   
-  const [profile, setProfile] = useState<FreelancerProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  return formattedData as ProfileData;
+};
 
-  useEffect(() => {
-    const fetchFreelancerProfile = async () => {
-      if (!effectiveFreelancerId) {
-        setIsLoading(false);
-        return;
-      }
+export const useFreelancerProfileData = (userId?: string) => {
+  const { user } = useAuth();
+  const profileId = userId || user?.id;
 
+  return useQuery({
+    queryKey: ['freelancerProfile', profileId],
+    queryFn: async (): Promise<FreelancerProfileDataResponse> => {
       try {
-        setIsLoading(true);
-        
-        // Fetch the freelancer profile data
+        if (!profileId) {
+          return { data: null, error: new Error('No user ID provided') };
+        }
+
+        // Fetch freelancer profile data
         const { data, error } = await supabase
           .from('freelancer_profiles')
           .select('*')
-          .eq('id', effectiveFreelancerId)
+          .eq('user_id', profileId)
           .maybeSingle();
-          
+
         if (error) {
+          console.error('Error fetching freelancer profile:', error);
           throw error;
         }
 
-        // If we have profile data, fetch reviews
-        if (data) {
-          let averageRating = data.rating;
-          let reviewsCount = data.reviews_count;
-          
-          try {
-            const { data: reviewsData, error: reviewsError } = await supabase
-              .from('client_reviews')
-              .select('rating')
-              .eq('freelancer_id', effectiveFreelancerId);
-              
-            if (!reviewsError && reviewsData && reviewsData.length > 0) {
-              // Calculate average rating
-              const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
-              averageRating = parseFloat((totalRating / reviewsData.length).toFixed(1));
-              reviewsCount = reviewsData.length;
-            }
-          } catch (reviewsError) {
-            console.error('Error fetching reviews:', reviewsError);
-            // Continue with profile data even if reviews fetch fails
-          }
-          
-          // Convert database data to FreelancerProfile type safely
-          const profileData: FreelancerProfile = {
-            id: data.id,
-            first_name: data.first_name || undefined,
-            last_name: data.last_name || undefined,
-            display_name: data.display_name || undefined,
-            profile_photo: data.profile_photo || undefined,
-            job_title: data.job_title || undefined,
-            location: data.location || undefined,
-            bio: data.bio || undefined,
-            skills: Array.isArray(data.skills) ? data.skills.map(String) : [],
-            rating: averageRating || undefined,
-            reviews_count: reviewsCount || undefined,
-            verified: !!data.id_verified,
-            email_verified: !!data.id_verified, // Using id_verified as fallback
-            hourly_rate: data.hourly_rate || undefined,
-            day_rate: data.hourly_rate || undefined, // Use hourly_rate as fallback
-            email: data.email || undefined,
-            phone_number: data.phone_number || undefined,
-            website: data.website || undefined,
-            member_since: data.member_since || undefined,
-            jobs_completed: data.jobs_completed || 0,
-            experience: data.experience || undefined,
-            availability: data.availability || undefined,
-            qualifications: Array.isArray(data.qualifications) ? data.qualifications.map(String) : [],
-            accreditations: Array.isArray(data.accreditations) ? data.accreditations.map(String) : [],
-            previous_employers: formatPreviousEmployers(data.previous_employers),
-            previousWork: formatPreviousWork(data.previous_work),
-            indemnity_insurance: formatIndemnityInsurance(data.indemnity_insurance)
-          };
-          
-          setProfile(profileData);
-        }
+        // Format the data with explicit typing
+        const formattedData = formatFreelancerProfileData(data);
+        return { data: formattedData, error: null };
       } catch (error) {
-        console.error('Error fetching freelancer profile:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load freelancer profile",
-          variant: "destructive"
-        });
-        setProfile(null);
-      } finally {
-        setIsLoading(false);
+        console.error('Error in useFreelancerProfileData:', error);
+        toast.error('Failed to load freelancer profile data');
+        return { data: null, error: error as Error };
       }
-    };
-
-    fetchFreelancerProfile();
-  }, [effectiveFreelancerId]);
-
-  return { profile, isLoading };
+    },
+    enabled: !!profileId,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+  });
 };
