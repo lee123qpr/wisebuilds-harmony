@@ -5,6 +5,7 @@ import { Message, MessageAttachment } from '@/types/messaging';
 import { getCurrentUserId } from '@/services/conversations';
 import { SendMessageParams, MessageReadParams } from './types';
 import { uploadMessageAttachment } from './uploadService';
+import { Json } from '@/integrations/supabase/types';
 
 /**
  * Fetch messages for a conversation
@@ -27,7 +28,14 @@ export const fetchMessages = async (conversationId: string): Promise<Message[]> 
       return [];
     }
     
-    return data || [];
+    // Transform the data to ensure attachments have the correct type
+    const messages: Message[] = (data || []).map(msg => ({
+      ...msg,
+      // Convert Json type to MessageAttachment[] or undefined
+      attachments: msg.attachments as unknown as MessageAttachment[] | undefined
+    }));
+    
+    return messages;
   } catch (e) {
     console.error('Error in fetchMessages:', e);
     toast({
@@ -87,14 +95,14 @@ export const sendMessage = async ({ conversationId, message, attachments = [] }:
       }
     }
     
-    // Create the message
+    // Create the message - convert MessageAttachment[] to Json for database storage
     const { data: messageData, error: messageError } = await supabase
       .from('messages')
       .insert({
         conversation_id: conversationId,
         sender_id: userId,
         message: messageText,
-        attachments: attachments.length > 0 ? attachments : null
+        attachments: attachments.length > 0 ? attachments as unknown as Json : null
       })
       .select()
       .single();
@@ -109,11 +117,11 @@ export const sendMessage = async ({ conversationId, message, attachments = [] }:
       return false;
     }
     
-    // Update conversation last_message_at
+    // Update conversation last_message_time
     const { error: updateError } = await supabase
       .from('conversations')
       .update({ 
-        last_message_at: new Date().toISOString(),
+        last_message_time: new Date().toISOString(),
         last_message: messageText
       })
       .eq('id', conversationId);

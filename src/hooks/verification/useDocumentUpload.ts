@@ -10,11 +10,10 @@ const VALID_TYPES = ['image/jpeg', 'image/png', 'application/pdf'];
 
 export const useDocumentUpload = (onClose: () => void) => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
   const { 
     refreshVerificationStatus, 
-    isUploading,
-    setupComplete,
-    setIsUploading
+    setupComplete
   } = useVerification();
   const { toast } = useToast();
 

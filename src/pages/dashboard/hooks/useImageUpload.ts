@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
 import { StorageBucket, uploadFile } from '@/utils/storage';
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseImageUploadProps {
   userId: string;
