@@ -33,11 +33,11 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     
     console.log('Client profile data from database:', clientProfile);
     
-    // If profile exists, prioritize it regardless of whether contact_name is available
+    // If profile exists, use it as the primary source, regardless of whether fields are empty
     if (clientProfile) {
-      // Return the profile data, using 'Client' as fallback for contact_name if it's null or empty
-      console.log('Returning client info from profile:', clientProfile);
+      // Always use the profile data, but provide fallbacks for null values
       return {
+        // Use 'Client' as fallback only if contact_name is null or empty string
         contact_name: clientProfile.contact_name && clientProfile.contact_name.trim() !== '' 
                    ? clientProfile.contact_name 
                    : 'Client',

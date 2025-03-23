@@ -55,7 +55,7 @@ serve(async (req) => {
 
     console.log('Fetching user data for userId:', userId);
 
-    // First, try to get user from client_profiles
+    // First, try to get user from client_profiles - this is the primary source
     const { data: profileData, error: profileError } = await supabaseAdmin
       .from('client_profiles')
       .select('*')
@@ -68,7 +68,7 @@ serve(async (req) => {
     
     console.log('Client profile data:', profileData);
 
-    // Get the user's data from auth.users table
+    // Get the user's data from auth.users table as fallback
     const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
 
     if (error) {
@@ -94,7 +94,7 @@ serve(async (req) => {
       }
     }
     
-    // Get the full name from user metadata or other sources
+    // Always prioritize profile data when available
     const fullName = profileData?.contact_name || 
                     data?.user?.user_metadata?.full_name || 
                     data?.user?.user_metadata?.name ||
