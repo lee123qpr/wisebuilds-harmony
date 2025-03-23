@@ -27,7 +27,7 @@ const IndemnityInsuranceSection: React.FC<IndemnityInsuranceSectionProps> = ({ p
         <div className="bg-primary/10 p-1.5 rounded-md">
           <Shield className="h-4 w-4 text-primary" />
         </div>
-        <span>Professional Insurance</span>
+        <span>Professional Indemnity Insurance</span>
       </h3>
       
       <div className="bg-muted/50 p-4 rounded-md flex items-center gap-4">
