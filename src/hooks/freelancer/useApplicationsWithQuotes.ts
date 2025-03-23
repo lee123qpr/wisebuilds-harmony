@@ -28,7 +28,7 @@ export const useApplicationsWithQuotes = () => {
     refetch
   } = useQuery({
     queryKey: ['applications', user?.id],
-    queryFn: async () => {
+    queryFn: async (): Promise<ApplicationWithProject[]> => {
       if (!user) return [];
       
       try {
@@ -92,13 +92,18 @@ export const useApplicationsWithQuotes = () => {
         }
         
         // Create a map of project_id -> quote data for faster lookup
-        const quoteDataMap = (quotesData || []).reduce((map, quote) => {
-          map[quote.project_id] = {
-            status: quote.status,
-            completed_at: quote.completed_at
-          };
-          return map;
-        }, {});
+        const quoteDataMap: Record<string, { status: Quote['status'], completed_at: string | null }> = {};
+        
+        if (quotesData) {
+          quotesData.forEach(quote => {
+            if (quote.project_id) {
+              quoteDataMap[quote.project_id] = {
+                status: quote.status,
+                completed_at: quote.completed_at
+              };
+            }
+          });
+        }
         
         // Merge quote status and completed_at into the application data
         const projectsWithQuoteData = applicationProjects.map(project => ({

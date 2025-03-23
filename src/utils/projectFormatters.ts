@@ -115,6 +115,12 @@ export const formatLocation = (location: string) => {
 // Format work type string to readable format
 export const formatWorkType = (workType: string) => {
   if (!workType) return 'Not specified';
+  
+  // Handle common work type formats
+  if (workType === 'on_site') return 'On Site';
+  if (workType === 'remote') return 'Remote';
+  if (workType === 'hybrid') return 'Hybrid';
+  
   return workType
     .split('_')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
