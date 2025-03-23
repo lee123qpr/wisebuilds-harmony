@@ -1,3 +1,4 @@
+
 import { useAuth } from '@/context/AuthContext';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
@@ -57,7 +58,8 @@ export const useApplicationsWithQuotes = () => {
               hiring_status,
               requires_insurance,
               requires_equipment,
-              requires_site_visits
+              requires_site_visits,
+              user_id
             )
           `)
           .eq('user_id', user.id)
@@ -77,14 +79,15 @@ export const useApplicationsWithQuotes = () => {
         const applicationProjects = applicationData.map((app) => ({
           ...app.projects,
           application_id: app.id,
-          application_created_at: app.created_at
+          application_created_at: app.created_at,
+          client_id: app.projects.user_id // Make sure client_id is set from the project's user_id
         }));
         
         // Fetch all quotes for this user in a single query instead of multiple queries
         // Also fetch the completed_at field to determine if a job is completed
         const { data: quotesData, error: quotesError } = await supabase
           .from('quotes')
-          .select('status, project_id, completed_at')
+          .select('id, status, project_id, completed_at, client_id')
           .eq('freelancer_id', user.id)
           .in('project_id', applicationProjects.map(p => p.id));
           
@@ -96,7 +99,9 @@ export const useApplicationsWithQuotes = () => {
         const quoteDataMap = (quotesData || []).reduce((map, quote) => {
           map[quote.project_id] = {
             status: quote.status,
-            completed_at: quote.completed_at
+            completed_at: quote.completed_at,
+            quote_id: quote.id,
+            client_id: quote.client_id
           };
           return map;
         }, {});
@@ -105,7 +110,9 @@ export const useApplicationsWithQuotes = () => {
         const projectsWithQuoteData = applicationProjects.map(project => ({
           ...project,
           quote_status: quoteDataMap[project.id]?.status as 'pending' | 'accepted' | 'declined' | undefined,
-          completed_at: quoteDataMap[project.id]?.completed_at
+          completed_at: quoteDataMap[project.id]?.completed_at,
+          quote_id: quoteDataMap[project.id]?.quote_id,
+          client_id: project.client_id || quoteDataMap[project.id]?.client_id // Use client_id from quote if not already set
         }));
         
         return projectsWithQuoteData as ApplicationWithProject[];

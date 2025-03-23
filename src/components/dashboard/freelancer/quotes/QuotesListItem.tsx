@@ -51,6 +51,13 @@ const QuotesListItem: React.FC<QuotesListItemProps> = ({ project }) => {
 
   const canDelete = project.quote_status === 'declined' || !project.quote_status;
 
+  // Ensure the project object has the required fields for the chat handler
+  const enhancedProject = {
+    ...project,
+    id: project.id,
+    user_id: project.client_id || project.user_id // Ensure we have a client ID
+  };
+
   return (
     <div className={cn("rounded-md overflow-hidden relative", getStatusStyles(project.quote_status))}>
       {canDelete && (
@@ -108,10 +115,7 @@ const QuotesListItem: React.FC<QuotesListItemProps> = ({ project }) => {
       
       <PurchasedProjectCard 
         key={project.id}
-        project={{
-          ...project,
-          quote_status: project.quote_status
-        }}
+        project={enhancedProject}
       />
       
       <DeleteQuoteDialog

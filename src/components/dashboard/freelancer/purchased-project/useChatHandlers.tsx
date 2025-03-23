@@ -16,8 +16,15 @@ export const useChatHandlers = (project: any) => {
         throw new Error('Not authenticated');
       }
       
-      if (!project?.id || !project?.user_id) {
-        throw new Error('Missing project information');
+      // Validate project data
+      if (!project?.id) {
+        console.error('Missing project ID', project);
+        throw new Error('Missing project ID');
+      }
+      
+      if (!project?.user_id) {
+        console.error('Missing client ID', project);
+        throw new Error('Missing client ID');
       }
       
       console.log('Starting chat between freelancer', user.id, 'and client', project.user_id, 'for project', project.id);
