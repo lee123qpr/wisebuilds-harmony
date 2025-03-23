@@ -1,5 +1,5 @@
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
@@ -17,15 +17,18 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
   const [bucketAvailable, setBucketAvailable] = useState<boolean | null>(null);
   const [actualBucketName, setActualBucketName] = useState<string | null>(null);
   const { toast } = useToast();
+  const bucketChecked = useRef(false);
 
-  // Check bucket on mount
+  // Check bucket only once on mount
   useEffect(() => {
+    if (bucketChecked.current) return;
+    
     const checkBucket = async () => {
       try {
         const bucketName = await getActualAvatarBucket();
         setActualBucketName(bucketName);
         setBucketAvailable(true);
-        console.log(`Using avatar bucket: ${bucketName}`);
+        bucketChecked.current = true;
       } catch (error) {
         console.error('Error checking avatar bucket:', error);
         setBucketAvailable(false);
@@ -38,7 +41,6 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) {
-      console.log('No file selected or missing userId');
       toast({
         variant: 'destructive',
         title: 'Upload Failed',
@@ -49,8 +51,6 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
 
     try {
       setUploadingImage(true);
-      console.log('Uploading image for user:', userId);
-      console.log('File details:', { name: file.name, type: file.type, size: file.size });
       
       // Verify user is authenticated before attempting upload
       const { data: session } = await supabase.auth.getSession();
@@ -70,7 +70,6 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
       
       // Default to the freelancer-avatar bucket if available
       const bucketToUse = actualBucketName || 'freelancer-avatar';
-      console.log(`Attempting upload to ${bucketToUse}/${userId}`);
       
       // Prepare the file path - important for RLS policies
       // The path MUST start with userId for RLS to work properly
@@ -94,7 +93,6 @@ export const useImageUpload = ({ userId, namePrefix }: UseImageUploadProps) => {
         .getPublicUrl(filePath);
       
       const url = publicUrlData.publicUrl;
-      console.log('Image uploaded successfully, publicUrl:', url);
       
       setImageUrl(url);
       setImageKey(uuidv4()); // Force re-render of Avatar

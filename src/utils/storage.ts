@@ -9,10 +9,18 @@ export enum StorageBucket {
   VERIFICATION = 'verification'
 }
 
+// Cache to avoid repeated bucket checks
+let cachedAvatarBucket: string | null = null;
+
 /**
  * Gets the actual bucket name to use for avatars based on available buckets
  */
 export const getActualAvatarBucket = async (): Promise<string> => {
+  // Return cached value if available
+  if (cachedAvatarBucket) {
+    return cachedAvatarBucket;
+  }
+  
   try {
     // Check available buckets
     const { data: bucketsData, error } = await supabase.storage.listBuckets();
@@ -21,8 +29,6 @@ export const getActualAvatarBucket = async (): Promise<string> => {
       console.error('Error listing buckets:', error);
       return StorageBucket.AVATARS; // Return default as fallback
     }
-    
-    console.log('Available buckets:', bucketsData?.map(b => b.name).join(', '));
     
     // Check possible avatar bucket names in order of preference
     const possibleBucketNames = [
@@ -36,18 +42,14 @@ export const getActualAvatarBucket = async (): Promise<string> => {
     // Return the first bucket that exists
     for (const bucketName of possibleBucketNames) {
       if (bucketsData?.some(b => b.name === bucketName)) {
-        console.log(`Found avatar bucket: ${bucketName}`);
+        // Cache the result
+        cachedAvatarBucket = bucketName;
         return bucketName;
       }
     }
     
-    // If no avatar bucket found, log and return the first one as an attempt
-    console.warn('No avatar bucket found, defaulting to first bucket in list');
-    if (bucketsData && bucketsData.length > 0) {
-      return bucketsData[0].name;
-    }
-    
-    // Last resort, return the default value
+    // If no avatar bucket found, use the default
+    cachedAvatarBucket = StorageBucket.AVATARS;
     return StorageBucket.AVATARS;
     
   } catch (error) {
