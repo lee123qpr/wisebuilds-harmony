@@ -165,11 +165,11 @@ export const useFreelancerProfileData = (userId?: string): FreelancerProfileQuer
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Return the query result with improved type safety to avoid deep nesting
+  // Return a new object instead of spreading to avoid deep type recursion
   return {
     profile: query.data?.data || null,
     isLoading: query.isLoading,
-    error: query.error || query.data?.error,
+    error: query.error || query.data?.error || null,
     refetch: query.refetch,
     isRefetching: query.isRefetching,
     status: query.status
