@@ -75,10 +75,13 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             skills: safeStringArray(data.skills),
             rating: data.rating,
             reviews_count: data.reviews_count,
-            verified: data.verified,
-            email_verified: data.email_verified,
+            // Map id_verified to verified since that's what the FreelancerProfile interface expects
+            verified: data.id_verified,
+            // Map id_verified to email_verified as well (or set to false if not available)
+            email_verified: data.id_verified ?? false,
             hourly_rate: data.hourly_rate,
-            day_rate: data.day_rate,
+            // day_rate field might not exist in database but is in the interface
+            day_rate: data.hourly_rate, // Use hourly_rate as fallback
             email: data.email,
             phone_number: data.phone_number,
             website: data.website,
@@ -89,7 +92,7 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             qualifications: safeStringArray(data.qualifications),
             accreditations: safeStringArray(data.accreditations),
             previous_employers: data.previous_employers as any || [],
-            // Changed previous_work to previousWork to match the FreelancerProfile type
+            // Use the correct property name that matches the FreelancerProfile interface
             previousWork: data.previous_work as any || [],
             indemnity_insurance: data.indemnity_insurance as any || { hasInsurance: false },
           };
