@@ -32,6 +32,7 @@ export interface FreelancerApplication {
 
 export interface FreelancerProfile {
   id: string;
+  user_id?: string;
   first_name?: string;
   last_name?: string;
   display_name?: string;
@@ -48,6 +49,7 @@ export interface FreelancerProfile {
   day_rate?: string;
   email?: string;
   phone_number?: string;
+  contact_phone?: string;
   website?: string;
   member_since?: string;
   jobs_completed?: number;
@@ -55,22 +57,28 @@ export interface FreelancerProfile {
   availability?: string;
   qualifications?: string[];
   accreditations?: string[];
+  work_type?: string;
+  travel_distance?: string;
+  role?: string;
+  avatar_url?: string;
+  rate?: string;
+  indemnity_insurance?: {
+    hasInsurance: boolean;
+    coverLevel?: string;
+  } | boolean;
   previous_employers?: {
     employerName: string;
     position: string;
     startDate: string;
     endDate?: string;
     current: boolean;
-  }[];
-  indemnity_insurance?: {
-    hasInsurance: boolean;
-    coverLevel?: string;
-  };
-  previousWork?: {
+  }[] | string[];
+  previous_work?: {
     name: string;
     url: string;
     type: string;
     size: number;
     path: string;
-  }[];
+  }[] | string[];
+  created_at?: string;
 }

@@ -3,13 +3,14 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/context/AuthContext";
 import { Json } from "@/integrations/supabase/types";
+import { FreelancerProfile } from "@/types/applications";
 
 // Define a comprehensive interface for the database profile data
 interface ProfileDBData {
   id: string;
   user_id?: string;
-  first_name: string;
-  last_name: string;
+  first_name?: string;
+  last_name?: string;
   display_name?: string;
   phone_number?: string;
   bio?: string;
@@ -39,44 +40,7 @@ interface ProfileDBData {
   reviews_count?: number;
 }
 
-// Export the FreelancerProfile interface for use throughout the app
-export type FreelancerProfile = {
-  id: string;
-  user_id: string;
-  first_name: string;
-  last_name: string;
-  email: string;
-  contact_phone: string;
-  bio: string;
-  role: string;
-  avatar_url: string;
-  rate: string;
-  location: string;
-  indemnity_insurance: boolean;
-  previous_employers: string[];
-  skills: string[];
-  qualifications: string[];
-  previous_work: string[];
-  created_at: string;
-  work_type: string;
-  availability: string;
-  travel_distance: string;
-  verified: boolean;
-  display_name?: string;
-  job_title?: string;
-  profile_photo?: string;
-  website?: string;
-  day_rate?: string;
-  experience?: string;
-  accreditations?: string[];
-  member_since?: string;
-  email_verified?: boolean;
-  jobs_completed?: number;
-  rating?: number;
-  reviews_count?: number;
-};
-
-// Export ProfileData for test cases
+// This alias is used for test cases
 export type ProfileData = FreelancerProfile;
 
 export const useFreelancerProfileData = (userId?: string) => {
@@ -115,59 +79,11 @@ export const useFreelancerProfileData = (userId?: string) => {
         if (userError) {
           console.error("Error fetching user email:", userError);
           // We can still return the profile data without the email
-          return {
-            ...profileData,
-            user_id: targetUserId,
-            contact_phone: profileData.phone_number || "",
-            role: profileData.job_title || "",
-            avatar_url: profileData.profile_photo || "",
-            rate: profileData.hourly_rate || "",
-            verified: profileData.id_verified || false,
-            work_type: profileData.work_type || "",
-            travel_distance: profileData.travel_distance || "",
-            email: "",
-            indemnity_insurance: !!profileData.indemnity_insurance,
-            previous_employers: Array.isArray(profileData.previous_employers) 
-              ? profileData.previous_employers.map(item => String(item)) 
-              : [],
-            skills: Array.isArray(profileData.skills) 
-              ? profileData.skills.map(item => String(item)) 
-              : [],
-            qualifications: Array.isArray(profileData.qualifications) 
-              ? profileData.qualifications.map(item => String(item)) 
-              : [],
-            previous_work: Array.isArray(profileData.previous_work) 
-              ? profileData.previous_work.map(item => String(item)) 
-              : []
-          };
+          return transformProfileData(profileData as ProfileDBData, targetUserId, "");
         }
 
         // Return combined data
-        return {
-          ...profileData,
-          user_id: targetUserId,
-          contact_phone: profileData.phone_number || "",
-          role: profileData.job_title || "",
-          avatar_url: profileData.profile_photo || "",
-          rate: profileData.hourly_rate || "",
-          verified: profileData.id_verified || false,
-          work_type: profileData.work_type || "",
-          travel_distance: profileData.travel_distance || "",
-          email: userData?.email || "",
-          indemnity_insurance: !!profileData.indemnity_insurance,
-          previous_employers: Array.isArray(profileData.previous_employers) 
-            ? profileData.previous_employers.map(item => String(item)) 
-            : [],
-          skills: Array.isArray(profileData.skills) 
-            ? profileData.skills.map(item => String(item)) 
-            : [],
-          qualifications: Array.isArray(profileData.qualifications) 
-            ? profileData.qualifications.map(item => String(item)) 
-            : [],
-          previous_work: Array.isArray(profileData.previous_work) 
-            ? profileData.previous_work.map(item => String(item)) 
-            : []
-        };
+        return transformProfileData(profileData as ProfileDBData, targetUserId, userData?.email || "");
       } catch (error) {
         console.error("Error in useFreelancerProfileData:", error);
         return null;
@@ -176,5 +92,63 @@ export const useFreelancerProfileData = (userId?: string) => {
     enabled: !!targetUserId,
   });
 };
+
+// Helper function to transform database data to FreelancerProfile
+function transformProfileData(
+  profileData: ProfileDBData, 
+  userId: string, 
+  email: string
+): FreelancerProfile {
+  // Handle Json arrays by converting to string arrays
+  const transformJsonToStringArray = (jsonArray: Json | undefined): string[] => {
+    if (!jsonArray) return [];
+    if (Array.isArray(jsonArray)) {
+      return jsonArray.map(item => String(item));
+    }
+    return [];
+  };
+
+  // Create the profile with consistent types
+  return {
+    id: profileData.id,
+    user_id: userId,
+    first_name: profileData.first_name,
+    last_name: profileData.last_name,
+    display_name: profileData.display_name,
+    profile_photo: profileData.profile_photo,
+    job_title: profileData.job_title,
+    email: email,
+    contact_phone: profileData.phone_number || "",
+    phone_number: profileData.phone_number || "",
+    bio: profileData.bio || "",
+    role: profileData.job_title || "",
+    avatar_url: profileData.profile_photo || "",
+    rate: profileData.hourly_rate || "",
+    hourly_rate: profileData.hourly_rate,
+    day_rate: profileData.day_rate,
+    location: profileData.location || "",
+    verified: profileData.id_verified || false,
+    email_verified: profileData.email_verified,
+    member_since: profileData.member_since,
+    jobs_completed: profileData.jobs_completed,
+    rating: profileData.rating,
+    reviews_count: profileData.reviews_count,
+    work_type: profileData.work_type || "",
+    travel_distance: profileData.travel_distance || "",
+    experience: profileData.experience,
+    availability: profileData.availability,
+    website: profileData.website,
+    created_at: profileData.created_at,
+    // Convert Json to appropriate types for complex fields
+    indemnity_insurance: typeof profileData.indemnity_insurance === 'object' 
+      ? profileData.indemnity_insurance as { hasInsurance: boolean; coverLevel?: string }
+      : !!profileData.indemnity_insurance,
+    skills: transformJsonToStringArray(profileData.skills),
+    qualifications: transformJsonToStringArray(profileData.qualifications),
+    accreditations: transformJsonToStringArray(profileData.accreditations),
+    previous_employers: transformJsonToStringArray(profileData.previous_employers),
+    previous_work: transformJsonToStringArray(profileData.previous_work)
+  };
+}
 
 export default useFreelancerProfileData;

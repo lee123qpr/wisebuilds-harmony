@@ -1,9 +1,9 @@
 
-import { ProfileData } from '@/hooks/freelancer/useFreelancerProfileData';
+import { FreelancerProfile } from '@/types/applications';
 
 export const getTestFreelancers = () => {
   // Complete profile with all data
-  const completeFreelancer: ProfileData = {
+  const completeFreelancer: FreelancerProfile = {
     id: '123e4567-e89b-12d3-a456-426614174000',
     user_id: '123e4567-e89b-12d3-a456-426614174000',
     display_name: 'John Carpenter',
@@ -32,7 +32,10 @@ export const getTestFreelancers = () => {
       'Wooden Furniture'
     ],
     qualifications: ['Certified Carpenter', 'Health and Safety Certificate'],
-    indemnity_insurance: true,
+    indemnity_insurance: {
+      hasInsurance: true,
+      coverLevel: '£2M'
+    },
     created_at: '2022-05-15T12:00:00Z',
     website: 'https://johncarpentry.example.com',
     hourly_rate: '£45',
@@ -48,7 +51,7 @@ export const getTestFreelancers = () => {
   };
   
   // Minimal profile with only required fields
-  const minimalFreelancer: ProfileData = {
+  const minimalFreelancer: FreelancerProfile = {
     id: '223e4567-e89b-12d3-a456-426614174001',
     user_id: '223e4567-e89b-12d3-a456-426614174001',
     display_name: 'Jane Smith',
@@ -74,7 +77,7 @@ export const getTestFreelancers = () => {
   };
   
   // New freelancer with some data
-  const newFreelancer: ProfileData = {
+  const newFreelancer: FreelancerProfile = {
     id: '323e4567-e89b-12d3-a456-426614174002',
     user_id: '323e4567-e89b-12d3-a456-426614174002',
     display_name: 'Robert Johnson',
@@ -107,7 +110,7 @@ export const getTestFreelancers = () => {
   };
   
   // Highly rated freelancer
-  const expertFreelancer: ProfileData = {
+  const expertFreelancer: FreelancerProfile = {
     id: '423e4567-e89b-12d3-a456-426614174003',
     user_id: '423e4567-e89b-12d3-a456-426614174003',
     display_name: 'Sarah Williams',
@@ -126,17 +129,20 @@ export const getTestFreelancers = () => {
     bio: 'Award-winning interior designer with over 15 years of experience working with residential and commercial clients.',
     email: 'sarah.williams@example.com',
     contact_phone: '+44 7700 900789',
+    phone_number: '+44 7700 900789',
     role: 'Senior Interior Designer',
     avatar_url: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80',
     rate: '£85',
-    location: 'Edinburgh, UK',
-    indemnity_insurance: true,
+    hourly_rate: '£85',
+    indemnity_insurance: {
+      hasInsurance: true,
+      coverLevel: '£5M'
+    },
     previous_employers: ['Elite Interiors', 'Williams Design Studio'],
     previous_work: ['Luxury Apartment Redesign', 'Restaurant Interior'],
     qualifications: ['BA Interior Design', 'MA Design Management'],
     created_at: '2020-03-10T08:00:00Z',
     website: 'https://sarahwilliamsdesign.com',
-    hourly_rate: '£85',
     day_rate: '£650',
     availability: 'Limited availability',
     experience: '15+ years',
