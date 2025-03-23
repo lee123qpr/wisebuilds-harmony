@@ -6,7 +6,7 @@ const Footer: React.FC = () => {
   return (
     <footer className="bg-bw-dark text-white py-8">
       <div className="container px-4 mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-5 gap-8">
           <div>
             <h4 className="text-xl font-heading mb-4">BuildWise UK</h4>
             <p className="text-sm text-gray-300">
@@ -21,6 +21,17 @@ const Footer: React.FC = () => {
               <li><Link to="/how-it-works" className="text-gray-300 hover:text-white">How It Works</Link></li>
               <li><Link to="/about" className="text-gray-300 hover:text-white">About</Link></li>
               <li><Link to="/contact" className="text-gray-300 hover:text-white">Contact</Link></li>
+            </ul>
+          </div>
+          
+          <div>
+            <h5 className="text-lg font-heading mb-4">Help Centre</h5>
+            <ul className="space-y-2">
+              <li><Link to="/help/faq" className="text-gray-300 hover:text-white">FAQ</Link></li>
+              <li><Link to="/help/articles" className="text-gray-300 hover:text-white">Articles</Link></li>
+              <li><Link to="/help/guides" className="text-gray-300 hover:text-white">Guides</Link></li>
+              <li><Link to="/help/announcements" className="text-gray-300 hover:text-white">Announcements</Link></li>
+              <li><Link to="/help/resources" className="text-gray-300 hover:text-white">Resources</Link></li>
             </ul>
           </div>
           
