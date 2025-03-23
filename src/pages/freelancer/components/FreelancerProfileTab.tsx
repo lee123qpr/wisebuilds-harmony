@@ -9,6 +9,7 @@ import SkillsSection from './profile/SkillsSection';
 import PreviousEmployersSection from './profile/PreviousEmployersSection';
 import IndemnityInsuranceSection from './profile/IndemnityInsuranceSection';
 import QualificationsAccreditationsSection from './profile/QualificationsAccreditationsSection';
+import PreviousWorkSection from './profile/PreviousWorkSection';
 
 interface FreelancerProfileTabProps {
   profile: FreelancerProfile;
@@ -40,6 +41,7 @@ const FreelancerProfileTab: React.FC<FreelancerProfileTabProps> = ({ profile }) 
       <PreviousEmployersSection profile={profile} />
       <QualificationsAccreditationsSection profile={profile} />
       <IndemnityInsuranceSection profile={profile} />
+      <PreviousWorkSection profile={profile} />
     </div>
   );
 };

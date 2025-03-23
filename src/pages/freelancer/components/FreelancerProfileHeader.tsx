@@ -41,6 +41,7 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
         hasInsurance: hasInsurance,
         coverLevel: coverLevel
       } : undefined}
+      previousWork={profile.previous_work}
     />
   );
 };
