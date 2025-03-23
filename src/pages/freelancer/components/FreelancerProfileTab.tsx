@@ -29,7 +29,9 @@ const FreelancerProfileTab: React.FC<FreelancerProfileTabProps> = ({ profile }) 
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="whitespace-pre-line text-base">{profile.bio}</p>
+            <p className="whitespace-pre-line text-base break-words overflow-hidden text-balance">
+              {profile.bio}
+            </p>
           </CardContent>
         </Card>
       )}
