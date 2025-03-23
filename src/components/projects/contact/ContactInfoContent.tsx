@@ -39,14 +39,14 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
     return website.startsWith('http') ? website : `https://${website}`;
   };
 
-  // Make sure we have a valid contact name
+  // Validate and prepare the contact name for display
   const contactName = clientInfo.contact_name && clientInfo.contact_name.trim() !== '' 
     ? clientInfo.contact_name 
     : 'Client';
   
-  console.log("ContactInfoContent displaying client info:", {
-    contactName: clientInfo.contact_name,
-    displayName: contactName,
+  console.log("ContactInfoContent rendering with client data:", {
+    contactNameFromDB: clientInfo.contact_name,
+    displayContactName: contactName,
     email: clientInfo.email,
     phone: clientInfo.phone_number
   });

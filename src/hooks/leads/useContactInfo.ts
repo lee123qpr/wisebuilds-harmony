@@ -82,7 +82,7 @@ export const useContactInfo = (projectId: string) => {
       // Always prioritize client_profiles data first:
       // 1. Use client_profiles data if available
       // 2. Only fall back to auth data if profile field is missing
-      const contactName = clientProfile?.contact_name || userMetadata?.full_name || null;
+      const contactName = clientProfile?.contact_name || userData?.full_name || userMetadata?.full_name || null;
       const phoneNumber = clientProfile?.phone_number || userMetadata?.phone_number || null;
       
       setClientInfo({
