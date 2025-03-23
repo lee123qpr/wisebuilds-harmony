@@ -11,4 +11,8 @@ export const miscRoutes = [
     path: '/test/profile-cards',
     element: <FreelancerProfileCardsTest />,
   },
+  {
+    path: '/test/freelancer-profile-cards-test',
+    element: <FreelancerProfileCardsTest />,
+  }
 ];
