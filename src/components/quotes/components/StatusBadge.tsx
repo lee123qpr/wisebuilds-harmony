@@ -1,6 +1,6 @@
 
 import React from 'react';
-import QuoteStatusBadge from './table/QuoteStatusBadge';
+import QuoteStatusBadge from '../table/QuoteStatusBadge';
 
 interface StatusBadgeProps {
   status: string;
