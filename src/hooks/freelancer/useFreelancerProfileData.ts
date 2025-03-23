@@ -71,9 +71,14 @@ export const useFreelancerProfileData = (userId?: string) => {
             avatar_url: profileData.profile_photo || "",
             rate: profileData.hourly_rate || "",
             verified: profileData.id_verified || false,
-            work_type: "",
-            travel_distance: "",
+            work_type: profileData.work_type || "",
+            travel_distance: profileData.travel_distance || "",
             email: "",
+            indemnity_insurance: !!profileData.indemnity_insurance,
+            previous_employers: Array.isArray(profileData.previous_employers) ? profileData.previous_employers : [],
+            skills: Array.isArray(profileData.skills) ? profileData.skills : [],
+            qualifications: Array.isArray(profileData.qualifications) ? profileData.qualifications : [],
+            previous_work: Array.isArray(profileData.previous_work) ? profileData.previous_work : []
           };
         }
 
@@ -86,9 +91,14 @@ export const useFreelancerProfileData = (userId?: string) => {
           avatar_url: profileData.profile_photo || "",
           rate: profileData.hourly_rate || "",
           verified: profileData.id_verified || false,
-          work_type: "",
-          travel_distance: "",
+          work_type: profileData.work_type || "",
+          travel_distance: profileData.travel_distance || "",
           email: userData?.email || "",
+          indemnity_insurance: !!profileData.indemnity_insurance,
+          previous_employers: Array.isArray(profileData.previous_employers) ? profileData.previous_employers : [],
+          skills: Array.isArray(profileData.skills) ? profileData.skills : [],
+          qualifications: Array.isArray(profileData.qualifications) ? profileData.qualifications : [],
+          previous_work: Array.isArray(profileData.previous_work) ? profileData.previous_work : []
         };
       } catch (error) {
         console.error("Error in useFreelancerProfileData:", error);

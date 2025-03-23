@@ -26,10 +26,16 @@ const ProjectInfo: React.FC<ProjectInfoProps> = ({
                        ? clientName 
                        : 'Client';
   
-  const formattedRole = projectRole ? formatRole(projectRole) : 'Any';
+  // Use formatRole from our utility to properly format the role
+  // Only display "Any" if projectRole is explicitly empty
+  const formattedRole = projectRole 
+    ? formatRole(projectRole) 
+    : 'Not specified';
   
   console.log('ProjectInfo received clientName:', clientName);
   console.log('ProjectInfo displaying name:', displayName);
+  console.log('ProjectInfo received role:', projectRole);
+  console.log('ProjectInfo displaying role:', formattedRole);
   
   return (
     <div className="mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
