@@ -1,11 +1,10 @@
 
 import React from 'react';
-import FreelancerAvatar from './FreelancerAvatar';
-import FreelancerInfo from './FreelancerInfo';
-import FreelancerBadges from './FreelancerBadges';
-import FreelancerMetadata from './FreelancerMetadata';
-import FreelancerRateDisplay from './FreelancerRateDisplay';
-import { FreelancerProfile } from '@/types/applications';
+import { Calendar, Briefcase, MapPin, PoundSterling } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
+import VerificationBadge from '@/components/common/VerificationBadge';
 
 interface InsuranceStatus {
   hasInsurance: boolean;
@@ -64,58 +63,128 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   previousWork,
   compact = false
 }) => {
+  // Get initials for avatar fallback
+  const getInitials = () => {
+    return fullName
+      .split(' ')
+      .map(name => name[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
+  };
+
+  // Format member since date if available
+  const formattedMemberSince = memberSince ? 
+    new Date(memberSince).toLocaleDateString('en-US', { 
+      month: 'long', 
+      year: 'numeric' 
+    }) : null;
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!allowImageUpload || !setUploadingImage || !setProfileImage) return;
+    
+    const file = e.target.files?.[0];
+    if (file) {
+      // Image upload logic would go here
+      // This is just a placeholder for the actual implementation
+      console.log("Upload file:", file);
+    }
+  };
+
   return (
     <div className="bg-card rounded-lg shadow-sm overflow-hidden border border-border/40">
-      <div className="flex flex-col md:flex-row">
-        <div className="p-6 md:w-1/3 flex items-center justify-center">
-          <FreelancerAvatar
-            profileImage={profileImage}
-            fullName={fullName}
-            allowImageUpload={allowImageUpload}
-            uploadingImage={uploadingImage}
-            setUploadingImage={setUploadingImage}
-            setProfileImage={setProfileImage}
-            userId={userId}
-          />
-        </div>
-        
-        <div className="p-6 md:w-2/3">
-          <FreelancerInfo
-            freelancerId={userId}
-            freelancerName={fullName}
-            profilePhoto={profileImage}
-            jobTitle={profession}
-            isVerified={idVerified}
-            rating={rating}
-            reviewsCount={reviewsCount}
-            compact={compact}
-          />
-          
-          <div className="mt-4">
-            <FreelancerBadges
-              jobsCompleted={jobsCompleted}
-              emailVerified={emailVerified}
-              idVerified={idVerified}
-              insuranceStatus={insuranceStatus}
-            />
+      <div className="p-6">
+        <div className="flex items-start gap-4">
+          {/* Avatar */}
+          <div className="relative">
+            <Avatar className="h-16 w-16 border-2 border-primary/10">
+              <AvatarImage src={profileImage || undefined} alt={fullName} />
+              <AvatarFallback className="text-lg">{getInitials()}</AvatarFallback>
+            </Avatar>
+            
+            {allowImageUpload && (
+              <>
+                <input
+                  type="file"
+                  id="profile-picture"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleImageUpload}
+                />
+              </>
+            )}
           </div>
           
-          <div className="mt-6 space-y-4">
-            <FreelancerMetadata
-              profile={{
-                id: userId,
-                member_since: memberSince,
-                jobs_completed: jobsCompleted,
-                location: location,
-                rating: rating,
-                reviews_count: reviewsCount
-              }}
-              compact={compact}
-            />
+          {/* Profile Info */}
+          <div className="flex-1">
+            <div className="flex flex-col md:flex-row md:items-center gap-2 mb-2">
+              <h3 className="text-xl font-bold">{fullName}</h3>
+              {idVerified && (
+                <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />
+              )}
+            </div>
             
-            {hourlyRate && (
-              <FreelancerRateDisplay hourlyRate={hourlyRate} />
+            <p className="text-muted-foreground mb-2">{profession}</p>
+            
+            {/* Rating stars */}
+            {rating && rating > 0 && (
+              <div className="mb-2">
+                <ProfileRatingStars 
+                  userId={userId}
+                  rating={rating}
+                  reviewsCount={reviewsCount}
+                  showEmpty={false}
+                />
+              </div>
             )}
+            
+            {/* Verification badges */}
+            <div className="flex flex-wrap gap-2 mb-4">
+              {emailVerified && (
+                <Badge variant="outline" className="bg-green-50 text-green-700 flex items-center gap-1">
+                  Email verified
+                </Badge>
+              )}
+              
+              {idVerified && (
+                <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
+                  ID verified
+                </Badge>
+              )}
+              
+              <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
+                {jobsCompleted} {jobsCompleted === 1 ? 'job' : 'jobs'} completed
+              </Badge>
+            </div>
+            
+            {/* Metadata */}
+            <div className="space-y-1.5">
+              {formattedMemberSince && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <Calendar className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                  <span>Member since {formattedMemberSince}</span>
+                </div>
+              )}
+              
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Briefcase className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                <span>{jobsCompleted} {jobsCompleted === 1 ? 'job' : 'jobs'} completed</span>
+              </div>
+              
+              {location && (
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <MapPin className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                  <span>{location}</span>
+                </div>
+              )}
+              
+              {hourlyRate && (
+                <div className="flex items-center text-sm font-medium text-primary mt-2">
+                  <PoundSterling className="mr-1.5 h-4 w-4 flex-shrink-0" />
+                  <span>{hourlyRate}/hr</span>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
