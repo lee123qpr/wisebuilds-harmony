@@ -51,7 +51,7 @@ export interface ProfileData {
   accreditations?: string[];
 }
 
-// Define a simple fetch response type
+// Define a simple response type to break the circular reference
 interface ProfileResponse {
   data: ProfileData | null;
   error: Error | null;
@@ -120,7 +120,7 @@ export const useFreelancerProfileData = (userId?: string) => {
   const profileId = userId || user?.id;
 
   // Define a standalone fetch function with explicit return type
-  const fetchProfileData = async () => {
+  const fetchProfileData = async (): Promise<ProfileResponse> => {
     try {
       if (!profileId) {
         return { data: null, error: new Error('No user ID provided') };
@@ -140,11 +140,11 @@ export const useFreelancerProfileData = (userId?: string) => {
 
       // Format the data
       const formattedData = formatFreelancerProfileData(data);
-      return { data: formattedData, error: null } as ProfileResponse;
+      return { data: formattedData, error: null };
     } catch (error) {
       console.error('Error in useFreelancerProfileData:', error);
       toast.error('Failed to load freelancer profile data');
-      return { data: null, error: error as Error } as ProfileResponse;
+      return { data: null, error: error as Error };
     }
   };
 

@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;
