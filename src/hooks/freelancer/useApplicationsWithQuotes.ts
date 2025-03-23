@@ -28,13 +28,13 @@ export const useApplicationsWithQuotes = () => {
     refetch
   } = useQuery({
     queryKey: ['applications', user?.id],
-    queryFn: async (): Promise<ApplicationWithProject[]> => {
+    queryFn: async () => {
       if (!user) return [];
       
       try {
         console.log('Fetching user applications...');
         
-        // Directly fetch applications and join with projects, ensuring we get all needed fields
+        // Directly fetch applications and join with projects
         const { data: applicationData, error: appError } = await supabase
           .from('project_applications')
           .select(`
@@ -51,7 +51,6 @@ export const useApplicationsWithQuotes = () => {
               duration,
               role,
               created_at,
-              start_date,
               status,
               hiring_status,
               requires_insurance,
@@ -92,18 +91,13 @@ export const useApplicationsWithQuotes = () => {
         }
         
         // Create a map of project_id -> quote data for faster lookup
-        const quoteDataMap: Record<string, { status: Quote['status'], completed_at: string | null }> = {};
-        
-        if (quotesData) {
-          quotesData.forEach(quote => {
-            if (quote.project_id) {
-              quoteDataMap[quote.project_id] = {
-                status: quote.status,
-                completed_at: quote.completed_at
-              };
-            }
-          });
-        }
+        const quoteDataMap = (quotesData || []).reduce((map, quote) => {
+          map[quote.project_id] = {
+            status: quote.status,
+            completed_at: quote.completed_at
+          };
+          return map;
+        }, {});
         
         // Merge quote status and completed_at into the application data
         const projectsWithQuoteData = applicationProjects.map(project => ({
@@ -112,7 +106,6 @@ export const useApplicationsWithQuotes = () => {
           completed_at: quoteDataMap[project.id]?.completed_at
         }));
         
-        console.log('Fetched application projects with data:', projectsWithQuoteData);
         return projectsWithQuoteData as ApplicationWithProject[];
       } catch (error) {
         console.error('Error fetching applications:', error);
