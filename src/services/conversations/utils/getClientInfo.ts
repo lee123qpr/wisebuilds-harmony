@@ -33,20 +33,20 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     
     console.log('Client profile data from database:', clientProfile);
     
-    // If profile exists and contact_name is available, prioritize it
-    if (clientProfile && clientProfile.contact_name) {
-      console.log('Returning client info from profile with contact_name:', clientProfile.contact_name);
+    // If profile exists, prioritize it regardless of whether contact_name is available
+    if (clientProfile) {
+      console.log('Returning client info from profile:', clientProfile);
       return {
-        contact_name: clientProfile.contact_name,
+        contact_name: clientProfile.contact_name || 'Client',
         company_name: clientProfile.company_name,
         logo_url: clientProfile.logo_url,
         email: clientProfile.email
       };
     } 
     
-    console.log('No client profile found or contact_name missing, will try auth data');
+    console.log('No client profile found, will try auth data');
     
-    // If no profile data or contact_name not set, try to get user data from auth using edge function
+    // If no profile data, try to get user data from auth using edge function
     const { data: userData, error: userError } = await supabase.functions.invoke(
       'get-user-email',
       {
@@ -78,10 +78,10 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     
     // Extract full name from metadata
     const fullName = userData.full_name || 
-                    (userData.user_metadata?.full_name) || 
-                    (userData.user_metadata?.name) ||
-                    (userData.email ? userData.email.split('@')[0] : 'Client');
-                    
+                   (userData.user_metadata?.full_name) || 
+                   (userData.user_metadata?.name) ||
+                   (userData.email ? userData.email.split('@')[0] : 'Client');
+                   
     console.log('Extracted full name from auth data:', fullName);
     
     // Return the user data
