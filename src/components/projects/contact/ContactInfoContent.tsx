@@ -66,7 +66,7 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
       {contactName && (
         <ContactItem
           icon={<User className="h-4 w-4 text-green-700" />}
-          label="Contact Name"
+          label="Full Name"
           value={contactName}
         />
       )}

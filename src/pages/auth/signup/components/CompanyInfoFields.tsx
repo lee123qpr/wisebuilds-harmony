@@ -35,7 +35,7 @@ const CompanyInfoFields = ({ form, isLoading }: CompanyInfoFieldsProps) => {
           name="contactName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contact Name</FormLabel>
+              <FormLabel>Full Name</FormLabel>
               <FormControl>
                 <Input placeholder="John Smith" {...field} disabled={isLoading} />
               </FormControl>

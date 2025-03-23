@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
@@ -36,9 +37,9 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
           name="contactName"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Contact Person</FormLabel>
+              <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter contact name" {...field} disabled={disabled} />
+                <Input placeholder="Enter full name" {...field} disabled={disabled} />
               </FormControl>
               <FormMessage />
             </FormItem>

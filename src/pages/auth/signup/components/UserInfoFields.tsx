@@ -20,7 +20,7 @@ const UserInfoFields = ({ form, isLoading }: UserInfoFieldsProps) => {
         name="fullName"
         render={({ field }) => (
           <FormItem>
-            <FormLabel>{userType === 'business' ? 'Contact Name' : 'Full Name'}</FormLabel>
+            <FormLabel>Full Name</FormLabel>
             <FormControl>
               <Input placeholder="John Smith" {...field} disabled={isLoading} />
             </FormControl>
