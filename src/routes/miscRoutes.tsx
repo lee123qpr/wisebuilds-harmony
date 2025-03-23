@@ -6,6 +6,7 @@ import FreelancerProfileView from '@/pages/freelancer/FreelancerProfileView';
 import ClientProfileView from '@/pages/client/ClientProfileView';
 import About from '@/pages/About';
 import HowItWorks from '@/pages/HowItWorks';
+import Contact from '@/pages/Contact';
 
 export const miscRoutes: RouteObject[] = [
   {
@@ -15,6 +16,10 @@ export const miscRoutes: RouteObject[] = [
   {
     path: '/how-it-works',
     element: <HowItWorks />
+  },
+  {
+    path: '/contact',
+    element: <Contact />
   },
   {
     path: '/freelancer/:freelancerId',

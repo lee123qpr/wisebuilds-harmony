@@ -20,6 +20,7 @@ const Footer: React.FC = () => {
               <li><Link to="/" className="text-gray-300 hover:text-white">Home</Link></li>
               <li><Link to="/how-it-works" className="text-gray-300 hover:text-white">How It Works</Link></li>
               <li><Link to="/about" className="text-gray-300 hover:text-white">About</Link></li>
+              <li><Link to="/contact" className="text-gray-300 hover:text-white">Contact</Link></li>
             </ul>
           </div>
           
@@ -36,7 +37,8 @@ const Footer: React.FC = () => {
             <h5 className="text-lg font-heading mb-4">Contact</h5>
             <address className="text-gray-300 not-italic">
               <p>Email: info@buildwiseuk.com</p>
-              <p>Phone: +44 20 1234 5678</p>
+              <p>Phone: +44 20 3897 2233</p>
+              <p>71-75 Shelton Street, London WC2H 9JQ</p>
             </address>
             <div className="flex space-x-4 mt-4">
               {/* Social media icons would go here */}
