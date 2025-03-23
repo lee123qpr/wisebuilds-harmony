@@ -49,25 +49,28 @@ export const useLoadClientProfile = ({
         const userMetadata = user.user_metadata || {};
         
         if (data) {
+          // Type assertion to access is_individual property
+          const profileData = data as any;
+          
           // Populate form with existing data
           form.reset({
-            isIndividual: data.is_individual || false,
-            companyName: data.company_name || userMetadata.company_name || '',
-            contactName: data.contact_name || userMetadata.contact_name || userMetadata.full_name || '',
-            companyLocation: data.company_address || userMetadata.company_address || '',
-            companyDescription: data.company_description || userMetadata.company_description || '',
-            phoneNumber: data.phone_number || userMetadata.phone_number || userMetadata.phone || '',
-            website: data.website || userMetadata.website || '',
-            companyType: data.company_type || userMetadata.company_type || '',
-            companyTurnover: data.company_turnover || userMetadata.company_turnover || '',
-            employeeSize: data.employee_size || userMetadata.employee_size || '',
-            companySpecialism: data.company_specialism || userMetadata.company_specialism || '',
+            isIndividual: profileData.is_individual || false,
+            companyName: profileData.company_name || userMetadata.company_name || '',
+            contactName: profileData.contact_name || userMetadata.contact_name || userMetadata.full_name || '',
+            companyLocation: profileData.company_address || userMetadata.company_address || '',
+            companyDescription: profileData.company_description || userMetadata.company_description || '',
+            phoneNumber: profileData.phone_number || userMetadata.phone_number || userMetadata.phone || '',
+            website: profileData.website || userMetadata.website || '',
+            companyType: profileData.company_type || userMetadata.company_type || '',
+            companyTurnover: profileData.company_turnover || userMetadata.company_turnover || '',
+            employeeSize: profileData.employee_size || userMetadata.employee_size || '',
+            companySpecialism: profileData.company_specialism || userMetadata.company_specialism || '',
           });
           
-          setLogoUrl(data.logo_url);
-          setMemberSince(data.member_since);
-          setEmailVerified(data.email_verified || false);
-          setJobsCompleted(data.jobs_completed || 0);
+          setLogoUrl(profileData.logo_url);
+          setMemberSince(profileData.member_since);
+          setEmailVerified(profileData.email_verified || false);
+          setJobsCompleted(profileData.jobs_completed || 0);
         } else {
           // Create initial profile with data from auth.user metadata
           const isIndividual = userMetadata.is_individual || false;
