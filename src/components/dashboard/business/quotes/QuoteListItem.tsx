@@ -34,7 +34,7 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                         ? quote.project.title 
                         : 'Untitled Project';
   
-  // Safely access role with proper fallback
+  // Safely access role with proper fallback and format it
   const role = quote.project?.role || 'Not specified';
   const roleFormatted = formatRole(role);
   

@@ -66,6 +66,7 @@ const BusinessJobsTab: React.FC = () => {
           freelancerNames={freelancerNames} 
           handleStatusUpdate={handleStatusUpdate} 
           activeTab={activeTab}
+          user={user}
         />
       </div>
     </Tabs>

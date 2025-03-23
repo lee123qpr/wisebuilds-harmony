@@ -10,6 +10,7 @@ interface JobTabsContentProps {
   freelancerNames: Record<string, string>;
   handleStatusUpdate: () => void;
   activeTab: string;
+  user: any;
 }
 
 const JobTabsContent: React.FC<JobTabsContentProps> = ({
@@ -17,7 +18,8 @@ const JobTabsContent: React.FC<JobTabsContentProps> = ({
   completedJobs,
   freelancerNames,
   handleStatusUpdate,
-  activeTab
+  activeTab,
+  user
 }) => {
   return (
     <>
@@ -28,6 +30,7 @@ const JobTabsContent: React.FC<JobTabsContentProps> = ({
           onStatusUpdate={handleStatusUpdate}
           emptyTitle="Active Hires"
           emptyDescription="You don't have any active hires at the moment. When you accept a quote from a freelancer, they will appear here."
+          user={user}
         />
       </TabsContent>
       
@@ -38,6 +41,7 @@ const JobTabsContent: React.FC<JobTabsContentProps> = ({
           onStatusUpdate={handleStatusUpdate}
           emptyTitle="Completed Hires"
           emptyDescription="You haven't completed any hires yet. Hires will appear here after both you and the freelancer mark them as complete."
+          user={user}
         />
       </TabsContent>
     </>
