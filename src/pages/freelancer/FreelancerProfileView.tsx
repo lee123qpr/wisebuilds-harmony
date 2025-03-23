@@ -46,18 +46,18 @@ const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelance
   const adaptedProfileData = profileData as unknown as FreelancerProfile;
 
   const content = (
-    <>
+    <div className="space-y-6 animate-fade-in">
       {!isTestEnvironment && (
-        <div className="mb-4">
+        <div className="mb-2">
           <BackButton 
             to={backDestination}
-            label="Back to Applications" 
+            label={fromProjectApplications ? "Back to Applications" : "Back"} 
           />
         </div>
       )}
       <FreelancerProfileHeader profile={adaptedProfileData} />
       <FreelancerProfileTabs profile={adaptedProfileData} />
-    </>
+    </div>
   );
 
   if (isTestEnvironment) {

@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { FreelancerProfile } from '@/types/applications';
-import { Shield } from 'lucide-react';
+import { Shield, Check, X } from 'lucide-react';
 
 interface IndemnityInsuranceSectionProps {
   profile: FreelancerProfile;
@@ -22,22 +22,32 @@ const IndemnityInsuranceSection: React.FC<IndemnityInsuranceSectionProps> = ({ p
     : profile.indemnity_insurance.coverLevel || 'Not specified';
 
   return (
-    <div className="border p-4 rounded-md bg-gray-50">
-      <div className="flex items-start gap-2 mb-3">
-        <Shield className="h-5 w-5 text-muted-foreground mt-0.5 flex-shrink-0" />
-        <div className="space-y-2 w-full">
-          <h3 className="text-md font-medium">Professional Indemnity Insurance</h3>
-          <div className="text-sm break-words overflow-hidden">
-            {hasInsurance ? (
-              <span className="text-green-700">
-                Insured - Coverage: <span className="font-medium">{coverLevel}</span>
-              </span>
-            ) : (
-              <span className="text-amber-700">Not insured</span>
-            )}
+    <div className="flex items-center gap-3">
+      {hasInsurance ? (
+        <>
+          <div className="flex h-10 w-10 rounded-full bg-green-100 items-center justify-center flex-shrink-0">
+            <Check className="h-5 w-5 text-green-600" />
           </div>
-        </div>
-      </div>
+          <div>
+            <div className="font-medium">Insured</div>
+            <div className="text-sm text-muted-foreground">
+              Coverage: <span className="font-medium">{coverLevel}</span>
+            </div>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="flex h-10 w-10 rounded-full bg-amber-100 items-center justify-center flex-shrink-0">
+            <X className="h-5 w-5 text-amber-600" />
+          </div>
+          <div>
+            <div className="font-medium">Not Insured</div>
+            <div className="text-sm text-muted-foreground">
+              This freelancer does not have professional indemnity insurance
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -2,6 +2,7 @@
 import React from 'react';
 import { FreelancerProfile } from '@/types/applications';
 import FreelancerProfileCard from '@/components/freelancer/FreelancerProfileCard';
+import { Card } from '@/components/ui/card';
 
 interface FreelancerProfileHeaderProps {
   profile: FreelancerProfile;
@@ -14,7 +15,7 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
     'Freelancer');
 
   return (
-    <div className="bg-white rounded-lg shadow-sm mb-6">
+    <Card className="shadow-md border border-border/60 overflow-hidden">
       <FreelancerProfileCard
         profileImage={profile.profile_photo}
         fullName={fullName}
@@ -29,7 +30,7 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
         location={profile.location}
         allowImageUpload={false}
       />
-    </div>
+    </Card>
   );
 };
 
