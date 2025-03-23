@@ -28,6 +28,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { supabase, ProjectDispute, projectDisputesTable } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/toast';
 import { useAuth } from '@/context/AuthContext';
+import { Json } from '@/integrations/supabase/types';
 
 interface AdminDisputeDetailsProps {
   disputeId: string;
@@ -37,27 +38,27 @@ interface AdminDisputeDetailsProps {
 }
 
 // Define the dispute data type with better typing for related tables
-interface DetailedDisputeData extends ProjectDispute {
+interface DetailedDisputeData extends Omit<ProjectDispute, 'freelancer' | 'client' | 'projects' | 'quotes'> {
   freelancer?: {
-    id: string;
-    first_name: string;
-    last_name: string;
-    email: string;
+    id?: string;
+    first_name?: string;
+    last_name?: string;
+    email?: string;
   };
   client?: {
-    id: string;
-    contact_name: string;
-    company_name: string;
-    email: string;
+    id?: string;
+    contact_name?: string;
+    company_name?: string;
+    email?: string;
   };
   projects?: {
-    id: string;
-    title: string;
-    status: string;
+    id?: string;
+    title?: string;
+    status?: string;
   };
   quotes?: {
-    id: string;
-    status: string;
+    id?: string;
+    status?: string;
   };
 }
 
@@ -279,7 +280,7 @@ const AdminDisputeDetails: React.FC<AdminDisputeDetailsProps> = ({
                   
                   <div>
                     <h4 className="text-sm font-medium mb-1">Evidence Files</h4>
-                    {dispute.evidence_files && dispute.evidence_files.length > 0 ? (
+                    {dispute.evidence_files && Array.isArray(dispute.evidence_files) && dispute.evidence_files.length > 0 ? (
                       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                         {dispute.evidence_files.map((file: any, index: number) => (
                           <div key={index} className="flex items-center gap-2 p-2 border rounded">

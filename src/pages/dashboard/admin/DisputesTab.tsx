@@ -16,23 +16,24 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import AdminDisputeDetails from './components/disputes/AdminDisputeDetails';
+import { Json } from '@/integrations/supabase/types';
 
 // Define a more specific type for our dispute data
-interface DisputeData extends ProjectDispute {
+interface DisputeData extends Omit<ProjectDispute, 'freelancer' | 'client' | 'projects' | 'quotes'> {
   projects?: {
-    title: string;
-    status: string;
+    title?: string;
+    status?: string;
   };
   quotes?: {
-    status: string;
+    status?: string;
   };
   freelancer?: {
-    first_name: string;
-    last_name: string;
+    first_name?: string;
+    last_name?: string;
   };
   client?: {
-    contact_name: string;
-    company_name: string;
+    contact_name?: string;
+    company_name?: string;
   };
 }
 
@@ -54,7 +55,9 @@ const DisputesTab: React.FC = () => {
         .order('created_at', { ascending: false });
       
       if (error) throw error;
-      return data as DisputeData[] || [];
+      
+      // Cast the data to the expected type
+      return (data as unknown as DisputeData[]) || [];
     }
   });
   
