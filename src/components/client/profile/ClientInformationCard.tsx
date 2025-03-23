@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Building, Clock, Mail, MapPin, Phone, User, Globe } from 'lucide-react';
+import { Mail, Phone, User, Clock } from 'lucide-react';
 import { ClientProfileData } from '@/pages/client/types';
 
 interface ClientInformationCardProps {
@@ -29,16 +29,6 @@ const ClientInformationCard: React.FC<ClientInformationCardProps> = ({ clientPro
           </div>
         )}
         
-        {clientProfile.company_name && (
-          <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
-            <Building className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-slate-500">Company</p>
-              <p className="font-medium text-slate-800">{clientProfile.company_name}</p>
-            </div>
-          </div>
-        )}
-        
         {clientProfile.email && (
           <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
             <Mail className="h-5 w-5 text-blue-600 mt-0.5" />
@@ -59,31 +49,6 @@ const ClientInformationCard: React.FC<ClientInformationCardProps> = ({ clientPro
               <a href={`tel:${clientProfile.phone_number}`} className="font-medium text-blue-600 hover:underline">
                 {clientProfile.phone_number}
               </a>
-            </div>
-          </div>
-        )}
-        
-        {clientProfile.website && (
-          <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
-            <Globe className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-slate-500">Website</p>
-              <a href={clientProfile.website.startsWith('http') ? clientProfile.website : `https://${clientProfile.website}`} 
-                 target="_blank" 
-                 rel="noopener noreferrer" 
-                 className="font-medium text-blue-600 hover:underline">
-                {clientProfile.website}
-              </a>
-            </div>
-          </div>
-        )}
-        
-        {clientProfile.company_address && (
-          <div className="flex items-start gap-3 transition-all hover:translate-x-1 duration-300">
-            <MapPin className="h-5 w-5 text-blue-600 mt-0.5" />
-            <div>
-              <p className="text-sm font-medium text-slate-500">Address</p>
-              <p className="font-medium text-slate-800">{clientProfile.company_address}</p>
             </div>
           </div>
         )}

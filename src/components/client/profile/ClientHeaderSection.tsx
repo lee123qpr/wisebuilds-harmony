@@ -14,7 +14,7 @@ const ClientHeaderSection: React.FC<ClientHeaderSectionProps> = ({ clientProfile
         {clientProfile.logo_url ? (
           <img 
             src={clientProfile.logo_url} 
-            alt={clientProfile.company_name || 'Company logo'} 
+            alt="Client logo" 
             className="h-24 w-24 rounded-lg object-cover border shadow-sm transition-transform hover:scale-105 duration-300"
           />
         ) : (
@@ -24,13 +24,8 @@ const ClientHeaderSection: React.FC<ClientHeaderSectionProps> = ({ clientProfile
         )}
         <div>
           <h1 className="text-3xl sm:text-4xl font-bold text-slate-800">
-            {clientProfile.company_name || clientProfile.contact_name || 'Client Profile'}
+            {clientProfile.contact_name || 'Client Profile'}
           </h1>
-          {clientProfile.company_name && clientProfile.contact_name && (
-            <p className="text-slate-600 mt-2 text-lg">
-              Contact: <span className="font-medium">{clientProfile.contact_name}</span>
-            </p>
-          )}
         </div>
       </div>
     </div>
