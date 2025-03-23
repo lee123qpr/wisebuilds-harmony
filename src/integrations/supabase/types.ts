@@ -23,6 +23,7 @@ export type Database = {
           email_verified: boolean | null
           employee_size: string | null
           id: string
+          is_individual: boolean | null
           jobs_completed: number | null
           logo_url: string | null
           member_since: string | null
@@ -43,6 +44,7 @@ export type Database = {
           email_verified?: boolean | null
           employee_size?: string | null
           id: string
+          is_individual?: boolean | null
           jobs_completed?: number | null
           logo_url?: string | null
           member_since?: string | null
@@ -63,6 +65,7 @@ export type Database = {
           email_verified?: boolean | null
           employee_size?: string | null
           id?: string
+          is_individual?: boolean | null
           jobs_completed?: number | null
           logo_url?: string | null
           member_since?: string | null
