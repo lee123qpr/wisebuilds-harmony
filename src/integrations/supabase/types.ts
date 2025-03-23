@@ -760,6 +760,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      get_freelancer_completed_jobs_count: {
+        Args: {
+          freelancer_id: string
+        }
+        Returns: number
+      }
       get_user_applications: {
         Args: {
           user_id: string

@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
@@ -77,7 +76,6 @@ export const useLoadFreelancerProfile = ({
         setJobsCompleted(jobsCount);
         
         if (profileData) {
-          // ... keep existing code for processing profile data
           const previousEmployers = Array.isArray(profileData.previous_employers) 
             ? (profileData.previous_employers as any[]).map(emp => ({
                 employerName: emp.employerName || '',
@@ -140,7 +138,6 @@ export const useLoadFreelancerProfile = ({
           setMemberSince(profileData.member_since || user.created_at);
           setEmailVerified(user.email_confirmed_at !== null);
         } else {
-          // ... keep existing code for handling the case when no profile data exists
           const userMetadata = user.user_metadata || {};
           
           const previousEmployers = Array.isArray(userMetadata.previous_employers) 
