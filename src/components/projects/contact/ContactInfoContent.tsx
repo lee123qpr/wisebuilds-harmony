@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Building, Mail, MapPin, Phone, User, Globe } from 'lucide-react';
+import { Mail, Phone, User } from 'lucide-react';
 import ContactItem from './ContactItem';
 
 export interface ClientContactData {
@@ -32,11 +32,6 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
     }
     
     return digits;
-  };
-
-  const formatWebsiteUrl = (website: string) => {
-    if (!website) return '';
-    return website.startsWith('http') ? website : `https://${website}`;
   };
 
   // Validate and prepare the contact name for display
@@ -86,31 +81,6 @@ const ContactInfoContent: React.FC<ContactInfoContentProps> = ({ clientInfo }) =
           label="Phone"
           value={clientInfo.phone_number}
           link={`tel:${formatPhoneForLink(clientInfo.phone_number)}`}
-        />
-      )}
-      
-      {clientInfo.company_name && (
-        <ContactItem
-          icon={<Building className="h-4 w-4 text-green-700" />}
-          label="Company"
-          value={clientInfo.company_name}
-        />
-      )}
-      
-      {clientInfo.website && (
-        <ContactItem
-          icon={<Globe className="h-4 w-4 text-green-700" />}
-          label="Website"
-          value={clientInfo.website}
-          link={formatWebsiteUrl(clientInfo.website)}
-        />
-      )}
-      
-      {clientInfo.company_address && (
-        <ContactItem
-          icon={<MapPin className="h-4 w-4 text-green-700" />}
-          label="Address"
-          value={clientInfo.company_address}
         />
       )}
     </div>

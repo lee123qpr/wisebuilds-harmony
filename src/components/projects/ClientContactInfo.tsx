@@ -68,7 +68,6 @@ const ClientContactInfo: React.FC<ClientContactInfoProps> = ({ projectId }) => {
         <NextStepsTips />
         
         <ContactInfoActions 
-          website={clientInfo.website} 
           projectId={projectId}
           clientId={clientInfo.user_id}
         />
