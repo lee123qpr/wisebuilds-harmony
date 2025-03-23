@@ -38,6 +38,7 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
         reviewsCount={profile.reviews_count}
         location={profile.location}
         allowImageUpload={false}
+        hourlyRate={profile.hourly_rate}
         insuranceStatus={profile.indemnity_insurance ? {
           hasInsurance: hasInsurance,
           coverLevel: coverLevel

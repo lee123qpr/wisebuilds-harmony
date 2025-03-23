@@ -41,6 +41,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
             idVerified={completeFreelancer.verified}
             rating={completeFreelancer.rating}
             reviewsCount={completeFreelancer.reviews_count}
+            hourlyRate={completeFreelancer.hourly_rate}
           />
         </CardContent>
       </Card>
@@ -62,6 +63,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
             idVerified={completeFreelancer.verified}
             rating={completeFreelancer.rating}
             reviewsCount={completeFreelancer.reviews_count}
+            hourlyRate={completeFreelancer.hourly_rate}
             allowImageUpload={false}
           />
         </CardContent>
@@ -81,6 +83,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({
             compact={true}
             rating={minimalFreelancer.rating}
             reviewsCount={minimalFreelancer.reviews_count}
+            hourlyRate={minimalFreelancer.hourly_rate}
             allowImageUpload={false}
           />
         </CardContent>

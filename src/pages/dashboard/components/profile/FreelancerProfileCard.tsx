@@ -20,6 +20,7 @@ interface DashboardFreelancerProfileCardProps {
   idVerified: boolean;
   rating?: number | null;
   reviewsCount?: number;
+  hourlyRate?: string | null;
 }
 
 const DashboardFreelancerProfileCard: React.FC<DashboardFreelancerProfileCardProps> = (props) => {
@@ -40,6 +41,7 @@ const DashboardFreelancerProfileCard: React.FC<DashboardFreelancerProfileCardPro
           idVerified={props.idVerified}
           rating={props.rating}
           reviewsCount={props.reviewsCount}
+          hourlyRate={props.hourlyRate}
           allowImageUpload={true}
         />
       </CardContent>

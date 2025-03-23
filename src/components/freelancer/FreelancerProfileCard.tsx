@@ -3,7 +3,7 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { Calendar, MapPin, Upload, Check, Loader2, Shield } from 'lucide-react';
+import { Calendar, MapPin, Upload, Check, Loader2, Shield, PoundSterling } from 'lucide-react';
 import { format } from 'date-fns';
 import VerificationBadge from '@/components/common/VerificationBadge';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
@@ -33,6 +33,7 @@ interface FreelancerProfileCardProps {
   allowImageUpload?: boolean;
   compact?: boolean;
   insuranceStatus?: InsuranceStatus;
+  hourlyRate?: string | null;
 }
 
 const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
@@ -52,7 +53,8 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   location,
   allowImageUpload = false,
   compact = false,
-  insuranceStatus
+  insuranceStatus,
+  hourlyRate
 }) => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!allowImageUpload || !setUploadingImage || !setProfileImage) return;
@@ -155,6 +157,16 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
               showEmpty={true} 
             />
           </div>
+          
+          {/* Hourly Rate Display */}
+          {hourlyRate && (
+            <div className="mt-2 flex items-center justify-center md:justify-start text-sm">
+              <div className="flex items-center gap-1 text-primary font-medium">
+                <PoundSterling className="h-3.5 w-3.5" />
+                <span>{hourlyRate}/hr</span>
+              </div>
+            </div>
+          )}
           
           {/* Show freelancer metadata */}
           {!compact && (

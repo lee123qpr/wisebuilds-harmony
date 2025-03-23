@@ -65,6 +65,7 @@ const FreelancerProfile = () => {
             emailVerified={emailVerified}
             jobsCompleted={jobsCompleted}
             idVerified={idVerified}
+            hourlyRate={form.watch('hourlyRate')}
           />
         </div>
 
