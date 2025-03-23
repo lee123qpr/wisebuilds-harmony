@@ -30,6 +30,17 @@ export const useFreelancerProfileData = () => {
         
         if (verificationError) throw verificationError;
         
+        // Fetch completed jobs count for more reliability
+        const { data: jobsData, error: jobsError } = await supabase
+          .rpc('get_freelancer_completed_jobs_count', { freelancer_id: freelancerId });
+          
+        if (jobsError) {
+          console.error('Error fetching jobs count:', jobsError);
+        } else if (profileData && jobsData !== null && jobsData !== undefined) {
+          // If we got a valid count from the database function, update the profile data
+          profileData.jobs_completed = jobsData;
+        }
+        
         setProfileData(profileData);
         setIsVerified(isVerifiedData || false);
         setError(null);

@@ -1,137 +1,138 @@
 
 import React from 'react';
+import { 
+  Card, 
+  CardContent
+} from '@/components/ui/card';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Calendar, MapPin, Upload, Check, Loader2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
-import { Card, CardContent } from '@/components/ui/card';
-import { useImageUpload } from '../../hooks/useImageUpload';
-import FreelancerAvatar from './FreelancerAvatar';
-import ProfileInfoBadges from './ProfileInfoBadges';
-import { supabase } from '@/integrations/supabase/client';
+import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;
   uploadingImage: boolean;
-  setUploadingImage: (value: boolean) => void;
-  setProfileImage: (url: string) => void;
+  setUploadingImage: (uploading: boolean) => void;
+  setProfileImage: (url: string | null) => void;
   fullName: string;
   profession: string;
   userId: string;
   memberSince: string | null;
   emailVerified: boolean;
   jobsCompleted: number;
-  idVerified?: boolean;
+  idVerified: boolean;
 }
 
 const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
-  profileImage: initialProfileImage,
-  uploadingImage: initialUploadingImage,
-  setUploadingImage: setParentUploadingImage,
-  setProfileImage: setParentProfileImage,
+  profileImage,
+  uploadingImage,
+  setUploadingImage,
+  setProfileImage,
   fullName,
   profession,
   userId,
   memberSince,
   emailVerified,
   jobsCompleted,
-  idVerified = false
+  idVerified
 }) => {
-  console.log('FreelancerProfileCard - Props:', { userId, emailVerified, memberSince, jobsCompleted });
-  console.log('Initial profile image:', initialProfileImage);
-  
-  const {
-    imageUrl,
-    uploadingImage,
-    imageKey,
-    handleImageUpload,
-    setImageUrl,
-    setUploadingImage
-  } = useImageUpload({
-    userId,
-    folder: '', // This parameter is no longer used but kept for backward compatibility
-    namePrefix: fullName && fullName.trim() 
-      ? fullName.replace(/\s+/g, '-').toLowerCase() 
-      : 'freelancer'
-  });
-
-  React.useEffect(() => {
-    if (imageUrl) {
-      console.log('Syncing image URL to parent:', imageUrl);
-      setParentProfileImage(imageUrl);
-    }
-  }, [imageUrl, setParentProfileImage]);
-
-  React.useEffect(() => {
-    setParentUploadingImage(uploadingImage);
-  }, [uploadingImage, setParentUploadingImage]);
-
-  React.useEffect(() => {
-    if (initialProfileImage && !imageUrl) {
-      console.log('Initializing local image state with:', initialProfileImage);
-      setImageUrl(initialProfileImage);
-    }
-  }, [initialProfileImage, imageUrl, setImageUrl]);
-
-  const [userType, setUserType] = React.useState<string | null>(null);
-  
-  React.useEffect(() => {
-    const getUserType = async () => {
-      const { data } = await supabase.auth.getUser();
-      const type = data.user?.user_metadata?.user_type as string || null;
-      setUserType(type);
-      console.log('Current user type:', type);
-    };
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
     
-    getUserType();
-  }, [userId]);
-
-  const getInitials = () => {
-    if (!fullName) return 'FP'; // Default: Freelancer Profile
-    
-    return fullName
-      .split(' ')
-      .map(word => word[0])
-      .join('')
-      .toUpperCase()
-      .substring(0, 2);
+    try {
+      setUploadingImage(true);
+      
+      // Create a filename with user ID to prevent conflicts
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}_${Date.now()}.${fileExt}`;
+      const filePath = `profile_photos/${fileName}`;
+      
+      // Upload the file to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+        
+      if (error) throw error;
+      
+      // Get the public URL for the uploaded image
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+        
+      // Set the profile image URL
+      setProfileImage(urlData.publicUrl);
+      
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading profile image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
   };
-
-  const formattedMemberSince = memberSince 
-    ? format(new Date(memberSince), 'MMMM yyyy')
-    : 'Recently joined';
-
-  const handleImageUploadProxy = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('Image upload triggered with file:', e.target.files?.[0]?.name);
-    handleImageUpload(e);
-  };
+  
+  console.log("FreelancerProfileCard - rendering with jobs completed:", jobsCompleted);
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-6">
-        <div className="flex flex-col sm:flex-row items-center gap-6">
-          <div className="flex-shrink-0">
-            <FreelancerAvatar
-              profileImageUrl={imageUrl}
-              uploadingImage={uploadingImage}
-              imageKey={imageKey}
-              initials={getInitials()}
-              handleImageUpload={handleImageUploadProxy}
-              size="xl" // Larger size for top banner
-            />
+    <Card className="border shadow-md">
+      <CardContent className="pt-6 flex flex-col md:flex-row gap-6 items-center md:items-start">
+        <div className="relative">
+          <Avatar className="h-24 w-24 border-2 border-primary/10">
+            <AvatarImage src={profileImage || undefined} alt={fullName} className="object-cover" />
+            <AvatarFallback className="text-xl">
+              {fullName.split(' ').map(name => name[0]).join('')}
+            </AvatarFallback>
+          </Avatar>
+          <input
+            type="file"
+            id="profile-picture"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+          <label
+            htmlFor="profile-picture"
+            className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer"
+          >
+            {uploadingImage ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
+          </label>
+        </div>
+        
+        <div className="flex-1 text-center md:text-left">
+          <div className="flex flex-col md:flex-row md:items-center md:gap-2">
+            <h2 className="text-xl font-bold">{fullName}</h2>
+            {idVerified && <VerificationBadge />}
           </div>
-
-          <div className="flex-1 min-w-0 text-center sm:text-left">
-            <div className="mb-2">
-              <h2 className="text-2xl font-semibold truncate">{fullName || 'Your Name'}</h2>
-              <p className="text-lg text-muted-foreground">{profession || 'Your Profession'}</p>
-            </div>
-
-            <ProfileInfoBadges
-              emailVerified={emailVerified}
-              memberSince={memberSince || ''}
-              formattedMemberSince={formattedMemberSince}
-              jobsCompleted={jobsCompleted}
-              userId={userId}
-              idVerified={idVerified}
-            />
+          <p className="text-muted-foreground">{profession}</p>
+          
+          <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
+            {memberSince && (
+              <Badge variant="outline" className="flex items-center gap-1">
+                <Calendar className="h-3 w-3" />
+                Member since {format(new Date(memberSince), 'MMM yyyy')}
+              </Badge>
+            )}
+            
+            {emailVerified && (
+              <Badge variant="outline" className="bg-green-50 text-green-700 flex items-center gap-1">
+                <Check className="h-3 w-3" />
+                Email verified
+              </Badge>
+            )}
+            
+            <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
+              <Check className="h-3 w-3" />
+              {jobsCompleted} {jobsCompleted === 1 ? 'job' : 'jobs'} completed
+            </Badge>
           </div>
         </div>
       </CardContent>

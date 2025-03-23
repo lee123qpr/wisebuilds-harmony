@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { useToast } from '@/hooks/use-toast';
@@ -50,9 +49,28 @@ export const useLoadFreelancerProfile = ({
         }
         
         console.log('Loaded profile data from database:', profileData);
-        console.log('Jobs completed count:', profileData?.jobs_completed);
+        
+        // Fetch completed jobs count from a separate query for more reliability
+        const { data: jobsData, error: jobsError } = await supabase
+          .rpc('get_freelancer_completed_jobs_count', { freelancer_id: user.id });
+          
+        if (jobsError) {
+          console.error('Error fetching jobs count:', jobsError);
+        } else {
+          console.log('Jobs completed count from database function:', jobsData);
+        }
+        
+        // Get jobs completed count, prioritizing the direct query if available
+        const completedJobsCount = jobsData || 
+                                profileData?.jobs_completed || 
+                                user.user_metadata?.jobs_completed || 
+                                0;
+        
+        console.log('Setting jobs completed count to:', completedJobsCount);
+        setJobsCompleted(completedJobsCount);
         
         if (profileData) {
+          // ... keep existing code for processing profile data
           const previousEmployers = Array.isArray(profileData.previous_employers) 
             ? (profileData.previous_employers as any[]).map(emp => ({
                 employerName: emp.employerName || '',
@@ -114,11 +132,8 @@ export const useLoadFreelancerProfile = ({
           setProfileImage(profileData.profile_photo || null);
           setMemberSince(profileData.member_since || user.created_at);
           setEmailVerified(user.email_confirmed_at !== null);
-          
-          const completedJobs = profileData.jobs_completed || 0;
-          console.log('Setting jobs completed count to:', completedJobs);
-          setJobsCompleted(completedJobs);
         } else {
+          // ... keep existing code for handling the case when no profile data exists
           const userMetadata = user.user_metadata || {};
           
           const previousEmployers = Array.isArray(userMetadata.previous_employers) 
@@ -162,7 +177,6 @@ export const useLoadFreelancerProfile = ({
           setProfileImage(userMetadata.profile_image_url || null);
           setMemberSince(user.created_at);
           setEmailVerified(user.email_confirmed_at !== null);
-          setJobsCompleted(userMetadata.jobs_completed || 0);
         }
       } catch (error) {
         console.error('Error fetching profile:', error);

@@ -27,6 +27,9 @@ export const useFreelancerProfile = (user: User | null) => {
     setIsLoading
   });
 
+  // Log jobs completed value whenever it changes
+  console.log('useFreelancerProfile - Jobs completed:', jobsCompleted);
+
   return {
     form,
     isLoading,
