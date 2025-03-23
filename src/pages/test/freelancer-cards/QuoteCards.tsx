@@ -3,6 +3,7 @@ import React from 'react';
 import { Card, CardHeader, CardContent, CardTitle } from '@/components/ui/card';
 import QuoteDetailsCard from '@/pages/project/components/quotes/QuoteDetailsCard';
 import FreelancerInfoCell from '@/components/quotes/table/FreelancerInfoCell';
+import FreelancerInfo from '@/components/freelancer/FreelancerInfo';
 
 interface QuoteCardsProps {
   completeFreelancer: any;
@@ -22,18 +23,18 @@ const QuoteCards: React.FC<QuoteCardsProps> = ({
   // Create a mock quote for testing
   const mockQuote = {
     id: 'quote-123',
-    status: 'pending' as 'pending' | 'accepted' | 'declined',
+    status: 'pending' as const, // Type assertion to 'pending' | 'accepted' | 'declined'
     created_at: mockQuoteDate,
-    updated_at: mockQuoteDate, // Add the missing required property
+    updated_at: mockQuoteDate,
     project_id: 'project-123',
     freelancer_id: completeFreelancer.id,
     client_id: 'client-123',
-    fixed_price: '1000', // Changed from number to string to match Quote type
+    fixed_price: '1000',
     day_rate: null,
     estimated_price: null,
     available_start_date: new Date().toISOString(),
-    estimated_duration: '14', // Changed to string to match Quote type expectation
-    duration_unit: 'days' as 'days' | 'weeks' | 'months',
+    estimated_duration: '14',
+    duration_unit: 'days' as const, // Type assertion to 'days' | 'weeks' | 'months'
     payment_terms: 'half upfront, half on completion',
     description: 'This is a detailed quote description outlining the work that will be done for this project.'
   };
@@ -74,7 +75,7 @@ const QuoteCards: React.FC<QuoteCardsProps> = ({
       
       <Card>
         <CardHeader>
-          <CardTitle>Freelancer Info Cell - Various States</CardTitle>
+          <CardTitle>Freelancer Info Components - Various States</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 gap-4">
@@ -100,10 +101,22 @@ const QuoteCards: React.FC<QuoteCardsProps> = ({
               />
             </div>
             <div className="p-4 border rounded">
+              <h3 className="mb-2 font-medium">New Standardized Component</h3>
+              <FreelancerInfo
+                freelancerId={completeFreelancer.id}
+                freelancerName={completeFreelancer.display_name}
+                profilePhoto={completeFreelancer.profile_photo}
+                jobTitle={completeFreelancer.job_title}
+                isVerified={completeFreelancer.verified}
+                rating={completeFreelancer.rating}
+                reviewsCount={completeFreelancer.reviews_count}
+              />
+            </div>
+            <div className="p-4 border rounded">
               <h3 className="mb-2 font-medium">Loading State</h3>
-              <FreelancerInfoCell
-                freelancer={{}}
+              <FreelancerInfo
                 freelancerId="loading-id"
+                freelancerName="Loading Name"
                 isLoading={true}
               />
             </div>

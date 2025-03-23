@@ -51,7 +51,7 @@ export interface ProfileData {
   accreditations?: string[];
 }
 
-// Define a simple response type without circular references
+// Define a simple fetch response type
 interface ProfileResponse {
   data: ProfileData | null;
   error: Error | null;
@@ -119,7 +119,8 @@ export const useFreelancerProfileData = (userId?: string) => {
   const { user } = useAuth();
   const profileId = userId || user?.id;
 
-  const fetchProfileData = async (): Promise<ProfileResponse> => {
+  // Define a standalone fetch function with explicit return type
+  const fetchProfileData = async () => {
     try {
       if (!profileId) {
         return { data: null, error: new Error('No user ID provided') };
@@ -139,14 +140,15 @@ export const useFreelancerProfileData = (userId?: string) => {
 
       // Format the data
       const formattedData = formatFreelancerProfileData(data);
-      return { data: formattedData, error: null };
+      return { data: formattedData, error: null } as ProfileResponse;
     } catch (error) {
       console.error('Error in useFreelancerProfileData:', error);
       toast.error('Failed to load freelancer profile data');
-      return { data: null, error: error as Error };
+      return { data: null, error: error as Error } as ProfileResponse;
     }
   };
 
+  // Use the fetch function in the query
   const query = useQuery({
     queryKey: ['freelancerProfile', profileId],
     queryFn: fetchProfileData,

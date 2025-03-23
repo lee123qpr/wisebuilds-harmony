@@ -1,19 +1,15 @@
 
 import React from 'react';
 import { Card, CardContent } from '@/components/ui/card';
-import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Briefcase, MapPin } from 'lucide-react';
 import { format } from 'date-fns';
 import { FreelancerApplication } from '@/types/applications';
-import { Link } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import VerificationBadge from '@/components/common/VerificationBadge';
-import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
-import FreelancerProfileLink from '@/pages/project/components/FreelancerProfileLink';
-import FreelancerMetadata from '@/components/applications/FreelancerMetadata';
+import FreelancerMetadata from '@/components/freelancer/FreelancerMetadata';
 import FreelancerContactInfo from '@/components/applications/FreelancerContactInfo';
 import FreelancerApplicationActions from '@/components/applications/FreelancerApplicationActions';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import VerificationBadge from '@/components/common/VerificationBadge';
+import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 
 interface FreelancerApplicationCardProps {
   application: FreelancerApplication;
@@ -41,14 +37,6 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
     jobs_completed: 0
   };
 
-  // Log profile data for debugging
-  console.log('FreelancerApplicationCard - Freelancer profile data:', { 
-    userId: application.user_id,
-    profile: profile,
-    rating: profile.rating,
-    reviews_count: profile.reviews_count
-  });
-
   const getInitials = () => {
     if (profile.display_name) {
       return profile.display_name
@@ -63,13 +51,15 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
     return 'NF'; // Default: No Freelancer
   };
 
+  const fullName = profile.display_name || `${profile.first_name || ''} ${profile.last_name || ''}`;
+
   return (
     <Card className="mb-6">
       <CardContent className="p-6">
         <div className="flex flex-col md:flex-row gap-6">
           <div className="flex flex-col items-center">
             <Avatar className="h-24 w-24 border">
-              <AvatarImage src={profile.profile_photo || undefined} alt={profile.display_name || 'Freelancer'} />
+              <AvatarImage src={profile.profile_photo || undefined} alt={fullName} />
               <AvatarFallback className="text-lg bg-slate-100 text-slate-600 font-semibold">{getInitials()}</AvatarFallback>
             </Avatar>
             
@@ -83,7 +73,7 @@ const FreelancerApplicationCard: React.FC<FreelancerApplicationCardProps> = ({ a
             <div>
               <div className="flex justify-between items-start">
                 <div>
-                  <h3 className="text-xl font-semibold">{profile.display_name || `${profile.first_name || ''} ${profile.last_name || ''}`}</h3>
+                  <h3 className="text-xl font-semibold">{fullName}</h3>
                   <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
                 </div>
                 <ProfileRatingStars 

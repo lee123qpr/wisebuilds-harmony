@@ -1,23 +1,16 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
-import { Calendar, Briefcase, MapPin } from 'lucide-react';
-import { format } from 'date-fns';
 import { FreelancerProfile } from '@/types/applications';
 import VerificationBadge from '@/components/common/VerificationBadge';
 import ProfileRatingStars from './ProfileRatingStars';
+import FreelancerMetadata from '@/components/freelancer/FreelancerMetadata';
 
 interface FreelancerProfileHeaderProps {
   profile: FreelancerProfile;
 }
 
 const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profile }) => {
-  // Format the member_since date if available
-  const formattedMemberSince = profile.member_since 
-    ? format(new Date(profile.member_since), 'MMMM yyyy')
-    : 'Recently joined';
-
   const getInitials = () => {
     if (profile.display_name) {
       return profile.display_name
@@ -31,12 +24,6 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
     }
     return 'FP'; // Default: Freelancer Profile
   };
-
-  console.log('FreelancerProfileHeader - profile details:', { 
-    id: profile.id,
-    rating: profile.rating,
-    reviews_count: profile.reviews_count
-  });
 
   return (
     <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
@@ -53,7 +40,6 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
               <p className="text-muted-foreground">{profile.job_title || 'Freelancer'}</p>
             </div>
             
-            {/* Display rating stars using ProfileRatingStars for consistency */}
             <div>
               <ProfileRatingStars 
                 userId={profile.id}
@@ -64,24 +50,8 @@ const FreelancerProfileHeader: React.FC<FreelancerProfileHeaderProps> = ({ profi
           </div>
           
           <div className="mt-4">
-            <div className="flex flex-wrap gap-4 mb-3">
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Calendar className="h-4 w-4" />
-                <span>Member since {formattedMemberSince}</span>
-              </div>
-              
-              <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                <Briefcase className="h-4 w-4" />
-                <span>{profile.jobs_completed || 0} {profile.jobs_completed === 1 ? 'job' : 'jobs'} completed</span>
-              </div>
-              
-              {profile.location && (
-                <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
-                  <MapPin className="h-4 w-4" />
-                  <span>{profile.location}</span>
-                </div>
-              )}
-            </div>
+            {/* Use the standardized FreelancerMetadata component */}
+            <FreelancerMetadata profile={profile} />
             
             <div className="flex flex-wrap gap-2 mt-3">
               <VerificationBadge 

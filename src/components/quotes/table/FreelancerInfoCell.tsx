@@ -1,12 +1,9 @@
 
 import React from 'react';
 import { ExternalLink } from 'lucide-react';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
-import { Skeleton } from '@/components/ui/skeleton';
-import VerificationBadge from '@/components/common/VerificationBadge';
-import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
+import FreelancerInfo from '@/components/freelancer/FreelancerInfo';
 
 interface FreelancerInfoCellProps {
   freelancer: {
@@ -16,6 +13,7 @@ interface FreelancerInfoCellProps {
     profile_photo?: string;
     job_title?: string;
     rating?: number;
+    reviews_count?: number;
     verified?: boolean;
     location?: string;
   };
@@ -33,64 +31,41 @@ const FreelancerInfoCell: React.FC<FreelancerInfoCellProps> = ({
       ? `${freelancer.first_name} ${freelancer.last_name}`
       : 'Freelancer');
 
-  if (isLoading) {
-    return (
-      <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-10 w-10 rounded-full" />
-          <div>
-            <Skeleton className="h-4 w-32 mb-1" />
-            <Skeleton className="h-3 w-24" />
-          </div>
-        </div>
-        <Skeleton className="h-9 w-full" />
-      </div>
-    );
-  }
-
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex items-center gap-2">
-        <Avatar className="h-10 w-10">
-          <AvatarImage src={freelancer.profile_photo} alt={freelancerName} />
-          <AvatarFallback>{(freelancerName?.substring(0, 2) || 'FR').toUpperCase()}</AvatarFallback>
-        </Avatar>
-        <div>
-          <div className="font-medium flex items-center gap-1">
-            {freelancerName}
-            {freelancer.verified && <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />}
-          </div>
-          <div className="text-xs text-muted-foreground">{freelancer.job_title || 'Freelancer'}</div>
-          
-          {/* Show more freelancer details */}
-          {freelancer.location && (
-            <div className="text-xs text-muted-foreground mt-1">
-              {freelancer.location}
-            </div>
-          )}
-          
-          {/* Use consistent approach to display ratings */}
-          <div className="mt-1">
-            <ProfileRatingStars 
-              userId={freelancerId}
-              rating={freelancer.rating}
-            />
-          </div>
-        </div>
-      </div>
+      {/* Use the standardized FreelancerInfo component */}
+      <FreelancerInfo
+        freelancerId={freelancerId}
+        freelancerName={freelancerName}
+        profilePhoto={freelancer.profile_photo}
+        jobTitle={freelancer.job_title || 'Freelancer'}
+        isVerified={!!freelancer.verified}
+        isLoading={isLoading}
+        rating={freelancer.rating}
+        reviewsCount={freelancer.reviews_count}
+      />
       
-      {/* Freelancer profile link - same tab navigation */}
-      <Button
-        variant="outline"
-        size="sm"
-        className="mt-1 w-full text-xs flex items-center gap-1 justify-center"
-        asChild
-      >
-        <Link to={`/freelancer/${freelancerId}`}>
-          <ExternalLink className="h-3 w-3" />
-          View Freelancer Profile
-        </Link>
-      </Button>
+      {/* Show location separately if provided */}
+      {freelancer.location && !isLoading && (
+        <div className="text-xs text-muted-foreground mt-1">
+          {freelancer.location}
+        </div>
+      )}
+      
+      {/* Freelancer profile link */}
+      {!isLoading && (
+        <Button
+          variant="outline"
+          size="sm"
+          className="mt-1 w-full text-xs flex items-center gap-1 justify-center"
+          asChild
+        >
+          <Link to={`/freelancer/${freelancerId}`}>
+            <ExternalLink className="h-3 w-3" />
+            View Freelancer Profile
+          </Link>
+        </Button>
+      )}
     </div>
   );
 };

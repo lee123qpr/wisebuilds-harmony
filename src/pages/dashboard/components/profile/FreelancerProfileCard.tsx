@@ -10,7 +10,6 @@ import { Calendar, MapPin, Upload, Check, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
-import { supabase } from '@/integrations/supabase/client';
 import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 
 interface FreelancerProfileCardProps {
@@ -81,8 +80,6 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
       setUploadingImage(false);
     }
   };
-  
-  console.log("FreelancerProfileCard - rendering with jobs completed:", jobsCompleted);
 
   return (
     <Card className="border shadow-md">
