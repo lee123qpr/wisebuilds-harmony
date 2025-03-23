@@ -64,7 +64,7 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
           
           // Create a new object with explicit types instead of using data directly
           // This avoids the deep type instantiation error
-          const transformedProfile: FreelancerProfile = {
+          const profileData: FreelancerProfile = {
             id: data.id,
             first_name: data.first_name,
             last_name: data.last_name,
@@ -89,12 +89,30 @@ export const useFreelancerProfileData = (freelancerIdParam?: string) => {
             availability: data.availability,
             qualifications: safeStringArray(data.qualifications),
             accreditations: safeStringArray(data.accreditations),
-            previous_employers: Array.isArray(data.previous_employers) ? data.previous_employers : [],
-            previousWork: Array.isArray(data.previous_work) ? data.previous_work : [],
-            indemnity_insurance: data.indemnity_insurance || { hasInsurance: false },
+            previous_employers: Array.isArray(data.previous_employers) 
+              ? data.previous_employers as { 
+                  employerName: string; 
+                  position: string; 
+                  startDate: string; 
+                  endDate?: string; 
+                  current: boolean; 
+                }[] 
+              : [],
+            previousWork: Array.isArray(data.previous_work) 
+              ? data.previous_work as {
+                  name: string;
+                  url: string;
+                  type: string;
+                  size: number;
+                  path: string;
+                }[]
+              : [],
+            indemnity_insurance: typeof data.indemnity_insurance === 'object' && data.indemnity_insurance !== null
+              ? data.indemnity_insurance as { hasInsurance: boolean; coverLevel?: string }
+              : { hasInsurance: false },
           };
           
-          setProfile(transformedProfile);
+          setProfile(profileData);
         }
       } catch (error) {
         console.error('Error fetching freelancer profile:', error);
