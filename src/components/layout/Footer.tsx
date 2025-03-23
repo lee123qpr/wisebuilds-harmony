@@ -18,7 +18,6 @@ const Footer: React.FC = () => {
             <h5 className="text-lg font-heading mb-4">Quick Links</h5>
             <ul className="space-y-2">
               <li><Link to="/" className="text-gray-300 hover:text-white">Home</Link></li>
-              <li><Link to="/marketplace" className="text-gray-300 hover:text-white">Marketplace</Link></li>
               <li><Link to="/how-it-works" className="text-gray-300 hover:text-white">How It Works</Link></li>
               <li><Link to="/about" className="text-gray-300 hover:text-white">About</Link></li>
             </ul>

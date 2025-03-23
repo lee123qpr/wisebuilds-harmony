@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
@@ -38,7 +37,6 @@ const ApplicationsTab: React.FC = () => {
       
       try {
         console.log('Fetching user applications...');
-        // Use custom RPC function to get applications
         const { data: applicationData, error: appError } = await supabase.rpc('get_user_applications', {
           user_id: user.id
         });
@@ -55,7 +53,6 @@ const ApplicationsTab: React.FC = () => {
         
         console.log('Received application data:', applicationData);
         
-        // Get project details for each application
         const applicationProjects = applicationData.map((app: any) => ({
           ...app.project,
           application_id: app.id,
@@ -74,10 +71,8 @@ const ApplicationsTab: React.FC = () => {
     refetchOnWindowFocus: true
   });
   
-  // Find the selected project from applications
   const selectedProject = applications?.find(app => app.id === selectedProjectId) || null;
   
-  // Set first project as selected when data loads
   useEffect(() => {
     if (applications?.length && !selectedProjectId) {
       setSelectedProjectId(applications[0].id);
@@ -85,7 +80,6 @@ const ApplicationsTab: React.FC = () => {
     }
   }, [applications, selectedProjectId]);
   
-  // Force refresh when tab becomes visible
   useEffect(() => {
     refetch();
   }, [refetch]);
@@ -100,7 +94,7 @@ const ApplicationsTab: React.FC = () => {
         title="My Responses"
         description="Once you purchase a lead, the project details and client contact information will appear here."
         buttonText="Browse Available Projects"
-        buttonAction={() => navigate('/marketplace')}
+        buttonAction={() => navigate('/dashboard/freelancer')}
       />
     );
   }

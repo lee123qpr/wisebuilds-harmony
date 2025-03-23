@@ -11,7 +11,7 @@ const QuotesEmptyState: React.FC = () => {
       title="My Quotes"
       description="Once you purchase a lead, the project details and client contact information will appear here."
       buttonText="Browse Available Projects"
-      buttonAction={() => navigate('/marketplace')}
+      buttonAction={() => navigate('/dashboard/freelancer')}
     />
   );
 };

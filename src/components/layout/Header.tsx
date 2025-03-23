@@ -34,13 +34,6 @@ const Header: React.FC = () => {
         <NavigationMenu className="hidden md:flex">
           <NavigationMenuList>
             <NavigationMenuItem>
-              <Link to="/marketplace">
-                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
-                  Marketplace
-                </NavigationMenuLink>
-              </Link>
-            </NavigationMenuItem>
-            <NavigationMenuItem>
               <Link to="/how-it-works">
                 <NavigationMenuLink className={navigationMenuTriggerStyle()}>
                   How It Works
