@@ -1,23 +1,38 @@
 
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import VerificationBadge from '@/components/common/VerificationBadge';
-import { FreelancerProfile } from '@/types/applications';
+import { Upload, Loader2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FreelancerAvatarProps {
-  profile?: FreelancerProfile;
+  profileImage: string | null;
+  fullName: string;
+  userId: string;
   size?: 'sm' | 'md' | 'lg';
-  showVerificationBadges?: boolean;
+  uploadingImage?: boolean;
+  setUploadingImage?: (uploading: boolean) => void;
+  setProfileImage?: (url: string | null) => void;
+  allowImageUpload?: boolean;
 }
 
-const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({ 
-  profile, 
+const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
+  profileImage,
+  fullName,
+  userId,
   size = 'md',
-  showVerificationBadges = true
+  uploadingImage = false,
+  setUploadingImage,
+  setProfileImage,
+  allowImageUpload = false,
 }) => {
-  const getInitials = (name?: string) => {
-    if (!name) return 'FP';
-    return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
+  // Get initials for avatar fallback
+  const getInitials = () => {
+    return fullName
+      .split(' ')
+      .map(name => name[0])
+      .join('')
+      .toUpperCase()
+      .substring(0, 2);
   };
 
   // Size mappings for consistent avatar sizing
@@ -27,31 +42,73 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
     lg: 'h-24 w-24'
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!allowImageUpload || !setUploadingImage || !setProfileImage) return;
+    
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    try {
+      setUploadingImage(true);
+      
+      // Create a filename with user ID to prevent conflicts
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}_${Date.now()}.${fileExt}`;
+      const filePath = `profile_photos/${fileName}`;
+      
+      // Upload the file to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+        
+      if (error) throw error;
+      
+      // Get the public URL for the uploaded image
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+        
+      // Set the profile image URL
+      setProfileImage(urlData.publicUrl);
+      
+    } catch (error) {
+      console.error('Error uploading image:', error);
+      alert('Error uploading profile image. Please try again.');
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col items-center space-y-2">
-      <Avatar className={`${sizeClasses[size]} border-2 border-slate-100`}>
-        <AvatarImage src={profile?.profile_photo} alt={profile?.display_name} />
-        <AvatarFallback className="bg-slate-100 text-slate-600 text-xl font-semibold">
-          {getInitials(profile?.display_name || `${profile?.first_name || ''} ${profile?.last_name || ''}`)}
-        </AvatarFallback>
+    <div className="relative">
+      <Avatar className={`${sizeClasses[size]} border-2 border-primary/10`}>
+        <AvatarImage src={profileImage || undefined} alt={fullName} className="object-cover" />
+        <AvatarFallback className="text-xl">{getInitials()}</AvatarFallback>
       </Avatar>
       
-      {showVerificationBadges && (
-        <div className="flex flex-col items-center gap-1">
-          {profile?.email_verified && (
-            <VerificationBadge 
-              type="email" 
-              status="verified" 
-              showTooltip={true}
-            />
-          )}
-          
-          <VerificationBadge 
-            type="id" 
-            status={profile?.verified ? 'verified' : 'not_submitted'} 
-            showTooltip={true}
+      {allowImageUpload && (
+        <>
+          <input
+            type="file"
+            id="profile-picture"
+            accept="image/*"
+            className="hidden"
+            onChange={handleFileChange}
           />
-        </div>
+          <label
+            htmlFor="profile-picture"
+            className="absolute -bottom-2 -right-2 bg-primary text-primary-foreground rounded-full p-1 cursor-pointer"
+          >
+            {uploadingImage ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Upload className="h-4 w-4" />
+            )}
+          </label>
+        </>
       )}
     </div>
   );
