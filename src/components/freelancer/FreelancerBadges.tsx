@@ -7,13 +7,14 @@ import VerificationBadge from '@/components/common/VerificationBadge';
 
 interface InsuranceStatus {
   hasInsurance: boolean;
-  coverLevel: string;
+  coverLevel?: string;
 }
 
 interface FreelancerBadgesProps {
   memberSince?: string | null;
   emailVerified?: boolean;
   jobsCompleted?: number;
+  idVerified?: boolean;
   insuranceStatus?: InsuranceStatus;
 }
 
@@ -21,6 +22,7 @@ const FreelancerBadges: React.FC<FreelancerBadgesProps> = ({
   memberSince,
   emailVerified,
   jobsCompleted = 0,
+  idVerified,
   insuranceStatus
 }) => {
   return (
@@ -36,6 +38,13 @@ const FreelancerBadges: React.FC<FreelancerBadgesProps> = ({
         <Badge variant="outline" className="bg-green-50 text-green-700 flex items-center gap-1">
           <Check className="h-3 w-3" />
           Email verified
+        </Badge>
+      )}
+      
+      {idVerified && (
+        <Badge variant="outline" className="bg-blue-50 text-blue-700 flex items-center gap-1">
+          <Check className="h-3 w-3" />
+          ID verified
         </Badge>
       )}
       
@@ -62,7 +71,7 @@ const FreelancerBadges: React.FC<FreelancerBadgesProps> = ({
           {insuranceStatus.hasInsurance ? (
             <>
               Insured
-              {insuranceStatus.coverLevel !== 'Not specified' && 
+              {insuranceStatus.coverLevel && 
                 <span>• {insuranceStatus.coverLevel}</span>
               }
             </>

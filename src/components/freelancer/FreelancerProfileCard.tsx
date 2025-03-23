@@ -5,10 +5,11 @@ import FreelancerInfo from './FreelancerInfo';
 import FreelancerBadges from './FreelancerBadges';
 import FreelancerMetadata from './FreelancerMetadata';
 import FreelancerRateDisplay from './FreelancerRateDisplay';
+import { FreelancerProfile } from '@/types/applications';
 
 interface InsuranceStatus {
   hasInsurance: boolean;
-  coverLevel: string | undefined;
+  coverLevel?: string | undefined;
 }
 
 interface FreelancerProfileCardProps {
@@ -102,6 +103,7 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
           <div className="mt-6 space-y-4">
             <FreelancerMetadata
               profile={{
+                id: userId,
                 member_since: memberSince,
                 jobs_completed: jobsCompleted,
                 location: location,
