@@ -12,11 +12,10 @@ interface PreferencesGroupProps {
 export const PreferencesGroup: React.FC<PreferencesGroupProps> = ({ form }) => {
   return (
     <div className="space-y-6">
-      <div className="mb-4">
+      <div className="mb-6">
         <BackButton 
           to="/dashboard/freelancer"
           variant="outline"
-          className="mb-4"
         />
       </div>
       <RequirementsCheckboxes form={form} />
