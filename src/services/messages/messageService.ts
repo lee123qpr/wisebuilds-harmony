@@ -27,7 +27,13 @@ export const fetchMessages = async (conversationId: string): Promise<Message[]> 
       return [];
     }
     
-    return data || [];
+    // Convert JSON attachments to proper MessageAttachment arrays
+    const messages = data?.map(msg => ({
+      ...msg,
+      attachments: msg.attachments ? (Array.isArray(msg.attachments) ? msg.attachments : [msg.attachments]) : undefined
+    })) || [];
+    
+    return messages as Message[];
   } catch (e) {
     console.error('Error in fetchMessages:', e);
     toast({
@@ -113,7 +119,7 @@ export const sendMessage = async ({ conversationId, message, attachments = [] }:
     const { error: updateError } = await supabase
       .from('conversations')
       .update({ 
-        last_message_at: new Date().toISOString(),
+        last_message_time: new Date().toISOString(),
         last_message: messageText
       })
       .eq('id', conversationId);

@@ -13,6 +13,7 @@ export interface MessageReadParams {
 
 export interface FileUploadParams {
   file: File;
+  userId: string; // Added userId property
 }
 
 export interface ClientContactInfo {
@@ -23,4 +24,3 @@ export interface ClientContactInfo {
   website: string | null;
   company_address: string | null;
 }
-

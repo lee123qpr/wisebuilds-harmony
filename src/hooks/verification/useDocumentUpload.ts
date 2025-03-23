@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useVerification } from './useVerification';
 import { useToast } from '@/hooks/use-toast';
@@ -14,12 +13,12 @@ export const useDocumentUpload = (onClose: () => void) => {
     refreshVerificationStatus, 
     isUploading,
     setupComplete,
-    setIsUploading
+    verificationStatus,
+    setVerificationState
   } = useVerification();
   const { toast } = useToast();
 
   const validateFile = (file: File): boolean => {
-    // Check file size
     if (file.size > MAX_FILE_SIZE) {
       toast({
         title: "File too large",
@@ -29,7 +28,6 @@ export const useDocumentUpload = (onClose: () => void) => {
       return false;
     }
     
-    // Check file type
     if (!VALID_TYPES.includes(file.type)) {
       toast({
         title: "Invalid file type",
@@ -54,6 +52,13 @@ export const useDocumentUpload = (onClose: () => void) => {
     setSelectedFile(null);
   };
 
+  const setIsUploading = (loading: boolean) => {
+    setVerificationState(prev => ({
+      ...prev,
+      isUploading: loading
+    }));
+  };
+
   const handleSubmit = async () => {
     if (!selectedFile || !setupComplete) {
       toast({
@@ -70,7 +75,6 @@ export const useDocumentUpload = (onClose: () => void) => {
       console.log('Submitting document for verification:', selectedFile.name);
       setIsUploading(true);
       
-      // Get user ID
       const { data: session } = await supabase.auth.getSession();
       if (!session?.session?.user?.id) {
         throw new Error('Authentication required: Please log in to upload verification documents');
@@ -78,7 +82,6 @@ export const useDocumentUpload = (onClose: () => void) => {
       
       const userId = session.session.user.id;
       
-      // Upload the file
       const result = await uploadFile(
         selectedFile, 
         userId, 
@@ -90,7 +93,6 @@ export const useDocumentUpload = (onClose: () => void) => {
         throw new Error('Failed to upload document. Please try again.');
       }
       
-      // Update the verification record in the database
       const { error } = await supabase
         .from('freelancer_verification')
         .upsert({

@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/context/AuthContext';
@@ -23,7 +22,6 @@ export const useFileUpload = (
 
   const handleFileSelection = (newFiles: File[]) => {
     const validFiles = newFiles.filter(file => {
-      // Use the isValidFile function for more robust validation
       const isValid = isValidFile(file);
       if (!isValid) {
         toast({
@@ -50,8 +48,11 @@ export const useFileUpload = (
     onFilesUploaded(updatedFiles);
     
     if (fileToRemove.path) {
-      removeFile(fileToRemove.path, StorageBucket.PROJECTS)
-        .then(success => {
+      const removePromise = removeFile(fileToRemove.path);
+      
+      (async () => {
+        try {
+          const success = await removePromise;
           if (!success) {
             console.error('Error removing file from storage:', fileToRemove.path);
             toast({
@@ -60,7 +61,10 @@ export const useFileUpload = (
               variant: "destructive"
             });
           }
-        });
+        } catch (error) {
+          console.error('Error in file removal:', error);
+        }
+      })();
     }
   };
 
