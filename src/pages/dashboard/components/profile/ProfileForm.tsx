@@ -15,6 +15,11 @@ type ProfileFormProps = {
 };
 
 const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => {
+  // Add custom CSS class for disabled fields
+  const getDisabledClass = () => {
+    return disabled ? "cursor-default opacity-80 bg-muted" : "";
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -25,7 +30,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
             <FormItem>
               <FormLabel>Company Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter company name" {...field} disabled={disabled} />
+                <Input 
+                  placeholder="Enter company name" 
+                  {...field} 
+                  disabled={disabled} 
+                  className={getDisabledClass()}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -39,7 +49,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
             <FormItem>
               <FormLabel>Full Name</FormLabel>
               <FormControl>
-                <Input placeholder="Enter full name" {...field} disabled={disabled} />
+                <Input 
+                  placeholder="Enter full name" 
+                  {...field} 
+                  disabled={disabled} 
+                  className={getDisabledClass()}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -62,7 +77,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
             <FormItem>
               <FormLabel>Phone Number</FormLabel>
               <FormControl>
-                <Input placeholder="Enter phone number" {...field} disabled={disabled} />
+                <Input 
+                  placeholder="Enter phone number" 
+                  {...field} 
+                  disabled={disabled} 
+                  className={getDisabledClass()}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
@@ -76,7 +96,12 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
             <FormItem>
               <FormLabel>Website</FormLabel>
               <FormControl>
-                <Input placeholder="example.com" {...field} disabled={disabled} />
+                <Input 
+                  placeholder="example.com" 
+                  {...field} 
+                  disabled={disabled} 
+                  className={getDisabledClass()}
+                />
               </FormControl>
               <FormDescription>Enter domain without http:// (it will be added automatically)</FormDescription>
               <FormMessage />
@@ -98,7 +123,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
                 onValueChange={field.onChange}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className={disabled ? "cursor-default opacity-80" : ""}>
                     <SelectValue placeholder="Select company type" />
                   </SelectTrigger>
                 </FormControl>
@@ -128,7 +153,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
                 onValueChange={field.onChange}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className={disabled ? "cursor-default opacity-80" : ""}>
                     <SelectValue placeholder="Select turnover range" />
                   </SelectTrigger>
                 </FormControl>
@@ -160,7 +185,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
                 onValueChange={field.onChange}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className={disabled ? "cursor-default opacity-80" : ""}>
                     <SelectValue placeholder="Select employee range" />
                   </SelectTrigger>
                 </FormControl>
@@ -190,7 +215,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
                 onValueChange={field.onChange}
               >
                 <FormControl>
-                  <SelectTrigger>
+                  <SelectTrigger className={disabled ? "cursor-default opacity-80" : ""}>
                     <SelectValue placeholder="Select specialism" />
                   </SelectTrigger>
                 </FormControl>
@@ -222,7 +247,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
             <FormControl>
               <Textarea 
                 placeholder="Briefly describe your company and services..."
-                className="min-h-[120px]"
+                className={`min-h-[120px] ${getDisabledClass()}`}
                 {...field}
                 disabled={disabled}
               />
