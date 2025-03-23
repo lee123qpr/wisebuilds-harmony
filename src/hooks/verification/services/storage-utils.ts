@@ -44,7 +44,7 @@ export const getAvatarBucketName = async (): Promise<string | null> => {
   
   // Check for various possible avatar bucket names
   const possibleBucketNames = [
-    'freelancer-avatar',
+    'freelancer-avatar',  // Primary choice
     'avatar',
     'avatars',
     'profile-images',

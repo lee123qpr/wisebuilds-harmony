@@ -2,8 +2,9 @@
 import { useState, useCallback, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
-import { StorageBucket, uploadFile, checkBucketExists, getActualAvatarBucket } from '@/utils/storage';
+import { uploadFile, checkBucketExists, getActualAvatarBucket } from '@/utils/storage';
 import { supabase } from '@/integrations/supabase/client';
+import { getAvatarBucketName } from '@/hooks/verification/services/storage-utils';
 
 interface UseImageUploadProps {
   userId: string;
@@ -25,16 +26,19 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     async function checkBucket() {
       try {
         // First try to get the actual bucket name that exists
-        const bucketName = await getActualAvatarBucket();
+        const bucketName = await getAvatarBucketName();
         setActualBucketName(bucketName);
         console.log(`Using avatar bucket: ${bucketName}`);
         
-        // Then check if that bucket exists
-        const exists = await checkBucketExists(bucketName);
-        console.log(`Avatar bucket ${bucketName} exists:`, exists);
-        setBucketAvailable(exists);
-        
-        if (!exists) {
+        if (bucketName) {
+          // Then check if that bucket exists
+          const exists = await checkBucketExists(bucketName);
+          console.log(`Avatar bucket ${bucketName} exists:`, exists);
+          setBucketAvailable(exists);
+        } else {
+          setBucketAvailable(false);
+          console.log('No avatar bucket found');
+          
           // List available buckets for debugging
           const { data } = await supabase.storage.listBuckets();
           console.log('Available buckets:', data?.map(b => b.name).join(', ') || 'none');
@@ -94,23 +98,39 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       }
       
       // Get the actual bucket name to use
-      const bucketToUse = actualBucketName || await getActualAvatarBucket();
-      console.log(`Attempting upload to ${bucketToUse}/${userId}`);
+      const bucketToUse = actualBucketName || await getAvatarBucketName();
       
-      // Use the centralized upload utility with the actual bucket name
-      const result = await uploadFile(
-        file, 
-        userId, 
-        bucketToUse
-      );
-      
-      if (!result) {
-        throw new Error('Upload failed. Please try again.');
+      if (!bucketToUse) {
+        throw new Error('No storage bucket is available for avatar uploads. Please contact support.');
       }
       
-      console.log('Image uploaded successfully, publicUrl:', result.url);
+      console.log(`Attempting upload to ${bucketToUse}/${userId}`);
       
-      setImageUrl(result.url);
+      // Prepare the file path - important for RLS policies
+      // The path MUST start with userId for RLS to work properly
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${namePrefix || 'avatar'}-${Date.now()}.${fileExt}`;
+      const filePath = `${userId}/${fileName}`;
+      
+      // Upload directly using Supabase client
+      const { data, error } = await supabase.storage
+        .from(bucketToUse)
+        .upload(filePath, file, { upsert: true });
+      
+      if (error) {
+        console.error('Upload error:', error);
+        throw error;
+      }
+      
+      // Get the public URL for the uploaded file
+      const { data: publicUrlData } = supabase.storage
+        .from(bucketToUse)
+        .getPublicUrl(filePath);
+      
+      const url = publicUrlData.publicUrl;
+      console.log('Image uploaded successfully, publicUrl:', url);
+      
+      setImageUrl(url);
       setImageKey(uuidv4()); // Force re-render of Avatar
       
       toast({
@@ -119,7 +139,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
       });
       
       // Return the URL for use in updating profile if needed
-      return result.url;
+      return url;
       
     } catch (error) {
       console.error('Error in image upload process:', error);
