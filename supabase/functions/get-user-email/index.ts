@@ -55,6 +55,19 @@ serve(async (req) => {
 
     console.log('Fetching user data for userId:', userId);
 
+    // First, try to get user from client_profiles
+    const { data: profileData, error: profileError } = await supabaseAdmin
+      .from('client_profiles')
+      .select('*')
+      .eq('id', userId)
+      .maybeSingle();
+      
+    if (profileError) {
+      console.error('Error fetching client profile:', profileError);
+    }
+    
+    console.log('Client profile data:', profileData);
+
     // Get the user's data from auth.users table
     const { data, error } = await supabaseAdmin.auth.admin.getUserById(userId);
 
@@ -82,20 +95,29 @@ serve(async (req) => {
     }
     
     // Get the full name from user metadata or other sources
-    const fullName = data?.user?.user_metadata?.full_name || 
+    const fullName = profileData?.contact_name || 
+                    data?.user?.user_metadata?.full_name || 
                     data?.user?.user_metadata?.name ||
                     null;
-    const email = data?.user?.email || null;
+                    
+    const email = profileData?.email || data?.user?.email || null;
     
     console.log('Extracted full name:', fullName);
     console.log('Extracted email:', email);
     
-    // Return the user information
+    // Return the combined information, prioritizing profile data
     return new Response(
       JSON.stringify({
         email,
         full_name: fullName,
-        user_metadata: data?.user?.user_metadata || null
+        contact_name: profileData?.contact_name || null,
+        company_name: profileData?.company_name || null,
+        phone_number: profileData?.phone_number || null,
+        company_address: profileData?.company_address || null,
+        website: profileData?.website || null,
+        user_metadata: data?.user?.user_metadata || null,
+        // Include the profile data if available
+        profile: profileData || null
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },

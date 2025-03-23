@@ -35,9 +35,12 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     
     // If profile exists, prioritize it regardless of whether contact_name is available
     if (clientProfile) {
+      // Return the profile data, using 'Client' as fallback for contact_name if it's null or empty
       console.log('Returning client info from profile:', clientProfile);
       return {
-        contact_name: clientProfile.contact_name || 'Client',
+        contact_name: clientProfile.contact_name && clientProfile.contact_name.trim() !== '' 
+                   ? clientProfile.contact_name 
+                   : 'Client',
         company_name: clientProfile.company_name,
         logo_url: clientProfile.logo_url,
         email: clientProfile.email
@@ -87,7 +90,7 @@ export const getClientInfo = async (clientId: string): Promise<ClientInfo> => {
     // Return the user data
     return {
       contact_name: fullName,
-      company_name: null,
+      company_name: userData.user_metadata?.company_name || null,
       logo_url: null,
       email: userData.email
     };

@@ -50,12 +50,17 @@ export const useContactInfo = (projectId: string) => {
       
       console.log('Client profile data:', clientProfile);
       
-      // Only fetch auth user data if profile doesn't exist at all
+      // Only fetch auth user data if we need to (no profile or missing critical fields)
       let userData = null;
       let userError = null;
       
-      if (!clientProfile) {
-        console.log('No client profile found, fetching auth user data as fallback');
+      const needsAuthData = !clientProfile || 
+                          !clientProfile.contact_name || 
+                          !clientProfile.email || 
+                          !clientProfile.phone_number;
+      
+      if (needsAuthData) {
+        console.log('Missing critical profile data, fetching auth user data as supplementary info');
         const userResponse = await supabase.functions.invoke('get-user-email', {
           body: { userId: project.user_id }
         });
@@ -70,58 +75,62 @@ export const useContactInfo = (projectId: string) => {
         console.log('User data from edge function:', userData);
       }
       
-      // Extract the email and metadata
+      // Extract the email
       const email = clientProfile?.email || userData?.email || null;
       const userMetadata = userData?.user_metadata || null;
       
       // Always prioritize client_profiles data first:
       // 1. Use client_profiles data if available
-      // 2. Only fall back to auth data if profile field is completely missing
+      // 2. Only fall back to auth data if profile field is missing
+      const contactName = clientProfile?.contact_name || userMetadata?.full_name || null;
+      const phoneNumber = clientProfile?.phone_number || userMetadata?.phone_number || null;
+      
       setClientInfo({
-        contact_name: clientProfile?.contact_name || userData?.full_name || userMetadata?.full_name || null,
+        contact_name: contactName,
         company_name: clientProfile?.company_name || userMetadata?.company_name || null,
-        phone_number: clientProfile?.phone_number || userMetadata?.phone_number || null,
+        phone_number: phoneNumber,
         website: clientProfile?.website || userMetadata?.website || null,
         company_address: clientProfile?.company_address || userMetadata?.company_address || null,
         email: email,
         user_id: project.user_id,
         user_metadata: userMetadata,
         // A profile is considered complete if we have at least name, email, and phone
-        is_profile_complete: !!(
-          (clientProfile?.contact_name) && 
-          email && 
-          (clientProfile?.phone_number)
-        )
+        is_profile_complete: !!(contactName && email && phoneNumber)
       });
       
       // Only attempt to create/update the client profile if:
       // 1. The current user is the owner of the project/client profile
       // 2. We have data from auth that could be used to create/update the profile
-      // 3. The profile doesn't exist
-      if (user?.id === project.user_id && userData && userMetadata && userData.full_name && !clientProfile) {
+      // 3. The profile doesn't exist OR is missing critical fields
+      if (user?.id === project.user_id && userData && userMetadata && needsAuthData) {
         try {
-          console.log('Creating client profile with auth data since none exists');
+          console.log('Creating/updating client profile with auth data for missing fields');
+          
+          const profileData = {
+            id: project.user_id,
+            contact_name: contactName || userData.full_name,
+            email: email,
+            phone_number: phoneNumber || userMetadata.phone_number || userMetadata.phone,
+            company_name: clientProfile?.company_name || userMetadata.company_name,
+            company_address: clientProfile?.company_address || userMetadata.company_address,
+            updated_at: new Date().toISOString()
+          };
+          
+          console.log('Upserting profile with data:', profileData);
+          
           const { error: upsertError } = await supabase
             .from('client_profiles')
-            .upsert({
-              id: project.user_id,
-              contact_name: userData.full_name,
-              email: userData?.email,
-              phone_number: userMetadata.phone_number || userMetadata.phone,
-              company_name: userMetadata.company_name,
-              company_address: userMetadata.company_address,
-              updated_at: new Date().toISOString()
-            }, {
+            .upsert(profileData, {
               onConflict: 'id'
             });
             
           if (upsertError) {
-            console.error('Error creating client profile:', upsertError);
+            console.error('Error creating/updating client profile:', upsertError);
           } else {
-            console.log('Successfully created client profile with auth data');
+            console.log('Successfully created/updated client profile with auth data');
           }
         } catch (syncError) {
-          console.error('Exception during profile creation:', syncError);
+          console.error('Exception during profile creation/update:', syncError);
         }
       }
     } catch (error) {
