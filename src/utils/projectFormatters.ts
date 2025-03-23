@@ -5,7 +5,7 @@ import { format, formatDistanceToNow } from 'date-fns';
 export const formatDate = (dateString: string | null) => {
   if (!dateString) return 'Not specified';
   try {
-    return format(new Date(dateString), 'dd MMM yyyy');
+    return format(new Date(dateString), 'MMM d, yyyy');
   } catch (error) {
     return dateString;
   }
