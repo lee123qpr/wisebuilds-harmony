@@ -75,10 +75,18 @@ export const useFreelancerProfileData = (userId?: string) => {
             travel_distance: profileData.travel_distance || "",
             email: "",
             indemnity_insurance: !!profileData.indemnity_insurance,
-            previous_employers: Array.isArray(profileData.previous_employers) ? profileData.previous_employers : [],
-            skills: Array.isArray(profileData.skills) ? profileData.skills : [],
-            qualifications: Array.isArray(profileData.qualifications) ? profileData.qualifications : [],
-            previous_work: Array.isArray(profileData.previous_work) ? profileData.previous_work : []
+            previous_employers: Array.isArray(profileData.previous_employers) 
+              ? profileData.previous_employers.map(item => String(item)) 
+              : [],
+            skills: Array.isArray(profileData.skills) 
+              ? profileData.skills.map(item => String(item)) 
+              : [],
+            qualifications: Array.isArray(profileData.qualifications) 
+              ? profileData.qualifications.map(item => String(item)) 
+              : [],
+            previous_work: Array.isArray(profileData.previous_work) 
+              ? profileData.previous_work.map(item => String(item)) 
+              : []
           };
         }
 
@@ -95,10 +103,18 @@ export const useFreelancerProfileData = (userId?: string) => {
           travel_distance: profileData.travel_distance || "",
           email: userData?.email || "",
           indemnity_insurance: !!profileData.indemnity_insurance,
-          previous_employers: Array.isArray(profileData.previous_employers) ? profileData.previous_employers : [],
-          skills: Array.isArray(profileData.skills) ? profileData.skills : [],
-          qualifications: Array.isArray(profileData.qualifications) ? profileData.qualifications : [],
-          previous_work: Array.isArray(profileData.previous_work) ? profileData.previous_work : []
+          previous_employers: Array.isArray(profileData.previous_employers) 
+            ? profileData.previous_employers.map(item => String(item)) 
+            : [],
+          skills: Array.isArray(profileData.skills) 
+            ? profileData.skills.map(item => String(item)) 
+            : [],
+          qualifications: Array.isArray(profileData.qualifications) 
+            ? profileData.qualifications.map(item => String(item)) 
+            : [],
+          previous_work: Array.isArray(profileData.previous_work) 
+            ? profileData.previous_work.map(item => String(item)) 
+            : []
         };
       } catch (error) {
         console.error("Error in useFreelancerProfileData:", error);
