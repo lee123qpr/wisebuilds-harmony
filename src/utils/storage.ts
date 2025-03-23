@@ -7,7 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 export enum StorageBucket {
   PROJECTS = 'project-documents',
   ATTACHMENTS = 'attachments',
-  AVATARS = 'avatars',
+  AVATARS = 'freelancer-avatar',  // Updated to use existing bucket
   VERIFICATION = 'verification_documents'
 }
 

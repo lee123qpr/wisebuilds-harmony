@@ -41,11 +41,18 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         throw new Error('Authentication required: Please log in before uploading');
       }
       
-      // Use the centralized upload utility with proper path
-      const filePath = folder ? `${userId}/${folder}` : userId;
-      const fileName = namePrefix ? `${namePrefix.toLowerCase()}-${Date.now()}` : `avatar-${Date.now()}`;
+      // Check file type
+      if (!file.type.startsWith('image/')) {
+        throw new Error('Only image files are allowed (jpg, png, etc)');
+      }
       
-      console.log(`Attempting upload to ${StorageBucket.AVATARS}/${filePath}/${fileName}`);
+      // Check file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error('File size exceeds 5MB limit');
+      }
+      
+      // Use the correct bucket for avatar uploads
+      console.log(`Attempting upload to ${StorageBucket.AVATARS}/${userId}`);
       
       // Use the centralized upload utility
       const result = await uploadFile(
