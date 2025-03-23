@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { format } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,6 +11,11 @@ import ProjectCompleteButton from '@/components/projects/ProjectCompleteButton';
 import ProjectCompletionStatus from '@/components/projects/ProjectCompletionStatus';
 import { useAuth } from '@/context/AuthContext';
 import { cn } from '@/lib/utils';
+import { getFreelancerInfo } from '@/services/conversations/utils/getFreelancerInfo';
+import { FreelancerInfo } from '@/types/messaging';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Skeleton } from '@/components/ui/skeleton';
+import VerificationBadge from '@/components/common/VerificationBadge';
 
 interface JobCardProps {
   quote: QuoteWithFreelancer;
@@ -21,6 +26,8 @@ interface JobCardProps {
 const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [freelancerInfo, setFreelancerInfo] = useState<FreelancerInfo | null>(null);
+  const [isLoadingFreelancer, setIsLoadingFreelancer] = useState(false);
   
   // Fix: Properly access the project title from the project object
   const projectTitle = quote.project?.title || 'Untitled Project';
@@ -46,6 +53,53 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
   const userCompleted = user?.user_metadata?.user_type === 'freelancer' 
     ? quote.freelancer_completed 
     : quote.client_completed;
+  
+  // Fetch freelancer info if profile is empty or incomplete
+  useEffect(() => {
+    const hasEmptyProfile = !quote.freelancer_profile || 
+                            (!quote.freelancer_profile.display_name && 
+                             !quote.freelancer_profile.first_name && 
+                             !quote.freelancer_profile.last_name);
+    
+    if (hasEmptyProfile && !freelancerInfo && !isLoadingFreelancer) {
+      const fetchFreelancerInfo = async () => {
+        setIsLoadingFreelancer(true);
+        try {
+          const info = await getFreelancerInfo(quote.freelancer_id);
+          setFreelancerInfo(info);
+        } catch (error) {
+          console.error('Error fetching freelancer info:', error);
+        } finally {
+          setIsLoadingFreelancer(false);
+        }
+      };
+      
+      fetchFreelancerInfo();
+    }
+  }, [quote.freelancer_id, quote.freelancer_profile, freelancerInfo, isLoadingFreelancer]);
+  
+  // Create a combined freelancer name from both sources
+  const freelancerName = quote.freelancer_profile?.display_name || 
+    (quote.freelancer_profile?.first_name && quote.freelancer_profile?.last_name 
+      ? `${quote.freelancer_profile.first_name} ${quote.freelancer_profile.last_name}`
+      : freelancerInfo?.full_name || freelancerInfo?.name || user?.user_metadata?.display_name || 'Freelancer');
+  
+  // Get the profile photo from either source
+  const profilePhoto = quote.freelancer_profile?.profile_photo || 
+                     freelancerInfo?.profile_image || 
+                     freelancerInfo?.profilePhoto;
+  
+  // Check if freelancer is verified from either source
+  const isVerified = quote.freelancer_profile?.verified || 
+                   freelancerInfo?.verified || 
+                   freelancerInfo?.isVerified || 
+                   false;
+  
+  // Get the job title with fallbacks
+  const jobTitle = quote.freelancer_profile?.job_title || 
+                 freelancerInfo?.job_title || 
+                 freelancerInfo?.jobTitle || 
+                 'Freelancer';
   
   // Determine card style based on completion status
   const getCardStyles = () => {
@@ -80,6 +134,33 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
       
       <CardContent>
         <div className="space-y-4">
+          {/* Freelancer info card */}
+          <div className="flex items-center gap-3 mb-4">
+            {isLoadingFreelancer ? (
+              <>
+                <Skeleton className="h-10 w-10 rounded-full" />
+                <div>
+                  <Skeleton className="h-4 w-32 mb-1" />
+                  <Skeleton className="h-3 w-24" />
+                </div>
+              </>
+            ) : (
+              <>
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={profilePhoto} alt={freelancerName} />
+                  <AvatarFallback>{freelancerName.substring(0, 2).toUpperCase()}</AvatarFallback>
+                </Avatar>
+                <div>
+                  <p className="font-medium flex items-center gap-1">
+                    {freelancerName}
+                    {isVerified && <VerificationBadge type="none" status="verified" showTooltip={false} className="h-4 w-4" />}
+                  </p>
+                  <p className="text-sm text-muted-foreground">{jobTitle}</p>
+                </div>
+              </>
+            )}
+          </div>
+          
           <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
               <Calendar className="h-4 w-4" />
@@ -106,7 +187,7 @@ const JobCard: React.FC<JobCardProps> = ({ quote, clientName, onStatusUpdate }) 
               projectId={quote.project_id}
               freelancerId={quote.freelancer_id}
               clientId={quote.client_id}
-              freelancerName={user?.user_metadata?.display_name || 'Freelancer'}
+              freelancerName={freelancerName}
               clientName={clientName}
             />
           )}

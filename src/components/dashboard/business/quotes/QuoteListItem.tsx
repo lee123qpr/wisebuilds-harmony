@@ -34,9 +34,6 @@ const QuoteListItem: React.FC<QuoteListItemProps> = ({ quote, user }) => {
                         ? quote.project.title 
                         : 'Untitled Project';
   
-  console.log('Quote project data:', quote.project);
-  console.log('Quote freelancer data:', quote.freelancer_profile);
-  
   // Safely access role with proper fallback
   const role = quote.project?.role || 'Not specified';
   const roleFormatted = formatRole(role);
