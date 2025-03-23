@@ -5,10 +5,8 @@ import MainLayout from '@/components/layout/MainLayout';
 import BackButton from '@/components/common/BackButton';
 import ClientProfileSkeleton from '@/components/client/profile/ClientProfileSkeleton';
 import ClientProfileNotFound from '@/components/client/profile/ClientProfileNotFound';
-import ClientInformationCard from '@/components/client/profile/ClientInformationCard';
-import CompanyDescriptionCard from '@/components/client/profile/CompanyDescriptionCard';
-import ClientDetailsSection from '@/components/client/profile/ClientDetailsSection';
-import ClientHeaderSection from '@/components/client/profile/ClientHeaderSection';
+import ClientProfileCard from '@/components/client/profile/ClientProfileCard';
+import ClientProfileTabs from '@/components/client/profile/ClientProfileTabs';
 import { useClientProfile, formatProfileDate } from '@/hooks/clients/useClientProfile';
 import { useToast } from '@/hooks/use-toast';
 
@@ -38,7 +36,7 @@ const ClientProfileView = () => {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="container max-w-4xl py-8">
+        <div className="container max-w-5xl py-8">
           <BackButton />
           <ClientProfileSkeleton />
         </div>
@@ -53,23 +51,20 @@ const ClientProfileView = () => {
 
   return (
     <MainLayout>
-      <div className="container max-w-4xl py-8 px-4 sm:px-6 animate-fade-in">
+      <div className="container max-w-5xl py-8 px-4 sm:px-6 animate-fade-in">
         <BackButton />
         
-        <ClientHeaderSection clientProfile={clientProfile} />
-        
-        <div className="mt-8 grid gap-8">
-          <ClientInformationCard 
+        <div className="mb-6">
+          <ClientProfileCard 
             clientProfile={clientProfile}
             formatDate={formatProfileDate}
           />
-          
-          {clientProfile.company_description && (
-            <CompanyDescriptionCard description={clientProfile.company_description} />
-          )}
-          
-          <ClientDetailsSection clientProfile={clientProfile} />
         </div>
+        
+        <ClientProfileTabs 
+          clientProfile={clientProfile}
+          formatDate={formatProfileDate}
+        />
       </div>
     </MainLayout>
   );

@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { ClientProfileData } from '@/pages/client/types';
 import { Building } from 'lucide-react';
@@ -7,6 +6,8 @@ interface ClientHeaderSectionProps {
   clientProfile: ClientProfileData;
 }
 
+// This component is now deprecated in favor of ClientProfileCard
+// Keeping it for backward compatibility
 const ClientHeaderSection: React.FC<ClientHeaderSectionProps> = ({ clientProfile }) => {
   return (
     <div className="mt-6 border-b pb-6">
