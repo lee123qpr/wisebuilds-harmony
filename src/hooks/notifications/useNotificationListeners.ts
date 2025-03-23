@@ -1,5 +1,5 @@
 
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { useNotificationsState } from './useNotificationsState';
 import { fetchNotifications } from '@/services/notifications/notificationService';
@@ -18,6 +18,7 @@ export function useNotificationListeners() {
     addNotificationToState, 
     updateNotificationInState
   } = useNotificationsState();
+  const listenersSetupRef = useRef(false);
 
   // Fetch notifications with retry mechanism
   const initializeNotifications = useCallback(async () => {
@@ -52,11 +53,12 @@ export function useNotificationListeners() {
     }
   }, [user, setNotifications]);
 
-  // Set up all listeners when user is available
+  // Set up all listeners when user is available - only once
   useEffect(() => {
-    if (!user) return;
+    if (!user || listenersSetupRef.current) return;
     
     console.log('Setting up all real-time listeners for user:', user.id);
+    listenersSetupRef.current = true;
     
     // Initialize notifications (with retry mechanism)
     initializeNotifications();
@@ -76,6 +78,7 @@ export function useNotificationListeners() {
     return () => {
       console.log('Cleaning up notification channels');
       cleanup();
+      listenersSetupRef.current = false;
     };
   }, [user, addNotificationToState, initializeNotifications]);
 }
