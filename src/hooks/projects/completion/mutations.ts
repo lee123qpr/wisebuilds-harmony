@@ -28,8 +28,9 @@ export const useMarkProjectCompletedMutation = ({ quoteId, projectId }: ProjectC
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });
       
-      // Also invalidate freelancer profile data to ensure the updated jobs_completed count is shown
+      // Also invalidate profile data to ensure the updated jobs_completed count is shown
       queryClient.invalidateQueries({ queryKey: ['freelancerProfile'] });
+      queryClient.invalidateQueries({ queryKey: ['clientProfile'] });
       
       const isFreelancer = user?.user_metadata?.user_type === 'freelancer';
       handleCompletionSuccess(data, isFreelancer, user);
