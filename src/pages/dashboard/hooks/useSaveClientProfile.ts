@@ -36,6 +36,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
         const { error: updateError } = await supabase
           .from('client_profiles')
           .update({
+            is_individual: values.isIndividual,
             company_name: values.companyName,
             contact_name: values.contactName,
             company_address: values.companyLocation,
@@ -58,6 +59,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
           .from('client_profiles')
           .insert({
             id: user.id,
+            is_individual: values.isIndividual,
             company_name: values.companyName,
             contact_name: values.contactName,
             company_address: values.companyLocation,
@@ -80,6 +82,7 @@ export const useSaveClientProfile = (user: User | null, logoUrl: string | null) 
       // Also update user metadata to keep it in sync
       const { error: updateUserError } = await supabase.auth.updateUser({
         data: {
+          is_individual: values.isIndividual,
           company_name: values.companyName,
           contact_name: values.contactName,
           company_address: values.companyLocation,

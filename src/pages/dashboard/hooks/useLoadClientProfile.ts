@@ -51,6 +51,7 @@ export const useLoadClientProfile = ({
         if (data) {
           // Populate form with existing data
           form.reset({
+            isIndividual: data.is_individual || false,
             companyName: data.company_name || userMetadata.company_name || '',
             contactName: data.contact_name || userMetadata.contact_name || userMetadata.full_name || '',
             companyLocation: data.company_address || userMetadata.company_address || '',
@@ -69,6 +70,7 @@ export const useLoadClientProfile = ({
           setJobsCompleted(data.jobs_completed || 0);
         } else {
           // Create initial profile with data from auth.user metadata
+          const isIndividual = userMetadata.is_individual || false;
           const companyName = userMetadata.company_name || '';
           const contactName = userMetadata.contact_name || userMetadata.full_name || '';
           const phoneNumber = userMetadata.phone_number || userMetadata.phone || '';
@@ -76,6 +78,7 @@ export const useLoadClientProfile = ({
           const companyDescription = userMetadata.company_description || '';
           
           form.reset({
+            isIndividual,
             companyName,
             contactName,
             companyLocation,

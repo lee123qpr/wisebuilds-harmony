@@ -2,10 +2,15 @@
 import * as z from 'zod';
 
 export const clientProfileSchema = z.object({
+  isIndividual: z
+    .boolean()
+    .default(false),
   companyName: z
     .string()
     .min(2, { message: 'Company name must be at least 2 characters long' })
-    .max(100, { message: 'Company name cannot exceed 100 characters' }),
+    .max(100, { message: 'Company name cannot exceed 100 characters' })
+    .optional()
+    .or(z.literal('')),
   contactName: z
     .string()
     .min(2, { message: 'Contact name must be at least 2 characters long' })

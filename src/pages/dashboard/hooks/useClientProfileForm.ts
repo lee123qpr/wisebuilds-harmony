@@ -13,6 +13,7 @@ export const useClientProfileForm = () => {
   const form = useForm<ClientProfileFormValues>({
     resolver: zodResolver(clientProfileSchema),
     defaultValues: {
+      isIndividual: false,
       companyName: '',
       contactName: '',
       companyLocation: '',
