@@ -1,70 +1,4 @@
 
-import { useState, useCallback, useEffect } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { useToast } from '@/hooks/use-toast';
-import { uploadFile, checkBucketExists, getActualAvatarBucket } from '@/utils/storage';
-import { supabase } from '@/integrations/supabase/client';
-import { getAvatarBucketName } from '@/hooks/verification/services/storage-utils';
-
-interface UseImageUploadProps {
-  userId: string;
-  folder?: string; // Optional subfolder
-  namePrefix?: string; // Optional name prefix for the file
-}
-
-export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadProps) => {
-  const { toast } = useToast();
-  const [imageUrl, setImageUrl] = useState<string | null>(null);
-  const [uploadingImage, setUploadingImage] = useState(false);
-  const [bucketAvailable, setBucketAvailable] = useState<boolean | null>(null);
-  const [actualBucketName, setActualBucketName] = useState<string | null>(null);
-  // Used to force re-render of Avatar when image is updated
-  const [imageKey, setImageKey] = useState(() => uuidv4());
-  
-  // Check if avatar bucket exists on component mount
-  useEffect(() => {
-    async function checkBucket() {
-      try {
-        // Get available buckets
-        const { data: bucketsData } = await supabase.storage.listBuckets();
-        const availableBucketsStr = bucketsData?.map(b => b.name).join(', ') || 'none';
-        console.log(`Available buckets: ${availableBucketsStr}`);
-        
-        if (!bucketsData || bucketsData.length === 0) {
-          console.error('No buckets found in storage');
-          setBucketAvailable(false);
-          return;
-        }
-        
-        // Try to get the avatar bucket name
-        const bucketName = await getAvatarBucketName();
-        
-        if (bucketName) {
-          setActualBucketName(bucketName);
-          console.log(`Using avatar bucket: ${bucketName}`);
-          setBucketAvailable(true);
-        } else {
-          // Use the first available bucket as fallback
-          if (bucketsData.length > 0) {
-            const fallbackBucket = bucketsData[0].name;
-            setActualBucketName(fallbackBucket);
-            console.log(`Falling back to first available bucket: ${fallbackBucket}`);
-            setBucketAvailable(true);
-          } else {
-            setBucketAvailable(false);
-          }
-        }
-      } catch (error) {
-        console.error('Error checking avatar bucket:', error);
-        setBucketAvailable(false);
-      }
-    }
-    
-    if (userId) {
-      checkBucket();
-    }
-  }, [userId]);
-
   const handleImageUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) {
@@ -98,23 +32,8 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         throw new Error('File size exceeds 5MB limit');
       }
       
-      // Check if we have a bucket to use
-      if (!actualBucketName) {
-        // Try to get an available bucket again (just in case)
-        const bucketName = await getAvatarBucketName();
-        
-        if (!bucketName) {
-          const { data: buckets } = await supabase.storage.listBuckets();
-          const availableBuckets = buckets?.map(b => b.name).join(', ') || 'none';
-          
-          throw new Error(`No available storage bucket found for avatar uploads. 
-            Available buckets: ${availableBuckets}. Please contact support.`);
-        }
-        
-        setActualBucketName(bucketName);
-      }
-      
-      const bucketToUse = actualBucketName!;
+      // Default to the freelancer-avatar bucket if available
+      const bucketToUse = actualBucketName || 'freelancer-avatar';
       console.log(`Attempting upload to ${bucketToUse}/${userId}`);
       
       // Prepare the file path - important for RLS policies
@@ -169,16 +88,4 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
     } finally {
       setUploadingImage(false);
     }
-  }, [userId, folder, namePrefix, toast, actualBucketName]);
-
-  return {
-    imageUrl,
-    setImageUrl,
-    uploadingImage,
-    setUploadingImage,
-    imageKey,
-    bucketAvailable,
-    actualBucketName,
-    handleImageUpload
-  };
-};
+  }, [userId, namePrefix, toast, actualBucketName]);
