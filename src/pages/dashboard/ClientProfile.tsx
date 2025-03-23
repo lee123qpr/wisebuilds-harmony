@@ -49,54 +49,52 @@ const ClientProfile = () => {
   return (
     <MainLayout>
       <div className="container py-8">
-        <div className="mb-8 flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">Company Profile</h1>
-            <p className="text-muted-foreground">Manage your business information, reviews, and account settings</p>
-          </div>
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold mb-2">Company Profile</h1>
+          <p className="text-muted-foreground">Manage your business information, reviews, and account settings</p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-1">
-            <CompanyLogo
-              logoUrl={logoUrl}
-              uploadingLogo={uploadingLogo}
-              setUploadingLogo={setUploadingLogo}
-              setLogoUrl={setLogoUrl}
-              companyName={form.watch('companyName')}
-              contactName={form.watch('contactName')}
-              userId={user?.id || ''}
-              memberSince={memberSince}
-              emailVerified={emailVerified}
-              jobsCompleted={jobsCompleted}
-            />
-          </div>
+        {/* Profile Card - Full Width Across The Top */}
+        <div className="w-full mb-8">
+          <CompanyLogo
+            logoUrl={logoUrl}
+            uploadingLogo={uploadingLogo}
+            setUploadingLogo={setUploadingLogo}
+            setLogoUrl={setLogoUrl}
+            companyName={form.watch('companyName')}
+            contactName={form.watch('contactName')}
+            userId={user?.id || ''}
+            memberSince={memberSince}
+            emailVerified={emailVerified}
+            jobsCompleted={jobsCompleted}
+          />
+        </div>
 
-          <div className="lg:col-span-2">
-            <Tabs defaultValue="profile" className="w-full">
-              <TabsList className="mb-6">
-                <TabsTrigger value="profile">Profile Information</TabsTrigger>
-                <TabsTrigger value="reviews">Reviews</TabsTrigger>
-                <TabsTrigger value="account">Account Settings</TabsTrigger>
-              </TabsList>
-              
-              <TabsContent value="profile">
-                <ProfileInfoTab
-                  form={form}
-                  isSaving={isSaving}
-                  onSubmit={saveProfile}
-                />
-              </TabsContent>
-              
-              <TabsContent value="reviews">
-                <ReviewsTab userId={user?.id || ''} />
-              </TabsContent>
-              
-              <TabsContent value="account">
-                <AccountSettingsTab />
-              </TabsContent>
-            </Tabs>
-          </div>
+        {/* Tabs Below - Full Width */}
+        <div className="w-full">
+          <Tabs defaultValue="profile" className="w-full">
+            <TabsList className="mb-6">
+              <TabsTrigger value="profile">Profile Information</TabsTrigger>
+              <TabsTrigger value="reviews">Reviews</TabsTrigger>
+              <TabsTrigger value="account">Account Settings</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="profile">
+              <ProfileInfoTab
+                form={form}
+                isSaving={isSaving}
+                onSubmit={saveProfile}
+              />
+            </TabsContent>
+            
+            <TabsContent value="reviews">
+              <ReviewsTab userId={user?.id || ''} />
+            </TabsContent>
+            
+            <TabsContent value="account">
+              <AccountSettingsTab />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
     </MainLayout>
