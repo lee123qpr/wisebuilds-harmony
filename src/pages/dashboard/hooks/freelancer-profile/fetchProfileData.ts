@@ -24,6 +24,29 @@ export async function fetchFreelancerProfileData(
       throw profileError;
     }
     
+    // Check if we need to fetch the rating information
+    if (profileData) {
+      try {
+        // Attempt to get rating data from client_reviews if it's not already present
+        if (profileData.rating === undefined || profileData.rating === null) {
+          const { data: reviewsData, error: reviewsError } = await supabase
+            .from('client_reviews')
+            .select('rating')
+            .eq('client_id', user.id);
+            
+          if (!reviewsError && reviewsData && reviewsData.length > 0) {
+            // Calculate average rating
+            const totalRating = reviewsData.reduce((sum, review) => sum + review.rating, 0);
+            profileData.rating = parseFloat((totalRating / reviewsData.length).toFixed(1));
+            profileData.reviews_count = reviewsData.length;
+          }
+        }
+      } catch (reviewsError) {
+        console.error('Error fetching reviews:', reviewsError);
+        // Continue with profile data even if reviews fetch fails
+      }
+    }
+    
     console.log('Loaded profile data from database:', profileData);
     
     return profileData;

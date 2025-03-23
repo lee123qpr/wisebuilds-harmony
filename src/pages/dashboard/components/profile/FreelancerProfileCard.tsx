@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import VerificationBadge from '@/components/dashboard/freelancer/VerificationBadge';
 import { supabase } from '@/integrations/supabase/client';
+import ProfileRatingStars from '@/pages/freelancer/components/ProfileRatingStars';
 
 interface FreelancerProfileCardProps {
   profileImage: string | null;
@@ -24,6 +25,8 @@ interface FreelancerProfileCardProps {
   emailVerified: boolean;
   jobsCompleted: number;
   idVerified: boolean;
+  rating?: number | null;
+  reviewsCount?: number;
 }
 
 const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
@@ -37,7 +40,9 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
   memberSince,
   emailVerified,
   jobsCompleted,
-  idVerified
+  idVerified,
+  rating,
+  reviewsCount
 }) => {
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -114,6 +119,16 @@ const FreelancerProfileCard: React.FC<FreelancerProfileCardProps> = ({
             {idVerified && <VerificationBadge status="verified" />}
           </div>
           <p className="text-muted-foreground">{profession}</p>
+          
+          {/* Add rating stars component */}
+          <div className="mt-2 flex justify-center md:justify-start">
+            <ProfileRatingStars 
+              userId={userId} 
+              rating={rating} 
+              reviewsCount={reviewsCount} 
+              showEmpty={true} 
+            />
+          </div>
           
           <div className="mt-4 flex flex-wrap gap-2 justify-center md:justify-start">
             {memberSince && (
