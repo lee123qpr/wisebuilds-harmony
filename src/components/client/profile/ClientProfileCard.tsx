@@ -69,12 +69,7 @@ const ClientProfileCard: React.FC<ClientProfileCardProps> = ({
                 </div>
               )}
               
-              {clientProfile.jobs_completed !== null && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Check className="mr-1.5 h-4 w-4 flex-shrink-0" />
-                  <span>{clientProfile.jobs_completed || 0} {clientProfile.jobs_completed === 1 ? 'job' : 'jobs'} completed</span>
-                </div>
-              )}
+              {/* Removed the jobs_completed text section as requested, since it's already displayed as a badge below */}
               
               {clientProfile.email && (
                 <div className="flex items-center text-sm text-muted-foreground">
