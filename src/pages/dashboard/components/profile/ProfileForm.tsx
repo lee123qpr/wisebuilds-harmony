@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { FormField, FormItem, FormLabel, FormControl, FormDescription, FormMessage } from '@/components/ui/form';
@@ -134,6 +135,7 @@ const ProfileForm: React.FC<ProfileFormProps> = ({ form, disabled = false }) => 
                   <SelectItem value="Developer">Developer</SelectItem>
                   <SelectItem value="Non-Construction Business">Non-Construction Business</SelectItem>
                   <SelectItem value="Domestic User">Domestic User</SelectItem>
+                  <SelectItem value="Homeowner/DIY">Homeowner/DIY</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
