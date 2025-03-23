@@ -6,11 +6,13 @@ import { CheckCircle2 } from 'lucide-react';
 interface CompleteProjectButtonProps {
   onClick: () => void;
   otherPartyCompleted: boolean;
+  disabled?: boolean;
 }
 
 const CompleteProjectButton: React.FC<CompleteProjectButtonProps> = ({
   onClick,
   otherPartyCompleted,
+  disabled = false,
 }) => {
   // If the other party has completed but user hasn't, show a more prominent button
   const buttonVariant = otherPartyCompleted ? "default" : "outline";
@@ -23,6 +25,7 @@ const CompleteProjectButton: React.FC<CompleteProjectButtonProps> = ({
       variant={buttonVariant} 
       className={buttonClass}
       onClick={onClick}
+      disabled={disabled}
     >
       <CheckCircle2 className="h-4 w-4" />
       {otherPartyCompleted 

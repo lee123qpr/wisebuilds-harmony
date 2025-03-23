@@ -20,10 +20,12 @@ export const useMarkProjectCompletedMutation = ({ quoteId, projectId }: ProjectC
       // Determine whether this is a freelancer or client based on user metadata
       const isFreelancer = user.user_metadata?.user_type === 'freelancer';
       console.log('User type:', isFreelancer ? 'freelancer' : 'client');
+      console.log('Calling API with:', { quoteId, projectId, userId: user.id, isFreelancer });
       
       return updateQuoteCompletionStatus(quoteId, projectId, user.id, isFreelancer);
     },
     onSuccess: (data) => {
+      console.log('Project marked as complete successfully:', data);
       // Invalidate relevant queries to refresh the data
       queryClient.invalidateQueries({ queryKey: ['quotes'] });
       queryClient.invalidateQueries({ queryKey: ['projects'] });

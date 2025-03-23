@@ -94,6 +94,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
         <CompleteProjectButton 
           onClick={() => setDialogOpen(true)}
           otherPartyCompleted={otherPartyCompleted}
+          disabled={isMarkingComplete}
         />
         
         <DisputeButton onClick={() => setIncompleteDialogOpen(true)} />
@@ -124,6 +125,7 @@ const ProjectCompleteButton: React.FC<ProjectCompleteButtonProps> = ({
       <CompleteProjectButton 
         onClick={() => setDialogOpen(true)}
         otherPartyCompleted={otherPartyCompleted}
+        disabled={isMarkingComplete}
       />
       
       <ProjectCompletionDialog

@@ -23,6 +23,7 @@ export const useCompletionActions = (
     try {
       console.log("Marking project as complete for quoteId:", quoteId, "projectId:", projectId);
       await markProjectCompleted();
+      console.log("Mark complete operation completed successfully");
       setDialogOpen(false);
       
       // Add delay before refreshing status to ensure database has updated
@@ -33,6 +34,13 @@ export const useCompletionActions = (
           onStatusUpdate();
         }
       }, 1500);
+      
+      // Show success toast
+      toast({
+        title: 'Project marked as complete',
+        description: 'The project has been marked as complete.',
+        variant: 'default'
+      });
     } catch (error) {
       console.error('Error completing project:', error);
       toast({
