@@ -1,6 +1,7 @@
 
 import TestSkeleton from '../components/test/TestSkeleton';
 import FreelancerProfileCardsTest from '../pages/test/FreelancerProfileCardsTest';
+import FreelancerDetailedProfileTest from '../pages/test/FreelancerDetailedProfileTest';
 
 export const miscRoutes = [
   {
@@ -14,5 +15,9 @@ export const miscRoutes = [
   {
     path: '/test/freelancer-profile-cards-test',
     element: <FreelancerProfileCardsTest />,
+  },
+  {
+    path: '/test/freelancer-detailed-profile',
+    element: <FreelancerDetailedProfileTest />,
   }
 ];

@@ -1,0 +1,57 @@
+
+import React, { useState } from 'react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import MainLayout from '@/components/layout/MainLayout';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Separator } from '@/components/ui/separator';
+import FreelancerProfile from '@/pages/dashboard/FreelancerProfile';
+import FreelancerProfileView from '@/pages/freelancer/FreelancerProfileView';
+
+const FreelancerDetailedProfileTest = () => {
+  return (
+    <MainLayout>
+      <div className="container py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold mb-2">Freelancer Profile Testing</h1>
+          <p className="text-muted-foreground mb-4">
+            Compare how profiles look to freelancers vs clients
+          </p>
+          <Separator className="my-4" />
+        </div>
+
+        <Tabs defaultValue="freelancer-view" className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="freelancer-view">Freelancer Edit View</TabsTrigger>
+            <TabsTrigger value="client-view">Client-facing View</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="freelancer-view" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Freelancer Dashboard Profile</CardTitle>
+                <CardDescription>This is what freelancers see when editing their profile</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FreelancerProfile />
+              </CardContent>
+            </Card>
+          </TabsContent>
+          
+          <TabsContent value="client-view" className="space-y-4">
+            <Card>
+              <CardHeader>
+                <CardTitle>Client-facing Profile View</CardTitle>
+                <CardDescription>This is what clients see when viewing a freelancer's profile</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <FreelancerProfileView />
+              </CardContent>
+            </Card>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </MainLayout>
+  );
+};
+
+export default FreelancerDetailedProfileTest;
