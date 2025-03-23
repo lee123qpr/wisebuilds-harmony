@@ -24,6 +24,7 @@ const QuoteCards: React.FC<QuoteCardsProps> = ({
     id: 'quote-123',
     status: 'pending',
     created_at: mockQuoteDate,
+    updated_at: mockQuoteDate, // Add the missing required property
     project_id: 'project-123',
     freelancer_id: completeFreelancer.id,
     client_id: 'client-123',

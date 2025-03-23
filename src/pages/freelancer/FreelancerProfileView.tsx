@@ -8,6 +8,7 @@ import FreelancerProfileLoading from './components/FreelancerProfileLoading';
 import FreelancerProfileNotFound from './components/FreelancerProfileNotFound';
 import MainLayout from '@/components/layout/MainLayout';
 import BackButton from '@/components/common/BackButton';
+import { FreelancerProfile } from '@/types/applications';
 
 interface FreelancerProfileViewProps {
   freelancerId?: string;
@@ -51,8 +52,8 @@ const FreelancerProfileView: React.FC<FreelancerProfileViewProps> = ({ freelance
           />
         </div>
       )}
-      <FreelancerProfileHeader profile={profile} />
-      <FreelancerProfileTabs profile={profile} />
+      <FreelancerProfileHeader profile={profile as FreelancerProfile} />
+      <FreelancerProfileTabs profile={profile as FreelancerProfile} />
     </>
   );
 

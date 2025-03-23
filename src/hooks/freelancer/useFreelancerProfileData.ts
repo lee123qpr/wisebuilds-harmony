@@ -3,10 +3,12 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
+import { FreelancerProfile } from '@/types/applications';
 
+// This interface represents the data structure from the database
 export interface ProfileData {
   id: string;
-  user_id: string;
+  user_id?: string;
   display_name: string;
   first_name: string | null;
   last_name: string | null;
@@ -18,19 +20,19 @@ export interface ProfileData {
   location: string | null;
   skills: string[] | null;
   previous_employers: Array<{
-    employerName?: string;
-    position?: string;
-    startDate?: string;
+    employerName: string;
+    position: string;
+    startDate: string;
     endDate?: string | null;
-    current?: boolean;
+    current: boolean;
   }> | null;
   previous_work: Array<{
-    title?: string;
-    description?: string;
+    title: string;
+    description: string;
   }> | null;
   qualifications: string[] | null;
   indemnity_insurance: {
-    hasInsurance?: boolean;
+    hasInsurance: boolean;
     coverLevel?: string;
   } | null;
   created_at: string;
@@ -58,14 +60,23 @@ interface FreelancerProfileDataResponse {
 export const formatFreelancerProfileData = (data: any): ProfileData | null => {
   if (!data) return null;
   
-  // Handle previous_employers safely
+  // Handle previous_employers safely - ensure required properties are present
   const previousEmployers = data.previous_employers ? 
-    (Array.isArray(data.previous_employers) ? data.previous_employers : []) : 
+    (Array.isArray(data.previous_employers) ? data.previous_employers.map((emp: any) => ({
+      employerName: emp.employerName || '',
+      position: emp.position || '',
+      startDate: emp.startDate || '',
+      endDate: emp.endDate || null,
+      current: emp.current || false
+    })) : []) : 
     [];
     
   // Handle previous_work safely
   const previousWork = data.previous_work ? 
-    (Array.isArray(data.previous_work) ? data.previous_work : []) : 
+    (Array.isArray(data.previous_work) ? data.previous_work.map((work: any) => ({
+      title: work.title || '',
+      description: work.description || ''
+    })) : []) : 
     [];
   
   // Cast data to avoid deep type inference
@@ -85,7 +96,7 @@ export const formatFreelancerProfileData = (data: any): ProfileData | null => {
     previous_employers: previousEmployers,
     previous_work: previousWork,
     qualifications: data.qualifications || [],
-    indemnity_insurance: data.indemnity_insurance || null,
+    indemnity_insurance: data.indemnity_insurance || { hasInsurance: false },
     created_at: data.created_at || '',
     updated_at: data.updated_at || '',
     member_since: data.member_since,
@@ -143,7 +154,7 @@ export const useFreelancerProfileData = (userId?: string) => {
   });
 
   return {
-    profile: query.data?.data,
+    profile: query.data?.data as FreelancerProfile | null,
     isLoading: query.isLoading,
     error: query.error || query.data?.error,
     ...query
