@@ -17,16 +17,20 @@ const QualificationsAccreditationsSection: React.FC<QualificationsAccreditations
   }
 
   return (
-    <div className="space-y-6">
+    <div className="bg-card rounded-lg p-5 shadow-sm border border-border/40 space-y-6">
       {hasQualifications && (
         <div>
-          <h3 className="text-md font-medium mb-3 flex items-center gap-2 text-foreground">
-            <GraduationCap className="h-4 w-4 text-primary/70" />
-            Qualifications
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <div className="bg-primary/10 p-1.5 rounded-md">
+              <GraduationCap className="h-4 w-4 text-primary" />
+            </div>
+            <span>Qualifications</span>
           </h3>
-          <ul className="list-disc pl-5 space-y-2 text-sm">
+          <ul className="space-y-3">
             {profile.qualifications!.map((qualification, index) => (
-              <li key={index} className="text-base">{qualification}</li>
+              <li key={index} className="bg-muted/50 p-3 rounded-md text-foreground">
+                {qualification}
+              </li>
             ))}
           </ul>
         </div>
@@ -34,13 +38,19 @@ const QualificationsAccreditationsSection: React.FC<QualificationsAccreditations
       
       {hasAccreditations && (
         <div>
-          <h3 className="text-md font-medium mb-3 flex items-center gap-2 text-foreground">
-            <Award className="h-4 w-4 text-primary/70" />
-            Accreditations
+          <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <div className="bg-primary/10 p-1.5 rounded-md">
+              <Award className="h-4 w-4 text-primary" />
+            </div>
+            <span>Accreditations</span>
           </h3>
           <div className="flex flex-wrap gap-2">
             {profile.accreditations!.map((accreditation, index) => (
-              <Badge key={index} variant="outline" className="px-3 py-1 border-primary/30 bg-primary/5 text-primary">
+              <Badge 
+                key={index} 
+                variant="outline" 
+                className="bg-secondary/20 hover:bg-secondary/30 text-secondary-foreground border-secondary/20 px-3 py-1 rounded-full"
+              >
                 {accreditation}
               </Badge>
             ))}

@@ -14,16 +14,18 @@ const PreviousEmployersSection: React.FC<PreviousEmployersSectionProps> = ({ pro
   }
 
   return (
-    <div>
-      <h3 className="text-md font-medium mb-3 flex items-center gap-2 text-foreground">
-        <Building className="h-4 w-4 text-primary/70" />
-        Previous Employers
+    <div className="bg-card rounded-lg p-5 shadow-sm border border-border/40">
+      <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+        <div className="bg-primary/10 p-1.5 rounded-md">
+          <Building className="h-4 w-4 text-primary" />
+        </div>
+        <span>Previous Employers</span>
       </h3>
       <div className="space-y-4">
         {profile.previous_employers.map((employer, index) => (
-          <div key={index} className="border p-4 rounded-md bg-muted/20 shadow-sm">
-            <div className="flex flex-col gap-1">
-              <div className="font-medium flex items-center gap-2">
+          <div key={index} className="bg-muted/50 p-4 rounded-md">
+            <div className="flex flex-col gap-2">
+              <div className="font-medium flex items-center gap-2 text-foreground">
                 <Building className="h-4 w-4 text-primary" />
                 {employer.employerName}
               </div>
