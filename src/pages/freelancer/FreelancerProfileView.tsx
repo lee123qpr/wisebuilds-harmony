@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useLocation } from 'react-router-dom';
 import { useFreelancerProfileData } from '@/hooks/freelancer/useFreelancerProfileData';
 import FreelancerProfileHeader from './components/FreelancerProfileHeader';
 import FreelancerProfileTabs from './components/FreelancerProfileTabs';
@@ -8,7 +8,6 @@ import FreelancerProfileLoading from './components/FreelancerProfileLoading';
 import FreelancerProfileNotFound from './components/FreelancerProfileNotFound';
 import MainLayout from '@/components/layout/MainLayout';
 import BackButton from '@/components/common/BackButton';
-import { useLocation } from 'react-router-dom';
 
 interface FreelancerProfileViewProps {
   freelancerId?: string;

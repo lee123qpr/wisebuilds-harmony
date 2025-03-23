@@ -4,13 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
 
-interface FreelancerProfileDataResponse {
-  data: ProfileData | null;
-  error: Error | null;
-}
-
-// Explicitly define the return type structure to avoid deep type instantiation
-interface ProfileData {
+export interface ProfileData {
   id: string;
   user_id: string;
   display_name: string;
@@ -35,6 +29,17 @@ interface ProfileData {
   jobs_completed?: number;
   rating?: number;
   reviews_count?: number;
+  website?: string;
+  hourly_rate?: string;
+  day_rate?: string;
+  availability?: string;
+  experience?: string;
+  accreditations?: string[];
+}
+
+interface FreelancerProfileDataResponse {
+  data: ProfileData | null;
+  error: Error | null;
 }
 
 // Format freelancer profile data safely
@@ -76,7 +81,13 @@ export const formatFreelancerProfileData = (data: any): ProfileData | null => {
     verified: data.verified,
     jobs_completed: data.jobs_completed,
     rating: data.rating,
-    reviews_count: data.reviews_count
+    reviews_count: data.reviews_count,
+    website: data.website,
+    hourly_rate: data.hourly_rate,
+    day_rate: data.day_rate,
+    availability: data.availability,
+    experience: data.experience,
+    accreditations: data.accreditations || []
   };
   
   return formattedData;
@@ -119,7 +130,6 @@ export const useFreelancerProfileData = (userId?: string) => {
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
-  // Return the profile directly from query.data.data to simplify usage
   return {
     profile: query.data?.data,
     isLoading: query.isLoading,
