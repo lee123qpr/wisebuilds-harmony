@@ -9,6 +9,9 @@ import NotFound from '../pages/NotFound';
 import FreelancerProfileView from '../pages/freelancer/FreelancerProfileView';
 import ClientProfileView from '../pages/client/ClientProfileView';
 
+// Enhanced debug logging
+console.log('Router initialization started');
+
 // Log routes for debugging
 const logRoutes = (routes) => {
   console.log('Registering routes:', routes.filter(Boolean).map(r => r.path));
