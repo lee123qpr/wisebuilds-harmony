@@ -1,5 +1,5 @@
 
-import { Notification, NotificationType } from '../types';
+import { Notification, NotificationType } from './types';
 
 export const handleNewMessage = (
   message: any, 
