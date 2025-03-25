@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import MainLayout from '@/components/layout/MainLayout';
 import HeroSection from '@/components/home/HeroSection';
 import TrustedPartners from '@/components/home/TrustedPartners';
@@ -10,6 +10,11 @@ import Testimonials from '@/components/home/Testimonials';
 import CtaSection from '@/components/home/CtaSection';
 
 const Index = () => {
+  // Add debug logging to verify component rendering
+  useEffect(() => {
+    console.log('Index page component mounted');
+  }, []);
+  
   return (
     <MainLayout>
       {/* Hero Section */}

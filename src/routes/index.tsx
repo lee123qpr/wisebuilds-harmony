@@ -11,13 +11,9 @@ import ClientProfileView from '../pages/client/ClientProfileView';
 
 // Log routes for debugging
 const logRoutes = (routes) => {
-  console.log('Registering routes:', routes.map(r => r.path).filter(Boolean));
+  console.log('Registering routes:', routes.filter(Boolean).map(r => r.path));
   return routes;
 };
-
-// Use BrowserRouter with a basename if we're not at the root
-const basename = document.querySelector('base')?.getAttribute('href') || '/';
-console.log('Using basename:', basename);
 
 // Initialize the router with all routes, ensuring root route is correct
 const router = createBrowserRouter(logRoutes([

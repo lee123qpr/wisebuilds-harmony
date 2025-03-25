@@ -8,12 +8,10 @@ export const AppRouter = () => {
   useEffect(() => {
     console.log('AppRouter mounted - routes should be available');
     console.log('Current path:', window.location.pathname);
-    
-    // Log the available routes for debugging
     console.log('Available routes:', 
       router.routes.map(route => ({
         path: route.path,
-        id: route.id
+        id: route.id || 'no-id'
       }))
     );
   }, []);
@@ -25,11 +23,14 @@ export const AppRouter = () => {
         <p className="mt-4 text-muted-foreground">Loading application...</p>
       </div>
     }>
-      <RouterProvider router={router} fallbackElement={
-        <div className="h-screen w-full flex items-center justify-center">
-          <p>Failed to load router</p>
-        </div>
-      } />
+      <RouterProvider 
+        router={router} 
+        fallbackElement={
+          <div className="h-screen w-full flex items-center justify-center">
+            <p>Failed to load router</p>
+          </div>
+        } 
+      />
     </Suspense>
   );
 };
