@@ -102,3 +102,27 @@ export const sendCustomEmail = async (
     return false;
   }
 };
+
+/**
+ * Send a test email to verify Resend setup
+ */
+export const sendTestEmail = async (
+  to: string
+): Promise<{success: boolean, data?: any, error?: any}> => {
+  try {
+    const { data, error } = await supabase.functions.invoke("test-email", {
+      body: { to }
+    });
+    
+    if (error) {
+      console.error("Error sending test email:", error);
+      return { success: false, error };
+    }
+    
+    console.log("Test email sent successfully:", data);
+    return { success: true, data };
+  } catch (error) {
+    console.error("Error in sendTestEmail:", error);
+    return { success: false, error };
+  }
+};
