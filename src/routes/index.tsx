@@ -10,9 +10,11 @@ import FreelancerProfileView from '../pages/freelancer/FreelancerProfileView';
 import ClientProfileView from '../pages/client/ClientProfileView';
 
 const router = createBrowserRouter([
+  // Main home route
   {
     path: '/',
     element: <Index />,
+    errorElement: <NotFound />,
   },
   // Client profile view route
   {
@@ -29,6 +31,7 @@ const router = createBrowserRouter([
   ...dashboardRoutes,
   ...projectRoutes,
   ...miscRoutes,
+  // Catch-all route for 404s
   {
     path: '*',
     element: <NotFound />,
