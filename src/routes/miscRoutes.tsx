@@ -15,6 +15,9 @@ import FreelancerProfileTest from '@/pages/test/FreelancerProfileTest';
 import ClientViewFreelancerTest from '@/pages/test/ClientViewFreelancerTest';
 import EmailTest from '@/pages/test/EmailTest';
 
+// Initialize with debug logging
+console.log('Setting up miscRoutes');
+
 export const miscRoutes: RouteObject[] = [
   {
     path: "/",
@@ -68,9 +71,7 @@ export const miscRoutes: RouteObject[] = [
     path: "/test/email-test",
     element: <EmailTest />,
   },
-  // This catch-all route should always be last
-  {
-    path: "*",
-    element: <NotFound />,
-  },
+  // This catch-all route should be removed here since it's in the main router
 ];
+
+console.log('miscRoutes registered with', miscRoutes.length, 'routes');

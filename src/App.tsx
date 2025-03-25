@@ -5,9 +5,15 @@ import CookieConsent from './components/common/CookieConsent';
 import { useEffect } from 'react';
 
 const App = () => {
-  // Log initialization for debugging
+  // Enhanced logging for debugging
   useEffect(() => {
-    console.log('App initialized - router should be working');
+    console.log('App component mounted');
+    console.log('Router should be initialized now');
+    
+    // Check if we're in development mode
+    if (import.meta.env.DEV) {
+      console.log('Running in development mode');
+    }
   }, []);
 
   return (
