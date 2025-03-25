@@ -43,7 +43,7 @@ export const sendNotificationEmail = async (
   notification: Notification
 ): Promise<boolean> => {
   try {
-    const { data, error } = await supabase.functions.invoke("send-email/notification", {
+    const { data, error } = await supabase.functions.invoke("send-notification-email", {
       body: {
         userId,
         email,

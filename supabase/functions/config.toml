@@ -6,3 +6,6 @@ schedule = "@daily"
 
 [send-email]
 verify_jwt = true
+
+[send-notification-email]
+verify_jwt = true
