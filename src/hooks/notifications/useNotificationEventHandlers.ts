@@ -1,3 +1,4 @@
+
 import { User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { Notification, NotificationType } from '@/services/notifications/types';
@@ -16,7 +17,7 @@ export const useNotificationEventHandlers = (
     // Check if the message is not from the current user before creating a notification
     if (message.sender_id !== user?.id) {
       // Pass the recipient ID (current user) as the third argument
-      handleNewMessage(message, addNotification, user?.id);
+      handleNewMessage(message, addNotification, user?.id || '');
     }
   };
 

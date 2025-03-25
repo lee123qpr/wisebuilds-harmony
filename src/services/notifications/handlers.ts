@@ -114,7 +114,7 @@ export const handleNewMessage = async (
       await sendNotificationEmail(
         recipientId,
         userData.email,
-        notifData
+        notifData as Notification
       );
     }
     
