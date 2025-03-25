@@ -1,6 +1,5 @@
 
 import { RouteObject } from 'react-router-dom';
-import Index from '@/pages/Index';
 import About from '@/pages/About';
 import HowItWorks from '@/pages/HowItWorks';
 import NotFound from '@/pages/NotFound';
@@ -19,10 +18,11 @@ import EmailTest from '@/pages/test/EmailTest';
 console.log('Setting up miscRoutes');
 
 export const miscRoutes: RouteObject[] = [
-  {
-    path: "/",
-    element: <Index />,
-  },
+  // Remove this duplicate route to avoid conflicts
+  // {
+  //   path: "/",
+  //   element: <Index />,
+  // },
   {
     path: "/about",
     element: <About />,
@@ -71,7 +71,6 @@ export const miscRoutes: RouteObject[] = [
     path: "/test/email-test",
     element: <EmailTest />,
   },
-  // This catch-all route should be removed here since it's in the main router
 ];
 
 console.log('miscRoutes registered with', miscRoutes.length, 'routes');

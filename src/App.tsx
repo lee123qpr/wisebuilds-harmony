@@ -15,6 +15,18 @@ const App = () => {
     // Check if we're in development mode
     if (import.meta.env.DEV) {
       console.log('Running in development mode');
+      
+      // Add global debugging object
+      try {
+        const anyWindow = window as any;
+        anyWindow.__APP_DEBUG__ = {
+          timestamp: new Date().toISOString(),
+          path: window.location.pathname,
+          mounted: true
+        };
+      } catch (e) {
+        console.error('Could not set debug info', e);
+      }
     }
   }, []);
 

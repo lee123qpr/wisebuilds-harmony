@@ -15,6 +15,10 @@ const logRoutes = (routes) => {
   return routes;
 };
 
+// Use BrowserRouter with a basename if we're not at the root
+const basename = document.querySelector('base')?.getAttribute('href') || '/';
+console.log('Using basename:', basename);
+
 // Initialize the router with all routes, ensuring root route is correct
 const router = createBrowserRouter(logRoutes([
   // Main home route (with error element for sub-routes)
@@ -22,6 +26,7 @@ const router = createBrowserRouter(logRoutes([
     path: "/",
     element: <Index />,
     errorElement: <NotFound />,
+    id: "home-route"
   },
   // Client profile view route
   {
@@ -33,7 +38,7 @@ const router = createBrowserRouter(logRoutes([
     path: "/freelancer/:freelancerId",
     element: <FreelancerProfileView />,
   },
-  // Include all route groups
+  // Include all route groups - spread them out to avoid nesting issues
   ...authRoutes,
   ...dashboardRoutes,
   ...projectRoutes,
@@ -42,11 +47,14 @@ const router = createBrowserRouter(logRoutes([
   {
     path: "*",
     element: <NotFound />,
+    id: "not-found"
   },
 ]));
 
 // Enhanced debugging info
 console.log('Router initialized with', router.routes.length, 'routes');
 console.log('Root route defined as:', router.routes[0].path);
+console.log('Home route ID:', router.routes.find(r => r.path === '/')?.id);
+console.log('All defined paths:', router.routes.map(r => r.path));
 
 export default router;
