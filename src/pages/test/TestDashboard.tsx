@@ -37,6 +37,11 @@ const TestDashboard = () => {
       name: 'Client View Freelancer',
       path: '/test/client-view-freelancer',
       description: 'Test how clients see freelancer profiles'
+    },
+    {
+      name: 'Email Test',
+      path: '/test/email-test',
+      description: 'Test Resend email functionality'
     }
   ];
 

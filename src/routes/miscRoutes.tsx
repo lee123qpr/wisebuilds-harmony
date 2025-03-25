@@ -1,27 +1,75 @@
 
-import { lazy } from 'react';
 import { RouteObject } from 'react-router-dom';
-
-const About = lazy(() => import('../pages/About'));
-const Contact = lazy(() => import('../pages/Contact'));
-const HowItWorks = lazy(() => import('../pages/HowItWorks'));
-const CookiePolicy = lazy(() => import('../pages/CookiePolicy'));
+import Index from '@/pages/Index';
+import About from '@/pages/About';
+import HowItWorks from '@/pages/HowItWorks';
+import NotFound from '@/pages/NotFound';
+import Contact from '@/pages/Contact';
+import CookiePolicy from '@/pages/CookiePolicy';
+import TestSkeleton from '@/components/test/TestSkeleton';
+import TestDashboard from '@/pages/test/TestDashboard';
+import FreelancerProfileCardsTest from '@/pages/test/FreelancerProfileCardsTest';
+import FreelancerDetailedProfileTest from '@/pages/test/FreelancerDetailedProfileTest';
+import ClientProfileTest from '@/pages/test/ClientProfileTest';
+import FreelancerProfileTest from '@/pages/test/FreelancerProfileTest';
+import ClientViewFreelancerTest from '@/pages/test/ClientViewFreelancerTest';
+import EmailTest from '@/pages/test/EmailTest';
 
 export const miscRoutes: RouteObject[] = [
   {
-    path: '/about',
+    path: "/",
+    element: <Index />,
+  },
+  {
+    path: "/about",
     element: <About />,
   },
   {
-    path: '/contact',
-    element: <Contact />,
-  },
-  {
-    path: '/how-it-works',
+    path: "/how-it-works",
     element: <HowItWorks />,
   },
   {
-    path: '/cookie-policy',
+    path: "/contact",
+    element: <Contact />,
+  },
+  {
+    path: "/cookie-policy",
     element: <CookiePolicy />,
   },
+  {
+    path: "*",
+    element: <NotFound />,
+  },
+  {
+    path: "/test",
+    element: <TestDashboard />,
+  },
+  {
+    path: "/test-skeleton",
+    element: <TestSkeleton />,
+  },
+  {
+    path: "/test/profile-cards",
+    element: <FreelancerProfileCardsTest />,
+  },
+  {
+    path: "/test/freelancer-detailed-profile",
+    element: <FreelancerDetailedProfileTest />,
+  },
+  {
+    path: "/test/client-profile",
+    element: <ClientProfileTest />,
+  },
+  {
+    path: "/test/freelancer-profile",
+    element: <FreelancerProfileTest />,
+  },
+  {
+    path: "/test/client-view-freelancer",
+    element: <ClientViewFreelancerTest />,
+  },
+  {
+    path: "/test/email-test",
+    element: <EmailTest />,
+  }
 ];
