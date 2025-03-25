@@ -7,8 +7,9 @@ import { Separator } from "@/components/ui/separator";
 
 const NotFound = () => {
   const location = useLocation();
-  const [routerInfo, setRouterInfo] = useState<{available: boolean, routeCount?: number}>({
-    available: false
+  const [routerInfo, setRouterInfo] = useState<{available: boolean, routeCount?: number, currentPath?: string}>({
+    available: false,
+    currentPath: window.location.pathname
   });
 
   useEffect(() => {
@@ -24,7 +25,13 @@ const NotFound = () => {
       if (anyWindow.__ROUTER_DEBUG__) {
         setRouterInfo({
           available: true,
-          routeCount: anyWindow.__ROUTER_DEBUG__.routeCount
+          routeCount: anyWindow.__ROUTER_DEBUG__.routeCount,
+          currentPath: window.location.pathname
+        });
+      } else {
+        setRouterInfo({
+          available: false,
+          currentPath: window.location.pathname
         });
       }
     } catch (e) {
@@ -45,6 +52,8 @@ const NotFound = () => {
           <div className="p-4 bg-gray-50 rounded-md text-left mb-6">
             <h3 className="font-semibold mb-2">Debug Information:</h3>
             <p className="text-sm text-gray-600">Attempted path: <span className="font-mono">{location.pathname}</span></p>
+            <p className="text-sm text-gray-600">Browser URL: <span className="font-mono">{window.location.href}</span></p>
+            <p className="text-sm text-gray-600">Current path from window: <span className="font-mono">{routerInfo.currentPath}</span></p>
             {routerInfo.available && (
               <p className="text-sm text-gray-600">Routes registered: {routerInfo.routeCount}</p>
             )}
@@ -74,7 +83,8 @@ if (import.meta.env.DEV) {
     const anyWindow = window as any;
     anyWindow.__ROUTER_DEBUG__ = {
       routeCount: 0, // Will be updated by router
-      notFoundVisits: (anyWindow.__ROUTER_DEBUG__?.notFoundVisits || 0) + 1
+      notFoundVisits: (anyWindow.__ROUTER_DEBUG__?.notFoundVisits || 0) + 1,
+      currentPath: window.location.pathname
     };
   } catch (e) {
     console.error("Failed to set router debug info:", e);

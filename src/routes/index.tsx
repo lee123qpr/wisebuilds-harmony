@@ -15,22 +15,22 @@ const logRoutes = (routes) => {
   return routes;
 };
 
-// Initialize the router with all routes
+// Initialize the router with all routes, ensuring root route is correct
 const router = createBrowserRouter(logRoutes([
   // Main home route (with error element for sub-routes)
   {
-    path: '/',
+    path: "/",
     element: <Index />,
     errorElement: <NotFound />,
   },
   // Client profile view route
   {
-    path: '/client/:clientId',
+    path: "/client/:clientId",
     element: <ClientProfileView />,
   },
   // Freelancer profile view route
   {
-    path: '/freelancer/:freelancerId',
+    path: "/freelancer/:freelancerId",
     element: <FreelancerProfileView />,
   },
   // Include all route groups
@@ -40,12 +40,13 @@ const router = createBrowserRouter(logRoutes([
   ...miscRoutes,
   // Catch-all route for 404s (must be last)
   {
-    path: '*',
+    path: "*",
     element: <NotFound />,
   },
 ]));
 
-// Add debugging info
+// Enhanced debugging info
 console.log('Router initialized with', router.routes.length, 'routes');
+console.log('Root route defined as:', router.routes[0].path);
 
 export default router;

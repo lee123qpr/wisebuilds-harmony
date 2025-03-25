@@ -8,6 +8,8 @@ const App = () => {
   // Enhanced logging for debugging
   useEffect(() => {
     console.log('App component mounted');
+    console.log('Current URL:', window.location.href);
+    console.log('Current pathname:', window.location.pathname);
     console.log('Router should be initialized now');
     
     // Check if we're in development mode
