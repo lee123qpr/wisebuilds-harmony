@@ -1,0 +1,8 @@
+
+project_id = "jksjyhqelduduxmkcuae"
+
+[check-lead-matches]
+schedule = "@daily"
+
+[send-email]
+verify_jwt = true
