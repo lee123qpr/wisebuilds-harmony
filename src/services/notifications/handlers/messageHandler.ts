@@ -3,7 +3,8 @@ import { Notification, NotificationType } from '../types';
 
 export const handleNewMessage = (
   message: any, 
-  addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => void
+  addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => void,
+  recipientId?: string
 ) => {
   if (!message || !message.sender_id || !message.conversation_id) {
     console.warn('Invalid message data for notification:', message);

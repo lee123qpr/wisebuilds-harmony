@@ -12,6 +12,11 @@ export const handleNewMessage = async (
   recipientId: string
 ) => {
   try {
+    if (!recipientId) {
+      console.error('No recipient ID provided for notification');
+      return;
+    }
+
     // First, get conversation details to craft the notification
     const { data: conversation, error: convError } = await supabase
       .from('conversations')
@@ -29,24 +34,39 @@ export const handleNewMessage = async (
     const senderId = isForClient ? conversation.freelancer_id : conversation.client_id;
     
     // Get sender name
-    const { data: senderData } = await supabase
-      .from(isForClient ? 'freelancer_profiles' : 'client_profiles')
-      .select(isForClient ? 'first_name, last_name' : 'contact_name, company_name')
-      .eq('id', senderId)
-      .single();
-    
-    // Create sender name
-    const senderName = isForClient 
-      ? `${senderData?.first_name || ''} ${senderData?.last_name || ''}`.trim()
-      : (senderData?.company_name || senderData?.contact_name || 'Client');
+    let senderName = 'User';
+    try {
+      if (isForClient) {
+        const { data: senderData } = await supabase
+          .from('freelancer_profiles')
+          .select('first_name, last_name, display_name')
+          .eq('id', senderId)
+          .maybeSingle();
+        
+        senderName = senderData?.display_name || 
+                    `${senderData?.first_name || ''} ${senderData?.last_name || ''}`.trim() || 
+                    'Freelancer';
+      } else {
+        const { data: senderData } = await supabase
+          .from('client_profiles')
+          .select('contact_name, company_name')
+          .eq('id', senderId)
+          .maybeSingle();
+        
+        senderName = senderData?.company_name || senderData?.contact_name || 'Client';
+      }
+    } catch (error) {
+      console.error('Error fetching sender profile:', error);
+      // Continue with a generic sender name
+    }
     
     // Create the notification
-    const notification: Omit<Notification, 'id' | 'created_at' | 'read'> = {
+    const notificationData = {
       type: 'message' as NotificationType,
       title: `New message from ${senderName}`,
-      description: message.message.length > 100 
+      description: message.message?.length > 100 
         ? `${message.message.substring(0, 100)}...` 
-        : message.message,
+        : (message.message || 'New message received'),
       user_id: recipientId,
       data: {
         conversation_id: message.conversation_id,
@@ -56,12 +76,17 @@ export const handleNewMessage = async (
     };
     
     // Add notification to the UI state
-    addNotification(notification);
+    addNotification({
+      type: notificationData.type,
+      title: notificationData.title,
+      description: notificationData.description,
+      data: notificationData.data
+    });
     
     // Create notification in database
     const { data: notifData, error: notifError } = await supabase
       .from('notifications')
-      .insert(notification)
+      .insert(notificationData)
       .select()
       .single();
       
@@ -109,8 +134,8 @@ export const handleNewProjectMatch = async (
   addNotification: (notification: Omit<Notification, 'id' | 'created_at' | 'read'>) => void
 ) => {
   try {
-    // Create the notification
-    const notification: Omit<Notification, 'id' | 'created_at' | 'read'> = {
+    // Create the notification data for database
+    const notificationData = {
       type: 'lead' as NotificationType,
       title: 'New Lead Available',
       description: `A new project "${project.title}" matching your criteria has been posted`,
@@ -121,13 +146,18 @@ export const handleNewProjectMatch = async (
       }
     };
     
-    // Add notification to the UI state
-    addNotification(notification);
+    // Add notification to the UI state - only include properties defined in the Omit type
+    addNotification({
+      type: notificationData.type,
+      title: notificationData.title,
+      description: notificationData.description,
+      data: notificationData.data
+    });
     
     // Create notification in database
     const { data: notifData, error: notifError } = await supabase
       .from('notifications')
-      .insert(notification)
+      .insert(notificationData)
       .select()
       .single();
       

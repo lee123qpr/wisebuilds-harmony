@@ -15,7 +15,8 @@ export const useNotificationEventHandlers = (
     console.log('New message received in notification service:', message);
     // Check if the message is not from the current user before creating a notification
     if (message.sender_id !== user?.id) {
-      handleNewMessage(message, addNotification);
+      // Pass the recipient ID (current user) as the third argument
+      handleNewMessage(message, addNotification, user?.id);
     }
   };
 
