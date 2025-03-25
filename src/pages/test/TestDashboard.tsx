@@ -5,6 +5,7 @@ import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { Button } from '@/components/ui/button';
+import { Mail } from 'lucide-react';
 
 const TestDashboard = () => {
   const testRoutes = [
@@ -41,7 +42,8 @@ const TestDashboard = () => {
     {
       name: 'Email Test',
       path: '/test/email-test',
-      description: 'Test Resend email functionality'
+      description: 'Test Resend email functionality',
+      highlight: true
     }
   ];
 
@@ -58,14 +60,25 @@ const TestDashboard = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {testRoutes.map((route) => (
-            <Card key={route.path} className="h-full flex flex-col">
+            <Card 
+              key={route.path} 
+              className={`h-full flex flex-col ${route.highlight ? 'border-primary border-2' : ''}`}
+            >
               <CardHeader>
-                <CardTitle>{route.name}</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  {route.name === 'Email Test' && <Mail className="h-5 w-5" />}
+                  {route.name}
+                </CardTitle>
                 <CardDescription>{route.description}</CardDescription>
               </CardHeader>
               <CardContent className="flex-grow flex items-end">
                 <Link to={route.path} className="w-full">
-                  <Button variant="outline" className="w-full">Visit Test Page</Button>
+                  <Button 
+                    variant={route.highlight ? "default" : "outline"} 
+                    className="w-full"
+                  >
+                    Visit Test Page
+                  </Button>
                 </Link>
               </CardContent>
             </Card>

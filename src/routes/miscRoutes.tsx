@@ -37,10 +37,6 @@ export const miscRoutes: RouteObject[] = [
     element: <CookiePolicy />,
   },
   {
-    path: "*",
-    element: <NotFound />,
-  },
-  {
     path: "/test",
     element: <TestDashboard />,
   },
@@ -71,5 +67,10 @@ export const miscRoutes: RouteObject[] = [
   {
     path: "/test/email-test",
     element: <EmailTest />,
-  }
+  },
+  // This catch-all route should always be last
+  {
+    path: "*",
+    element: <NotFound />,
+  },
 ];
