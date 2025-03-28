@@ -1,6 +1,5 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { StorageBucket } from './storage';
 
 /**
  * Upload a file to a specified Supabase bucket
