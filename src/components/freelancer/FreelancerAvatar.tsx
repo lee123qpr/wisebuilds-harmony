@@ -59,7 +59,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
       
       // Upload the file to Supabase storage using the correct bucket name
       const { data, error } = await supabase.storage
-        .from(StorageBucket.AVATARS)
+        .from(StorageBucket.AVATARS) // Use the enum to get the bucket name
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true
@@ -69,7 +69,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
       
       // Get the public URL for the uploaded image
       const { data: urlData } = supabase.storage
-        .from(StorageBucket.AVATARS)
+        .from(StorageBucket.AVATARS) // Use the enum to get the bucket name
         .getPublicUrl(filePath);
         
       // Set the profile image URL

@@ -36,11 +36,11 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         throw new Error('Authentication required: Please log in before uploading');
       }
       
-      // Use the centralized upload utility with correct bucket name
+      // Use the centralized upload utility with the correct bucket name
       const result = await uploadFile(
         file, 
         userId, 
-        StorageBucket.AVATARS, 
+        StorageBucket.AVATARS, // Use the AVATARS constant which maps to "freelancer-avatars"
         folder || (namePrefix ? namePrefix.toLowerCase() : 'avatar')
       );
       
