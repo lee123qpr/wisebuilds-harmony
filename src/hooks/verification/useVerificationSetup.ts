@@ -1,40 +1,38 @@
+
 import { useState, useEffect } from 'react';
 import { setupVerification } from './services';
 
 export const useVerificationSetup = () => {
   const [setupComplete, setSetupComplete] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const initSetup = async () => {
+    const setup = async () => {
       try {
-        setIsLoading(true);
-        console.log('Initializing verification system setup...');
-        
+        setLoading(true);
         const result = await setupVerification();
-        
         setSetupComplete(result.success);
-        console.log('Verification system setup complete:', result);
         
         if (!result.success) {
+          console.error('Failed to setup verification system:', result.message);
           setError(new Error(result.message));
         }
       } catch (error: any) {
-        console.error('Error during verification setup:', error);
-        setError(error);
+        console.error('Error in verification setup:', error);
         setSetupComplete(false);
+        setError(error);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
 
-    initSetup();
+    setup();
   }, []);
 
   return {
     setupComplete,
-    isLoading,
-    error
+    error,
+    loading
   };
 };

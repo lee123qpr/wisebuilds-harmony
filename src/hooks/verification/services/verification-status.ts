@@ -29,9 +29,8 @@ export const fetchVerificationStatus = async (userId: string): Promise<Verificat
       return null;
     }
     
-    // Map database status to frontend status type with explicit string casting
-    // This prevents TypeScript error TS2589: Type instantiation is excessively deep and possibly infinite
-    const status = mapDatabaseStatusToVerificationStatus(data.status as string);
+    // Map database status to frontend status type
+    const status = mapDatabaseStatusToVerificationStatus(data.status);
     
     // Return typed verification data
     return {
