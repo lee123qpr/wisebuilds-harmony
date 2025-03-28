@@ -1,122 +1,161 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { getVerificationBucketName, generateVerificationFilePath } from './storage-utils';
 import { fetchVerificationStatus } from './verification-status';
+import { setupVerification } from './verification-setup';
+import { getVerificationBucketName } from './storage-utils';
+import type { VerificationData } from '../types';
 
 /**
- * Upload a verification document and create or update verification record
+ * Uploads verification document for a user
  */
-export const uploadVerificationDocument = async (userId: string, file: File): Promise<{
+export const uploadVerificationDocument = async (
+  userId: string,
+  file: File
+): Promise<{ 
   success: boolean;
   filePath?: string;
-  verificationData?: any;
   error?: any;
+  verificationData?: VerificationData
 }> => {
   try {
-    // Get session and verify authentication
-    const { data: session } = await supabase.auth.getSession();
-    if (!session.session) {
-      throw new Error('Authentication required for file uploads');
-    }
-    
-    // Verify user is uploading their own document
-    if (session.session.user.id !== userId) {
-      throw new Error('You can only upload verification documents for your own account');
-    }
-    
     console.log('Starting document upload for user:', userId);
     
-    // Determine which bucket to use
+    // Create a unique file path - make sure the userId is the first part of the path
+    // This is critical for RLS policies that check path ownership
+    const fileExt = file.name.split('.').pop();
+    const fileName = `${Math.random().toString(36).substring(2, 15)}.${fileExt}`;
+    const filePath = `${userId}/${fileName}`;
+    
+    console.log('Generated file path:', filePath);
+    
+    // Determine which bucket name to use
     const bucketName = await getVerificationBucketName();
     console.log(`Using bucket name: ${bucketName}`);
     
-    // Generate file path
-    const filePath = generateVerificationFilePath(userId, file.name);
-    console.log(`Uploading to path: ${filePath}`);
+    // If no bucket exists, set up the verification system
+    if (bucketName === 'verification_documents' && !(await bucketExists(bucketName))) {
+      console.log('Bucket not found, setting up verification system first');
+      // Call the setup function
+      const setupResult = await setupVerification();
+      
+      if (!setupResult.success) {
+        console.error('Failed to setup verification system:', setupResult.message);
+        throw new Error('Failed to setup verification system: ' + setupResult.message);
+      }
+      
+      console.log('Verification system setup complete');
+    }
     
-    // Upload the file
-    const { data, error: uploadError } = await supabase.storage
+    // Try to upload the file
+    console.log(`Attempting to upload file to storage path: ${filePath} in bucket: ${bucketName}`);
+    const { error: uploadError } = await supabase.storage
       .from(bucketName)
       .upload(filePath, file, {
-        upsert: false,
-        cacheControl: '3600'
+        cacheControl: '3600',
+        upsert: false
       });
     
     if (uploadError) {
-      console.error('Error uploading document:', uploadError);
-      throw uploadError;
+      console.error('Error uploading file to storage:', uploadError);
+      return { 
+        success: false, 
+        error: uploadError 
+      };
     }
     
-    console.log('Document uploaded successfully, data:', data);
+    console.log('File uploaded successfully, now updating verification record');
     
-    // Check if there's an existing verification record
+    // Check if the user already has a verification record
     const existingVerification = await fetchVerificationStatus(userId);
     
-    // Document metadata
-    const documentName = file.name;
-    const documentType = file.type;
-    const documentSize = file.size;
-    
-    let dbResult;
+    let updateError;
     
     if (existingVerification) {
-      // Update existing record
-      console.log('Updating existing verification record');
-      const { data: updateData, error: updateError } = await supabase
+      // If there's an existing verification record, update it
+      console.log('Updating existing verification record for user:', userId);
+      const { error } = await supabase
         .from('freelancer_verification')
         .update({
           document_path: filePath,
-          document_name: documentName,
-          document_type: documentType,
-          document_size: documentSize,
+          document_name: file.name,
+          document_size: file.size,
+          document_type: file.type,
           status: 'pending',
-          submitted_at: new Date().toISOString()
+          submitted_at: new Date().toISOString(),
+          admin_notes: null,
+          reviewed_at: null
         })
-        .eq('user_id', userId)
-        .select('*')
-        .single();
+        .eq('user_id', userId);
       
-      if (updateError) {
-        console.error('Error updating verification record:', updateError);
-        throw updateError;
-      }
-      
-      dbResult = updateData;
+      updateError = error;
     } else {
-      // Create new record
-      console.log('Creating new verification record');
-      const { data: insertData, error: insertError } = await supabase
+      // If there's no existing verification record, create one
+      console.log('Creating new verification record for user:', userId);
+      const { error } = await supabase
         .from('freelancer_verification')
         .insert({
           user_id: userId,
           document_path: filePath,
-          document_name: documentName,
-          document_type: documentType,
-          document_size: documentSize,
+          document_name: file.name,
+          document_size: file.size,
+          document_type: file.type,
           status: 'pending',
           submitted_at: new Date().toISOString()
-        })
-        .select('*')
-        .single();
+        });
       
-      if (insertError) {
-        console.error('Error creating verification record:', insertError);
-        throw insertError;
-      }
-      
-      dbResult = insertData;
+      updateError = error;
     }
     
-    console.log('Verification record saved successfully:', dbResult);
+    if (updateError) {
+      console.error('Error updating database record:', updateError);
+      
+      // Clean up the uploaded file if there was an error with the database record
+      console.log('Cleaning up uploaded file due to database error');
+      await supabase.storage
+        .from(bucketName)
+        .remove([filePath]);
+      
+      return { 
+        success: false, 
+        error: updateError 
+      };
+    }
     
-    // Map database status to our verification status type
-    return {
-      success: true,
+    // Get the updated verification data
+    console.log('Fetching updated verification status');
+    const updatedVerification = await fetchVerificationStatus(userId);
+    
+    console.log('Document upload complete. Verification status:', updatedVerification?.status);
+    
+    return { 
+      success: true, 
       filePath,
-      verificationData: dbResult
+      verificationData: updatedVerification || undefined
     };
   } catch (error) {
     console.error('Error in uploadVerificationDocument:', error);
-    return { success: false, error };
+    return { 
+      success: false, 
+      error 
+    };
   }
 };
+
+/**
+ * Checks if a bucket exists
+ */
+async function bucketExists(bucketName: string): Promise<boolean> {
+  try {
+    const { data, error } = await supabase.storage.listBuckets();
+    
+    if (error) {
+      console.error('Error checking buckets:', error);
+      return false;
+    }
+    
+    return data.some(bucket => bucket.name === bucketName);
+  } catch (error) {
+    console.error('Error in bucketExists:', error);
+    return false;
+  }
+}

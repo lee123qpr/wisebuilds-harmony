@@ -2,7 +2,7 @@
 import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, Loader2 } from 'lucide-react';
-import { useImageUpload } from '@/pages/dashboard/hooks/useImageUpload';
+import { supabase } from '@/integrations/supabase/client';
 
 interface FreelancerAvatarProps {
   profileImage: string | null;
@@ -13,7 +13,6 @@ interface FreelancerAvatarProps {
   setUploadingImage?: (uploading: boolean) => void;
   setProfileImage?: (url: string | null) => void;
   allowImageUpload?: boolean;
-  imageKey?: string;
 }
 
 const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
@@ -25,7 +24,6 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   setUploadingImage,
   setProfileImage,
   allowImageUpload = false,
-  imageKey,
 }) => {
   // Get initials for avatar fallback
   const getInitials = () => {
@@ -44,24 +42,41 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
     lg: 'h-24 w-24'
   };
 
-  // Use our custom hook if upload functionality is needed
-  const { handleImageUpload } = allowImageUpload ? useImageUpload({
-    userId,
-    folder: 'profile',
-    namePrefix: 'avatar'
-  }) : { handleImageUpload: null };
-  
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (!allowImageUpload || !setUploadingImage || !setProfileImage || !handleImageUpload) return;
+    if (!allowImageUpload || !setUploadingImage || !setProfileImage) return;
+    
+    const file = e.target.files?.[0];
+    if (!file) return;
     
     try {
       setUploadingImage(true);
-      const url = await handleImageUpload(e);
-      if (url) {
-        setProfileImage(url.toString());
-      }
+      
+      // Create a filename with user ID to prevent conflicts
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}_${Date.now()}.${fileExt}`;
+      const filePath = `profile_photos/${fileName}`;
+      
+      // Upload the file to Supabase storage
+      const { data, error } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, {
+          cacheControl: '3600',
+          upsert: true
+        });
+        
+      if (error) throw error;
+      
+      // Get the public URL for the uploaded image
+      const { data: urlData } = supabase.storage
+        .from('avatars')
+        .getPublicUrl(filePath);
+        
+      // Set the profile image URL
+      setProfileImage(urlData.publicUrl);
+      
     } catch (error) {
-      console.error('Error uploading avatar:', error);
+      console.error('Error uploading image:', error);
+      alert('Error uploading profile image. Please try again.');
     } finally {
       setUploadingImage(false);
     }
@@ -70,12 +85,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
   return (
     <div className="relative">
       <Avatar className={`${sizeClasses[size]} border-2 border-primary/10`}>
-        <AvatarImage 
-          src={profileImage || undefined} 
-          alt={fullName} 
-          className="object-cover" 
-          key={imageKey} // Force re-render when imageKey changes
-        />
+        <AvatarImage src={profileImage || undefined} alt={fullName} className="object-cover" />
         <AvatarFallback className="text-xl">{getInitials()}</AvatarFallback>
       </Avatar>
       

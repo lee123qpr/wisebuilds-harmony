@@ -1,12 +1,15 @@
 
-import { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
+import type { VerificationStatus } from '@/components/dashboard/freelancer/VerificationBadge';
 
 /**
- * Maps database status field to VerificationStatus type
+ * Maps database status to frontend status type
  */
-export const mapDatabaseStatusToVerificationStatus = (status: string): VerificationStatus => {
-  switch (status) {
+export const mapDatabaseStatusToVerificationStatus = (status: string | null): VerificationStatus => {
+  if (!status) return 'not_submitted';
+  
+  switch (status.toLowerCase()) {
     case 'verified':
+    case 'approved':
       return 'verified';
     case 'pending':
       return 'pending';

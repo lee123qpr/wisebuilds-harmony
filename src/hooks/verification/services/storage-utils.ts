@@ -1,34 +1,28 @@
 
 import { supabase } from '@/integrations/supabase/client';
-import { StorageBucket } from '@/utils/storage';
 
 /**
- * Get the name of the verification documents bucket
+ * Determines which verification bucket to use
  */
 export const getVerificationBucketName = async (): Promise<string> => {
-  // First try the dedicated verification bucket
-  const verificationBucket = StorageBucket.VERIFICATION;
+  // Check available buckets
+  const { data: bucketsData, error: bucketsError } = await supabase.storage
+    .listBuckets();
   
-  // Check if the bucket exists
-  const { data, error } = await supabase.storage
-    .from(verificationBucket)
-    .list('', { limit: 1 });
-  
-  if (!error) {
-    console.log(`Using dedicated verification bucket: ${verificationBucket}`);
-    return verificationBucket;
+  if (bucketsError) {
+    console.error('Error checking buckets:', bucketsError);
   }
   
-  // Fallback to avatars bucket which should always exist
-  console.log(`Falling back to avatars bucket: ${StorageBucket.AVATARS}`);
-  return StorageBucket.AVATARS;
-};
-
-/**
- * Generate a file path for verification documents
- */
-export const generateVerificationFilePath = (userId: string, fileName: string): string => {
-  const timestamp = new Date().getTime();
-  const cleanFileName = fileName.replace(/[^a-zA-Z0-9.]/g, '_');
-  return `${userId}/verification/${timestamp}_${cleanFileName}`;
+  console.log('Available buckets:', bucketsData ? bucketsData.map(b => b.name).join(', ') : 'none');
+  
+  // Check if verification_documents or verification-documents exists
+  const bucketWithUnderscore = bucketsData?.find(b => b.name === 'verification_documents');
+  const bucketWithHyphen = bucketsData?.find(b => b.name === 'verification-documents');
+  
+  console.log('Bucket with underscore exists:', !!bucketWithUnderscore);
+  console.log('Bucket with hyphen exists:', !!bucketWithHyphen);
+  
+  // Return the correct bucket name
+  return bucketWithUnderscore ? 'verification_documents' : 
+         bucketWithHyphen ? 'verification-documents' : 'verification_documents';
 };
