@@ -3,6 +3,7 @@ import React from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload, Loader2 } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
+import { StorageBucket } from '@/utils/storage';
 
 interface FreelancerAvatarProps {
   profileImage: string | null;
@@ -54,11 +55,11 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
       // Create a filename with user ID to prevent conflicts
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}_${Date.now()}.${fileExt}`;
-      const filePath = `profile_photos/${fileName}`;
+      const filePath = `${userId}/${fileName}`;
       
-      // Upload the file to Supabase storage
+      // Upload the file to Supabase storage using the correct bucket name
       const { data, error } = await supabase.storage
-        .from('avatars')
+        .from(StorageBucket.AVATARS)
         .upload(filePath, file, {
           cacheControl: '3600',
           upsert: true
@@ -68,7 +69,7 @@ const FreelancerAvatar: React.FC<FreelancerAvatarProps> = ({
       
       // Get the public URL for the uploaded image
       const { data: urlData } = supabase.storage
-        .from('avatars')
+        .from(StorageBucket.AVATARS)
         .getPublicUrl(filePath);
         
       // Set the profile image URL

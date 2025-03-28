@@ -3,7 +3,7 @@ import { useState, useCallback } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from '@/hooks/use-toast';
 import { StorageBucket, uploadFile } from '@/utils/storage';
-import { supabase } from '@/integrations/supabase/client'; // Import supabase
+import { supabase } from '@/integrations/supabase/client';
 
 interface UseImageUploadProps {
   userId: string;
@@ -36,7 +36,7 @@ export const useImageUpload = ({ userId, folder, namePrefix }: UseImageUploadPro
         throw new Error('Authentication required: Please log in before uploading');
       }
       
-      // Use the centralized upload utility
+      // Use the centralized upload utility with correct bucket name
       const result = await uploadFile(
         file, 
         userId, 

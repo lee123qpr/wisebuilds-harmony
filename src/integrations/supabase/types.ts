@@ -11,98 +11,286 @@ export type Database = {
     Tables: {
       client_profiles: {
         Row: {
-          company_address: string | null
-          company_description: string | null
           company_name: string | null
-          company_specialism: string | null
-          company_turnover: string | null
-          company_type: string | null
-          contact_name: string | null
-          created_at: string
-          email: string | null
-          email_verified: boolean | null
-          employee_size: string | null
+          company_website: string | null
+          created_at: string | null
           id: string
-          is_individual: boolean | null
-          jobs_completed: number | null
-          logo_url: string | null
-          member_since: string | null
-          phone_number: string | null
-          updated_at: string
-          website: string | null
+          industry: string | null
+          updated_at: string | null
+          user_id: string | null
         }
         Insert: {
-          company_address?: string | null
-          company_description?: string | null
           company_name?: string | null
-          company_specialism?: string | null
-          company_turnover?: string | null
-          company_type?: string | null
-          contact_name?: string | null
-          created_at?: string
-          email?: string | null
-          email_verified?: boolean | null
-          employee_size?: string | null
-          id: string
-          is_individual?: boolean | null
-          jobs_completed?: number | null
-          logo_url?: string | null
-          member_since?: string | null
-          phone_number?: string | null
-          updated_at?: string
-          website?: string | null
+          company_website?: string | null
+          created_at?: string | null
+          id?: string
+          industry?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
-          company_address?: string | null
-          company_description?: string | null
           company_name?: string | null
-          company_specialism?: string | null
-          company_turnover?: string | null
-          company_type?: string | null
-          contact_name?: string | null
-          created_at?: string
-          email?: string | null
-          email_verified?: boolean | null
-          employee_size?: string | null
+          company_website?: string | null
+          created_at?: string | null
           id?: string
-          is_individual?: boolean | null
-          jobs_completed?: number | null
-          logo_url?: string | null
-          member_since?: string | null
-          phone_number?: string | null
-          updated_at?: string
-          website?: string | null
+          industry?: string | null
+          updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: []
       }
-      client_reviews: {
+      credit_plans: {
         Row: {
-          client_id: string
-          created_at: string
+          created_at: string | null
+          credits: number
+          description: string | null
           id: string
-          rating: number
-          review_text: string | null
-          reviewer_id: string | null
+          is_active: boolean | null
+          name: string
+          price: number
+          updated_at: string | null
         }
         Insert: {
-          client_id: string
-          created_at?: string
+          created_at?: string | null
+          credits: number
+          description?: string | null
           id?: string
-          rating: number
-          review_text?: string | null
-          reviewer_id?: string | null
+          is_active?: boolean | null
+          name: string
+          price: number
+          updated_at?: string | null
         }
         Update: {
-          client_id?: string
-          created_at?: string
+          created_at?: string | null
+          credits?: number
+          description?: string | null
           id?: string
-          rating?: number
-          review_text?: string | null
-          reviewer_id?: string | null
+          is_active?: boolean | null
+          name?: string
+          price?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      credit_transactions: {
+        Row: {
+          amount: number
+          created_at: string | null
+          credit_plan_id: string | null
+          description: string | null
+          id: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string | null
+          credit_plan_id?: string | null
+          description?: string | null
+          id?: string
+          type: string
+          user_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string | null
+          credit_plan_id?: string | null
+          description?: string | null
+          id?: string
+          type?: string
+          user_id?: string
         }
         Relationships: [
           {
-            foreignKeyName: "client_reviews_client_id_fkey"
+            foreignKeyName: "credit_transactions_credit_plan_id_fkey"
+            columns: ["credit_plan_id"]
+            isOneToOne: false
+            referencedRelation: "credit_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      freelancer_credits: {
+        Row: {
+          created_at: string | null
+          credit_balance: number
+          freelancer_id: string
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          credit_balance?: number
+          freelancer_id: string
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          credit_balance?: number
+          freelancer_id?: string
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      freelancer_profiles: {
+        Row: {
+          availability: string | null
+          created_at: string | null
+          first_name: string | null
+          hourly_rate: number | null
+          id: string
+          last_name: string | null
+          rating: number | null
+          skills: string[] | null
+          total_reviews: number | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          availability?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          hourly_rate?: number | null
+          id?: string
+          last_name?: string | null
+          rating?: number | null
+          skills?: string[] | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          availability?: string | null
+          created_at?: string | null
+          first_name?: string | null
+          hourly_rate?: number | null
+          id?: string
+          last_name?: string | null
+          rating?: number | null
+          skills?: string[] | null
+          total_reviews?: number | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      freelancer_verification: {
+        Row: {
+          created_at: string
+          document_name: string
+          document_path: string
+          document_size: number
+          document_type: string
+          id: string
+          rejection_reason: string | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          submitted_at: string
+          updated_at: string
+          user_id: string | null
+          verification_status: string
+        }
+        Insert: {
+          created_at?: string
+          document_name: string
+          document_path: string
+          document_size: number
+          document_type: string
+          id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string | null
+          verification_status?: string
+        }
+        Update: {
+          created_at?: string
+          document_name?: string
+          document_path?: string
+          document_size?: number
+          document_type?: string
+          id?: string
+          rejection_reason?: string | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          submitted_at?: string
+          updated_at?: string
+          user_id?: string | null
+          verification_status?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          read: boolean
+          title: string
+          type: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          read?: boolean
+          title: string
+          type: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          read?: boolean
+          title?: string
+          type?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      projects: {
+        Row: {
+          budget: number | null
+          client_id: string | null
+          created_at: string | null
+          description: string | null
+          id: string
+          status: string | null
+          title: string
+          updated_at: string | null
+        }
+        Insert: {
+          budget?: number | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          title: string
+          updated_at?: string | null
+        }
+        Update: {
+          budget?: number | null
+          client_id?: string | null
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          status?: string | null
+          title?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_client_id_fkey"
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "client_profiles"
@@ -110,644 +298,58 @@ export type Database = {
           },
         ]
       }
-      conversations: {
-        Row: {
-          client_id: string
-          created_at: string
-          freelancer_id: string
-          id: string
-          last_message_time: string
-          project_id: string
-        }
-        Insert: {
-          client_id: string
-          created_at?: string
-          freelancer_id: string
-          id?: string
-          last_message_time?: string
-          project_id: string
-        }
-        Update: {
-          client_id?: string
-          created_at?: string
-          freelancer_id?: string
-          id?: string
-          last_message_time?: string
-          project_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "conversations_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      credit_plans: {
-        Row: {
-          created_at: string
-          credits: number
-          discount_percentage: number
-          id: string
-          is_active: boolean
-          name: string
-          price: number
-          updated_at: string
-        }
-        Insert: {
-          created_at?: string
-          credits: number
-          discount_percentage?: number
-          id?: string
-          is_active?: boolean
-          name: string
-          price: number
-          updated_at?: string
-        }
-        Update: {
-          created_at?: string
-          credits?: number
-          discount_percentage?: number
-          id?: string
-          is_active?: boolean
-          name?: string
-          price?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
-      credit_transactions: {
-        Row: {
-          amount: number
-          created_at: string
-          credits_purchased: number
-          id: string
-          status: string
-          stripe_payment_id: string | null
-          user_id: string
-        }
-        Insert: {
-          amount: number
-          created_at?: string
-          credits_purchased: number
-          id?: string
-          status?: string
-          stripe_payment_id?: string | null
-          user_id: string
-        }
-        Update: {
-          amount?: number
-          created_at?: string
-          credits_purchased?: number
-          id?: string
-          status?: string
-          stripe_payment_id?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      freelancer_credits: {
-        Row: {
-          created_at: string
-          credit_balance: number
-          id: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          credit_balance?: number
-          id?: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          credit_balance?: number
-          id?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      freelancer_profiles: {
-        Row: {
-          accreditations: Json | null
-          availability: string | null
-          bio: string | null
-          created_at: string | null
-          display_name: string | null
-          email: string | null
-          experience: string | null
-          first_name: string | null
-          hourly_rate: string | null
-          id: string
-          id_verified: boolean | null
-          indemnity_insurance: Json | null
-          job_title: string | null
-          jobs_completed: number | null
-          last_name: string | null
-          location: string | null
-          member_since: string | null
-          phone_number: string | null
-          previous_employers: Json | null
-          previous_work: Json | null
-          profile_photo: string | null
-          qualifications: Json | null
-          rating: number | null
-          reviews_count: number | null
-          skills: Json | null
-          updated_at: string | null
-          website: string | null
-        }
-        Insert: {
-          accreditations?: Json | null
-          availability?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          email?: string | null
-          experience?: string | null
-          first_name?: string | null
-          hourly_rate?: string | null
-          id: string
-          id_verified?: boolean | null
-          indemnity_insurance?: Json | null
-          job_title?: string | null
-          jobs_completed?: number | null
-          last_name?: string | null
-          location?: string | null
-          member_since?: string | null
-          phone_number?: string | null
-          previous_employers?: Json | null
-          previous_work?: Json | null
-          profile_photo?: string | null
-          qualifications?: Json | null
-          rating?: number | null
-          reviews_count?: number | null
-          skills?: Json | null
-          updated_at?: string | null
-          website?: string | null
-        }
-        Update: {
-          accreditations?: Json | null
-          availability?: string | null
-          bio?: string | null
-          created_at?: string | null
-          display_name?: string | null
-          email?: string | null
-          experience?: string | null
-          first_name?: string | null
-          hourly_rate?: string | null
-          id?: string
-          id_verified?: boolean | null
-          indemnity_insurance?: Json | null
-          job_title?: string | null
-          jobs_completed?: number | null
-          last_name?: string | null
-          location?: string | null
-          member_since?: string | null
-          phone_number?: string | null
-          previous_employers?: Json | null
-          previous_work?: Json | null
-          profile_photo?: string | null
-          qualifications?: Json | null
-          rating?: number | null
-          reviews_count?: number | null
-          skills?: Json | null
-          updated_at?: string | null
-          website?: string | null
-        }
-        Relationships: []
-      }
-      freelancer_verification: {
-        Row: {
-          admin_notes: string | null
-          created_at: string | null
-          document_name: string | null
-          document_path: string | null
-          document_size: number | null
-          document_type: string | null
-          id: string
-          reviewed_at: string | null
-          reviewed_by: string | null
-          status: Database["public"]["Enums"]["verification_status"] | null
-          submitted_at: string | null
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          admin_notes?: string | null
-          created_at?: string | null
-          document_name?: string | null
-          document_path?: string | null
-          document_size?: number | null
-          document_type?: string | null
-          id?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["verification_status"] | null
-          submitted_at?: string | null
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          admin_notes?: string | null
-          created_at?: string | null
-          document_name?: string | null
-          document_path?: string | null
-          document_size?: number | null
-          document_type?: string | null
-          id?: string
-          reviewed_at?: string | null
-          reviewed_by?: string | null
-          status?: Database["public"]["Enums"]["verification_status"] | null
-          submitted_at?: string | null
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: []
-      }
-      lead_settings: {
-        Row: {
-          budget: string | null
-          created_at: string | null
-          duration: string | null
-          email_alerts: boolean
-          hiring_status: string | null
-          id: string
-          keywords: string[] | null
-          location: string
-          max_budget: string | null
-          notifications_enabled: boolean
-          project_type: string[] | null
-          requires_insurance: boolean | null
-          requires_site_visits: boolean | null
-          role: string
-          updated_at: string | null
-          user_id: string
-          work_type: string | null
-        }
-        Insert: {
-          budget?: string | null
-          created_at?: string | null
-          duration?: string | null
-          email_alerts?: boolean
-          hiring_status?: string | null
-          id?: string
-          keywords?: string[] | null
-          location: string
-          max_budget?: string | null
-          notifications_enabled?: boolean
-          project_type?: string[] | null
-          requires_insurance?: boolean | null
-          requires_site_visits?: boolean | null
-          role: string
-          updated_at?: string | null
-          user_id: string
-          work_type?: string | null
-        }
-        Update: {
-          budget?: string | null
-          created_at?: string | null
-          duration?: string | null
-          email_alerts?: boolean
-          hiring_status?: string | null
-          id?: string
-          keywords?: string[] | null
-          location?: string
-          max_budget?: string | null
-          notifications_enabled?: boolean
-          project_type?: string[] | null
-          requires_insurance?: boolean | null
-          requires_site_visits?: boolean | null
-          role?: string
-          updated_at?: string | null
-          user_id?: string
-          work_type?: string | null
-        }
-        Relationships: []
-      }
-      messages: {
-        Row: {
-          attachments: Json | null
-          conversation_id: string
-          created_at: string
-          id: string
-          is_read: boolean
-          message: string
-          sender_id: string
-        }
-        Insert: {
-          attachments?: Json | null
-          conversation_id: string
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          message: string
-          sender_id: string
-        }
-        Update: {
-          attachments?: Json | null
-          conversation_id?: string
-          created_at?: string
-          id?: string
-          is_read?: boolean
-          message?: string
-          sender_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "messages_conversation_id_fkey"
-            columns: ["conversation_id"]
-            isOneToOne: false
-            referencedRelation: "conversations"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      notifications: {
-        Row: {
-          created_at: string
-          data: Json | null
-          description: string
-          id: string
-          read: boolean
-          title: string
-          type: string
-          user_id: string
-        }
-        Insert: {
-          created_at?: string
-          data?: Json | null
-          description: string
-          id?: string
-          read?: boolean
-          title: string
-          type: string
-          user_id: string
-        }
-        Update: {
-          created_at?: string
-          data?: Json | null
-          description?: string
-          id?: string
-          read?: boolean
-          title?: string
-          type?: string
-          user_id?: string
-        }
-        Relationships: []
-      }
-      project_applications: {
-        Row: {
-          created_at: string | null
-          id: string
-          message: string | null
-          project_id: string
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          message?: string | null
-          project_id: string
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          message?: string | null
-          project_id?: string
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_applications_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      project_disputes: {
-        Row: {
-          admin_decision: string | null
-          admin_decision_date: string | null
-          admin_decision_deadline: string
-          admin_notes: string | null
-          at_fault_statement: string
-          client_evidence: Json[] | null
-          created_at: string
-          evidence_files: Json | null
-          freelancer_evidence: Json[] | null
-          id: string
-          project_id: string
-          quote_id: string
-          reason: string
-          reviewed_by: string | null
-          submission_deadline: string
-          updated_at: string
-          user_id: string
-        }
-        Insert: {
-          admin_decision?: string | null
-          admin_decision_date?: string | null
-          admin_decision_deadline: string
-          admin_notes?: string | null
-          at_fault_statement: string
-          client_evidence?: Json[] | null
-          created_at?: string
-          evidence_files?: Json | null
-          freelancer_evidence?: Json[] | null
-          id?: string
-          project_id: string
-          quote_id: string
-          reason: string
-          reviewed_by?: string | null
-          submission_deadline: string
-          updated_at?: string
-          user_id: string
-        }
-        Update: {
-          admin_decision?: string | null
-          admin_decision_date?: string | null
-          admin_decision_deadline?: string
-          admin_notes?: string | null
-          at_fault_statement?: string
-          client_evidence?: Json[] | null
-          created_at?: string
-          evidence_files?: Json | null
-          freelancer_evidence?: Json[] | null
-          id?: string
-          project_id?: string
-          quote_id?: string
-          reason?: string
-          reviewed_by?: string | null
-          submission_deadline?: string
-          updated_at?: string
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "project_disputes_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "project_disputes_quote_id_fkey"
-            columns: ["quote_id"]
-            isOneToOne: false
-            referencedRelation: "quotes"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      projects: {
-        Row: {
-          applications: number
-          budget: string
-          created_at: string
-          description: string
-          documents: Json | null
-          duration: string
-          hiring_status: string
-          id: string
-          location: string
-          purchases_count: number
-          requires_equipment: boolean
-          requires_insurance: boolean
-          requires_site_visits: boolean
-          role: string
-          start_date: string | null
-          status: string
-          title: string
-          updated_at: string
-          user_id: string
-          work_type: string
-        }
-        Insert: {
-          applications?: number
-          budget: string
-          created_at?: string
-          description: string
-          documents?: Json | null
-          duration: string
-          hiring_status?: string
-          id?: string
-          location: string
-          purchases_count?: number
-          requires_equipment?: boolean
-          requires_insurance?: boolean
-          requires_site_visits?: boolean
-          role: string
-          start_date?: string | null
-          status?: string
-          title: string
-          updated_at?: string
-          user_id: string
-          work_type: string
-        }
-        Update: {
-          applications?: number
-          budget?: string
-          created_at?: string
-          description?: string
-          documents?: Json | null
-          duration?: string
-          hiring_status?: string
-          id?: string
-          location?: string
-          purchases_count?: number
-          requires_equipment?: boolean
-          requires_insurance?: boolean
-          requires_site_visits?: boolean
-          role?: string
-          start_date?: string | null
-          status?: string
-          title?: string
-          updated_at?: string
-          user_id?: string
-          work_type?: string
-        }
-        Relationships: []
-      }
       quotes: {
         Row: {
-          available_start_date: string | null
-          client_completed: boolean
-          client_id: string
-          completed_at: string | null
-          created_at: string
-          day_rate: string | null
-          description: string | null
-          duration_unit: string | null
-          estimated_duration: string | null
-          estimated_price: string | null
-          fixed_price: string | null
-          freelancer_completed: boolean
-          freelancer_id: string
+          client_id: string | null
+          created_at: string | null
+          estimated_hours: number | null
+          fixed_price: number | null
+          freelancer_id: string | null
+          hourly_rate: number | null
           id: string
-          payment_terms: string | null
-          preferred_payment_method: string | null
-          project_id: string
-          quote_files: Json | null
-          status: string
-          updated_at: string
+          project_id: string | null
+          status: string | null
+          updated_at: string | null
         }
         Insert: {
-          available_start_date?: string | null
-          client_completed?: boolean
-          client_id: string
-          completed_at?: string | null
-          created_at?: string
-          day_rate?: string | null
-          description?: string | null
-          duration_unit?: string | null
-          estimated_duration?: string | null
-          estimated_price?: string | null
-          fixed_price?: string | null
-          freelancer_completed?: boolean
-          freelancer_id: string
+          client_id?: string | null
+          created_at?: string | null
+          estimated_hours?: number | null
+          fixed_price?: number | null
+          freelancer_id?: string | null
+          hourly_rate?: number | null
           id?: string
-          payment_terms?: string | null
-          preferred_payment_method?: string | null
-          project_id: string
-          quote_files?: Json | null
-          status?: string
-          updated_at?: string
+          project_id?: string | null
+          status?: string | null
+          updated_at?: string | null
         }
         Update: {
-          available_start_date?: string | null
-          client_completed?: boolean
-          client_id?: string
-          completed_at?: string | null
-          created_at?: string
-          day_rate?: string | null
-          description?: string | null
-          duration_unit?: string | null
-          estimated_duration?: string | null
-          estimated_price?: string | null
-          fixed_price?: string | null
-          freelancer_completed?: boolean
-          freelancer_id?: string
+          client_id?: string | null
+          created_at?: string | null
+          estimated_hours?: number | null
+          fixed_price?: number | null
+          freelancer_id?: string | null
+          hourly_rate?: number | null
           id?: string
-          payment_terms?: string | null
-          preferred_payment_method?: string | null
-          project_id?: string
-          quote_files?: Json | null
-          status?: string
-          updated_at?: string
+          project_id?: string | null
+          status?: string | null
+          updated_at?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "client_profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_freelancer_id_fkey"
+            columns: ["freelancer_id"]
+            isOneToOne: false
+            referencedRelation: "freelancer_profiles"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "quotes_project_id_fkey"
             columns: ["project_id"]
@@ -759,49 +361,36 @@ export type Database = {
       }
       reviews: {
         Row: {
-          created_at: string
+          comment: string | null
+          created_at: string | null
           id: string
-          is_freelancer_review: boolean
-          project_id: string
-          quote_id: string
-          rating: number
-          review_text: string | null
-          reviewee_id: string
-          reviewer_id: string
-          updated_at: string
+          quote_id: string | null
+          rating: number | null
+          reviewee_id: string | null
+          reviewer_id: string | null
+          updated_at: string | null
         }
         Insert: {
-          created_at?: string
+          comment?: string | null
+          created_at?: string | null
           id?: string
-          is_freelancer_review: boolean
-          project_id: string
-          quote_id: string
-          rating: number
-          review_text?: string | null
-          reviewee_id: string
-          reviewer_id: string
-          updated_at?: string
+          quote_id?: string | null
+          rating?: number | null
+          reviewee_id?: string | null
+          reviewer_id?: string | null
+          updated_at?: string | null
         }
         Update: {
-          created_at?: string
+          comment?: string | null
+          created_at?: string | null
           id?: string
-          is_freelancer_review?: boolean
-          project_id?: string
-          quote_id?: string
-          rating?: number
-          review_text?: string | null
-          reviewee_id?: string
-          reviewer_id?: string
-          updated_at?: string
+          quote_id?: string | null
+          rating?: number | null
+          reviewee_id?: string | null
+          reviewer_id?: string | null
+          updated_at?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "reviews_project_id_fkey"
-            columns: ["project_id"]
-            isOneToOne: false
-            referencedRelation: "projects"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "reviews_quote_id_fkey"
             columns: ["quote_id"]
@@ -816,77 +405,33 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      apply_to_project: {
-        Args: {
-          project_id: string
-          message?: string
-          credits_to_use?: number
-        }
-        Returns: Json
-      }
-      check_application_exists: {
-        Args: {
-          p_project_id: string
-          p_user_id: string
-        }
-        Returns: boolean
-      }
-      check_quote_exists: {
-        Args: {
-          p_project_id: string
-          p_freelancer_id: string
-        }
-        Returns: boolean
-      }
-      get_freelancer_completed_jobs_count: {
-        Args: {
-          freelancer_id: string
-        }
-        Returns: number
-      }
-      get_user_applications: {
+      check_verification_status: {
         Args: {
           user_id: string
         }
-        Returns: Json[]
+        Returns: string
       }
-      get_user_email: {
-        Args: {
-          user_id: string
-        }
-        Returns: {
-          email: string
-        }[]
-      }
-      is_user_verified: {
-        Args: {
-          check_user_id: string
-        }
-        Returns: boolean
-      }
-      sync_freelancer_profiles_from_metadata: {
-        Args: Record<PropertyKey, never>
-        Returns: undefined
-      }
-      update_project_completion_status: {
-        Args: {
-          p_quote_id: string
-          p_project_id: string
-          p_user_id: string
-          p_is_freelancer: boolean
-        }
-        Returns: Json
-      }
-      update_quote_status: {
-        Args: {
-          quote_id: string
-          new_status: string
-        }
-        Returns: Json
-      }
+      create_storage_policy:
+        | {
+            Args: {
+              bucket_name: string
+              policy_name: string
+              operation: string
+              policy_definition: string
+            }
+            Returns: undefined
+          }
+        | {
+            Args: {
+              bucket_name: string
+              policy_name: string
+              policy_definition: string
+            }
+            Returns: undefined
+          }
     }
     Enums: {
-      verification_status: "not_submitted" | "pending" | "verified" | "rejected"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
